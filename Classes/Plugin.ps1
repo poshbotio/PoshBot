@@ -65,6 +65,7 @@ class Plugin {
     }
 
     # Invoke a command
+    # Should this live in the Plugin or in the main bot class?
     [CommandResult]InvokeCommand([Command]$Command, [ParsedCommand]$ParsedCommand, [String]$CallerId) {
 
         # Our result
@@ -135,26 +136,6 @@ class Plugin {
     # Find the command
     [Command]FindCommand([Command]$Command) {
         return $this.Commands.($Command.Name)
-    }
-
-    # Set (or add) an ACE to a command's ACL
-    [void]SetCommandACE([Command]$Command, [AccessControlEntry]$ACE) {
-        $existingCommand = $this.FindCommand($Command)
-        if (-not $existingCommand) {
-            throw [CommandNotFoundException]::New("Command [$($Command.Name)] not found in plugin [$($this.Name)]")
-        } else {
-            $existingCommand.SetCommandACE($ACE)
-        }
-    }
-
-    # Remove an ACE from a command's ACL
-    [void]RemoveCommandACE([Command]$Command, [AccessControlEntry]$ACE) {
-        $existingCommand = $this.FindCommand($Command)
-        if (-not $existingCommand) {
-            throw [CommandNotFoundException]::New("Command [$($Command.Name)] not found in plugin [$($this.Name)]")
-        } else {
-            $existingCommand.RemoveCommandACE($ACE)
-        }
     }
 
     # Add a PowerShell module to the plugin

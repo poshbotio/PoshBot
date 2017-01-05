@@ -15,7 +15,6 @@ $script:moduleRoot = $PSScriptRoot
     'Card'
     'CommandResult'
     'CommandParser'
-    'AccessControlEntry'
     'AccessFilter'
     'Role'
     'Trigger'

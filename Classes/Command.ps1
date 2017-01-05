@@ -58,8 +58,6 @@ class Command {
 
     [AccessFilter]$AccessFilter = [AccessFilter]::new()
 
-    [AccessControlEntry[]]$ACLs = @()
-
     [hashtable]$Roles = @{}
 
     [bool]$Enabled = $true
@@ -171,70 +169,12 @@ class Command {
         return $authResult.Authorized
     }
 
-    [bool]Authorized([AccessControlEntry]$ACE) {
-        $matchingACE = $this.FindACE($ACE)
-        if ($matchingACE) {
-            if ($matchingACE.Access -eq [AccessRight]::Allow) {
-                return $true
-            } else {
-                return $false # ACE is an explicit DENY
-            }
-        } else {
-            return $false # No explicit ACE found. DENY
-        }
-    }
-
-    [bool]Authorized([string]$TrusteeId) {
-
-        # If no ACLs defined. Assume it's authorized for everyone
-        if ($this.ACLs.Count -eq 0) {
-            return $true
-        }
-
-        $matchingACE = $this.FindACE($TrusteeId)
-        if ($matchingACE) {
-            if ($matchingACE.Access -eq [AccessRight]::Allow) {
-                return $true
-            } else {
-                return $false # ACE is an explicit DENY
-            }
-        } else {
-            return $false # No explicit ACE found. DENY
-        }
-    }
-
     [void]Activate() {
         $this.Enabled = $true
     }
 
     [void]Deactivate() {
         $this.Enabled = $false
-    }
-
-    # Set (or add) an ACE to a command's ACL
-    [void]SetCommandACE([AccessControlEntry]$ACE) {
-        $matchingACE = $this.ACLs | Where-Object {$_.TrusteeId -eq $ACE.TrusteeId} | Select-Object -First 1
-        if ($matchingACE) {
-            $matchingACE.Access = $ACE.Access
-        } else {
-            $this.ACLs += [AccessControlEntry]::New((New-GUid), $ACE.TrusteeId, $ACE.Access)
-        }
-    }
-
-    # Remove the ACE from the ACL
-    [void]RemoveCommandACE([AccessControlEntry]$ACE) {
-        $matchingACE = $this.ACLs | Where-Object {$_.TrusteeId -eq $ACE.TrusteeId} | Select-Object -First 1
-        if ($matchingACE) {
-            $this.ACLs = @($this.ACLs | where {($_.TrusteeId -ne $matchingACE.TrusteeId)})
-        }
-    }
-
-    [AccessControlEntry]FindACE([AccessControlEntry]$ACE) {
-        return $this.ACLs | Where-Object {$_.TrusteeId -eq $ACE.TrusteeId} | Select-Object -First 1
-    }
-
-    [AccessControlEntry]FindACE([string]$TrusteeId) {
-        return $this.ACLs | where {$_.TrusteeId -eq $TrusteeId} | Select-Object -First 1
     }
 
     # Add a role
@@ -299,7 +239,6 @@ function New-PoshBotCommand {
         [parameter(Mandatory, ParameterSetName = 'modulecommand')]
         [string]$CommandName,
 
-        [AccessControlEntry[]]$ACLs = @(),
 
         [bool]$Enabled = $true
     )
@@ -328,7 +267,6 @@ function New-PoshBotCommand {
         }
     }
 
-    $command.ACLs = $ACLs
     $command.Enabled = $Enabled
 
     return $command
