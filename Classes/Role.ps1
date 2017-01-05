@@ -2,8 +2,7 @@
 class Role {
     [string]$Name
     [string]$Description
-
-    [hashtable]$Members = @{}
+    #[hashtable]$Members = @{}
 
     Role([string]$Name) {
         $this.Name = $Name
@@ -14,36 +13,36 @@ class Role {
         $this.Description = $Description
     }
 
-    Role([string]$Name, [string[]]$Users) {
-        $this.Name = $Name
-        $this.AddMembers($Users)
-    }
+    # Role([string]$Name, [string[]]$Users) {
+    #     $this.Name = $Name
+    #     $this.AddMembers($Users)
+    # }
 
-    Role([string]$Name, [string]$Description, [string[]]$Users) {
-        $this.Name = $Name
-        $this.Description = $Description
-        $this.AddMembers($Users)
-    }
+    # Role([string]$Name, [string]$Description, [string[]]$Users) {
+    #     $this.Name = $Name
+    #     $this.Description = $Description
+    #     $this.AddMembers($Users)
+    # }
 
-    [bool]IsMember([string]$Id) {
-        return $this.Members.ContainsKey($Id)
-    }
+    # [bool]IsMember([string]$Id) {
+    #     return $this.Members.ContainsKey($Id)
+    # }
 
-    [void]AddUsers([string[]]$UsersIds) {
-        foreach ($user in $UsersIds) {
-            if (-not $this.Members.ContainsKey($user)) {
-                $this.Members.add($user, $null)
-            }
-        }
-    }
+    # [void]AddUsers([string[]]$UsersIds) {
+    #     foreach ($user in $UsersIds) {
+    #         if (-not $this.Members.ContainsKey($user)) {
+    #             $this.Members.add($user, $null)
+    #         }
+    #     }
+    # }
 
-    [void]RemoveUsers([string[]]$UsersIds) {
-        foreach ($user in $UsersIds) {
-            if ($this.Members.ContainsKey($user)) {
-                $this.Members.Remove($user)
-            }
-        }
-    }
+    # [void]RemoveUsers([string[]]$UsersIds) {
+    #     foreach ($user in $UsersIds) {
+    #         if ($this.Members.ContainsKey($user)) {
+    #             $this.Members.Remove($user)
+    #         }
+    #     }
+    # }
 }
 
 function New-PoshBotRole {
@@ -53,10 +52,10 @@ function New-PoshBotRole {
         [string]$Name,
 
         [ValidateNotNullOrEmpty]
-        [string]$Description,
+        [string]$Description
 
-        [ValidateNotNull]
-        [string[]]$Members
+        # [ValidateNotNull]
+        # [string[]]$Members
     )
 
     $r = [Role]::new($Name)
@@ -65,9 +64,9 @@ function New-PoshBotRole {
         $r.Description = $Description
     }
 
-    if ($PSBoundParameters.ContainsKey('Members')) {
-        $r.AddUsers($Members)
-    }
+    # if ($PSBoundParameters.ContainsKey('Members')) {
+    #     $r.AddUsers($Members)
+    # }
 
     return $r
 }
