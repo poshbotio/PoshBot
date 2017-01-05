@@ -17,8 +17,8 @@ function Help {
     #Write-Output ($bot | format-list | out-string)
 
     $availableCommands = New-Object System.Collections.ArrayList
-    foreach ($pluginKey in $Bot.Plugins.Keys) {
-        $plugin = $Bot.Plugins[$pluginKey]
+    foreach ($pluginKey in $Bot.PluginManager.Plugins.Keys) {
+        $plugin = $Bot.PluginManager.Plugins[$pluginKey]
         foreach ($commandKey in $plugin.Commands.Keys) {
             $command = $plugin.Commands[$commandKey]
             $x = [pscustomobject][ordered]@{
@@ -52,20 +52,31 @@ function Status {
         $Bot
     )
 
-    if ($Bot.Stopwatch.IsRunning) {
-        $uptime = $Bot.Stopwatch.Elapsed.ToString()
+    if ($Bot._Stopwatch.IsRunning) {
+        $uptime = $Bot._Stopwatch.Elapsed.ToString()
     } else {
         $uptime = $null
     }
     $hash = [ordered]@{
         Version = '1.0.0'
         Uptime = $uptime
-        Plugins = $Bot.Plugins.Count
-        Commands = $Bot.Commands.Count
+        Plugins = $Bot.PluginManager.Plugins.Count
+        Commands = $Bot.PluginManager.Commands.Count
     }
 
     $status = [pscustomobject]$hash
     $status
+}
+
+function Roles {
+    <#
+    .SYNOPSIS
+        Get all roles
+    .EXAMPLE
+        !roles
+    #>
+
+
 }
 
 Export-ModuleMember -Function *

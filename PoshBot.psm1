@@ -22,6 +22,8 @@ $script:moduleRoot = $PSScriptRoot
     'Command'
     'CommandHistory'
     'Plugin'
+    'PluginCommand'
+    'PluginManager'
     'ConnectionConfig'
     'Connection'
     'Backend'
