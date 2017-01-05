@@ -29,7 +29,10 @@ $c2 = New-PoshBotCommand -Name 'time' `
                             $time = Get-Date
                             "The time is $(($time).ToShortTimeString())"
                             }
+$c2.AccessFilter.AddAllowedRole($plugin1Roles[1].Name)
 $c2.AccessFilter.AddDeniedUser('U1QAMMBCH')
+#$bot.RoleManager.AddUserToRole('U1QAMMBCH', $plugin1Roles[1].Name)
+$bot.RoleManager.AddUserToRole('U1QAMMBCH', 'plugin1:time')
 
 # $c5 = New-PoshBotCommand -Name 'cookietrigger' `
 #                          -Trigger (New-PoshBotTrigger -Type 'Regex' -Trigger '(^| )cookies?( |$)') `

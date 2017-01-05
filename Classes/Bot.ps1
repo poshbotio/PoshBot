@@ -17,6 +17,10 @@ class Bot {
 
     [PluginManager]$PluginManager
 
+    [RoleManager]$RoleManager
+
+    [CommandExecutor]$Executor
+
     # Queue of messages from the chat network to process
     [System.Collections.Queue]$MessageQueue = (New-Object System.Collections.Queue)
 
@@ -42,8 +46,11 @@ class Bot {
         # TODO
         # Load in configuration from persistent storage
 
-        $this.PluginManager = [PluginManager]::new($this._Logger, $this._PoshBotDir)
+        $this.RoleManager = [RoleManager]::new()
+        $this.RoleManager.Initialize()
+        $this.PluginManager = [PluginManager]::new($this.RoleManager, $this._Logger, $this._PoshBotDir)
         $this.PluginManager.Initialize()
+        $this.Executor = [CommandExecutor]::new($this.RoleManager)
     }
 
     # Start the bot
@@ -174,7 +181,7 @@ class Bot {
                     $parsedCommand.NamedParameters.Add('Bot', $this)
                 }
 
-                $result = $this.DispatchCommand($pluginCmd.Command, $parsedCommand, $pluginCmd.Plugin, $Message.From)
+                $result = $this.DispatchCommand($pluginCmd.Command, $parsedCommand, $Message.From)
                 if (-not $result.Success) {
 
                     # Was the command not authorized?
@@ -200,16 +207,20 @@ class Bot {
     }
 
     # Dispatch the command to the plugin for execution
-    [CommandResult]DispatchCommand([Command]$Command, [ParsedCommand]$ParsedCommand, [Plugin]$Plugin, [string]$CallerId) {
-        $logMsg = [LogMessage]::new("[Bot:DispatchCommand] Dispatching command [$($Command.Name)] to plugin [$($Plugin.Name)] with caller ID [$CallerId]")
-        $this._Logger.Log($logMsg, [LogType]::System)
-        $this._Logger.Log($logMsg, [LogType]::Command)
-        $result = $Plugin.InvokeCommand($Command, $ParsedCommand, $CallerId)
-        Write-Verbose "[Bot:DispatchCommand] Command result: $($result | Format-List * | Out-String)"
-        $logMsg = [LogMessage]::new('[Bot:DispatchCommand] Command result', $result)
-        $this._Logger.Log($logMsg, [LogType]::System)
-        $this._Logger.Log($logMsg, [LogType]::Command)
+    [CommandResult]DispatchCommand([Command]$Command, [ParsedCommand]$ParsedCommand, [string]$CallerId) {
+
+        $result = $this.Executor.ExecuteCommand($Command, $ParsedCommand, $CallerId)
         return $result
+
+        # $logMsg = [LogMessage]::new("[Bot:DispatchCommand] Dispatching command [$($Command.Name)] to plugin [$($Plugin.Name)] with caller ID [$CallerId]")
+        # $this._Logger.Log($logMsg, [LogType]::System)
+        # $this._Logger.Log($logMsg, [LogType]::Command)
+        # $result = $Plugin.InvokeCommand($Command, $ParsedCommand, $CallerId)
+        # Write-Verbose "[Bot:DispatchCommand] Command result: $($result | Format-List * | Out-String)"
+        # $logMsg = [LogMessage]::new('[Bot:DispatchCommand] Command result', $result)
+        # $this._Logger.Log($logMsg, [LogType]::System)
+        # $this._Logger.Log($logMsg, [LogType]::Command)
+        # return $result
 
         # Determine how to respond back to the chat network now that
         # the command has completed. This is up to the command

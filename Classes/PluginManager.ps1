@@ -4,9 +4,11 @@ class PluginManager {
     [hashtable]$Plugins = @{}
     [hashtable]$Commands = @{}
     hidden [string]$_PoshBotModuleDir
+    [RoleManager]$RoleManager
     [Logger]$Logger
 
-    PluginManager([Logger]$Logger, [string]$PoshBotModuleDir) {
+    PluginManager([RoleManager]$RoleManager, [Logger]$Logger, [string]$PoshBotModuleDir) {
+        $this.RoleManager = $RoleManager
         $this.Logger = $Logger
         $this._PoshBotModuleDir = $PoshBotModuleDir
         $this.Initialize()
@@ -17,11 +19,20 @@ class PluginManager {
         $this.LoadBuiltinPlugins()
     }
 
+    # TODO
+    # Given a PowerShell module definition, inspect it for commands etc,
+    # create a plugin instance and load the plugin
+    [void]InstallPlugin() {}
+
     # Add a plugin to the bot
     [void]AddPlugin([Plugin]$Plugin) {
         if (-not $this.Plugins.ContainsKey($Plugin.Name)) {
             $this.Logger.Log([LogMessage]::new("[PluginManager:AddPlugin] Attaching plugin [$($Plugin.Name)]"), [LogType]::System)
             $this.Plugins.Add($Plugin.Name, $Plugin)
+
+            foreach ($role in $Plugin.Roles.GetEnumerator()) {
+                $this.RoleManager.AddRole($role.Value)
+            }
         }
 
         # # Reload commands and role from all currently loading (and active) plugins
@@ -32,6 +43,23 @@ class PluginManager {
     # Remove a plugin from the bot
     [void]RemovePlugin([Plugin]$Plugin) {
         if ($this.Plugins.ContainsKey($Plugin.Name)) {
+
+            # Remove the roles for this plugin from the role manager
+            # if those roles are not associtate with any other plugins
+            foreach ($role in $Plugin.Roles) {
+                $roleIsUnique = $true
+                $otherPluginKeys = $this.Plugins.Keys | Where {$_ -ne $Plugin.Name}
+                foreach ($otherPluginKey in $otherPluginKeys) {
+                    if ($this.Plugins[$otherPluginKey].Roles -contains $role.Name) {
+                        $roleIsUnique = $false
+                    }
+                }
+                if ($roleIsUnique) {
+                    $this.Logger.Log([LogMessage]::new("[PluginManager:RemovePlugin] Removing role [$Role.Name]. No longer in use"), [LogType]::System)
+                    $this.RoleManager.RemoveRole($role)
+                }
+            }
+
             $this.Logger.Log([LogMessage]::new("[PluginManager:RemovePlugin] Removing plugin [$Plugin.Name]"), [LogType]::System)
             $this.Plugins.Remove($Plugin.Name)
         }
@@ -148,6 +176,10 @@ class PluginManager {
             $this.Commands.Remove($_)
             #$this.Triggers.Remove($_)
         }
+    }
+
+    [void]LoadRoles() {
+
     }
 
     # Load in the built in plugins
