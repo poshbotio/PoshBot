@@ -74,6 +74,9 @@ function Roles {
         Get all roles
     .EXAMPLE
         !roles
+    .ROLE
+        Admin
+        RoleAdmin
     #>
     [cmdletbinding()]
     param(
@@ -81,13 +84,41 @@ function Roles {
         $Bot
     )
 
-    $roles = New-Object System.Collections.ArrayList
-    foreach ($key in ($Bot.RoleManager.Roles.Keys | Sort-Object)) {
+    $roles = foreach ($key in ($Bot.RoleManager.Roles.Keys | Sort-Object)) {
         [pscustomobject][ordered]@{
             Name = $key
             Description =$Bot.RoleManager.Roles[$key].Description
         }
     }
+    Write-Output ($roles | Format-Table -AutoSize | Out-String -Width 150)
+}
+
+function Plugins {
+  <#
+    .SYNOPSIS
+        Get all installed plugins
+    .EXAMPLE
+        !plugins
+    .ROLE
+        Admin
+        PluginAdmin
+    #>
+    [cmdletbinding()]
+    param(
+        [parameter(Mandatory)]
+        $Bot
+    )
+
+    $plugins = foreach ($key in ($Bot.PluginManager.Plugins.Keys | Sort-Object)) {
+        $plugin = $Bot.PluginManager.Plugins[$key]
+        [pscustomobject][ordered]@{
+            Name = $key
+            Commands = $plugin.Commands.Keys
+            Roles = $plugin.Roles.Keys
+            Enabled = $plugin.Enabled
+        }
+    }
+    Write-Output ($plugins | Format-List | Out-String -Width 150)
 }
 
 function About {
