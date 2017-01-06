@@ -75,8 +75,37 @@ function Roles {
     .EXAMPLE
         !roles
     #>
+    [cmdletbinding()]
+    param(
+        [parameter(Mandatory)]
+        $Bot
+    )
 
+    $roles = New-Object System.Collections.ArrayList
+    foreach ($key in ($Bot.RoleManager.Roles.Keys | Sort-Object)) {
+        [pscustomobject][ordered]@{
+            Name = $key
+            Description =$Bot.RoleManager.Roles[$key].Description
+        }
+    }
+}
 
+function About {
+    [cmdletbinding()]
+    param()
+
+    $path = "$PSScriptRoot/../../PoshBot.psd1"
+    #$manifest = Test-ModuleManifest -Path $path -Verbose:$false
+    $manifest = Import-PowerShellDataFile -Path $path
+    $ver = $manifest.ModuleVersion
+
+    $msg = @"
+PoshBot v$ver
+$($manifest.CopyRight)
+
+https://github.com/devblackops/PoshBot
+"@
+    $msg
 }
 
 Export-ModuleMember -Function *

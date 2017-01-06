@@ -21,13 +21,13 @@ ModuleVersion = '1.0'
 GUID = '7bfb126c-b432-4921-989a-9802f525693f'
 
 # Author of this module
-Author = 'brand'
+Author = 'Brandon Olin'
 
 # Company or vendor of this module
-CompanyName = 'Unknown'
+CompanyName = 'Community'
 
 # Copyright statement for this module
-Copyright = '(c) 2016 brand. All rights reserved.'
+Copyright = '(c) 2016 Brandon Olin. All rights reserved.'
 
 # Description of the functionality provided by this module
 # Description = ''
