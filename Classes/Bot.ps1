@@ -276,10 +276,9 @@ function Add-PoshBotPlugin {
         [Bot]$InputObject,
 
         [parameter(Mandatory)]
-        [Plugin]$Plugin
+        [ValidateScript({Test-Path -Path $_})]
+        [string]$ModuleManifest
     )
-
-    Write-Verbose -Message "Adding plugin [$($Plugin.Name)] to bot"
-    $InputObject.PluginManager.AddPlugin($Plugin)
+    Write-Verbose -Message "Creating bot plugin from module [$ModuleManifest]"
+    $bot.PluginManager.InstallPlugin($ModuleManifest)
 }
-

@@ -22,7 +22,17 @@ class PluginManager {
     # TODO
     # Given a PowerShell module definition, inspect it for commands etc,
     # create a plugin instance and load the plugin
-    [void]InstallPlugin() {}
+    [void]InstallPlugin([string]$ManifestPath) {
+        if (Test-Path -Path $ManifestPath) {
+            $moduleName = (Get-Item -Path $ManifestPath).BaseName
+            $plugin = $this.CreatePluginFromModuleManifest($moduleName, $ManifestPath, $true)
+            if ($plugin) {
+                $this.AddPlugin($plugin)
+            }
+        } else {
+            Write-Error -Message "Module manifest path [$manifestPath] not found"
+        }
+    }
 
     # Add a plugin to the bot
     [void]AddPlugin([Plugin]$Plugin) {
@@ -182,6 +192,88 @@ class PluginManager {
 
     }
 
+    [Plugin]CreatePluginFromModuleManifest([string]$ModuleName, [string]$ManifestPath, [bool]$AsJob = $true) {
+        $manifest = Import-PowerShellDataFile -Path $ManifestPath -ErrorAction SilentlyContinue
+        if ($manifest) {
+            $plugin = [Plugin]::new()
+            $plugin.Name = $ModuleName
+            $this.Logger.Log([LogMessage]::new("[PluginManager:CreatePluginFromModuleManifest] Created new plugin [$($plugin.Name)]"), [LogType]::System)
+
+            # Create new roles from metadata in the module manifest
+            $pluginRoles = $this.GetRoleFromModuleManifest($manifest)
+            $pluginRoles | ForEach-Object {
+                $plugin.AddRole($_)
+            }
+
+            Import-Module -Name $manifestPath -Scope Local
+            $moduleCommands = Get-Command -Module $ModuleName -CommandType Cmdlet, Function, Workflow
+            foreach ($command in $moduleCommands) {
+
+                # Get the command help so we can pull information from it
+                # to construct the bot command
+                $cmdHelp = Get-Help -Name $command.Name
+
+                $cmd = [Command]::new()
+                $cmd.Name = $command.Name
+                $cmd.Description = $cmdHelp.Synopsis
+                $cmd.ManifestPath = $manifestPath
+                $cmd.FunctionInfo = $command
+                $cmd.Trigger = [Trigger]::new('Command', $command.Name)
+                if ($cmdHelp.examples) {
+                    $cmd.HelpText = $cmdHelp.examples[0].example[0].code
+                }
+                $cmd.ModuleCommand = "$ModuleName\$($command.Name)"
+                $cmd.AsJob = $AsJob
+
+                # Add the desired roles for this command
+                # This assumes that the roles have already been loaded in
+                # to the role manager when the plugin was loaded
+                if ($cmdHelp.Role) {
+                    $rolesForCmd = $this.GetRoleFromModuleCommand($cmdHelp)
+                    foreach($r in $rolesForCmd) {
+                        $role = $this.RoleManager.GetRole($_)
+                        if ($role) {
+                            $cmd.AddRole($role)
+                        }
+                    }
+                }
+
+                $this.Logger.Log([LogMessage]::new("[PluginManager:CreatePluginFromModuleManifest] Creating command [$($command.Name)] for new plugin [$plugin.Name]"), [LogType]::System)
+                $plugin.AddCommand($cmd)
+            }
+
+            return $plugin
+        } else {
+            return $null
+        }
+    }
+
+    # Return roles defined in module manifest
+    [Role[]]GetRoleFromModuleManifest($Manifest) {
+        $pluginRoles = New-Object System.Collections.ArrayList
+        foreach ($role in $Manifest.PrivateData.Roles) {
+            if ($role -is [string]) {
+                $pluginRole = [Role]::new($role)
+                $pluginRoles.Add($pluginRole)
+            } elseIf ($role -is [hashtable]) {
+                $pluginRole = [Role]::new($role.Name)
+                if ($role.Description) {
+                    $pluginRole.Description = $role.Description
+                }
+                $pluginRoles.Add($pluginRole)
+            }
+        }
+        return $pluginRoles
+    }
+
+    [string[]]GetRoleFromModuleCommand($CmdHelp) {
+        if ($CmdHelp.Role) {
+            return @($CmdHelp.Role.split("`n") | ForEach-Object { $_.Split(',').Trim()})
+        } else {
+            return $null
+        }
+    }
+
     # Load in the built in plugins
     # Thee will be marked so that they DON't execute in a PowerShell job
     # as they need access to the bot internals
@@ -190,42 +282,8 @@ class PluginManager {
         foreach ($dir in $pluginsToLoad) {
             $moduleName = $dir.Name
             $manifestPath = Join-Path -Path $dir.FullName -ChildPath "$moduleName.psd1"
-            $modManifest = Test-ModuleManifest -Path $manifestPath -ErrorAction SilentlyContinue
-            $manifest = Import-PowerShellDataFile -Path $manifestPath -ErrorAction SilentlyContinue
-
-            # Create a new plugin and command(s) using information from this module
-            if ($modManifest -and $manifest) {
-                $plugin = [Plugin]::new()
-                $plugin.Name = $moduleName
-                foreach ($role in $manifest.PrivateData.Roles) {
-                    $pluginRole = [Role]::new($role)
-                    $plugin.AddRole($pluginRole)
-                }
-
-                Import-Module -Name $manifestPath -Scope Local
-                $moduleCommands = Get-Command -Module $moduleName -CommandType Cmdlet, Function, Workflow
-                foreach ($command in $moduleCommands) {
-
-                    # Get the command help so we can pull information from it
-                    # to construct the bot command
-                    $cmdHelp = Get-Help -Name $command.Name
-
-                    $cmd = [Command]::new()
-                    $cmd.Name = $command.Name
-                    $cmd.Description = $cmdHelp.Synopsis
-                    $cmd.ManifestPath = $manifestPath
-                    $cmd.FunctionInfo = $command
-                    $cmd.Trigger = [Trigger]::new('Command', $command.Name)
-                    $cmd.HelpText = $cmdHelp.examples[0].example[0].code
-                    $cmd.ModuleCommand = "$moduleName\$($command.Name)"
-                    $cmd.AsJob = $false
-                    #$cmd.AddRole([Role]::new($cmdHelp.Role))
-
-                    $this.Logger.Log([LogMessage]::new("[PluginManager:LoadBuiltinPlugins] Loading command [$($command.Name)] into plugin [$plugin.Name]"), [LogType]::System)
-                    $plugin.AddCommand($cmd)
-                }
-
-                $this.Logger.Log([LogMessage]::new("[PluginManager:LoadBuiltinPlugins] Loading plugin [$($plugin.Name)]"), [LogType]::System)
+            $plugin = $this.CreatePluginFromModuleManifest($moduleName, $manifestPath, $false)
+            if ($plugin) {
                 $this.AddPlugin($plugin)
             }
         }
