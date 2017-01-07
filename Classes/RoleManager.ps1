@@ -31,12 +31,11 @@ class RoleManager {
     [void]LoadState() {}
 
     [Role]GetRole([string]$RoleName) {
-        Write-Host "[RoleManager:GetRole] Getting role [$RoleName]"
         $r = $this.Roles[$RoleName]
         if ($r) {
             return $r
         } else {
-            Write-Host "[RoleManager:GetRole] Role [$RoleName] not found"
+            Write-Error "[RoleManager:GetRole] Role [$RoleName] not found"
             return $null
         }
     }
