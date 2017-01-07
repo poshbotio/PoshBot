@@ -189,10 +189,6 @@ class PluginManager {
         }
     }
 
-    [void]LoadRoles() {
-
-    }
-
     [void]CreatePluginFromModuleManifest([string]$ModuleName, [string]$ManifestPath, [bool]$AsJob = $true) {
         $manifest = Import-PowerShellDataFile -Path $ManifestPath -ErrorAction SilentlyContinue
         if ($manifest) {
