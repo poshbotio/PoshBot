@@ -204,7 +204,9 @@ function Plugins {
 
 function About {
     [cmdletbinding()]
-    param()
+    param(
+        $Bot
+    )
 
     $path = "$PSScriptRoot/../../PoshBot.psd1"
     #$manifest = Test-ModuleManifest -Path $path -Verbose:$false
