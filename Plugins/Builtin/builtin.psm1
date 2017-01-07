@@ -93,6 +93,87 @@ function Roles {
     Write-Output ($roles | Format-Table -AutoSize | Out-String -Width 150)
 }
 
+function RoleShow {
+    <#
+    .SYNOPSIS
+        Show details about a role
+    .EXAMPLE
+        !roleshow --role <rolename>
+    .ROLE
+        Admin
+        RoleAdmin
+    #>
+    [cmdletbinding()]
+    param(
+        [parameter(Mandatory)]
+        $Bot,
+
+        [parameter(Mandatory)]
+        [string]$Role
+    )
+
+    $r = $Bot.RoleManager.GetRole($Role)
+    if (-not $r) {
+        Write-Error "Role [$Role] not found :("
+        return
+    }
+    $roleMapping = $Bot.RoleManager.RoleUserMapping[$Role]
+    $members = New-Object System.Collections.ArrayList
+    if ($roleMapping) {
+        $roleMapping.Users.GetEnumerator() | ForEach-Object {
+            $m = [pscustomobject][ordered]@{
+                ID = $_.Name
+                Name = $_.Value.Nickname
+            }
+            $members.Add($m) | Out-Null
+        }
+    }
+
+    Write-Output "Role details for [$Role]"
+    Write-Output "Description: $($r.Description)"
+    Write-Output "Members:`n$($Members | Format-Table | Out-String)"
+}
+
+function AddUserToRole {
+    <#
+    .SYNOPSIS
+        Add a user to a role
+    .EXAMPLE
+        !roleadd --role <rolename> --user <username>
+    .ROLE
+        Admin
+        RoleAdmin
+    #>
+    [cmdletbinding()]
+    param(
+        [parameter(Mandatory)]
+        $Bot,
+
+        [parameter(Mandatory)]
+        [string]$Role,
+
+        [parameter(Mandatory)]
+        [string]$User
+    )
+
+    # Validate role and username
+    $id = $Bot.RoleManager.ResolveUserToId($User)
+    if (-not $id) {
+        throw "Username [$User] was not found."
+    }
+    $r = $Bot.RoleManager.GetRole($Role)
+    if (-not $r) {
+        throw "Username [$User] was not found."
+    }
+
+    try {
+        $Bot.RoleManager.AddUserToRole($id, $Role)
+        Write-Output "OK, user [$User] added to role [$Role]"
+    } catch {
+        throw $_
+    }
+}
+
 function Plugins {
   <#
     .SYNOPSIS
