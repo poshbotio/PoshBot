@@ -16,6 +16,7 @@ class PluginManager {
 
     # Initialize the plugin manager
     [void]Initialize() {
+        $this.Logger.Log([LogMessage]::new('[PluginManager:Initialize] Initializing Plugin Manager'), [LogType]::System)
         $this.LoadBuiltinPlugins()
     }
 
@@ -25,10 +26,8 @@ class PluginManager {
     [void]InstallPlugin([string]$ManifestPath) {
         if (Test-Path -Path $ManifestPath) {
             $moduleName = (Get-Item -Path $ManifestPath).BaseName
-            $plugin = $this.CreatePluginFromModuleManifest($moduleName, $ManifestPath, $true)
-            if ($plugin) {
-                $this.AddPlugin($plugin)
-            }
+            $this.CreatePluginFromModuleManifest($moduleName, $ManifestPath, $true)
+            $this.LoadCommands()
         } else {
             Write-Error -Message "Module manifest path [$manifestPath] not found"
         }
@@ -40,13 +39,15 @@ class PluginManager {
             $this.Logger.Log([LogMessage]::new("[PluginManager:AddPlugin] Attaching plugin [$($Plugin.Name)]"), [LogType]::System)
             $this.Plugins.Add($Plugin.Name, $Plugin)
 
+            # Register the plugin's roles with the role manager
             foreach ($role in $Plugin.Roles.GetEnumerator()) {
+                $this.Logger.Log([LogMessage]::new("[PluginManager:AddPlugin] Adding role [$($Role.Name)] to Role Manager"), [LogType]::System)
                 $this.RoleManager.AddRole($role.Value)
             }
         }
 
         # # Reload commands and role from all currently loading (and active) plugins
-        $this.LoadCommands()
+        #$this.LoadCommands()
         # $this.LoadRoles()
     }
 
@@ -192,12 +193,11 @@ class PluginManager {
 
     }
 
-    [Plugin]CreatePluginFromModuleManifest([string]$ModuleName, [string]$ManifestPath, [bool]$AsJob = $true) {
+    [void]CreatePluginFromModuleManifest([string]$ModuleName, [string]$ManifestPath, [bool]$AsJob = $true) {
         $manifest = Import-PowerShellDataFile -Path $ManifestPath -ErrorAction SilentlyContinue
         if ($manifest) {
             $plugin = [Plugin]::new()
             $plugin.Name = $ModuleName
-            $this.Logger.Log([LogMessage]::new("[PluginManager:CreatePluginFromModuleManifest] Created new plugin [$($plugin.Name)]"), [LogType]::System)
 
             # Create new roles from metadata in the module manifest
             $pluginRoles = $this.GetRoleFromModuleManifest($manifest)
@@ -205,7 +205,11 @@ class PluginManager {
                 $plugin.AddRole($_)
             }
 
-            Import-Module -Name $manifestPath -Scope Local
+            # Add the plugin so the roles can be registered with the role manager
+            $this.AddPlugin($plugin)
+            $this.Logger.Log([LogMessage]::new("[PluginManager:CreatePluginFromModuleManifest] Created new plugin [$($plugin.Name)]"), [LogType]::System)
+
+            Import-Module -Name $manifestPath -Scope Local -Verbose:$false
             $moduleCommands = Get-Command -Module $ModuleName -CommandType Cmdlet, Function, Workflow
             foreach ($command in $moduleCommands) {
 
@@ -213,6 +217,7 @@ class PluginManager {
                 # to construct the bot command
                 $cmdHelp = Get-Help -Name $command.Name
 
+                $this.Logger.Log([LogMessage]::new("[PluginManager:CreatePluginFromModuleManifest] Creating command [$($command.Name)] for new plugin [$($plugin.Name)]"), [LogType]::System)
                 $cmd = [Command]::new()
                 $cmd.Name = $command.Name
                 $cmd.Description = $cmdHelp.Synopsis
@@ -228,23 +233,22 @@ class PluginManager {
                 # Add the desired roles for this command
                 # This assumes that the roles have already been loaded in
                 # to the role manager when the plugin was loaded
+                Write-Host $CmdHelp.Role
                 if ($cmdHelp.Role) {
-                    $rolesForCmd = $this.GetRoleFromModuleCommand($cmdHelp)
+                    $rolesForCmd = @($this.GetRoleFromModuleCommand($cmdHelp))
+                    Write-Host "Roles for command: $rolesForCmd"
                     foreach($r in $rolesForCmd) {
-                        $role = $this.RoleManager.GetRole($_)
+                        $role = $this.RoleManager.GetRole($r)
                         if ($role) {
+                            $this.Logger.Log([LogMessage]::new("[PluginManager:CreatePluginFromModuleManifest] Adding role [$($role.Name)] to command [$($command.Name)]"), [LogType]::System)
                             $cmd.AddRole($role)
+                        } else {
+                            Write-Host "Couldn't get role for command"
                         }
                     }
                 }
-
-                $this.Logger.Log([LogMessage]::new("[PluginManager:CreatePluginFromModuleManifest] Creating command [$($command.Name)] for new plugin [$plugin.Name]"), [LogType]::System)
                 $plugin.AddCommand($cmd)
             }
-
-            return $plugin
-        } else {
-            return $null
         }
     }
 
@@ -278,14 +282,10 @@ class PluginManager {
     # Thee will be marked so that they DON't execute in a PowerShell job
     # as they need access to the bot internals
     [void]LoadBuiltinPlugins() {
-        $pluginsToLoad = Get-ChildItem -Path "$($this._PoshBotModuleDir)/Plugins" -Directory
-        foreach ($dir in $pluginsToLoad) {
-            $moduleName = $dir.Name
-            $manifestPath = Join-Path -Path $dir.FullName -ChildPath "$moduleName.psd1"
-            $plugin = $this.CreatePluginFromModuleManifest($moduleName, $manifestPath, $false)
-            if ($plugin) {
-                $this.AddPlugin($plugin)
-            }
-        }
+        $this.Logger.Log([LogMessage]::new('[PluginManager:LoadBuiltinPlugins] Loading builtin plugins'), [LogType]::System)
+        $builtinPlugin = Get-Item -Path "$($this._PoshBotModuleDir)/Plugins/Builtin"
+        $moduleName = $builtinPlugin.BaseName
+        $manifestPath = Join-Path -Path $builtinPlugin.FullName -ChildPath "$moduleName.psd1"
+        $this.CreatePluginFromModuleManifest($moduleName, $manifestPath, $false)
     }
 }

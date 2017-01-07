@@ -9,7 +9,10 @@ class RoleManager {
 
     [hashtable]$RoleUserMapping = @{}
 
-    RoleManager() {
+    hidden [object]$_Backend
+
+    RoleManager([object]$Backend) {
+        $this._Backend = $Backend
         $this.Initialize()
     }
 
@@ -27,14 +30,24 @@ class RoleManager {
     # Load state from storage
     [void]LoadState() {}
 
-    [Role]GetRole([string]$Role) {
-        return $this.Roles.$Role
+    [Role]GetRole([string]$RoleName) {
+        Write-Host "[RoleManager:GetRole] Getting role [$RoleName]"
+        $r = $this.Roles[$RoleName]
+        if ($r) {
+            return $r
+        } else {
+            Write-Host "[RoleManager:GetRole] Role [$RoleName] not found"
+            return $null
+        }
     }
 
     [void]AddRole([Role]$Role) {
         if (-not $this.Roles.ContainsKey($Role.Name)) {
+            Write-Verbose -Message "[RoleManager:AddRole] Adding role [$($Role.Name)]"
             $this.Roles.Add($Role.Name, $Role)
             $this.SaveState()
+        } else {
+            Write-Verbose -Message "[RoleManager:AddRole] Role [$($Role.Name)] is already loaded"
         }
     }
 
@@ -45,36 +58,47 @@ class RoleManager {
         }
     }
 
-    [void]AddUserToRole([string]$User, [string]$RoleName) {
-        if ($role = $this.GetRole($RoleName)) {
-            if ($roleUsers = $this.RoleUserMapping.$RoleName) {
-                if (-not $roleUsers.Users.ContainsKey($User)) {
-                    $roleUsers.Users.Add($user, $null)
+    [void]AddUserToRole([string]$UserId, [string]$RoleName) {
+        try {
+            $userObject = $this._Backend.GetUser($UserId)
+            if ($userObject) {
+                if ($role = $this.GetRole($RoleName)) {
+                    if ($roleUsers = $this.RoleUserMapping[$RoleName]) {
+                        if (-not $roleUsers.Users.ContainsKey($UserId)) {
+                            $roleUsers.Users.Add($UserId, $userObject)
+                        }
+                    } else {
+                        $roleUsers = [RoleUsers]::new()
+                        $roleUsers.Users.Add($UserId, $userObject)
+                        $this.RoleUserMapping.Add($RoleName, $roleUsers)
+                    }
+                    $this.SaveState()
+                } else {
+                    throw "Unknown role [$RoleName]"
                 }
             } else {
-                $roleUsers = [RoleUsers]::new()
-                $roleUsers.Users.Add($User, $null)
-                $this.RoleUserMapping.Add($RoleName, $roleUsers)
+                throw "Unable to find user [$UserId]"
             }
-            $this.SaveState()
+        } catch {
+            Write-Error $_
         }
     }
 
-    [void]RemoveUserFromRole([string]$User, [string]$RoleName) {
+    [void]RemoveUserFromRole([string]$UserId, [string]$RoleName) {
         if ($role = $this.GetRole($RoleName)) {
-            if ($roleUsers = $this.RoleUserMapping.$RoleName) {
-                if ($roleUsers.Users.ContainsKey($User)) {
-                    $roleUsers.Users.Remove($User)
+            if ($roleUsers = $this.RoleUserMapping[$RoleName]) {
+                if ($roleUsers.Users.ContainsKey($UserId)) {
+                    $roleUsers.Users.Remove($UserId)
                     $this.SaveState()
                 }
             }
         }
     }
 
-    [bool]UserInRole([string]$User, [string]$RoleName) {
+    [bool]UserInRole([string]$UserId, [string]$RoleName) {
         if ($role = $this.GetRole($RoleName)) {
-            if ($roleUsers = $this.RoleUserMapping.$RoleName) {
-                return $roleUsers.Users.ContainsKey($User)
+            if ($roleUsers = $this.RoleUserMapping[$RoleName]) {
+                return $roleUsers.Users.ContainsKey($UserId)
             } else {
                 return $false
             }
@@ -83,13 +107,30 @@ class RoleManager {
         }
     }
 
-    [string[]]GetUserRoles([string]$User) {
+    [string[]]GetUserRoles([string]$UserId) {
         $userRoles = New-Object System.Collections.ArrayList
         foreach ($role in $this.Roles.Keys) {
-            if ($this.UserInRole($User, $role)) {
+            if ($this.UserInRole($UserId, $role)) {
                 $userRoles.Add($role)
             }
         }
         return $userRoles
+    }
+
+    # Resolve a user to their Id
+    # This may be passed either a user name or Id
+    [string]ResolveUserToId([string]$Username) {
+        $id = $this._Backend.UsernameToUserId($Username)
+        if ($id) {
+            return $id
+        } else {
+            $name = $this._Backend.UserIdToUsername($Username)
+            if ($name) {
+                # We already have a valid user ID since we were able to resolve it to a username.
+                # Just return what was passed in
+                return $Username
+            }
+        }
+        return $null
     }
 }
