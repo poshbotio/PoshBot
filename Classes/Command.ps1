@@ -180,22 +180,35 @@ class Command {
         #return Start-Job @jobParams
     }
 
-    [bool]IsAuthorized([string]$User, [RoleManager]$RoleManager) {
-        $userResult = $this.AccessFilter.AuthorizeUser($user)
-        if ($userResult.Authorized) {
-            return $true
-        } else {
-            # User not explicitly authorized.
-            # Now check if any roles the user is a member of are
-            $userRoles = $RoleManager.GetUserRoles($User)
-            foreach ($userRole in $userRoles) {
-                $roleResult = $this.AccessFilter.AuthorizeRole($userRole)
-                if ($roleResult.Authorized) {
-                    return $true
-                }
-            }
-            return $false
+    [bool]IsAuthorized([string]$UserId, [RoleManager]$RoleManager) {
+
+        $userRoles = $RoleManager.GetUserRoles($UserId)
+        if (-not $userRoles) {
+            $userRoles = @('Anyone')
         }
+        foreach ($userRole in $userRoles) {
+            $result = $this.AccessFilter.AuthorizeRole($userRole)
+            if ($result.Authorized) {
+                return $true
+            }
+        }
+        return $false
+
+        # $userResult = $this.AccessFilter.AuthorizeUser($UserId)
+        # if ($userResult.Authorized) {
+        #     return $true
+        # } else {
+        #     # User not explicitly authorized.
+        #     # Now check if any roles the user is a member of are
+        #     $userRoles = $RoleManager.GetUserRoles($UserId)
+        #     foreach ($userRole in $userRoles) {
+        #         $roleResult = $this.AccessFilter.AuthorizeRole($userRole)
+        #         if ($roleResult.Authorized) {
+        #             return $true
+        #         }
+        #     }
+        #     return $false
+        # }
     }
 
     [void]Activate() {

@@ -27,10 +27,10 @@ class AccessFilter {
     [hashtable]$DenyRoles = @{}
 
     # Allow command only from these users (or from users in AllowRoles)
-    [hashtable]$AllowUsers = @{}
+    # [hashtable]$AllowUsers = @{}
 
     # Deny command to these users
-    [hashtable]$DenyUsers = @{}
+    # [hashtable]$DenyUsers = @{}
 
     # Allow command only in these rooms
     # [hashtable]$AllowRooms = @{}
@@ -59,19 +59,19 @@ class AccessFilter {
         return [CommandAuthorizationResult]::new($true)
     }
 
-    [CommandAuthorizationResult]AuthorizeUser([string]$UserId) {
+    # [CommandAuthorizationResult]AuthorizeUser([string]$UserId) {
 
-        if ($this.DenyUsers.ContainsKey($UserId)) {
-            return [CommandAuthorizationResult]::new($false, "User [$UserId] is not authorized to execute this command")
-        }
+    #     if ($this.DenyUsers.ContainsKey($UserId)) {
+    #         return [CommandAuthorizationResult]::new($false, "User [$UserId] is not authorized to execute this command")
+    #     }
 
-        if (($this.AllowUsers.Count -gt 0) -and
-           (-not $this.AllowUsers.ContainsKey($UserId))) {
-            return [CommandAuthorizationResult]::new($false, "User [$UserId] is not authorized to execute this command")
-        }
+    #     if (($this.AllowUsers.Count -gt 0) -and
+    #        (-not $this.AllowUsers.ContainsKey($UserId))) {
+    #         return [CommandAuthorizationResult]::new($false, "User [$UserId] is not authorized to execute this command")
+    #     }
 
-        return [CommandAuthorizationResult]::new($true)
-    }
+    #     return [CommandAuthorizationResult]::new($true)
+    # }
 
     # # Is a user, room or DM allowed to run this command?
     # [CommandAuthorizationResult]Authorize([string]$UserId, [string]$RoomId, [bool]$IsDM) {
@@ -135,32 +135,32 @@ class AccessFilter {
         }
     }
 
-    [void]AddAllowedUser([string]$UserId) {
-        if (-not $this.AllowUsers.ContainsKey($UserId)) {
-            $this.AllowUsers.Add($UserId, $null)
-        }
-    }
+    # [void]AddAllowedUser([string]$UserId) {
+    #     if (-not $this.AllowUsers.ContainsKey($UserId)) {
+    #         $this.AllowUsers.Add($UserId, $null)
+    #     }
+    # }
 
-    [void]RemoveAllowedUser([string]$UserId) {
-        if ($this.AllowUsers.ContainsKey($UserId)) {
-            $this.AllowUsers.Remove($UserId)
-        }
-    }
+    # [void]RemoveAllowedUser([string]$UserId) {
+    #     if ($this.AllowUsers.ContainsKey($UserId)) {
+    #         $this.AllowUsers.Remove($UserId)
+    #     }
+    # }
 
-    [void]AddDeniedUser([string]$UserId) {
-        if (-not $this.DenyUsers.ContainsKey($UserId)) {
-            $this.DenyUsers.Add($UserId, $null)
-        }
-        if ($this.AllowUsers.ContainsKey($UserId)) {
-            $this.AllowUsers.Remove($UserId)
-        }
-    }
+    # [void]AddDeniedUser([string]$UserId) {
+    #     if (-not $this.DenyUsers.ContainsKey($UserId)) {
+    #         $this.DenyUsers.Add($UserId, $null)
+    #     }
+    #     if ($this.AllowUsers.ContainsKey($UserId)) {
+    #         $this.AllowUsers.Remove($UserId)
+    #     }
+    # }
 
-    [void]RemoveDeniedUser([string]$UserId) {
-        if ($this.DenyUsers.ContainsKey($UserId)) {
-            $this.DenyUsers.Remove($UserId)
-        }
-    }
+    # [void]RemoveDeniedUser([string]$UserId) {
+    #     if ($this.DenyUsers.ContainsKey($UserId)) {
+    #         $this.DenyUsers.Remove($UserId)
+    #     }
+    # }
 
     # [void]AddAllowedRoom([string]$RoomId) {
     #     if (-not $this.AllowRooms.ContainsKey($RoomId)) {
