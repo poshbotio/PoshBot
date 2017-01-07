@@ -106,6 +106,7 @@ class Logger {
 
         $file = $this._file["$Type"]
         $this.RollLog($file, $false)
+        Write-Verbose -Message $Message.Message
         $json | Out-File -FilePath $file -Append -Encoding utf8
     }
 
