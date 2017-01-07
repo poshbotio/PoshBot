@@ -1,4 +1,7 @@
 
+Remove-Module PoshBot -Force -Verbose:$false -ErrorAction SilentlyContinue
+Import-Module $PSScriptroot\PoshBot.psd1 -Force -Verbose:$false
+
 $VerbosePreference = 'continue'
 $DebugPreference = 'continue'
 
