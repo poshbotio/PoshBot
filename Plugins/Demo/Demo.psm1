@@ -23,6 +23,8 @@ function Insult {
         Send a random insult to someone
     .EXAMPLE
         !insult -who 'bob'
+    .Role
+        Demo
     #>
     [cmdletbinding()]
     param(
@@ -46,6 +48,8 @@ function RandomFact {
         Gets a random fact
     .EXAMPLE
         !randomfact
+    .Role
+        Demo
     #>
     [cmdletbinding()]
     param()
@@ -61,6 +65,8 @@ function RandomJoke {
         Gets a random joke
     .EXAMPLE
         !randomjoke
+    .Role
+        Demo
     #>
     [cmdletbinding()]
     param()
@@ -76,6 +82,8 @@ function RandomQuote {
         Gets a quote from a famous person
     .EXAMPLE
         !randomquote
+    .Role
+        Demo
     #>
     [cmdletbinding()]
     param()
