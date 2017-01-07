@@ -106,6 +106,10 @@ PrivateData = @{
             Name = 'RoleAdmin'
             Description = 'Role administrators'
         }
+        @{
+            Name = 'Anyone'
+            Description = 'Any user'
+        }
     )
 
     PSData = @{
