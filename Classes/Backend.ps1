@@ -55,7 +55,7 @@ class Backend {
 
     [void]GetBotIdentity() {}
 
-    # Resovlve a user name to user id
+    # Resolve a user name to user id
     [void]UsernameToUserId([string]$Username) {
         # Must be extended by the specific Backend implementation
     }
