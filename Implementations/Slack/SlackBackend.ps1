@@ -422,15 +422,25 @@ class SlackBackend : Backend {
     [string]UsernameToUserId([string]$Username) {
         $Username = $Username.TrimStart('@')
         $user = (Get-SlackUser -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Name $Username -Verbose:$false -ErrorAction SilentlyContinue)
-        return $user.Id
+        if ($user) {
+            # Reload our user cache if we don't know about this user
+            if (-not $this.Users.ContainsKey($user.Id)) {
+                $this.LoadUsers()
+            }
+            return $user.Id
+        } else {
+            return $null
+        }
     }
 
     [string]UserIdToUsername([string]$UserId) {
         if ($this.Users.ContainsKey($UserId)) {
             return $this.Users[$UserId].Name
         } else {
-            $allUsers = Get-SlackUser -Token $this.Connection.Config.Credential.GetNetworkCredential().Password
-            return $allUsers | Where-Object {$_.Id -eq $UserId} | Select-Object -ExpandProperty Name
+            #$allUsers = Get-SlackUser -Token $this.Connection.Config.Credential.GetNetworkCredential().Password
+            $this.LoadUsers()
+            return $this.Userse[$UserId].Nickname
+            #return $allUsers | Where-Object {$_.Id -eq $UserId} | Select-Object -ExpandProperty Name
         }
     }
 }
