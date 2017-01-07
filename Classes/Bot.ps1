@@ -32,24 +32,31 @@ class Bot {
 
     hidden [System.Diagnostics.Stopwatch]$_Stopwatch
 
-    Bot([string]$Name) {
+    Bot([string]$Name, [Backend]$Backend, [string]$PoshBotDir) {
         $this.Name = $Name
+        $this.Backend = $Backend
+        #$this.AttachBackend($Backend)
+        $this._PoshBotDir = $PoshBotDir
         $this._Logger = [Logger]::new()
+        $this.Initialize()
     }
 
-    Bot([string]$Name, [string]$LogPath) {
+    Bot([string]$Name, [Backend]$Backend, [string]$PoshBotDir, [string]$LogPath) {
         $this.Name = $Name
+        $this.Backend = $Backend
+        #$this.AttachBackend($Backend)
+        $this._PoshBotDir = $PoshBotDir
         $this._Logger = [Logger]::new($LogPath)
+        $this.Initialize()
     }
 
     [void]Initialize() {
         # TODO
         # Load in configuration from persistent storage
 
-        $this.RoleManager = [RoleManager]::new()
+        $this.RoleManager = [RoleManager]::new($this.Backend)
         $this.RoleManager.Initialize()
         $this.PluginManager = [PluginManager]::new($this.RoleManager, $this._Logger, $this._PoshBotDir)
-        $this.PluginManager.Initialize()
         $this.Executor = [CommandExecutor]::new($this.RoleManager)
     }
 
@@ -103,11 +110,11 @@ class Bot {
         $this.Backend.Disconnect()
     }
 
-    # Attach the backend (chat network specific) implementation
-    [void]AttachBackend([Backend]$Backend) {
-        $this._Logger.Log([LogMessage]::new('[Bot:AttachBackend] Attaching backend'), [LogType]::System)
-        $this.Backend = $Backend
-    }
+    # # Attach the backend (chat network specific) implementation
+    # [void]AttachBackend([Backend]$Backend) {
+    #     $this._Logger.Log([LogMessage]::new('[Bot:AttachBackend] Attaching backend'), [LogType]::System)
+    #     $this.Backend = $Backend
+    # }
 
     # Receive an event from the backend chat network
     [Message]ReceiveMessage() {
@@ -254,16 +261,14 @@ function New-PoshBotInstance {
 
         [Backend]$Backend
     )
+    $here = $script:moduleRoot
+    $bot = [Bot]::new($Name, $Backend, $here)
+    #$bot._PoshBotDir = $script:moduleRoot
 
-    $bot = [Bot]::new($Name)
-    $bot._PoshBotDir = $script:moduleRoot
-    #$bot.LoadBuiltinPlugins()
-
-    if ($Backend) {
-        $bot.AttachBackend($Backend)
-    }
-
-    $bot.Initialize()
+    # if ($Backend) {
+    #     $bot.AttachBackend($Backend)
+    # }
+    #$bot.Initialize()
 
     return $bot
 }
