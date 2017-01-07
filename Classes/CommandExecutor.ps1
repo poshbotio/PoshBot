@@ -48,6 +48,8 @@ class CommandExecutor {
                     $r.Streams.Warning = $job.ChildJobs[0].Warning.ReadAll()
                     $r.Output = $job.ChildJobs[0].Output.ReadAll()
 
+                    Write-Verbose -Message "Command results: `n$($r | ConvertTo-Json)"
+
                     # Determine if job had any terminating errors
                     if ($job.State -eq 'Failed' -or $r.Streams.Error.Count -gt 0) {
                         $r.Success = $false
@@ -56,12 +58,47 @@ class CommandExecutor {
                     }
                 } else {
                     try {
-                        # Block here until job is complete
-                        $r.Output = $Command.Invoke($ParsedCommand, $false)
-                        $r.Success = $true
+                        $hash = $Command.Invoke($ParsedCommand, $false)
+                        write-host "$($hash | format-list | out-string)"
+
+                        #$global:poshbotcmd = $hash
+
+                        # # Wait for command to complete
+                        # $done = $hash.job.AsyncWaitHandle.WaitOne()
+
+                        # $result = $hash.ps.EndInvoke($hash.job)
+
+                        # Write-host $result
+
+                        # $r.Streams.Error = $hash.ps.Streams.Error.ReadAll()
+                        # $r.Streams.Information = $hash.ps.Streams.Information.ReadAll()
+                        # $r.Streams.Verbose = $hash.ps.Streams.Verbose.ReadAll()
+                        # $r.Streams.Warning = $hash.ps.Streams.Warning.ReadAll()
+                        # $r.Output = $result
+
+                        # Write-Verbose -Message "Command results: `n$($r | ConvertTo-Json)"
+                        # # Determine if job had any terminating errors
+                        # if ($r.Streams.Error.Count -gt 0) {
+                        #     $r.Success = $false
+                        # } else {
+                        #     $r.Success = $true
+                        # }
+
+                        $r.Streams.Error = $hash.Error
+                        $r.Streams.Information = $hash.Information
+                        $r.Streams.Warning = $hash.Warning
+                        $r.Output = $hash.Output
+                        if ($r.Streams.Error.Count -gt 0) {
+                            $r.Success = $false
+                        } else {
+                            $r.Success = $true
+                        }
+
+                        #$r.Output = $Command.Invoke($ParsedCommand, $false)
+                        #$r.Success = $true
                     } catch {
                         $r.Success = $false
-                        Write-Error $_
+                        throw $_
                     }
                 }
             }

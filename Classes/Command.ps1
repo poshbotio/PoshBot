@@ -127,13 +127,29 @@ class Command {
             }
             return (Start-Job @jobParams)
         } else {
-            $ps = [PowerShell]::Create()
-            $ps.AddScript($outer) | Out-Null
-            $ps.AddArgument($Options)
-            $job = $ps.BeginInvoke()
-            $done = $job.AsyncWaitHandle.WaitOne()
-            $result = $ps.EndInvoke($job)
-            return $result
+            $errors = $null
+            $information = $null
+            $warning = $null
+            New-Variable -Name opts -Value $options
+            $output = Invoke-Command -ScriptBlock $outer -ArgumentList $Options -ErrorVariable $errors -InformationVariable $information -WarningVariable $warning -Verbose -NoNewScope
+            #$ps = [PowerShell]::Create()
+            #$ps.AddScript($outer) | Out-Null
+            #$ps.AddArgument($Options) | Out-Null
+            #$job = $ps.BeginInvoke()
+            return @{
+                Error = $errors
+                Information = $Information
+                Output = $output
+                Warning = $warning
+            }
+            #return @{
+            #    ps = $ps
+            #    job = $job
+            #}
+            #$done = $job.AsyncWaitHandle.WaitOne()
+
+            #$result = $ps.EndInvoke($job)
+            #return $result
         }
 
         # if ($this.ModuleCommand) {
@@ -192,16 +208,13 @@ class Command {
 
     # Add a role
     [void]AddRole([Role]$Role) {
-        if (-not $this.Roles.ContainsKey($Role.Id)) {
-            $this.Roles.Add($Role.Id, $Role)
-        }
+        Write-Host "[Command:AddRole] Adding role [$($Role.Name)] to command [$($this.Name)]"]
+        $this.AccessFilter.AddAllowedRole($Role.Name)
     }
 
     # Remove a role
     [void]RemoveRole([Role]$Role) {
-        if ($this.Roles.ContainsKey($Role.Id)) {
-            $this.Roles.Remove($Role.Id, $Role)
-        }
+        $this.AccessFilter.RemoveAllowedRole($Role.Name)
     }
 
     # Returns TRUE/FALSE if this command matches a parsed command from the chat network
