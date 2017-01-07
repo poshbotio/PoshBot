@@ -409,9 +409,20 @@ class SlackBackend : Backend {
         return $this.BotId -eq $From
     }
 
+    [SlackPerson]GetUser([string]$UserId) {
+        $user = $this.Users[$UserId]
+        if ($user) {
+            return $user
+        } else {
+            $this.LoadUsers()
+            return $this.Users[$UserId]
+        }
+    }
+
     [string]UsernameToUserId([string]$Username) {
         $Username = $Username.TrimStart('@')
-        return (Get-SlackUser -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Name $Username -Verbose:$false -ErrorAction SilentlyContinue)
+        $user = (Get-SlackUser -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Name $Username -Verbose:$false -ErrorAction SilentlyContinue)
+        return $user.Id
     }
 
     [string]UserIdToUsername([string]$UserId) {
