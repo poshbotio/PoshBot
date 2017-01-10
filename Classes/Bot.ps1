@@ -15,6 +15,8 @@ class Bot {
     # List of roles loaded from plugins
     [hashtable]$Roles = @{}
 
+    [StorageProvider]$Storage
+
     [PluginManager]$PluginManager
 
     [RoleManager]$RoleManager
@@ -54,8 +56,8 @@ class Bot {
         # TODO
         # Load in configuration from persistent storage
 
-        $this.RoleManager = [RoleManager]::new($this.Backend)
-        $this.RoleManager.Initialize()
+        $this.Storage = [StorageProvider]::new()
+        $this.RoleManager = [RoleManager]::new($this.Backend, $this.Storage, $this._Logger)
         $this.PluginManager = [PluginManager]::new($this.RoleManager, $this._Logger, $this._PoshBotDir)
         $this.Executor = [CommandExecutor]::new($this.RoleManager)
     }
@@ -179,6 +181,8 @@ class Bot {
 
             $response = [Response]::new()
             $response.To = $Message.To
+
+            # Match parsed command to a command in the plugin manager
             $pluginCmd = $this.PluginManager.MatchCommand($parsedCommand)
             if ($pluginCmd) {
 
