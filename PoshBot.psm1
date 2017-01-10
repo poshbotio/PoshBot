@@ -18,6 +18,7 @@ $script:moduleRoot = $PSScriptRoot
     'AccessFilter'
     'Role'
     'Trigger'
+    'StorageProvider'
     'RoleManager'
     'Command'
     'CommandHistory'
