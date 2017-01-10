@@ -120,12 +120,15 @@ function Role-Show {
     $roleMapping = $Bot.RoleManager.RoleUserMapping[$Role]
     $members = New-Object System.Collections.ArrayList
     if ($roleMapping) {
-        $roleMapping.Users.GetEnumerator() | ForEach-Object {
-            $m = [pscustomobject][ordered]@{
-                ID = $_.Name
-                Name = $_.Value.Nickname
+        $roleMapping.GetEnumerator() | ForEach-Object {
+            $user = $bot.Backend.GetUser($_.Value)
+            if ($user) {
+                $m = [pscustomobject][ordered]@{
+                    Nickname = $user.Nickname
+                    FullName = $user.FullName
+                }
+                $members.Add($m) | Out-Null
             }
-            $members.Add($m) | Out-Null
         }
     }
 
