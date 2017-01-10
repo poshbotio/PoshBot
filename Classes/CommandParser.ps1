@@ -5,7 +5,7 @@ class ParsedCommand {
     [string]$Command = $null
     [string[]]$Tokens = @()
     [hashtable]$NamedParameters = @{}
-    [object[]]$PositionalParameters = @()
+    [System.Collections.ArrayList]$PositionalParameters = (New-Object System.Collections.ArrayList)
     [System.Management.Automation.FunctionInfo]$ModuleCommand = $null
 
 }
@@ -13,26 +13,51 @@ class ParsedCommand {
 class CommandParser {
     [ParsedCommand] static Parse([string]$CommandString) {
 
+        $CommandString = $CommandString.Trim()
+
+        # Everything to the left of a named parameter will be used
+        # to determine the command name
+        $command = ($CommandString -Split '--')[0]
+        $commandParams = '--' + ($CommandString -Split '--')[1]
+
         # The command COULD be in the form of <command> or <plugin:command>
         # Figure out which one
-        $pluginCmd = $CommandString.Split(' ')[0]
-        $plugin = $pluginCmd.Split(':')[0]
-        $command = $pluginCmd.Split(':')[1]
-        # Not fully qualified
+        $plugin = $command.Split(':')[0]
+        $command = $command.Split(':')[1]
         if (-not $command) {
             $command = $plugin
             $plugin = $null
         }
 
-        $tokens = $CommandString | Get-StringToken
-        $r = ConvertFrom-ParameterToken -Tokens $Tokens
+        # Determine if we're trying to run a subcommand
+        # and change command name to <primarycommand-subcommand>
+        $arrCmd = $command.Split(' ')
+        $primaryCmd = $arrCmd[0]
+        $subCmd = $arrCmd[1]
+        if ($subCmd) {
+            $command = ($primaryCmd + '-' + $subCmd)
+        } else {
+            $command = $primaryCmd
+        }
+
         $parsedCommand = [ParsedCommand]::new()
         $parsedCommand.CommandString = $CommandString
         $parsedCommand.Plugin = $plugin
         $parsedCommand.Command = $command
-        $parsedCommand.Tokens = $r.Tokens
-        $parsedCommand.NamedParameters = $r.NamedParameters
-        $parsedCommand.PositionalParameters = $r.PositionalParameters
+
+        # Parse parameters
+        if ($commandParams) {
+            $tokens = $CommandString | Get-StringToken
+            try {
+                $r = ConvertFrom-ParameterToken -Tokens $Tokens
+                $parsedCommand.Tokens = $r.Tokens
+                $parsedCommand.NamedParameters = $r.NamedParameters
+            } catch {
+                Write-Error "Error parsing command [$CommandString]: $_"
+            }
+        }
+
         return $parsedCommand
     }
 }
+
