@@ -30,6 +30,8 @@ class Command {
     # Unique (to the plugin) name of the command
     [string]$Name
 
+    [hashtable]$Subcommands = @{}
+
     # The type of message this command is designed to respond to
     # Most of the type, this will be EMPTY so the
     [string]$MessageType
@@ -219,6 +221,20 @@ class Command {
         $this.Enabled = $false
     }
 
+    [void]AddSubCommand([Command]$Command) {
+        $subCommandName = $null
+        if ($Command.Name.Contains('-')) {
+            $subCommandName = $Command.Name.Split('-')[0]
+        } elseIf ($Command.Name.Contains('_')) {
+            $subCommandName = $Command.Name.Split('_')[0]
+        }
+        if ($subCommandName) {
+            if (-not $this.Subcommands.ContainsKey($subCommandName)) {
+                $this.Subcommands.Add($subCommandName, $Command)
+            }
+        }
+    }
+
     # Add a role
     [void]AddRole([Role]$Role) {
         Write-Host "[Command:AddRole] Adding role [$($Role.Name)] to command [$($this.Name)]"]
@@ -235,9 +251,9 @@ class Command {
         switch ($this.Trigger.Type) {
             'Command' {
                 if ($this.Trigger.Trigger -eq $ParsedCommand.Command) {
-                    return $true
-                } else {
-                    return $false
+                        return $true
+                    } else {
+                        return $false
                 }
             }
             'Regex' {
@@ -248,9 +264,8 @@ class Command {
                 }
             }
         }
-         return $false
+        return $false
     }
-
 }
 
 function New-PoshBotCommand {

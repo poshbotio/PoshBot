@@ -139,15 +139,46 @@ class PluginManager {
                 return $null
             }
         } else {
+
             # Check all regular plugins/commands now
             foreach ($pluginKey in $this.Plugins.Keys) {
                 $plugin = $this.Plugins[$pluginKey]
                 foreach ($commandKey in $plugin.Commands.Keys) {
                     $command = $plugin.Commands[$commandKey]
                     if ($command.TriggerMatch($ParsedCommand)) {
-                        $this.Logger.Log([LogMessage]::new("[PluginManager:MatchCommand] Matched parsed command [$($ParsedCommand.Plugin)`:$($ParsedCommand.Command)] to plugin command [$pluginKey`:$commandKey]"), [LogType]::System)
-                        return [PluginCommand]::new($plugin, $command)
-                        return $command
+
+                        # # Check if this is a subcommand
+                        # if ($command.SubCommands.Count -gt 0) {
+                        #     $this.Logger.Log([LogMessage]::new("[PluginManager:MatchCommand] This command has subcommands"), [LogType]::System)
+
+                        #     # Is subcommand given?
+                        #     if ($ParsedCommand.PositionalParameters.Count -gt 0) {
+
+                        #         # The subcommand name should be the second token of the command string
+                        #         $subCommandName = $ParsedCommand.Tokens[1]
+
+                        #         # Remove the subCommandName from the PositionalParameters collection so it doesn't get passed
+                        #         # as an argument when invoking the command
+                        #         $ParsedCommand.PositionalParameters = @($ParsedCommand.PositionalParameters | where {$_ -ne $subCommandName})
+
+                        #         $this.Logger.Log([LogMessage]::new("[PluginManager:MatchCommand] Looking for subcommand [$subCommandName]"), [LogType]::System)
+
+                        #         foreach ($subCommand in $command.Subcommands.GetEnumerator()) {
+                        #             $this.Logger.Log([LogMessage]::new("[PluginManager:MatchCommand] looking for [$subCommandName]"), [LogType]::System)
+                        #             if ($subCommand.Value.Name -eq $subCommandName) {
+                        #                 $this.Logger.Log([LogMessage]::new("[PluginManager:MatchCommand] Found subcommand [$subCommandName]"), [LogType]::System)
+                        #                 return [PluginCommand]::new($plugin, $subCommand.Value)
+                        #             }
+                        #         }
+                        #     }
+
+                        #     # The command has subcommands bet we are invoking the primary command
+                        #     $this.Logger.Log([LogMessage]::new("[PluginManager:MatchCommand] Matched parsed command [$($ParsedCommand.Plugin)`:$($ParsedCommand.Command)] to plugin command [$pluginKey`:$commandKey]"), [LogType]::System)
+                        #     return [PluginCommand]::new($plugin, $command)
+                        # } else {
+                            $this.Logger.Log([LogMessage]::new("[PluginManager:MatchCommand] Matched parsed command [$($ParsedCommand.Plugin)`:$($ParsedCommand.Command)] to plugin command [$pluginKey`:$commandKey]"), [LogType]::System)
+                            return [PluginCommand]::new($plugin, $command)
+                        #}
                     }
                 }
             }
@@ -209,6 +240,17 @@ class PluginManager {
             $moduleCommands = Get-Command -Module $ModuleName -CommandType Cmdlet, Function, Workflow
             foreach ($command in $moduleCommands) {
 
+                # # See if this command should be a subcommand
+                # $isSubcommand = $this.IsSubcommand($Command.Name)
+                # $primaryCommandName = $null
+                # #$subCommandName = $null
+                # $subCommandTrigger = $null
+                # if ($isSubcommand) {
+                #     $primaryCommandName = $Command.Name.Split('-')[0].Split('_')[0]
+                #     $subCommandTrigger = $Command.Name.Replace('-', ' ').Replace('_', ' ')
+                #     $this.Logger.Log([LogMessage]::new("[PluginManager:CreatePluginFromModuleManifest] Command [$($command.Name)] is a subcommand of [$primaryCommandName] "), [LogType]::System)
+                # }
+
                 # Get the command help so we can pull information from it
                 # to construct the bot command
                 $cmdHelp = Get-Help -Name $command.Name
@@ -243,10 +285,35 @@ class PluginManager {
                         }
                     }
                 }
+
+                # If this is a subcommand, attach it to the primary command
+                # Subcommands will also be in the plugin manager command list
+                # and can be invoked directly with a fully qualified command name as well (plugin:command-subcommand)
+                # if ($isSubcommand) {
+                #     $cmd.Trigger.Type = [TriggerType]::Regex
+                #     $cmd.Trigger.Trigger = ("^$subCommandTrigger").Replace(' ', '\s')
+                #     $primaryCommand = $plugin.Commands[$primaryCommandName]
+                #     if ($primaryCommand) {
+                #         if (-not $primaryCommand.Subcommands.ContainsKey($command.Name)) {
+                #             #$cmd.Name = $subCommandName
+                #             $this.Logger.Log([LogMessage]::new("[PluginManager:CreatePluginFromModuleManifest] Adding command [$($command.Name)] as a subcommand to [$primaryCommandName] "), [LogType]::System)
+                #             $primaryCommand.Subcommands.Add($command.Name, $cmd)
+                #         }
+                #     } else {
+                #         # Primary command not found
+                #     }
+                # }
+
                 $plugin.AddCommand($cmd)
             }
         }
     }
+
+    # Subcommands are identified with either a '-' or '_' in the
+    # function name
+    # [bool]IsSubcommand([string]$Name) {
+    #     return ($Name.Contains('-') -or $Name.Contains('_'))
+    # }
 
     # Return roles defined in module manifest
     [Role[]]GetRoleFromModuleManifest($Manifest) {
