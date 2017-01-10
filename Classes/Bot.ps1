@@ -58,7 +58,7 @@ class Bot {
 
         $this.Storage = [StorageProvider]::new()
         $this.RoleManager = [RoleManager]::new($this.Backend, $this.Storage, $this._Logger)
-        $this.PluginManager = [PluginManager]::new($this.RoleManager, $this._Logger, $this._PoshBotDir)
+        $this.PluginManager = [PluginManager]::new($this.RoleManager, $this.Storage, $this._Logger, $this._PoshBotDir)
         $this.Executor = [CommandExecutor]::new($this.RoleManager)
     }
 

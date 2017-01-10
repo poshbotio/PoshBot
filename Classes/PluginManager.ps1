@@ -5,10 +5,12 @@ class PluginManager {
     [hashtable]$Commands = @{}
     hidden [string]$_PoshBotModuleDir
     [RoleManager]$RoleManager
+    [StorageProvider]$_Storage
     [Logger]$Logger
 
-    PluginManager([RoleManager]$RoleManager, [Logger]$Logger, [string]$PoshBotModuleDir) {
+    PluginManager([RoleManager]$RoleManager, [StorageProvider]$Storage, [Logger]$Logger, [string]$PoshBotModuleDir) {
         $this.RoleManager = $RoleManager
+        $this._Storage = $Storage
         $this.Logger = $Logger
         $this._PoshBotModuleDir = $PoshBotModuleDir
         $this.Initialize()
@@ -16,8 +18,38 @@ class PluginManager {
 
     # Initialize the plugin manager
     [void]Initialize() {
-        $this.Logger.Log([LogMessage]::new('[PluginManager:Initialize] Initializing Plugin Manager'), [LogType]::System)
+        $this.Logger.Log([LogMessage]::new('[PluginManager:Initialize] Initializing'), [LogType]::System)
+        $this.LoadState()
         $this.LoadBuiltinPlugins()
+    }
+
+    [void]LoadState() {
+        $this.Logger.Log([LogMessage]::new('[PluginManager:SaveState] Loading plugin state from storage'), [LogType]::System)
+
+        $pluginsToLoad = $this._Storage.GetConfig('plugins')
+        if ($pluginsToLoad) {
+            $pluginsToLoad.GetEnumerator() | ForEach-Object {
+                $pluginName = $_.Value.Name
+                $manifestPath = $_.Value.ManifestPath
+                $this.CreatePluginFromModuleManifest($pluginName, $manifestPath, $true)
+            }
+        }
+    }
+
+    [void]SaveState() {
+        $this.Logger.Log([LogMessage]::new('[PluginManager:SaveState] Saving loaded plugin state to storage'), [LogType]::System)
+
+        # Skip saving builtin plugin as it will always be loaded at initialization
+        $pluginsToSave = @{}
+        $this.Plugins.GetEnumerator() | Where {$_.Value.Name -ne 'Builtin'} | ForEach-Object {
+            $p = @{
+                Name = $_.Name
+                ManifestPath = $_.Value._ManifestPath
+                Enabled = $_.Value.Enabled
+            }
+            $pluginsToSave.Add($_.Name, $p)
+            $this._Storage.SaveConfig('plugins', $pluginsToSave)
+        }
     }
 
     # TODO
@@ -27,7 +59,6 @@ class PluginManager {
         if (Test-Path -Path $ManifestPath) {
             $moduleName = (Get-Item -Path $ManifestPath).BaseName
             $this.CreatePluginFromModuleManifest($moduleName, $ManifestPath, $true)
-            $this.LoadCommands()
         } else {
             Write-Error -Message "Module manifest path [$manifestPath] not found"
         }
@@ -47,8 +78,9 @@ class PluginManager {
         }
 
         # # Reload commands and role from all currently loading (and active) plugins
-        #$this.LoadCommands()
-        # $this.LoadRoles()
+        $this.LoadCommands()
+
+        $this.SaveState()
     }
 
     # Remove a plugin from the bot
@@ -77,6 +109,8 @@ class PluginManager {
 
         # Reload commands from all currently loading (and active) plugins
         $this.LoadCommands()
+
+        $this.SaveState()
     }
 
     # Activate a plugin
@@ -91,6 +125,8 @@ class PluginManager {
 
         # Reload commands from all currently loading (and active) plugins
         $this.LoadCommands()
+
+        $this.SaveState()
     }
 
     # Deactivate a plugin
@@ -105,6 +141,8 @@ class PluginManager {
 
         # # Reload commands from all currently loading (and active) plugins
         $this.LoadCommands()
+
+        $this.SaveState()
     }
 
      # Match a parsed command to a command in one of the currently loaded plugins
@@ -307,6 +345,8 @@ class PluginManager {
 
                 $plugin.AddCommand($cmd)
             }
+            $this.LoadCommands()
+            $this.SaveState()
         }
     }
 
