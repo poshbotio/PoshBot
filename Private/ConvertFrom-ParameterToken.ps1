@@ -9,7 +9,7 @@ function ConvertFrom-ParameterToken {
         $r = [pscustomobject]@{
             Tokens = $Tokens
             NamedParameters = @{}
-            PositionalParameters = @()
+            PositionalParameters = (New-Object System.Collections.ArrayList)
         }
 
     }
@@ -44,7 +44,7 @@ function ConvertFrom-ParameterToken {
                 # the previous item ISN'T and parameter name (--param)
 
                 if (($Tokens[$x-1] -notmatch '^--') -and ($x-1 -ge 0)) {
-                    $r.PositionalParameters += $p
+                    $r.PositionalParameters.Add($p) | Out-Null
                 }
             }
         }
