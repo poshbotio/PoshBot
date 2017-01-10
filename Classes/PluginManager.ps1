@@ -225,6 +225,7 @@ class PluginManager {
         if ($manifest) {
             $plugin = [Plugin]::new()
             $plugin.Name = $ModuleName
+            $plugin._ManifestPath = $ManifestPath
 
             # Create new roles from metadata in the module manifest
             $pluginRoles = $this.GetRoleFromModuleManifest($manifest)

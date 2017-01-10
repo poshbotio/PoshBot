@@ -40,6 +40,8 @@ class Plugin {
     # Roles that come bundles with plugin
     [hashtable]$Roles = @{}
 
+    hidden [string]$_ManifestPath
+
     Plugin() {
         $this.Name = $this.GetType().Name
         $this.Enabled = $true
