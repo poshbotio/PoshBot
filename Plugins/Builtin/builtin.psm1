@@ -34,10 +34,10 @@ function Help {
 
     # If we asked for help about a particular plugin or command, filter on it
     if ($PSBoundParameters.ContainsKey('Filter')) {
-        $availableCommands = $availableCommands.Where({($_.Plugin -like $Filter) -or ($_.Name -like $Filter)})
+        $availableCommands = $availableCommands.Where({$_.Command -like "*$Filter*"})
     }
 
-    Write-Output ($availableCommands | Format-Table -AutoSize | Out-String -Width 150)
+    Write-Output ($availableCommands | Format-Table -AutoSize | Out-String -Width 200)
 }
 
 function Status {
@@ -68,12 +68,12 @@ function Status {
     $status
 }
 
-function Roles {
+function Role-List {
     <#
     .SYNOPSIS
         Get all roles
     .EXAMPLE
-        !roles
+        !role list
     .ROLE
         Admin
         RoleAdmin
@@ -93,12 +93,12 @@ function Roles {
     Write-Output ($roles | Format-Table -AutoSize | Out-String -Width 150)
 }
 
-function RoleShow {
+function Role-Show {
     <#
     .SYNOPSIS
         Show details about a role
     .EXAMPLE
-        !roleshow --role <rolename>
+        !role show --role <rolename>
     .ROLE
         Admin
         RoleAdmin
@@ -134,12 +134,12 @@ function RoleShow {
     Write-Output "Members:`n$($Members | Format-Table | Out-String)"
 }
 
-function AddUserToRole {
+function Role-AddUser {
     <#
     .SYNOPSIS
         Add a user to a role
     .EXAMPLE
-        !roleadd --role <rolename> --user <username>
+        !role adduser --role <rolename> --user <username>
     .ROLE
         Admin
         RoleAdmin
@@ -174,12 +174,12 @@ function AddUserToRole {
     }
 }
 
-function Plugins {
+function Plugin-List {
   <#
     .SYNOPSIS
         Get all installed plugins
     .EXAMPLE
-        !plugins
+        !plugin list
     .ROLE
         Admin
         PluginAdmin
