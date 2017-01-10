@@ -1,5 +1,5 @@
-# The Plugin class holds a list of commands that can be executed
-# and manages the execution of them.
+# The Plugin class holds a collection of related commands that came
+# from a PowerShell module
 
 # Some custom exceptions dealing with plugins
 class PluginException : Exception {
@@ -29,110 +29,26 @@ class ModuleCommand {
 
 class Plugin {
 
-    # Unique ID for the plugin
-    #[string]$Id
-
     # Unique name for the plugin
     [string]$Name
 
     # Commands bundled with plugin
     [hashtable]$Commands = @{}
 
-    [int]$HistoryToKeep
-
-    # Recent history of commands executed
-    [CommandHistory[]]$History = @()
-
     [bool]$Enabled
 
     # Roles that come bundles with plugin
     [hashtable]$Roles = @{}
 
-    # Plugin commands get executed as PowerShell jobs
-    # This is to keep track of those
-    $JobTracker = @{}
-
     Plugin() {
         $this.Name = $this.GetType().Name
-        $this.HistoryToKeep = 100
         $this.Enabled = $true
     }
 
     Plugin([string]$Name) {
-        #$this.Id = $Id
         $this.Name = $Name
-        $this.HistoryToKeep = 100
         $this.Enabled = $true
     }
-
-    # # Invoke a command
-    # # Should this live in the Plugin or in the main bot class?
-    # [CommandResult]InvokeCommand([Command]$Command, [ParsedCommand]$ParsedCommand, [String]$CallerId) {
-
-    #     # Our result
-    #     $r = [CommandResult]::New()
-
-    #     # Find the command
-    #     $existingCommand = $this.FindCommand($Command)
-    #     if (-not $existingCommand) {
-    #         $r.Success = $false
-    #         $r.Errors += [CommandNotFoundException]::New("Command [$($Command.Name)] not found in plugin [$($this.Name)]")
-    #         return $r
-    #     }
-
-    #     if (-not $existingCommand.Enabled) {
-    #         throw [CommandDisabled]::New("Command [$($Command.Name)] is disabled")
-    #     }
-
-    #     # Verify that the caller can execute this command and then execute if authorized
-    #     #if ($existingCommand.Authorized($CallerId)) {
-    #     if ($existingCommand.IsAuthorized($CallerId)) {
-    #         $jobDuration = Measure-Command -Expression {
-    #             if ($existingCommand.AsJob) {
-    #                 $job = $existingCommand.Invoke($ParsedCommand, $true)
-
-    #                 # TODO
-    #                 # Tracking the job will be used later so we can continue on
-    #                 # without having to wait for the job to complete
-    #                 #$this.TrackJob($job)
-
-    #                 $job | Wait-Job
-
-    #                 # Capture all the streams
-    #                 $r.Streams.Error = $job.ChildJobs[0].Error.ReadAll()
-    #                 $r.Streams.Information = $job.ChildJobs[0].Information.ReadAll()
-    #                 $r.Streams.Verbose = $job.ChildJobs[0].Verbose.ReadAll()
-    #                 $r.Streams.Warning = $job.ChildJobs[0].Warning.ReadAll()
-    #                 $r.Output = $job.ChildJobs[0].Output.ReadAll()
-
-    #                 # Determine if job had any terminating errors
-    #                 if ($job.State -eq 'Failed' -or $r.Streams.Error.Count -gt 0) {
-    #                     $r.Success = $false
-    #                 } else {
-    #                     $r.Success = $true
-    #                 }
-    #             } else {
-    #                 try {
-    #                     # Block here until job is complete
-    #                     $r.Output = $existingCommand.Invoke($ParsedCommand, $false)
-    #                     $r.Success = $true
-    #                 } catch {
-    #                     $r.Success = $false
-    #                     Write-Error $_
-    #                 }
-    #             }
-    #         }
-    #         $r.Duration = $jobDuration
-
-    #         # Add command result to history
-    #         $this.AddToHistory($Command.Name, $CallerId, $r)
-    #     } else {
-    #         $r.Success = $false
-    #         $r.Authorized = $false
-    #         $r.Errors += [CommandNotAuthorized]::New("Command [$($Command.Name)] was not authorized for caller [$($CallerId)]")
-    #     }
-    #     return $r
-    # }
 
     # Find the command
     [Command]FindCommand([Command]$Command) {
@@ -205,20 +121,6 @@ class Plugin {
             $this.Roles.Remove($Role.Name, $Role)
         }
     }
-
-    # # Add command result to history
-    # [void]AddToHistory([string]$CommandName, [string]$CallerId, [CommandResult]$Result) {
-    #     $this.History += [CommandHistory]::New($CommandName, $CallerId, $Result)
-
-    #     # TODO
-    #     # Implement rolling history
-    # }
-
-    # [void]TrackJob($job) {
-    #     if (-not $this.JobTracker.ContainsKey($job.Name)) {
-    #         $this.JobTracker.Add($job.Name, $job)
-    #     }
-    # }
 
     # Activate plugin
     [void]Activate() {
