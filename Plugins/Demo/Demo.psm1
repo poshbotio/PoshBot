@@ -2,11 +2,26 @@
 function Random {
     <#
     .SYNOPSIS
-        Get a random number
+        Get a random thing
     .EXAMPLE
         !random
+    #>
+    [cmdletbinding()]
+    param()
+
+    Write-Output "A random what?"
+    Write-Output "Sub commands:"
+    Write-Output "random insult`nrandom fact`nrandom joke`nrandom quote"
+}
+
+function Random-number {
+    <#
+    .SYNOPSIS
+        Get a random number
     .EXAMPLE
-        !random -min 42 -Max 8675309
+        !random number
+    .EXAMPLE
+        !random number -min 42 -Max 8675309
     #>
     [cmdletbinding()]
     param(
@@ -17,12 +32,12 @@ function Random {
     Get-Random -Minimum $min -Maximum $Max
 }
 
-function Insult {
+function Random-Insult {
     <#
     .SYNOPSIS
         Send a random insult to someone
     .EXAMPLE
-        !insult -who 'bob'
+        !random insult -who 'bob'
     .Role
         Demo
     #>
@@ -42,12 +57,12 @@ function Insult {
     }
 }
 
-function RandomFact {
+function Random-Fact {
     <#
     .SYNOPSIS
         Gets a random fact
     .EXAMPLE
-        !randomfact
+        !random fact
     .Role
         Demo
     #>
@@ -59,12 +74,12 @@ function RandomFact {
     return $fact
 }
 
-function RandomJoke {
+function Random-Joke {
     <#
     .SYNOPSIS
         Gets a random joke
     .EXAMPLE
-        !randomjoke
+        !random joke
     .Role
         Demo
     #>
@@ -76,12 +91,12 @@ function RandomJoke {
     return $joke
 }
 
-function RandomQuote {
+function Random-Quote {
     <#
     .SYNOPSIS
         Gets a quote from a famous person
     .EXAMPLE
-        !randomquote
+        !random quote
     .Role
         Demo
     #>
