@@ -51,9 +51,9 @@ $bot = New-PoshBotInstance -Name 'SlackBot' -Backend $backend
 
 # Create a new plugin from a PowerShell module
 
-$moduleName = 'demo'
-$manifestPath = "$PSScriptRoot\Plugins\$moduleName\$($moduleName).psd1"
-$bot | Add-PoshBotPlugin -ModuleManifest $manifestPath
+#$moduleName = 'demo'
+#$manifestPath = "$PSScriptRoot\Plugins\$moduleName\$($moduleName).psd1"
+#$bot | Add-PoshBotPlugin -ModuleManifest $manifestPath
 
 
 # $demoPlugin =  New-PoshBotPlugin -Name 'demo'
