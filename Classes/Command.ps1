@@ -133,16 +133,16 @@ class Command {
             $information = $null
             $warning = $null
             New-Variable -Name opts -Value $options
-            $output = Invoke-Command -ScriptBlock $outer -ArgumentList $Options -ErrorVariable $errors -InformationVariable $information -WarningVariable $warning -Verbose -NoNewScope
+            $output = Invoke-Command -ScriptBlock $outer -ArgumentList $Options -ErrorVariable errors -InformationVariable information -WarningVariable warning -Verbose -NoNewScope
             #$ps = [PowerShell]::Create()
             #$ps.AddScript($outer) | Out-Null
             #$ps.AddArgument($Options) | Out-Null
             #$job = $ps.BeginInvoke()
             return @{
-                Error = $errors
-                Information = $Information
+                Error = @($errors)
+                Information = @($Information)
                 Output = $output
-                Warning = $warning
+                Warning = @($warning)
             }
             #return @{
             #    ps = $ps

@@ -25,7 +25,11 @@ class CommandExecutor {
         $r = [CommandResult]::New()
 
         if (-not $Command.Enabled) {
-            throw [CommandDisabled]::New("Command [$($Command.Name)] is disabled")
+            $err = [CommandDisabled]::New("Command [$($Command.Name)] is disabled")
+            $r.Success = $false
+            $r.Errors += $err
+            Write-Error -Exception $err
+            return $r
         }
 
         # Verify that the caller can execute this command and execute if authorized
@@ -84,11 +88,12 @@ class CommandExecutor {
                         #     $r.Success = $true
                         # }
 
+                        $r.Errors = $hash.Error
                         $r.Streams.Error = $hash.Error
                         $r.Streams.Information = $hash.Information
                         $r.Streams.Warning = $hash.Warning
                         $r.Output = $hash.Output
-                        if ($r.Streams.Error.Count -gt 0) {
+                        if ($r.Errors.Count -gt 0) {
                             $r.Success = $false
                         } else {
                             $r.Success = $true
@@ -98,14 +103,15 @@ class CommandExecutor {
                         #$r.Success = $true
                     } catch {
                         $r.Success = $false
-                        throw $_
+                        $r.Errors = $_.Exception.Message
+                        $r.Streams.Error = $_.Exception.Message
                     }
                 }
             }
             $r.Duration = $jobDuration
 
             # Add command result to history
-            $this.AddToHistory($Command.Name, $UserId, $r)
+            $this.AddToHistory($Command.Name, $UserId, $r, $ParsedCommand)
         } else {
             $r.Success = $false
             $r.Authorized = $false
@@ -121,8 +127,8 @@ class CommandExecutor {
     }
 
     # Add command result to history
-    [void]AddToHistory([string]$CommandName, [string]$UserId, [CommandResult]$Result) {
-        $this.History += [CommandHistory]::New($CommandName, $UserId, $Result)
+    [void]AddToHistory([string]$CommandName, [string]$UserId, [CommandResult]$Result, [ParsedCommand]$ParsedCommand) {
+        $this.History += [CommandHistory]::New($CommandName, $UserId, $Result, $ParsedCommand)
 
         # TODO
         # Implement rolling history

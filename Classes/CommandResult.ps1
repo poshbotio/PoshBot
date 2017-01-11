@@ -10,7 +10,7 @@ class Stream {
 # Represents the result of running a command
 class CommandResult {
     [bool]$Success
-    [exception[]]$Errors = @()
+    [object[]]$Errors = @()
     [object[]]$Output = @()
     [Stream]$Streams = [Stream]::new()
     [bool]$Authorized = $true
