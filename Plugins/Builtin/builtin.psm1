@@ -178,7 +178,7 @@ function Role-AddUser {
 }
 
 function Plugin-List {
-  <#
+    <#
     .SYNOPSIS
         Get all installed plugins
     .EXAMPLE
@@ -203,6 +203,59 @@ function Plugin-List {
         }
     }
     Write-Output ($plugins | Format-List | Out-String -Width 150)
+}
+
+function Plugin-Show {
+    <#
+    .SYNOPSIS
+        Get the details of a specific plugin
+    .EXAMPLE
+        !plugin show --plugin <plugin name>
+    .ROLE
+        Admin
+        PluginAdmin
+    #>
+    [cmdletbinding()]
+    param(
+        [parameter(Mandatory)]
+        $Bot,
+
+        [parameter(Mandatory)]
+        [string]$Plugin
+    )
+
+    $p = $Bot.PluginManager.Plugins[$Plugin]
+    if ($p) {
+        $r = [pscustomobject]@{
+            Name = $P.Name
+            Enabled = $p.Enabled
+            CommandCount = $p.Commands.Count
+            Roles = $p.Roles.Keys
+            Commands = $p.Commands
+        }
+
+        Write-Output "Name: $($r.Name)"
+        Write-Output "Enabled: $($r.Enabled)"
+        Write-Output "CommandCount: $($r.CommandCount)"
+        Write-Output "Roles: `n$($r.Roles | Format-List | Out-String)"
+        $fields = @(
+            @{
+                Expression = {$_.Name}
+                Label = 'Name'
+            }
+            @{
+                Expression = {$_.Value.Description}
+                Label = 'Description'
+            }
+            @{
+                Expression = {$_.Value.HelpText}
+                Label = 'Trigger'
+            }
+        )
+        Write-Output "Commands: `n$($r.Commands.GetEnumerator() | Select-Object -Property $fields | Format-Table -AutoSize | Out-String)"
+    } else {
+        Write-Warning "Plugin [$Plugin] not found."
+    }
 }
 
 function About {
