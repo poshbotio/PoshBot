@@ -258,6 +258,76 @@ function Plugin-Show {
     }
 }
 
+function Plugin-Enable {
+    <#
+    .SYNOPSIS
+        Enable a currently loaded plugin
+    .EXAMPLE
+        !plugin enable --plugin <plugin name>
+    .ROLE
+        Admin
+        PluginAdmin
+    #>
+    [cmdletbinding()]
+    param(
+        [parameter(Mandatory)]
+        $Bot,
+
+        [parameter(Mandatory)]
+        [string]$Plugin
+    )
+
+    if ($Plugin -ne 'Builtin') {
+        if ($p = $bot.PluginManager.Plugins[$Plugin]) {
+            try {
+                $bot.PluginManager.ActivatePlugin($p)
+                Write-Output "Plugin [$Plugin] activated. All commands in this plugin are now enabled."
+            } catch {
+                Write-Error $_
+            }
+        } else {
+            Write-Warning "Plugin [$Plugin] not found."
+        }
+    } else {
+        Write-Error -Message "Builtin plugins can't be disabled so no need to enable them."
+    }
+}
+
+function Plugin-Disable {
+    <#
+    .SYNOPSIS
+        Disable a currently loaded plugin
+    .EXAMPLE
+        !plugin disable --plugin <plugin name>
+    .ROLE
+        Admin
+        PluginAdmin
+    #>
+    [cmdletbinding()]
+    param(
+        [parameter(Mandatory)]
+        $Bot,
+
+        [parameter(Mandatory)]
+        [string]$Plugin
+    )
+
+    if ($Plugin -ne 'Builtin') {
+        if ($p = $bot.PluginManager.Plugins[$Plugin]) {
+            try {
+                $bot.PluginManager.DeactivatePlugin($p)
+                Write-Output "Plugin [$Plugin] deactivated. All commands in this plugin are now disabled."
+            } catch {
+                Write-Error $_
+            }
+        } else {
+            Write-Warning "Plugin [$Plugin] not found."
+        }
+    } else {
+        Write-Error -Message "Sorry, builtin plugins can't be disabled. It's for your own good :)"
+    }
+}
+
 function About {
     [cmdletbinding()]
     param(
