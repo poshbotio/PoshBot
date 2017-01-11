@@ -203,7 +203,11 @@ class Bot {
                         # TODO
                         # Handle this better
                         $response.Severity = [Severity]::Error
-                        $response.Text = '[Bot:HandleMessage] Something bad happened :('
+                        if ($result.Errors.Count -gt 0) {
+                            $response.Text = $result.Errors | Out-String
+                        } else {
+                            $response.Text = 'Something bad happened :('
+                        }
                     }
                 } else {
                     $response.Text = $($result.Output | Format-List * | Out-String)
