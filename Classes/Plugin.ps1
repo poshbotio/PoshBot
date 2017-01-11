@@ -124,14 +124,20 @@ class Plugin {
         }
     }
 
-    # Activate plugin
+    # Activate plugin and all commands
     [void]Activate() {
         $this.Enabled = $true
+        $this.Commands.GetEnumerator() | ForEach-Object {
+            $_.Value.Activate()
+        }
     }
 
-    # Deactivate plugin
+    # Deactivate plugin and all commands
     [void]Deactivate() {
         $this.Enabled = $false
+        $this.Commands.GetEnumerator() | ForEach-Object {
+            $_.Value.Deactivate()
+        }
     }
 }
 
