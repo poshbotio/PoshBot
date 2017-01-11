@@ -289,7 +289,7 @@ function Plugin-Enable {
             Write-Warning "Plugin [$Plugin] not found."
         }
     } else {
-        Write-Error -Message "Builtin plugins can't be disabled so no need to enable them."
+        Write-Output -Message "Builtin plugins can't be disabled so no need to enable them."
     }
 }
 
