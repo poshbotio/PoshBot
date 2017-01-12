@@ -33,6 +33,15 @@ class CommandExecutor {
             return $r
         }
 
+        # Verify that all mandatory parameters have been provided
+        if (-not $this.ValidateMandatoryParameters($ParsedCommand, $Command)) {
+            $err = [CommandRequirementsNotMet]::New("Mandatory parameters for [$($Command.Name)] not provided.`nHelpText: $($Command.HelpText)")
+            $r.Success = $false
+            $r.Errors += $err
+            Write-Error -Exception $err
+            return $r
+        }
+
         # Verify that the caller can execute this command and execute if authorized
         if ($Command.IsAuthorized($UserId, $this.RoleManager)) {
             $jobDuration = Measure-Command -Expression {
@@ -133,6 +142,27 @@ class CommandExecutor {
 
         # TODO
         # Implement rolling history
+    }
+
+    # Validate that all mandatory parameters have been provided
+    [bool]ValidateMandatoryParameters([ParsedCommand]$ParsedCommand, [Command]$Command) {
+        $functionInfo = $Command.FunctionInfo
+        $matchedParamSet = $null
+
+        Write-Host "$($ParsedCommand.NamedParameters | out-string)"
+
+        foreach ($parameterSet in $functionInfo.ParameterSets) {
+            $mandatoryParameters = ($parameterSet.Parameters | where IsMandatory -eq $true).Name
+            if ($mandatoryParameters) {
+                Write-Host $mandatoryParameters
+                if ( -not @($mandatoryParameters| where {$ParsedCommand.NamedParameters.Keys -notcontains $_}).Count) {
+                    return $true
+                }
+            } else {
+                return $true
+            }
+        }
+        return $false
     }
 
 }

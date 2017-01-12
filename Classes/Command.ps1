@@ -20,6 +20,10 @@ class CommandNotAuthorized : CommandException {
     CommandNotAuthorized() {}
     CommandNotAuthorized([string]$Message) : base($Message) {}
 }
+class CommandRequirementsNotMet : CommandException {
+    CommandRequirementsNotMet() {}
+    CommandRequirementsNotMet([string]$Message) : base($Message) {}
+}
 
 # Represent a command that can be executed
 class Command {
