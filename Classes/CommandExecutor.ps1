@@ -24,6 +24,7 @@ class CommandExecutor {
         # Our result
         $r = [CommandResult]::New()
 
+        # Verify command is not disabled
         if (-not $Command.Enabled) {
             $err = [CommandDisabled]::New("Command [$($Command.Name)] is disabled")
             $r.Success = $false
