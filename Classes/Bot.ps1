@@ -205,7 +205,11 @@ class Bot {
                         $response.Severity = [Severity]::Error
                         if ($result.Errors.Count -gt 0) {
                             $response.Text = $result.Errors | ForEach-Object {
-                                $_.Exception.Message
+                                if ($_.Exception) {
+                                    $_.Exception.Message
+                                } else {
+                                    $_.Message
+                                }
                             }
                         } else {
                             $response.Text = 'Something bad happened :('
