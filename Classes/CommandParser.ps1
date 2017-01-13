@@ -18,7 +18,7 @@ class CommandParser {
         # Everything to the left of a named parameter will be used
         # to determine the command name
         $command = ($CommandString -Split '--')[0]
-        $commandParams = '--' + ($CommandString -Split '--')[1]
+        $params = $CommandString.TrimStart($command)
 
         # The command COULD be in the form of <command> or <plugin:command>
         # Figure out which one
@@ -46,7 +46,7 @@ class CommandParser {
         $parsedCommand.Command = $command
 
         # Parse parameters
-        if ($commandParams) {
+        if (-not [string]::IsNullOrEmpty($params)) {
             $tokens = $CommandString | Get-StringToken
             try {
                 $r = ConvertFrom-ParameterToken -Tokens $Tokens
@@ -60,4 +60,3 @@ class CommandParser {
         return $parsedCommand
     }
 }
-

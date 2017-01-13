@@ -29,13 +29,13 @@ function ConvertFrom-ParameterToken {
                 # considered a switch
                 if (($tokens[$x+1] -match '^--') -or $x -eq $Tokens.Count-1) {
                     # This is a switch parameter
-                    if (-not $namedParameters.ContainsKey($p)) {
+                    if (-not $r.NamedParameters.ContainsKey($p)) {
                         $r.NamedParameters.Add($paramName, $true)
                     }
                 } else {
                     # Assume the item following this parameter is the value
                     # for the parameter
-                    if ($tokens[$x+1]) {
+                    if ($tokens[$x+1] -and $tokens[$x+1] -notmatch '^--') {
                         $r.NamedParameters.Add($paramName, $Tokens[$x+1])
                     }
                 }
