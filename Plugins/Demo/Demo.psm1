@@ -107,3 +107,41 @@ function Random-Quote {
     $quote = $html.ParsedHtml.getElementById('AutoNumber1').textContent
     return $quote
 }
+
+function Giphy {
+    <#
+    .SYNOPSIS
+        Search Giphy
+    .EXAMPLE
+        !giphy --search 'cats'
+    .EXAMPLE
+        !giphy --trending
+    .Role
+        Demo
+    #>
+    [cmdletbinding(DefaultParameterSetName = 'search')]
+    param(
+        [parameter(Mandatory, ParameterSetName = 'search')]
+        [string]$Search,
+
+        [parameter(Mandatory, ParameterSetName = 'trending')]
+        [switch]$Trending,
+
+        [ValidateRange(1, 10)]
+        [int]$Number = 1
+    )
+
+    $apiKey = 'dc6zaTOxFJmzC'
+
+    if ($PSCmdlet.ParameterSetName -eq 'search') {
+        $d = Invoke-RestMethod -Uri "http://api.giphy.com/v1/gifs/search?q=$Search&limit=25&api_key=$apiKey" -UseBasicParsing -UseDefaultCredentials
+    } elseif ($PSCmdlet.ParameterSetName -eq 'trending') {
+        $d = Invoke-RestMethod -Uri "http://api.giphy.com/v1/gifs/trending?limit=25&api_key=$apiKey" -UseBasicParsing -UseDefaultCredentials
+    }
+    if ($d.data) {
+        $url = ($d.data | Get-Random -Count $Number).images.downsized.url
+        Write-Output $url
+    } else {
+        Write-Output 'No results found'
+    }
+}
