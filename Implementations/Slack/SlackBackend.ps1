@@ -297,32 +297,34 @@ class SlackBackend : Backend {
     [void]SendMessage([Response]$Response) {
         $channelId = $this.ResolveChannelId($Response.To)
         if ($channelId) {
-            $textBlock = '```' + $Response.Text + '```'
-            if (($Response.Text -eq [string]::Empty) -or ($null -eq $Response.Text)) {
-                $fbText = 'no data'
-            } else {
-                $fbText = $Response.Text
-            }
 
-            $msgAtt = New-SlackMessageAttachment -Fallback $fbText -Text $textBlock -MarkDownFields 'text'
+            # $textBlock = '```' + $Response.Text + '```'
+            # if (($Response.Text -eq [string]::Empty) -or ($null -eq $Response.Text)) {
+            #     $fbText = 'no data'
+            # } else {
+            #     $fbText = $Response.Text
+            # }
 
-            switch ($Response.Severity) {
-                'Success' {
-                    $msgAtt.color = $this._PSSlackColorMap.green
-                }
-                'Warning' {
-                    $msgAtt.color = $this._PSSlackColorMap.orange
-                }
-                'Error' {
-                    $msgAtt.color = $this._PSSlackColorMap.red
-                }
-                'None' {
-                    # no color
-                }
-            }
+            # $msgAtt = New-SlackMessageAttachment -Fallback $fbText -Text $textBlock -MarkDownFields 'text'
 
-            $msg = $msgAtt | New-SlackMessage -Channel $Response.To -AsUser
-            $slackResponse = $msg | Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Verbose:$false
+            # switch ($Response.Severity) {
+            #     'Success' {
+            #         $msgAtt.color = $this._PSSlackColorMap.green
+            #     }
+            #     'Warning' {
+            #         $msgAtt.color = $this._PSSlackColorMap.orange
+            #     }
+            #     'Error' {
+            #         $msgAtt.color = $this._PSSlackColorMap.red
+            #     }
+            #     'None' {
+            #         # no color
+            #     }
+            # }
+
+            # $msg = $msgAtt | New-SlackMessage -Channel $Response.To -AsUser
+            # $slackResponse = $msg | Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Verbose:$false
+            $slackResponse = Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Channel $Response.To -Text $Response.Text -Verbose:$false -AsUser
             Write-Verbose "[SlackBackend:SendMessage] Result: $($slackResponse | Format-List * | Out-String)"
         } else {
             Write-Error -Message "[SlackBackend:SendMessage] Unable to resolve channel [$($Response.To))]"
