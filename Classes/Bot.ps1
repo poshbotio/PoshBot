@@ -125,38 +125,35 @@ class Bot {
         if ($msg) {
             # If the message is a bot command or another type of message we should care
             # about, add it to the message queue for processing
-            #if ($this.IsBotCommand($msg)) {
+            if ($this.IsBotCommand($msg)) {
                 $this._Logger.Log([LogMessage]::new('[Bot:ReceiveMessage] Received bot message from chat network. Adding to message queue.', $msg), [LogType]::System)
                 $this._Logger.Log([LogMessage]::new('[Bot:Received message]', $msg), [LogType]::Receive)
                 $this.MessageQueue.Enqueue($msg)
-            #} else {
+            } else {
                 # TODO
                 # Some other type of message we are watching for
-            #}
+            }
         }
         return $msg
     }
 
-    # [bool]IsBotCommand([Message]$Message) {
-    #     $firstWord = ($Message.Text -split ' ')[0]
-    #     $isBotCommand = $firstWord -Match "^$($this.CommandPrefix)"
-    #     $match = $false
-    #     if ($isBotCommand) {
-    #         $match = $true
-    #         $this._Logger.Log([LogMessage]::new('[Bot:IsBotCommand] Message is a bot command.'), [LogType]::System)
-    #     } else {
+    [bool]IsBotCommand([Message]$Message) {
+        $firstWord = ($Message.Text -split ' ')[0]
+        if ($firstWord -Match "^$($this.CommandPrefix)") {
+            $this._Logger.Log([LogMessage]::new('[Bot:IsBotCommand] Message is a bot command.'), [LogType]::System)
+            return $true
+        } else {
+            # foreach ($trigger in $this.Triggers.Keys) {
+            #     if ($Message.Text -Match $trigger) {
+            #         $match = $true
+            #         $this._Logger.Log([LogMessage]::new("[Bot:IsBotCommand] Message matches trigger [$trigger]."), [LogType]::System)
+            #         break
+            #     }
+            # }
+        }
 
-    #         # foreach ($trigger in $this.Triggers.Keys) {
-    #         #     if ($Message.Text -Match $trigger) {
-    #         #         $match = $true
-    #         #         $this._Logger.Log([LogMessage]::new("[Bot:IsBotCommand] Message matches trigger [$trigger]."), [LogType]::System)
-    #         #         break
-    #         #     }
-    #         # }
-    #     }
-
-    #     return $match
-    # }
+        return $false
+    }
 
     # Pull message off queue and pass to message handler
     [void]ProcessMessageQueue() {
