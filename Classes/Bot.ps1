@@ -235,25 +235,10 @@ class Bot {
         }
     }
 
-    # Dispatch the command to the plugin for execution
+    # Dispatch the command to the executor
     [CommandResult]DispatchCommand([Command]$Command, [ParsedCommand]$ParsedCommand, [string]$CallerId) {
-
         $result = $this.Executor.ExecuteCommand($Command, $ParsedCommand, $CallerId)
         return $result
-
-        # $logMsg = [LogMessage]::new("[Bot:DispatchCommand] Dispatching command [$($Command.Name)] to plugin [$($Plugin.Name)] with caller ID [$CallerId]")
-        # $this._Logger.Log($logMsg, [LogType]::System)
-        # $this._Logger.Log($logMsg, [LogType]::Command)
-        # $result = $Plugin.InvokeCommand($Command, $ParsedCommand, $CallerId)
-        # Write-Verbose "[Bot:DispatchCommand] Command result: $($result | Format-List * | Out-String)"
-        # $logMsg = [LogMessage]::new('[Bot:DispatchCommand] Command result', $result)
-        # $this._Logger.Log($logMsg, [LogType]::System)
-        # $this._Logger.Log($logMsg, [LogType]::Command)
-        # return $result
-
-        # Determine how to respond back to the chat network now that
-        # the command has completed. This is up to the command
-        # TODO
     }
 
     # Format the response
