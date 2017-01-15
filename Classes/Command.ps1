@@ -34,11 +34,11 @@ class Command {
     # Unique (to the plugin) name of the command
     [string]$Name
 
-    [hashtable]$Subcommands = @{}
+    #[hashtable]$Subcommands = @{}
 
     # The type of message this command is designed to respond to
     # Most of the type, this will be EMPTY so the
-    [string]$MessageType
+    #[string]$MessageType
 
     [string]$Description
 
@@ -49,12 +49,6 @@ class Command {
 
     [bool]$AsJob = $true
 
-    # Script block to execute
-    [scriptblock]$ScriptBlock
-
-    # Path to script to execute
-    [string]$ScriptPath
-
     # Fully qualified name of a cmdlet or function in a module to execute
     [string]$ModuleCommand
 
@@ -63,8 +57,6 @@ class Command {
     [System.Management.Automation.FunctionInfo]$FunctionInfo
 
     [AccessFilter]$AccessFilter = [AccessFilter]::new()
-
-    [hashtable]$Roles = @{}
 
     [bool]$Enabled = $true
 
