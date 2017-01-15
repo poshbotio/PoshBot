@@ -93,4 +93,6 @@ Export-ModuleMember -Function @(
     'New-PoshBotSlackBackend'
     'New-PoshBotTrigger'
     'New-HelloPlugin'
+    'New-PoshBotCardResponse'
+    'New-PoshBotTextResponse'
 )
