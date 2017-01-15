@@ -37,7 +37,7 @@ function Help {
         $availableCommands = $availableCommands.Where({$_.Command -like "*$Filter*"})
     }
 
-    Write-Output ($availableCommands | Format-Table -AutoSize | Out-String -Width 200)
+    New-PoshBotCardResponse -Type Normal -DM -Text ($availableCommands | Format-Table -AutoSize | Out-String -Width 200)
 }
 
 function Status {
@@ -65,7 +65,8 @@ function Status {
     }
 
     $status = [pscustomobject]$hash
-    $status
+    #New-PoshBotCardResponse -Type Normal -Text ($status | Format-List | Out-String)
+    New-PoshBotCardResponse -Type Normal -Fields $hash -Title 'PoshBot Status'
 }
 
 function Role-List {
@@ -90,7 +91,7 @@ function Role-List {
             Description =$Bot.RoleManager.Roles[$key].Description
         }
     }
-    Write-Output ($roles | Format-Table -AutoSize | Out-String -Width 150)
+    New-PoshBotCardResponse -Type Normal -Text ($roles | Format-Table -AutoSize | Out-String -Width 150)
 }
 
 function Role-Show {
@@ -114,7 +115,7 @@ function Role-Show {
 
     $r = $Bot.RoleManager.GetRole($Role)
     if (-not $r) {
-        Write-Error "Role [$Role] not found :("
+        New-PoshBotCardResponse -Type Error -Text "Role [$Role] not found :(" -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
         return
     }
     $roleMapping = $Bot.RoleManager.RoleUserMapping[$Role]
@@ -132,9 +133,11 @@ function Role-Show {
         }
     }
 
-    Write-Output "Role details for [$Role]"
-    Write-Output "Description: $($r.Description)"
-    Write-Output "Members:`n$($Members | Format-Table | Out-String)"
+    $msg = [string]::Empty
+    $msg += "Role details for [$Role]"
+    $msg += "`nDescription: $($r.Description)"
+    $msg += "`nMembers:`n$($Members | Format-Table | Out-String)"
+    New-PoshBotCardResponse -Type Normal -Text $msg
 }
 
 function Role-AddUser {
@@ -171,7 +174,7 @@ function Role-AddUser {
 
     try {
         $Bot.RoleManager.AddUserToRole($id, $Role)
-        Write-Output "OK, user [$User] added to role [$Role]"
+        New-PoshBotCardResponse -Type Normal -Text "OK, user [$User] added to role [$Role]"
     } catch {
         throw $_
     }
@@ -202,7 +205,7 @@ function Plugin-List {
             Enabled = $plugin.Enabled
         }
     }
-    Write-Output ($plugins | Format-List | Out-String -Width 150)
+    New-PoshBotCardResponse -Type Normal -Text ($plugins | Format-List | Out-String -Width 150)
 }
 
 function Plugin-Show {
@@ -234,10 +237,11 @@ function Plugin-Show {
             Commands = $p.Commands
         }
 
-        Write-Output "Name: $($r.Name)"
-        Write-Output "Enabled: $($r.Enabled)"
-        Write-Output "CommandCount: $($r.CommandCount)"
-        Write-Output "Roles: `n$($r.Roles | Format-List | Out-String)"
+        $msg = [string]::Empty
+        $msg += "Name: $($r.Name)"
+        $msg += "`nEnabled: $($r.Enabled)"
+        $msg += "`nCommandCount: $($r.CommandCount)"
+        $msg += "`nRoles: `n$($r.Roles | Format-List | Out-String)"
         $fields = @(
             @{
                 Expression = {$_.Name}
@@ -249,12 +253,13 @@ function Plugin-Show {
             }
             @{
                 Expression = {$_.Value.HelpText}
-                Label = 'Trigger'
+                Label = 'Usage'
             }
         )
-        Write-Output "Commands: `n$($r.Commands.GetEnumerator() | Select-Object -Property $fields | Format-Table -AutoSize | Out-String)"
+        $msg += "`nCommands: `n$($r.Commands.GetEnumerator() | Select-Object -Property $fields | Format-Table -AutoSize | Out-String)"
+        New-PoshBotCardResponse -Type Normal -Text $msg
     } else {
-        Write-Warning "Plugin [$Plugin] not found."
+        New-PoshBotCardResponse -Type Warning -Text "Plugin [$Plugin] not found."
     }
 }
 
@@ -281,15 +286,19 @@ function Plugin-Enable {
         if ($p = $bot.PluginManager.Plugins[$Plugin]) {
             try {
                 $bot.PluginManager.ActivatePlugin($p)
-                Write-Output "Plugin [$Plugin] activated. All commands in this plugin are now enabled."
+                #Write-Output "Plugin [$Plugin] activated. All commands in this plugin are now enabled."
+                return New-PoshBotCardResponse -Type Normal -Text "Plugin [$Plugin] activated. All commands in this plugin are now enabled." -ThumbnailUrl 'https://www.streamsports.com/images/icon_green_check_256.png'
             } catch {
-                Write-Error $_
+                #Write-Error $_
+                return New-PoshBotCardResponse -Type Error -Text $_.Exception.Message -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
             }
         } else {
-            Write-Warning "Plugin [$Plugin] not found."
+            #Write-Warning "Plugin [$Plugin] not found."
+            return New-PoshBotCardResponse -Type Warning -Text "Plugin [$Plugin] not found." -ThumbnailUrl 'http://hairmomentum.com/wp-content/uploads/2016/07/warning.png'
         }
     } else {
-        Write-Output "Builtin plugins can't be disabled so no need to enable them."
+        #Write-Output "Builtin plugins can't be disabled so no need to enable them."
+        return New-PoshBotCardResponse -Type Normal -Text "Builtin plugins can't be disabled so no need to enable them." -Title 'Ya no'
     }
 }
 
@@ -316,15 +325,19 @@ function Plugin-Disable {
         if ($p = $bot.PluginManager.Plugins[$Plugin]) {
             try {
                 $bot.PluginManager.DeactivatePlugin($p)
-                Write-Output "Plugin [$Plugin] deactivated. All commands in this plugin are now disabled."
+                #Write-Output "Plugin [$Plugin] deactivated. All commands in this plugin are now disabled."
+                return New-PoshBotCardResponse -Type Normal -Text "Plugin [$Plugin] deactivated. All commands in this plugin are now disabled." -Title 'Plugin deactivated' -ThumbnailUrl 'https://www.streamsports.com/images/icon_green_check_256.png'
             } catch {
-                Write-Error $_
+                #Write-Error $_
+                return New-PoshBotCardResponse -Type Error -Text $_.Exception.Message -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
             }
         } else {
-            Write-Warning "Plugin [$Plugin] not found."
+            #Write-Warning "Plugin [$Plugin] not found."
+            return New-PoshBotCardResponse -Type Warning -Text "Plugin [$Plugin] not found." -ThumbnailUrl 'http://hairmomentum.com/wp-content/uploads/2016/07/warning.png'
         }
     } else {
-        Write-Error -Message "Sorry, builtin plugins can't be disabled. It's for your own good :)"
+        #Write-Error -Message "Sorry, builtin plugins can't be disabled. It's for your own good :)"
+        return New-PoshBotCardResponse -Type Warning -Text "Sorry, builtin plugins can't be disabled. It's for your own good :)" -Title 'Ya no'
     }
 }
 
@@ -345,7 +358,8 @@ $($manifest.CopyRight)
 
 https://github.com/devblackops/PoshBot
 "@
-    $msg
+
+    New-PoshBotCardResponse -Type Normal -Text $msg
 }
 
 Export-ModuleMember -Function *
