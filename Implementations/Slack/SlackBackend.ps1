@@ -295,40 +295,105 @@ class SlackBackend : Backend {
     }
 
     [void]SendMessage([Response]$Response) {
-        $channelId = $this.ResolveChannelId($Response.To)
-        if ($channelId) {
+        # $textBlock = '```' + $Response.Text + '```'
+        # if (($Response.Text -eq [string]::Empty) -or ($null -eq $Response.Text)) {
+        #     $fbText = 'no data'
+        # } else {
+        #     $fbText = $Response.Text
+        # }
 
-            # $textBlock = '```' + $Response.Text + '```'
-            # if (($Response.Text -eq [string]::Empty) -or ($null -eq $Response.Text)) {
-            #     $fbText = 'no data'
-            # } else {
-            #     $fbText = $Response.Text
-            # }
+        # $msgAtt = New-SlackMessageAttachment -Fallback $fbText -Text $textBlock -MarkDownFields 'text'
 
-            # $msgAtt = New-SlackMessageAttachment -Fallback $fbText -Text $textBlock -MarkDownFields 'text'
+        # switch ($Response.Severity) {
+        #     'Success' {
+        #         $msgAtt.color = $this._PSSlackColorMap.green
+        #     }
+        #     'Warning' {
+        #         $msgAtt.color = $this._PSSlackColorMap.orange
+        #     }
+        #     'Error' {
+        #         $msgAtt.color = $this._PSSlackColorMap.red
+        #     }
+        #     'None' {
+        #         # no color
+        #     }
+        # }
 
-            # switch ($Response.Severity) {
-            #     'Success' {
-            #         $msgAtt.color = $this._PSSlackColorMap.green
-            #     }
-            #     'Warning' {
-            #         $msgAtt.color = $this._PSSlackColorMap.orange
-            #     }
-            #     'Error' {
-            #         $msgAtt.color = $this._PSSlackColorMap.red
-            #     }
-            #     'None' {
-            #         # no color
-            #     }
-            # }
+        # $msg = $msgAtt | New-SlackMessage -Channel $Response.To -AsUser
+        # $slackResponse = $msg | Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Verbose:$false
 
-            # $msg = $msgAtt | New-SlackMessage -Channel $Response.To -AsUser
-            # $slackResponse = $msg | Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Verbose:$false
-            $slackResponse = Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Channel $Response.To -Text $Response.Text -Verbose:$false -AsUser
-            Write-Verbose "[SlackBackend:SendMessage] Result: $($slackResponse | Format-List * | Out-String)"
-        } else {
-            Write-Error -Message "[SlackBackend:SendMessage] Unable to resolve channel [$($Response.To))]"
+        if ($Response.Data.Count -gt 0) {
+            # Process our custom responses
+            foreach ($customResponse in $Response.Data) {
+
+                [string]$sendTo = $Response.To
+                if ($customResponse.DM -eq $true) {
+                    $sendTo = "@$($this.UserIdToUsername($Response.MessageFrom))"
+                    Write-Host "SendTo: $SendTo"
+                }
+
+                if ($customResponse.PSObject.TypeNames[0] -eq 'PoshBot.Card.Response') {
+                    # TODO
+                    # Build this out more
+                    #$textBlock = '```' + $customResponse.Text + '```'
+
+                    $attParams = @{
+                        #Fallback = $fbText
+                        #Text = $textBlock
+                        MarkdownFields = 'text'
+                        Color = $customResponse.Color
+                    }
+                    $fbText = 'no data'
+                    if (-not [string]::IsNullOrEmpty($customResponse.Text)) {
+                        $attParams.Text = '```' + $customResponse.Text + '```'
+                        $fbText = $customResponse.Text
+                    }
+                    $attParams.Fallback = $fbText
+                    if ($customResponse.Title) {
+                        $attParams.Title = $customResponse.Title
+                    }
+                    if ($customResponse.ImageUrl) {
+                        $attParams.ImageURL = $customResponse.ImageUrl
+                    }
+                    if ($customResponse.ThumbnailUrl) {
+                        $attParams.ThumbURL = $customResponse.ThumbnailUrl
+                    }
+                    if ($customResponse.LinkUrl) {
+                        $attParams.TitleLink = $customResponse.LinkUrl
+                    }
+                    if ($customResponse.Fields) {
+                        $arr = New-Object System.Collections.ArrayList
+                        foreach ($key in $customResponse.Fields.Keys) {
+                            $arr.Add(
+                                @{
+                                    title = $key;
+                                    value = $customResponse.Fields[$key];
+                                    short = $true
+                                }
+                            )
+                        }
+                        $attParams.Fields = $arr
+                    }
+
+                    #$msgAtt = New-SlackMessageAttachment -Fallback $fbText -Text $textBlock -MarkDownFields 'text' -Color $customResponse.Color
+                    $msgAtt = New-SlackMessageAttachment @attParams
+                    $msg = $msgAtt | New-SlackMessage -Channel $sendTo -AsUser
+                    $slackResponse = $msg | Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Verbose:$false
+                } elseif ($customResponse.PSObject.TypeNames[0] -eq 'PoshBot.Text.Response') {
+                    $slackResponse = Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Channel $sendTo -Text $customResponse.Text -Verbose:$false -AsUser
+                }
+            }
         }
+
+        if ($Response.Text.Count -gt 0) {
+            foreach ($t in $Response.Text) {
+                $slackResponse = Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Channel $Response.To -Text $t -Verbose:$false -AsUser
+            }
+        }
+
+        #$slackResponse = Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Channel $Response.To -Text $Response.Text -Verbose:$false -AsUser
+        #$slackResponse = Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Channel $Response.To -Text $Response.Text -Verbose:$false -AsUser
+        #Write-Verbose "[SlackBackend:SendMessage] Result: $($slackResponse | Format-List * | Out-String)"
     }
 
     [string]ResolveChannelId([string]$ChannelName) {
@@ -437,11 +502,11 @@ class SlackBackend : Backend {
 
     [string]UserIdToUsername([string]$UserId) {
         if ($this.Users.ContainsKey($UserId)) {
-            return $this.Users[$UserId].Name
+            return $this.Users[$UserId].Nickname
         } else {
             #$allUsers = Get-SlackUser -Token $this.Connection.Config.Credential.GetNetworkCredential().Password
             $this.LoadUsers()
-            return $this.Userse[$UserId].Nickname
+            return $this.Users[$UserId].Nickname
             #return $allUsers | Where-Object {$_.Id -eq $UserId} | Select-Object -ExpandProperty Name
         }
     }

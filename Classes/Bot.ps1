@@ -10,10 +10,10 @@ class Bot {
     hidden [string]$_PoshBotDir
 
     # List of commands available from plugins
-    [hashtable]$Commands = @{}
+    #[hashtable]$Commands = @{}
 
     # List of roles loaded from plugins
-    [hashtable]$Roles = @{}
+    #[hashtable]$Roles = @{}
 
     [StorageProvider]$Storage
 
@@ -177,6 +177,7 @@ class Bot {
             $this._Logger.Log([LogMessage]::new('[Bot:HandleMessage] Parsed bot command', $parsedCommand), [LogType]::System)
 
             $response = [Response]::new()
+            $response.MessageFrom = $Message.From
             $response.To = $Message.To
 
             # Match parsed command to a command in the plugin manager
@@ -195,30 +196,40 @@ class Bot {
                     # Was the command not authorized?
                     if (-not $result.Authorized) {
                         $response.Severity = [Severity]::Warning
-                        $response.Text = "You do not have authorization to run command [$($pluginCmd.Command.Name)] :("
+                        $response.Data = New-PoshBotCardResponse -Type Warning -Text "You do not have authorization to run command [$($pluginCmd.Command.Name)] :(" -Title 'Command Unauthorized'
                     } else {
                         # TODO
                         # Handle this better
                         $response.Severity = [Severity]::Error
                         if ($result.Errors.Count -gt 0) {
-                            $response.Text = $result.Errors | ForEach-Object {
+                            $response.Data = $result.Errors | ForEach-Object {
                                 if ($_.Exception) {
-                                    $_.Exception.Message
+                                    New-PoshBotCardResponse -Type Error -Text $_.Exception.Message -Title 'Command Exception'
                                 } else {
-                                    $_.Message
+                                    New-PoshBotCardResponse -Type Error -Text $_.Message -Title 'Command Exception'
                                 }
                             }
                         } else {
-                            $response.Text = 'Something bad happened :('
+                            $response.Data = New-PoshBotCardResponse -Type Error -Text 'Something bad happened :(' -Title 'Command Error'
                         }
                     }
                 } else {
-                    $response.Text = $($result.Output | Format-List * | Out-String)
+                    foreach ($r in $result.Output) {
+                        if (($r.PSObject.TypeNames[0] -eq 'PoshBot.Text.Response') -or ($r.PSObject.TypeNames[0] -eq 'PoshBot.Card.Response')) {
+                            Write-Host "Received custom PoshBot response: [$($r.PSObject.TypeNames[0])]"
+                            Write-host $r
+                            $response.Data += $r
+                        } else {
+                            Write-Host "Received text response: [$($result.Output)]"
+                            $response.Text += $($r | Format-List * | Out-String)
+                        }
+                    }
+                    #$response.Text = $($result.Output | Format-List * | Out-String)
                 }
                 $this.SendMessage($response)
             } else {
                 $response.Severity = [Severity]::Warning
-                $response.Text = "No command found matching [$commandString]"
+                $response.Data = New-PoshBotCardResponse -Type Warning -Text "No command found matching [$commandString]"
                 $this.SendMessage($response)
             }
         }
