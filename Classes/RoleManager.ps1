@@ -16,7 +16,7 @@ class RoleManager {
 
     [void]Initialize() {
         # Load in state from persistent storage
-        $this._Logger.Log([LogMessage]::new('[RoleManager:Initialize] Initializing'), [LogType]::System)
+        $this._Logger.Info([LogMessage]::new('[RoleManager:Initialize] Initializing'))
 
         $adminrole = [Role]::New('Admin', 'Bot administrators')
         $this.AddRole($adminRole)
@@ -27,7 +27,7 @@ class RoleManager {
     # TODO
     # Save state to storage
     [void]SaveState() {
-        $this._Logger.Log([LogMessage]::new("[RoleManager:SaveState] Saving role state to storage"), [LogType]::System)
+        $this._Logger.Verbose([LogMessage]::new("[RoleManager:SaveState] Saving role state to storage"))
 
         # Don't attempt to store role instances to storage, just the representation of them.
         # When loading from storage, the role objects will be recreated from this data
@@ -43,7 +43,7 @@ class RoleManager {
     # TODO
     # Load state from storage
     [void]LoadState() {
-        $this._Logger.Log([LogMessage]::new("[RoleManager:LoadState] Loading role state from storage"), [LogType]::System)
+        $this._Logger.Verbose([LogMessage]::new("[RoleManager:LoadState] Loading role state from storage"))
         $roleConfig = $this._Storage.GetConfig('roles')
         if ($roleConfig) {
             $roleConfig.GetEnumerator() | ForEach-Object {
@@ -57,7 +57,7 @@ class RoleManager {
 
         $mappingConfig = $this._Storage.GetConfig('roleusermapping')
         if ($mappingConfig) {
-            $this._Logger.Log([LogMessage]::new("[RoleManager:LoadState] Loading role/user mapping state from storage"), [LogType]::System)
+            $this._Logger.Verbose([LogMessage]::new("[RoleManager:LoadState] Loading role/user mapping state from storage"))
             $this.RoleUserMapping = $mappingConfig
         }
     }
@@ -68,7 +68,7 @@ class RoleManager {
             return $r
         } else {
             $msg = "[RoleManager:GetRole] Role [$RoleName] not found"
-            $this._Logger.Log([LogMessage]::new($msg), [LogType]::System)
+            $this._Logger.Info([LogMessage]::new([LogSeverity]::Warning, $msg))
             Write-Error -Message $msg
             return $null
         }
@@ -76,17 +76,17 @@ class RoleManager {
 
     [void]AddRole([Role]$Role) {
         if (-not $this.Roles.ContainsKey($Role.Name)) {
-            $this._Logger.Log([LogMessage]::new("[RoleManager:AddRole] Adding role [$($Role.Name)]"), [LogType]::System)
+            $this._Logger.Info([LogMessage]::new("[RoleManager:AddRole] Adding role [$($Role.Name)]"))
             $this.Roles.Add($Role.Name, $Role)
             $this.SaveState()
         } else {
-            $this._Logger.Log([LogMessage]::new("[RoleManager:AddRole] Role [$($Role.Name)] is already loaded"), [LogType]::System)
+            $this._Logger.Info([LogMessage]::new("[RoleManager:AddRole] Role [$($Role.Name)] is already loaded"))
         }
     }
 
     [void]RemoveRole([Role]$Role) {
         if ($this.Roles.ContainsKey($Role.Name)) {
-            $this._Logger.Log([LogMessage]::new("[RoleManager:RemoveRole] Removing role [$($Role.Name)]"), [LogType]::System)
+            $this._Logger.Info([LogMessage]::new("[RoleManager:RemoveRole] Removing role [$($Role.Name)]"))
             $this.Roles.Remove($Role.Name)
             $this.SaveState()
         }
@@ -99,24 +99,24 @@ class RoleManager {
                 if ($role = $this.GetRole($RoleName)) {
                     if ($roleUsers = $this.RoleUserMapping[$RoleName]) {
                         if (-not $roleUsers.ContainsKey($UserId)) {
-                            $this._Logger.Log([LogMessage]::new("[RoleManager:AddUserToRole] Adding [$UserId] to role [$RoleName]"), [LogType]::System)
+                            $this._Logger.Info([LogMessage]::new("[RoleManager:AddUserToRole] Adding [$UserId] to role [$RoleName]"))
                             $roleUsers.Add($UserId, $UserId)
                         }
                     } else {
                         $roleUsers = @{}
-                        $this._Logger.Log([LogMessage]::new("[RoleManager:AddUserToRole] Adding [$UserId] to role [$RoleName]"), [LogType]::System)
+                        $this._Logger.Info([LogMessage]::new("[RoleManager:AddUserToRole] Adding [$UserId] to role [$RoleName]"))
                         $roleUsers.Add($UserId, $UserId)
                         $this.RoleUserMapping.Add($RoleName, $roleUsers)
                     }
                     $this.SaveState()
                 } else {
                     $msg = "Unknown role [$RoleName]"
-                    $this._Logger.Log([LogMessage]::new("[RoleManager:AddUserToRole] $msg"), [LogType]::System)
+                    $this._Logger.Info([LogMessage]::new([LogSeverity]::Warning, "[RoleManager:AddUserToRole] $msg"))
                     throw $msg
                 }
             } else {
                 $msg = "Unable to find user [$UserId]"
-                $this._Logger.Log([LogMessage]::new("[RoleManager:AddUserToRole] $msg"), [LogType]::System)
+                $this._Logger.Info([LogMessage]::new([LogSeverity]::Warning, "[RoleManager:AddUserToRole] $msg"))
                 throw $msg
             }
         } catch {
@@ -128,7 +128,7 @@ class RoleManager {
         if ($role = $this.GetRole($RoleName)) {
             if ($roleUsers = $this.RoleUserMapping[$RoleName]) {
                 if ($roleUsers.ContainsKey($UserId)) {
-                    $this._Logger.Log([LogMessage]::new("[RoleManager:RemoveUserFromRole] Removing [$UserId] from role [$RoleName]"), [LogType]::System)
+                    $this._Logger.Info([LogMessage]::new("[RoleManager:RemoveUserFromRole] Removing [$UserId] from role [$RoleName]"))
                     $roleUsers.Remove($UserId)
                     $this.SaveState()
                 }
@@ -172,7 +172,7 @@ class RoleManager {
                 $id = $name
             }
         }
-        $this._Logger.Log([LogMessage]::new("[RoleManager:ResolveUserToId] Resolved [$Username] to [$id]"), [LogType]::System)
+        $this._Logger.Verbose([LogMessage]::new("[RoleManager:ResolveUserToId] Resolved [$Username] to [$id]"))
         return $id
     }
 }

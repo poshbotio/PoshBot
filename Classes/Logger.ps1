@@ -1,22 +1,39 @@
 
+enum LogSeverity {
+    Normal
+    Warning
+    Error
+}
+
+enum LogLevel {
+    Info = 1
+    Verbose = 2
+    Debug = 4
+}
+
 class LogMessage {
-    [datetime]$DateTime
+    [datetime]$DateTime = (Get-Date)
+    [LogSeverity]$Severity = [LogSeverity]::Normal
+    [LogLevel]$LogLevel = [LogLevel]::Info
     [string]$Message
     [object]$Data
 
     LogMessage() {
-        $this.DateTime = Get-Date
     }
 
     LogMessage([string]$Message) {
         $this.Message = $Message
-        $this.DateTime = Get-Date
     }
 
     LogMessage([string]$Message, [object]$Data) {
         $this.Message = $Message
         $this.Data = $Data
-        $this.DateTime = Get-Date
+    }
+
+    LogMessage([LogSeverity]$Severity, [string]$Message, [object]$Data) {
+        $this.Severity = $Severity
+        $this.Message = $Message
+        $this.Data = $Data
     }
 
     # Borrowed from https://github.com/PowerShell/PowerShell/issues/2736
@@ -40,6 +57,8 @@ class LogMessage {
     [string]ToJson() {
         $json = @{
             DataTime = $this.DateTime
+            Severity = $this.Severity
+            LogLevel = $this.LogLevel
             Message = $this.Message
             Data = $this.Data
         } | ConvertTo-Json -Depth 100
@@ -56,7 +75,11 @@ class Logger {
     # The log directory
     [string]$LogDir
 
-    hidden [hashtable]$_file = @{}
+    hidden [string]$LogFile
+
+    # Out logging level
+    # Any log messages less than or equal to this will be logged
+    [LogLevel]$LogLevel
 
     # The max size for the log files before rolling
     [int]$MaxSizeMB = 10
@@ -64,56 +87,54 @@ class Logger {
     # Number of each log file type to keep
     [int]$FilesToKeep = 5
 
-    # Create default log files under user directory
-    Logger() {
-        $this.LogDir = Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot'
-        $this.PopulateFilenameHash()
-        $this.RollLogs($true)
-        $this.CreateLogFiles()
-    }
-
     # Create logs files under provided directory
-    Logger([string]$LogDir) {
+    Logger([string]$LogDir, [LogLevel]$LogLevel) {
         $this.LogDir = $LogDir
-        $this.PopulateFilenameHash()
-        $this.RollLogs($true)
-        $this.CreateLogFiles()
-    }
-
-    hidden [void]PopulateFilenameHash() {
+        $this.LogLevel = $LogLevel
         $date = (Get-Date).ToString('yyyyMMdd')
-        foreach ($type in [enum]::GetNames([LogType])) {
-            $this._file.$type = Join-Path -Path $this.LogDir -ChildPath "$($type)_$($date).log"
-        }
+        $this.LogFile = Join-Path -Path $this.LogDir -ChildPath "$date.log"
+        $this.CreateLogFile()
     }
 
-    # Create our log files based on the current date
-    hidden [void]CreateLogFiles() {
-        foreach ($type in [enum]::GetNames([LogType])) {
-            if (-not (Test-Path -Path $this._file["$type"])) {
-                Write-Debug -Message "[Logger:Logger] Creating default log file [$($this._file.$type)]"
-                New-Item -Path $this._file["$type"] -ItemType File -Force
-            } else {
-                New-Item -Path $this._file["$type"] -ItemType File -Force
-            }
+    # Create new log file or roll old log
+    hidden [void]CreateLogFile() {
+        if (Test-Path -Path $this.LogFile) {
+            $this.RollLog($this.LogFile, $true)
         }
+        Write-Debug -Message "[Logger:Logger] Creating log file [$($this.LogFile)]"
+        New-Item -Path $this.LogFile -ItemType File -Force
+    }
+
+    [void]Info([LogMessage]$Message) {
+        $Message.LogLevel = [LogLevel]::Info
+        $this.Log($Message)
+    }
+
+    [void]Verbose([LogMessage]$Message) {
+        $Message.LogLevel = [LogLevel]::Verbose
+        $this.Log($Message)
+    }
+
+    [void]Debug([LogMessage]$Message) {
+        $Message.LogLevel = [LogLevel]::Debug
+        $this.Log($Message)
     }
 
     # Write out message in JSON form to log file
-    [void]Log([LogMessage]$Message, [LogType]$Type) {
-        $this.PopulateFilenameHash()
-        $json = $Message.ToJson()
+    [void]Log([LogMessage]$Message) {
 
-        $file = $this._file["$Type"]
-        $this.RollLog($file, $false)
-        Write-Verbose -Message $Message.Message
-        $json | Out-File -FilePath $file -Append -Encoding utf8
-    }
+        if ($global:VerbosePreference -eq 'Continue') {
+            Write-Verbose -Message $Message.ToJson()
+        } elseIf ($global:DebugPreference -eq 'Continue') {
+            Write-Debug -Message $Message.ToJson()
+        }
 
-    # Roll all the logs
-    hidden [void]RollLogs([bool]$Always) {
-        foreach ($key in $this._file.Keys) {
-            $this.RollLog($this._file["$key"], $Always)
+        if ($Message.LogLevel.value__ -le $This.LogLevel.value__) {
+            $date = (Get-Date).ToString('yyyyMMdd')
+            $this.LogFile = $this.LogFile = Join-Path -Path $this.LogDir -ChildPath "$date.log"
+            $this.RollLog($this.LogFile, $false)
+            $json = $Message.ToJson()
+            $json | Out-File -FilePath $this.LogFile -Append -Encoding utf8
         }
     }
 

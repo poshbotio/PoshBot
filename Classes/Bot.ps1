@@ -38,7 +38,7 @@ class Bot {
 
     [void]Initialize() {
         $this.LoadConfiguration()
-        $this._Logger = [Logger]::new($this.Configuration.LogDirectory)
+        $this._Logger = [Logger]::new($this.Configuration.LogDirectory, $this.Configuration.LogLevel)
         $this.RoleManager = [RoleManager]::new($this.Backend, $this.Storage, $this._Logger)
         $this.PluginManager = [PluginManager]::new($this.RoleManager, $this.Storage, $this._Logger, $this._PoshBotDir)
         $this.Executor = [CommandExecutor]::new($this.RoleManager)
@@ -62,14 +62,14 @@ class Bot {
     # Start the bot
     [void]Start() {
         $this._Stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-        $this._Logger.Log([LogMessage]::new('[Bot:Start] Start your engines'), [LogType]::System)
+        $this._Logger.Log([LogMessage]::new('[Bot:Start] Start your engines'))
 
         try {
             $this.Connect()
 
             # Start the loop to receive and process messages from the backend
             $sw = [System.Diagnostics.Stopwatch]::StartNew()
-            $this._Logger.Log([LogMessage]::new('[Bot:Start] Beginning message processing loop'), [LogType]::System)
+            $this._Logger.Info([LogMessage]::new('[Bot:Start] Beginning message processing loop'))
             while ($this.Backend.Connection.Connected) {
 
                 # Receive message and add to queue
@@ -89,9 +89,7 @@ class Bot {
         } catch {
             Write-Error $_
             $errJson = [ExceptionFormatter]::ToJson($_)
-            $msg = [LogMessage]::new("[Bot:Start] Exception [$($_.Exception.Message)]", $errJson)
-            $this._Logger.Log($msg, [LogType]::System)
-            $this._Logger.Log($msg, [LogType]::Debug)
+            $this._Logger.Info([LogMessage]::new([LogSeverity]::Error, "[Bot:Start] Exception [$($_.Exception.Message)]", $errJson))
         } finally {
             $this.Disconnect()
         }
@@ -99,7 +97,7 @@ class Bot {
 
     # Connect the bot to the chat network
     [void]Connect() {
-        $this._Logger.Log([LogMessage]::new('[Bot:Connect] Connecting to backend chat network'), [LogType]::System)
+        $this._Logger.Verbose([LogMessage]::new('[Bot:Connect] Connecting to backend chat network'))
         $this.Backend.Connect()
 
         # That that we're connected, resolve any bot administrators defined in
@@ -109,14 +107,14 @@ class Bot {
             if ($adminId) {
                 $this.RoleManager.AddUserToRole($adminId, 'admin')
             } else {
-                $this._Logger.Log([LogMessage]::new("[Bot:Connect] Unable to resolve ID for admin [$admin]"), [LogType]::System)
+                $this._Logger.Info([LogMessage]::new([LogSeverity]::Warning, "[Bot:Connect] Unable to resolve ID for admin [$admin]"))
             }
         }
     }
 
     # Disconnect the bot from the chat network
     [void]Disconnect() {
-        $this._Logger.Log([LogMessage]::new('[Bot:Disconnect] Disconnecting from backend chat network'), [LogType]::System)
+        $this._Logger.Verbose([LogMessage]::new('[Bot:Disconnect] Disconnecting from backend chat network'))
         $this.Backend.Disconnect()
     }
 
@@ -128,8 +126,7 @@ class Bot {
             # If the message is a bot command or another type of message we should care
             # about, add it to the message queue for processing
             if ($this.IsBotCommand($msg)) {
-                $this._Logger.Log([LogMessage]::new('[Bot:ReceiveMessage] Received bot message from chat network. Adding to message queue.', $msg), [LogType]::System)
-                $this._Logger.Log([LogMessage]::new('[Bot:Received message]', $msg), [LogType]::Receive)
+                $this._Logger.Debug([LogMessage]::new('[Bot:ReceiveMessage] Received bot message from chat network. Adding to message queue.', $msg))
                 $this.MessageQueue.Enqueue($msg)
             } else {
                 # TODO
@@ -143,7 +140,7 @@ class Bot {
         $firstWord = ($Message.Text -split ' ')[0]
         foreach ($prefix in $this._PossibleCommandPrefixes ) {
             if ($firstWord -match "^$prefix") {
-                $this._Logger.Log([LogMessage]::new('[Bot:IsBotCommand] Message is a bot command.'), [LogType]::System)
+                $this._Logger.Debug([LogMessage]::new('[Bot:IsBotCommand] Message is a bot command.'))
                 return $true
             }
         }
@@ -155,7 +152,7 @@ class Bot {
         if ($this.MessageQueue.Count -gt 0) {
             while ($this.MessageQueue.Count -ne 0) {
                 $msg = $this.MessageQueue.Dequeue()
-                $this._Logger.Log([LogMessage]::new('[Bot:ProcessMessageQueue] Dequeued message', $msg), [LogType]::System)
+                $this._Logger.Debug([LogMessage]::new('[Bot:ProcessMessageQueue] Dequeued message', $msg))
                 $this.HandleMessage($msg)
             }
         }
@@ -172,7 +169,7 @@ class Bot {
             $commandString = $Message.Text
 
             $parsedCommand = [CommandParser]::Parse($commandString)
-            $this._Logger.Log([LogMessage]::new('[Bot:HandleMessage] Parsed bot command', $parsedCommand), [LogType]::System)
+            $this._Logger.Debug([LogMessage]::new('[Bot:HandleMessage] Parsed bot command', $parsedCommand))
 
             $response = [Response]::new()
             $response.MessageFrom = $Message.From
@@ -227,7 +224,7 @@ class Bot {
                 $this.SendMessage($response)
             } else {
                 $msg = "No command found matching [$commandString]"
-                $this._Logger.Log([LogMessage]::new($msg, $parsedCommand), [LogType]::System)
+                $this._Logger.Info([LogMessage]::new([LogSeverity]::Warning, $msg, $parsedCommand))
                 # Only respond with command not found message if configuration allows it.
                 if (-not $this.Configuration.MuteUnknownCommand) {
                     $response.Severity = [Severity]::Warning
@@ -253,8 +250,6 @@ class Bot {
         foreach ($prefix in $this._PossibleCommandPrefixes) {
             if ($firstWord -match "^$prefix") {
                 $Message.Text = $Message.Text.TrimStart($prefix).Trim()
-                write-host $Message.Text
-                #break
             }
         }
         return $Message

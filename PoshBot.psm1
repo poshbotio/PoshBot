@@ -46,14 +46,6 @@ enum ConnectionStatus {
     Disconnected
 }
 
-enum LogType {
-    Debug
-    System
-    Audit
-    Command
-    Receive
-}
-
 enum TriggerType {
     Command
     Regex
