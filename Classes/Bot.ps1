@@ -215,9 +215,14 @@ class Bot {
                 }
                 $this.SendMessage($response)
             } else {
-                $response.Severity = [Severity]::Warning
-                $response.Data = New-PoshBotCardResponse -Type Warning -Text "No command found matching [$commandString]"
-                $this.SendMessage($response)
+                $msg = "No command found matching [$commandString]"
+                $this._Logger.Log([LogMessage]::new($msg, $parsedCommand), [LogType]::System)
+                # Only respond with command not found message if configuration allows it.
+                if (-not $this.Configuration.MuteUnknownCommand) {
+                    $response.Severity = [Severity]::Warning
+                    $response.Data = New-PoshBotCardResponse -Type Warning -Text $msg
+                    $this.SendMessage($response)
+                }
             }
         }
     }
