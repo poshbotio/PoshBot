@@ -91,8 +91,7 @@ class Logger {
     Logger([string]$LogDir, [LogLevel]$LogLevel) {
         $this.LogDir = $LogDir
         $this.LogLevel = $LogLevel
-        $date = (Get-Date).ToString('yyyyMMdd')
-        $this.LogFile = Join-Path -Path $this.LogDir -ChildPath "$date.log"
+        $this.LogFile = Join-Path -Path $this.LogDir -ChildPath 'PoshBot.log'
         $this.CreateLogFile()
     }
 
@@ -130,8 +129,6 @@ class Logger {
         }
 
         if ($Message.LogLevel.value__ -le $This.LogLevel.value__) {
-            $date = (Get-Date).ToString('yyyyMMdd')
-            $this.LogFile = $this.LogFile = Join-Path -Path $this.LogDir -ChildPath "$date.log"
             $this.RollLog($this.LogFile, $false)
             $json = $Message.ToJson()
             $json | Out-File -FilePath $this.LogFile -Append -Encoding utf8
