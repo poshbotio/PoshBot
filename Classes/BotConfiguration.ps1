@@ -7,6 +7,8 @@ class BotConfiguration {
 
     [string[]]$PluginRepository = @('PSGallery')
 
+    [string[]]$ModuleManifestsToLoad = @()
+
     [LogLevel]$LogLevel = [LogLevel]::Verbose
 
     [hashtable]$BackendConfiguration = @{

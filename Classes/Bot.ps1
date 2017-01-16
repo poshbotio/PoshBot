@@ -43,6 +43,22 @@ class Bot {
         $this.PluginManager = [PluginManager]::new($this.RoleManager, $this.Storage, $this._Logger, $this._PoshBotDir)
         $this.Executor = [CommandExecutor]::new($this.RoleManager)
         $this.GenerateCommandPrefixList()
+
+        # Load in plugins listed in configuration
+        if ($this.Configuration.ModuleManifestsToLoad.Count -gt 0) {
+            $this._Logger.Info([LogMessage]::new('[Bot:Initialize] Loading in plugins from configuration'))
+            foreach ($manifestPath in $this.Configuration.ModuleManifestsToLoad) {
+                if (Test-Path -Path $manifestPath) {
+                    $this.PluginManager.InstallPlugin($manifestPath)
+                } else {
+                    $this._Logger.Info(
+                        [LogMessage]::new(
+                            [LogSeverity]::Warning, "[Bot:Initialize] Could not find manifest at [$manifestPath]"
+                        )
+                    )
+                }
+            }
+        }
     }
 
     [void]LoadConfiguration() {
@@ -62,7 +78,7 @@ class Bot {
     # Start the bot
     [void]Start() {
         $this._Stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-        $this._Logger.Log([LogMessage]::new('[Bot:Start] Start your engines'))
+        $this._Logger.Info([LogMessage]::new('[Bot:Start] Start your engines'))
 
         try {
             $this.Connect()
