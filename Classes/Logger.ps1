@@ -5,12 +5,6 @@ enum LogSeverity {
     Error
 }
 
-enum LogLevel {
-    Info = 1
-    Verbose = 2
-    Debug = 4
-}
-
 class LogMessage {
     [datetime]$DateTime = (Get-Date)
     [string]$Severity = [LogSeverity]::Normal

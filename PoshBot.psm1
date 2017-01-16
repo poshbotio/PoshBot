@@ -52,6 +52,12 @@ enum TriggerType {
     Timer
 }
 
+enum LogLevel {
+    Info = 1
+    Verbose = 2
+    Debug = 4
+}
+
 # Slack classes and associated functions
 @(
     'SlackMessage'
@@ -76,10 +82,12 @@ enum TriggerType {
 Export-ModuleMember -Function @(
     'Add-PoshBotPlugin'
     'Add-PoshBotPluginCommand'
+    'Get-PoshBotConfiguration'
     'New-PoshBotAce'
     'New-PoshBotBackend'
     'New-PoshBotCommand'
     'New-PoshBotCommandDescription'
+    'New-PoshBotConfiguration'
     'New-PoshBotInstance'
     'New-PoshBotPlugin'
     'New-PoshBotRole'
@@ -88,4 +96,5 @@ Export-ModuleMember -Function @(
     'New-HelloPlugin'
     'New-PoshBotCardResponse'
     'New-PoshBotTextResponse'
+    'Save-PoshBotConfiguration'
 )
