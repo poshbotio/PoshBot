@@ -9,12 +9,6 @@ class Bot {
 
     hidden [string]$_PoshBotDir
 
-    # List of commands available from plugins
-    #[hashtable]$Commands = @{}
-
-    # List of roles loaded from plugins
-    #[hashtable]$Roles = @{}
-
     [StorageProvider]$Storage
 
     [PluginManager]$PluginManager
@@ -26,40 +20,43 @@ class Bot {
     # Queue of messages from the chat network to process
     [System.Collections.Queue]$MessageQueue = (New-Object System.Collections.Queue)
 
-    [string]$CommandPrefix = '!'
-
-    hidden [bool]$_ShouldRun = $true
+    [BotConfiguration]$Configuration
 
     hidden [Logger]$_Logger
 
     hidden [System.Diagnostics.Stopwatch]$_Stopwatch
 
-    Bot([string]$Name, [Backend]$Backend, [string]$PoshBotDir) {
-        $this.Name = $Name
-        $this.Backend = $Backend
-        #$this.AttachBackend($Backend)
-        $this._PoshBotDir = $PoshBotDir
-        $this._Logger = [Logger]::new()
-        $this.Initialize()
-    }
+    hidden [System.Collections.Arraylist] $_PossibleCommandPrefixes = (New-Object System.Collections.ArrayList)
 
-    Bot([string]$Name, [Backend]$Backend, [string]$PoshBotDir, [string]$LogPath) {
+    Bot([string]$Name, [Backend]$Backend, [string]$PoshBotDir, [string]$ConfigDir) {
         $this.Name = $Name
         $this.Backend = $Backend
-        #$this.AttachBackend($Backend)
         $this._PoshBotDir = $PoshBotDir
-        $this._Logger = [Logger]::new($LogPath)
+        $this.Storage = [StorageProvider]::new($ConfigDir)
         $this.Initialize()
     }
 
     [void]Initialize() {
-        # TODO
-        # Load in configuration from persistent storage
-
-        $this.Storage = [StorageProvider]::new()
+        $this.LoadConfiguration()
+        $this._Logger = [Logger]::new($this.Configuration.LogDirectory)
         $this.RoleManager = [RoleManager]::new($this.Backend, $this.Storage, $this._Logger)
         $this.PluginManager = [PluginManager]::new($this.RoleManager, $this.Storage, $this._Logger, $this._PoshBotDir)
         $this.Executor = [CommandExecutor]::new($this.RoleManager)
+        $this.GenerateCommandPrefixList()
+    }
+
+    [void]LoadConfiguration() {
+        $botConfig = $this.Storage.GetConfig('Bot')
+        if ($botConfig) {
+            $this.Configuration = $botConfig
+        } else {
+            $this.Configuration = [BotConfiguration]::new()
+            $hash = @{}
+            $this.Configuration | Get-Member -MemberType Property | ForEach-Object {
+                $hash.Add($_.Name, $this.Configuration.($_.Name))
+            }
+            $this.Storage.SaveConfig('Bot', $hash)
+        }
     }
 
     # Start the bot
@@ -73,7 +70,7 @@ class Bot {
             # Start the loop to receive and process messages from the backend
             $sw = [System.Diagnostics.Stopwatch]::StartNew()
             $this._Logger.Log([LogMessage]::new('[Bot:Start] Beginning message processing loop'), [LogType]::System)
-            while ($this._ShouldRun -and $this.Backend.Connection.Connected) {
+            while ($this.Backend.Connection.Connected) {
 
                 # Receive message and add to queue
                 $this.ReceiveMessage()
@@ -112,12 +109,6 @@ class Bot {
         $this.Backend.Disconnect()
     }
 
-    # # Attach the backend (chat network specific) implementation
-    # [void]AttachBackend([Backend]$Backend) {
-    #     $this._Logger.Log([LogMessage]::new('[Bot:AttachBackend] Attaching backend'), [LogType]::System)
-    #     $this.Backend = $Backend
-    # }
-
     # Receive an event from the backend chat network
     [Message]ReceiveMessage() {
         $msg = $this.Backend.ReceiveMessage()
@@ -139,19 +130,12 @@ class Bot {
 
     [bool]IsBotCommand([Message]$Message) {
         $firstWord = ($Message.Text -split ' ')[0]
-        if ($firstWord -Match "^$($this.CommandPrefix)") {
-            $this._Logger.Log([LogMessage]::new('[Bot:IsBotCommand] Message is a bot command.'), [LogType]::System)
-            return $true
-        } else {
-            # foreach ($trigger in $this.Triggers.Keys) {
-            #     if ($Message.Text -Match $trigger) {
-            #         $match = $true
-            #         $this._Logger.Log([LogMessage]::new("[Bot:IsBotCommand] Message matches trigger [$trigger]."), [LogType]::System)
-            #         break
-            #     }
-            # }
+        foreach ($prefix in $this._PossibleCommandPrefixes ) {
+            if ($firstWord -match "^$prefix") {
+                $this._Logger.Log([LogMessage]::new('[Bot:IsBotCommand] Message is a bot command.'), [LogType]::System)
+                return $true
+            }
         }
-
         return $false
     }
 
@@ -172,7 +156,10 @@ class Bot {
         # If the message text starts with our bot prefix (!) then assume it's a message
         # for the bot and look for a command matching it
         if ($Message.Text) {
-            $commandString = $Message.Text.TrimStart($this.CommandPrefix)
+
+            $Message = $this.TrimPrefix($Message)
+            $commandString = $Message.Text
+
             $parsedCommand = [CommandParser]::Parse($commandString)
             $this._Logger.Log([LogMessage]::new('[Bot:HandleMessage] Parsed bot command', $parsedCommand), [LogType]::System)
 
@@ -241,13 +228,31 @@ class Bot {
         return $result
     }
 
-    # Format the response
-    [void]FormatResponse([Message]$Message) {
+    # Trim the command prefix or any alternate prefix or seperators off the message
+    # as we won't need them anymore.
+    [Message]TrimPrefix([Message]$Message) {
+        $Message.Text = $Message.Text.Trim()
+        $firstWord = ($Message.Text -split ' ')[0]
 
-        # Let the specific backend deal with format the response
-        $formatedMessage = $this.Backend.FormatResponse([Message]$Message)
+        foreach ($prefix in $this._PossibleCommandPrefixes) {
+            if ($firstWord -match "^$prefix") {
+                $Message.Text = $Message.Text.TrimStart($prefix).Trim()
+                write-host $Message.Text
+                #break
+            }
+        }
+        return $Message
+    }
 
-        $this.SendResponse($formatedMessage)
+    [void]GenerateCommandPrefixList() {
+        $this._PossibleCommandPrefixes.Add($this.Configuration.CommandPrefix)
+        foreach ($alternatePrefix in $this.Configuration.AlternateCommandPrefixes) {
+            $this._PossibleCommandPrefixes.Add($alternatePrefix)
+            foreach ($seperator in ($this.Configuration.AlternateCommandPrefixSeperators)) {
+                $prefixPlusSeperator = "$alternatePrefix$seperator"
+                $this._PossibleCommandPrefixes.Add($prefixPlusSeperator)
+            }
+        }
     }
 
     # Send the response to the backend to execute
@@ -266,18 +271,12 @@ function New-PoshBotInstance {
         [parameter(Mandatory)]
         [string]$Name,
 
-        [Backend]$Backend
+        [Backend]$Backend,
+
+        [string]$ConfigurationDirectory = (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot')
     )
     $here = $script:moduleRoot
-    $bot = [Bot]::new($Name, $Backend, $here)
-    #$bot._PoshBotDir = $script:moduleRoot
-
-    # if ($Backend) {
-    #     $bot.AttachBackend($Backend)
-    # }
-    #$bot.Initialize()
-
-    return $bot
+    [Bot]::new($Name, $Backend, $here, $ConfigurationDirectory)
 }
 
 function Add-PoshBotPlugin {

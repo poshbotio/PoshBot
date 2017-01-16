@@ -29,6 +29,7 @@ $script:moduleRoot = $PSScriptRoot
     'ConnectionConfig'
     'Connection'
     'Backend'
+    'BotConfiguration'
     'Bot'
 ) | ForEach-Object {
     . "$PSScriptRoot/Classes/$_.ps1"
