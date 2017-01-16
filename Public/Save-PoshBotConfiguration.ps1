@@ -12,7 +12,6 @@ function Save-PoshBotConfiguration {
 
     process {
         foreach ($item in $InputObject) {
-            Write-Verbose asdf
             if ($PSCmdlet.ShouldProcess($Path, 'Save PoshBot configuration')) {
                 $hash = @{}
                 $InputObject | Get-Member -MemberType Property | ForEach-Object {
