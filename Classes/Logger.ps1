@@ -13,8 +13,8 @@ enum LogLevel {
 
 class LogMessage {
     [datetime]$DateTime = (Get-Date)
-    [LogSeverity]$Severity = [LogSeverity]::Normal
-    [LogLevel]$LogLevel = [LogLevel]::Info
+    [string]$Severity = [LogSeverity]::Normal
+    [string]$LogLevel = [LogLevel]::Info
     [string]$Message
     [object]$Data
 
