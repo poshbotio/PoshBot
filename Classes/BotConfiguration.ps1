@@ -1,9 +1,4 @@
 
-enum LogLevel {
-    Debug
-    Verbose
-}
-
 class BotConfiguration {
 
     [string]$LogDirectory = (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot')
