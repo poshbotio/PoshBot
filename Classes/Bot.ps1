@@ -101,6 +101,17 @@ class Bot {
     [void]Connect() {
         $this._Logger.Log([LogMessage]::new('[Bot:Connect] Connecting to backend chat network'), [LogType]::System)
         $this.Backend.Connect()
+
+        # That that we're connected, resolve any bot administrators defined in
+        # configuration to their IDs and add to the [admin] role
+        foreach ($admin in $this.Configuration.BotAdmins) {
+            $adminId = $this.Backend.UsernameToUserId($admin)
+            if ($adminId) {
+                $this.RoleManager.AddUserToRole($adminId, 'admin')
+            } else {
+                $this._Logger.Log([LogMessage]::new("[Bot:Connect] Unable to resolve ID for admin [$admin]"), [LogType]::System)
+            }
+        }
     }
 
     # Disconnect the bot from the chat network

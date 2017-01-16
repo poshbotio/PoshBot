@@ -95,10 +95,6 @@ PrivateData = @{
     # Define the bot roles for used by this module
     Roles = @(
         @{
-            Name = 'Admin'
-            Description = 'Bot administrators'
-        }
-        @{
             Name = 'PluginAdmin'
             Description = 'Plugin administrators'
         }

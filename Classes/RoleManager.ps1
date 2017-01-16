@@ -17,6 +17,10 @@ class RoleManager {
     [void]Initialize() {
         # Load in state from persistent storage
         $this._Logger.Log([LogMessage]::new('[RoleManager:Initialize] Initializing'), [LogType]::System)
+
+        $adminrole = [Role]::New('Admin', 'Bot administrators')
+        $this.AddRole($adminRole)
+
         $this.LoadState()
     }
 
