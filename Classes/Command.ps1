@@ -233,7 +233,6 @@ class Command {
 
     # Add a role
     [void]AddRole([Role]$Role) {
-        Write-Host "[Command:AddRole] Adding role [$($Role.Name)] to command [$($this.Name)]"]
         $this.AccessFilter.AddAllowedRole($Role.Name)
     }
 

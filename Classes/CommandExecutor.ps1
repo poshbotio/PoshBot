@@ -73,7 +73,7 @@ class CommandExecutor {
                 } else {
                     try {
                         $hash = $Command.Invoke($ParsedCommand, $false)
-                        write-host "$($hash | format-list | out-string)"
+                        #write-host "$($hash | format-list | out-string)"
 
                         #$global:poshbotcmd = $hash
 
@@ -149,12 +149,12 @@ class CommandExecutor {
         $functionInfo = $Command.FunctionInfo
         $matchedParamSet = $null
 
-        Write-Host "$($ParsedCommand.NamedParameters | out-string)"
+        #Write-Host "$($ParsedCommand.NamedParameters | out-string)"
 
         foreach ($parameterSet in $functionInfo.ParameterSets) {
             $mandatoryParameters = ($parameterSet.Parameters | where IsMandatory -eq $true).Name
             if ($mandatoryParameters) {
-                Write-Host $mandatoryParameters
+                #Write-Host $mandatoryParameters
                 if ( -not @($mandatoryParameters| where {$ParsedCommand.NamedParameters.Keys -notcontains $_}).Count) {
                     return $true
                 }

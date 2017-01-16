@@ -329,7 +329,6 @@ class SlackBackend : Backend {
                 [string]$sendTo = $Response.To
                 if ($customResponse.DM -eq $true) {
                     $sendTo = "@$($this.UserIdToUsername($Response.MessageFrom))"
-                    Write-Host "SendTo: $SendTo"
                 }
 
                 if ($customResponse.PSObject.TypeNames[0] -eq 'PoshBot.Card.Response') {
