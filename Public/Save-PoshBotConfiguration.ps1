@@ -12,6 +12,7 @@ function Save-PoshBotConfiguration {
 
     process {
         foreach ($item in $InputObject) {
+            Write-Verbose asdf
             if ($PSCmdlet.ShouldProcess($Path, 'Save PoshBot configuration')) {
                 $hash = @{}
                 $InputObject | Get-Member -MemberType Property | ForEach-Object {
@@ -20,7 +21,7 @@ function Save-PoshBotConfiguration {
 
                 $meta = $hash | ConvertTo-Metadata -WarningAction SilentlyContinue
                 if (-not (Test-Path -Path $Path)) {
-                    New-Item -Path $Path -ItemType File -Force
+                    New-Item -Path $Path -ItemType File -Force | Out-Null
                 }
                 $meta | Out-file -FilePath $Path -Force -Encoding utf8
 
