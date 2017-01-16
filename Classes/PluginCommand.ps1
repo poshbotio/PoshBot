@@ -7,4 +7,8 @@ class PluginCommand {
         $this.Plugin = $Plugin
         $this.Command = $Command
     }
+
+    [string]ToString() {
+        return "$($this.Plugin.Name):$($this.Command.Name)"
+    }
 }

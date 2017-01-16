@@ -221,7 +221,6 @@ class Bot {
                     }
                     #$response.Text = $($result.Output | Format-List * | Out-String)
                 }
-                $this.SendMessage($response)
             } else {
                 $msg = "No command found matching [$commandString]"
                 $this._Logger.Info([LogMessage]::new([LogSeverity]::Warning, $msg, $parsedCommand))
@@ -229,9 +228,19 @@ class Bot {
                 if (-not $this.Configuration.MuteUnknownCommand) {
                     $response.Severity = [Severity]::Warning
                     $response.Data = New-PoshBotCardResponse -Type Warning -Text $msg
-                    $this.SendMessage($response)
                 }
             }
+
+            # Send response back to user in private (DM) channel if this command
+            # is marked to devert responses
+            if ($pluginCmd) {
+                if ($this.Configuration.SendCommandResponseToPrivate -Contains $pluginCmd.ToString()) {
+                    $this._Logger.Info([LogMessage]::new("[Bot:HandleMessage] Deverting response from command [$pluginCmd.ToString()] to private channel"))
+                    $Response.To = "@$($this.Backend.UserIdToUsername($Message.From))"
+                }
+            }
+
+            $this.SendMessage($response)
         }
     }
 
