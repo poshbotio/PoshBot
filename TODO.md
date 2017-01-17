@@ -1,9 +1,9 @@
-* Support custom response formatting
+    * Support custom response formatting
 * Provide better response for failed commands
 * Come up with a better way to support optional parameters to scripts
     * Implement logging
     * Enhance !help by filtering on plugins or commands with !help <plugin> | <command>
-* Validate mandatory parameters before calling command and respond back with appropriate error message
+    * Validate mandatory parameters before calling command and respond back with appropriate error message
 * Don't allow a failing command to crash the bot
 
 # Class gotchas
