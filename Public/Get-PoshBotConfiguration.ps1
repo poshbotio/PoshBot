@@ -4,7 +4,7 @@ function Get-PoshBotConfiguration {
     param(
         [ValidateScript({
             if (Test-Path -Path $_) {
-                if ( (Get-Item -Path $_).Extension -eq 'psd1') {
+                if ( (Get-Item -Path $_).Extension -eq '.psd1') {
                     $true
                 } else {
                     Throw 'Path must be to a valid .psd1 file'
