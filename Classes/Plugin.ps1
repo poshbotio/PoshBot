@@ -140,39 +140,3 @@ class Plugin {
         }
     }
 }
-
-function New-PoshBotPlugin {
-    [cmdletbinding()]
-    param(
-        [parameter(Mandatory)]
-        [string]$Name,
-
-        [Command[]]$Commands = @(),
-
-        [Role[]]$Roles = @()
-    )
-
-    $plugin = [Plugin]::new($Name)
-    $Commands | foreach {
-        $plugin.AddCommand($_)
-    }
-    $Roles | foreach {
-        $plugin.AddRole($_)
-    }
-    return $plugin
-}
-
-function Add-PoshBotPluginCommand {
-    [cmdletbinding()]
-    param(
-        [parameter(Mandatory, ValueFromPipeline)]
-        [Alias('Plugin')]
-        [Plugin]$InputObject,
-
-        [parameter(Mandatory)]
-        [Command]$Command
-    )
-
-    Write-Verbose -Message "Adding command [$($Command.Name)] to plugin"
-    $InputObject.AddCommand($Command)
-}
