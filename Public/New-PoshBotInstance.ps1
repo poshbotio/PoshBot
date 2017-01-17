@@ -1,14 +1,27 @@
 
 function New-PoshBotInstance {
-    [cmdletbinding()]
+    [cmdletbinding(DefaultParameterSetName = 'path')]
     param(
-        [parameter(Mandatory)]
+        [parameter(Mandatory, ParameterSetName = 'path')]
         [string]$Name,
 
+        [parameter(Mandatory)]
         [Backend]$Backend,
 
-        [string]$ConfigurationDirectory = (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot')
+        [parameter(ParameterSetName = 'path')]
+        [string]$ConfigurationPath = (Join-Path -Path (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot') -ChildPath 'PoshBot.psd1'),
+
+        [parameter(ParameterSetName = 'config')]
+        [BotConfiguration]$Configuration
     )
+
     $here = $script:moduleRoot
-    [Bot]::new($Name, $Backend, $here, $ConfigurationDirectory)
+
+    if ($PSCmdlet.ParameterSetName -eq 'path') {
+        Write-Verbose -Message "Creating bot instance from data file [$ConfigurationPath]"
+        [Bot]::new($Name, $Backend, $here, $ConfigurationPath)
+    } elseIf ($PSCmdlet.ParameterSetName -eq 'config') {
+        Write-Verbose -Message 'Creating bot instance from configuration object'
+        [Bot]::new($Backend, $here, $Configuration)
+    }
 }

@@ -2,6 +2,7 @@
 function New-PoshBotConfiguration {
     [cmdletbinding()]
     param(
+        [string]$Name = 'PoshBot',
         [string]$LogDirectory = (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot'),
         [string]$PluginDirectory = (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot'),
         [string[]]$PluginRepository = @('PSGallery'),
@@ -15,7 +16,9 @@ function New-PoshBotConfiguration {
         [bool]$MuteUnknownCommand = $false
     )
 
+    Write-Verbose -Message 'Creating new PoshBot configuration'
     $config = [BotConfiguration]::new()
+    $config.Name = $Name
     $config.AlternateCommandPrefixes = $AlternateCommandPrefixes
     $config.AlternateCommandPrefixSeperators = $AlternateCommandPrefixSeperators
     $config.BotAdmins = $BotAdmins

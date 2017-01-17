@@ -28,16 +28,28 @@ class Bot {
 
     hidden [System.Collections.Arraylist] $_PossibleCommandPrefixes = (New-Object System.Collections.ArrayList)
 
-    Bot([string]$Name, [Backend]$Backend, [string]$PoshBotDir, [string]$ConfigDir) {
+    Bot([Backend]$Backend, [string]$PoshBotDir, [BotConfiguration]$Config) {
+        $this.Name = $config.Name
+        $this.Backend = $Backend
+        $this._PoshBotDir = $PoshBotDir
+        $this.Storage = [StorageProvider]::new($Config.ConfigurationDirectory)
+        $this.Initialize($Config)
+    }
+
+    Bot([string]$Name, [Backend]$Backend, [string]$PoshBotDir, [string]$ConfigPath) {
         $this.Name = $Name
         $this.Backend = $Backend
         $this._PoshBotDir = $PoshBotDir
-        $this.Storage = [StorageProvider]::new($ConfigDir)
-        $this.Initialize()
+        $this.Storage = [StorageProvider]::new((Split-Path -Path $ConfigPath -Parent))
+        $this.Initialize($null)
     }
 
-    [void]Initialize() {
-        $this.LoadConfiguration()
+    [void]Initialize([BotConfiguration]$Config) {
+        if ($null -eq $Config) {
+            $this.LoadConfiguration()
+        } else {
+            $this.Configuration = $Config
+        }
         $this._Logger = [Logger]::new($this.Configuration.LogDirectory, $this.Configuration.LogLevel)
         $this.RoleManager = [RoleManager]::new($this.Backend, $this.Storage, $this._Logger)
         $this.PluginManager = [PluginManager]::new($this.RoleManager, $this.Storage, $this._Logger, $this._PoshBotDir)
@@ -62,7 +74,7 @@ class Bot {
     }
 
     [void]LoadConfiguration() {
-        $botConfig = $this.Storage.GetConfig('Bot')
+        $botConfig = $this.Storage.GetConfig($this.Name)
         if ($botConfig) {
             $this.Configuration = $botConfig
         } else {
