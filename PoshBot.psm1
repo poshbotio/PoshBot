@@ -1,11 +1,14 @@
 
 $script:moduleRoot = $PSScriptRoot
 
+$script:botTracker = @{
+
+}
+
 # Base classes and associated functions
 @(
     'Logger'
     'ExceptionFormatter'
-    #'Identifier'
     'BotCommand'
     'Event'
     'Person'
@@ -82,6 +85,7 @@ enum LogLevel {
 Export-ModuleMember -Function @(
     'Add-PoshBotPlugin'
     'Add-PoshBotPluginCommand'
+    'Get-PoshBot'
     'Get-PoshBotConfiguration'
     'New-PoshBotAce'
     'New-PoshBotBackend'
@@ -97,4 +101,6 @@ Export-ModuleMember -Function @(
     'New-PoshBotCardResponse'
     'New-PoshBotTextResponse'
     'Save-PoshBotConfiguration'
+    'Start-PoshBot'
+    'Stop-Poshbot'
 )
