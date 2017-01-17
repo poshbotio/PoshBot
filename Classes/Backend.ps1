@@ -65,14 +65,3 @@ class Backend {
         # Must be extended by the specific Backend implementation
     }
 }
-
-function New-PoshBotBackend {
-    param(
-        [parameter(Mandatory)]
-        [string]$Name
-    )
-
-    $backend = [Backend]::New()
-    $backend.Name = $Name
-    return $backend
-}
