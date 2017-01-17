@@ -5,7 +5,7 @@ function Save-PoshBotConfiguration {
         [parameter(Mandatory, ValueFromPipeline)]
         [BotConfiguration[]]$InputObject,
 
-        [string]$Path = (Join-Path -Path (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot') -ChildPath 'Bot.psd1'),
+        [string]$Path = (Join-Path -Path (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot') -ChildPath 'PoshBot.psd1'),
 
         [switch]$PassThru
     )
@@ -23,6 +23,7 @@ function Save-PoshBotConfiguration {
                     New-Item -Path $Path -ItemType File -Force | Out-Null
                 }
                 $meta | Out-file -FilePath $Path -Force -Encoding utf8
+                Write-Verbose -Message "PoshBot configuration saved to [$Path]"
 
                 if ($PSBoundParameters.ContainsKey('PassThru')) {
                     Get-Item -Path $Path | Select-Object -First 1

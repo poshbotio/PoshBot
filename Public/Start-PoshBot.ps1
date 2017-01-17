@@ -34,7 +34,7 @@ function Start-PoshBot {
                 $instanceId = (New-Guid).ToString().Replace('-', '')
                 $jobName = "PoshBot_$instanceId"
                 $job = Start-Job -ScriptBlock $sb -Name $jobName -ArgumentList $ConfigurationDirectory
-                $config = Get-PoshBotConfiguration -Path (Join-Path -Path $ConfigurationDirectory -ChildPath 'Bot.psd1')
+                $config = Get-PoshBotConfiguration -Path (Join-Path -Path $ConfigurationDirectory -ChildPath 'PoshBot.psd1')
 
                 # Track the bot instance
                 $botTracker = @{

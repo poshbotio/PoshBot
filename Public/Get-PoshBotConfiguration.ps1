@@ -13,7 +13,7 @@ function Get-PoshBotConfiguration {
                 Throw 'Path is not valid'
             }
         })]
-        [string]$Path = (Join-Path -Path (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot') -ChildPath 'Bot.psd1')
+        [string]$Path = (Join-Path -Path (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot') -ChildPath 'PoshBot.psd1')
     )
 
     $hash = Import-PowerShellDataFile -Path $Path
