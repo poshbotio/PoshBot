@@ -1,55 +1,67 @@
 
 function Start-PoshBot {
-    [cmdletbinding()]
+    [cmdletbinding(DefaultParameterSetName = 'bot')]
     param(
         [parameter(Mandatory, ValueFromPipeline, ParameterSetName = 'bot')]
         [Alias('Bot')]
         [Bot]$InputObject,
 
-        [parameter(Mandatory, ParameterSetName = 'config')]
-        [string]$ConfigurationDirectory,
+        [parameter(Mandatory, ValueFromPipeline, ParameterSetName = 'config')]
+        [BotConfiguration]$Configuration,
 
-        [parameter(ParameterSetName = 'config')]
+        [parameter(Mandatory, ParameterSetName = 'configpath')]
+        [string]$ConfigurationPath,
+
+        [parameter(ParameterSetName = 'configpath')]
         [switch]$AsJob,
 
-        [parameter(ParameterSetName = 'config')]
+        [parameter(ParameterSetName = 'configpath')]
         [switch]$PassThru
     )
 
     process {
-        if ($PSCmdlet.ParameterSetName -eq 'bot') {
-            $InputObject.Start()
-        } elseif ($PSCmdlet.ParameterSetName -eq 'config') {
-            $sb = {
-                param(
-                    $Dir
-                )
 
+        switch ($PSCmdlet.ParameterSetName) {
+            'bot' {
+                $InputObject.Start()
+            }
+            'config' {
                 $backend = New-PoshBotSlackBackend -Name 'SlackBackend' -BotToken $env:SLACK_TOKEN
-                $bot = New-PoshBotInstance -Name 'SlackBot' -Backend $backend -ConfigurationDirectory $Dir
+                $bot = New-PoshBotInstance -Backend $backend -Configuration $Configuration
                 $bot.Start()
             }
+            'configpath' {
+                $sb = {
+                    param(
+                        $ConfigPath
+                    )
 
-            if ($PSBoundParameters.ContainsKey('AsJob')) {
-                $instanceId = (New-Guid).ToString().Replace('-', '')
-                $jobName = "PoshBot_$instanceId"
-                $job = Start-Job -ScriptBlock $sb -Name $jobName -ArgumentList $ConfigurationDirectory
-                $config = Get-PoshBotConfiguration -Path (Join-Path -Path $ConfigurationDirectory -ChildPath 'PoshBot.psd1')
-
-                # Track the bot instance
-                $botTracker = @{
-                    JobId = $job.Id
-                    Name = $jobName
-                    InstanceId = $instanceId
-                    Config = $config
+                    $backend = New-PoshBotSlackBackend -Name 'SlackBackend' -BotToken $env:SLACK_TOKEN
+                    $bot = New-PoshBotInstance -Name 'SlackBot' -Backend $backend -ConfigurationPath $ConfigPath
+                    $bot.Start()
                 }
-                $script:botTracker.Add($job.Id, $botTracker)
 
-                if ($PSBoundParameters.ContainsKey('PassThru')) {
-                    Get-PoshBot -Id $job.Id
+                if ($PSBoundParameters.ContainsKey('AsJob')) {
+                    $instanceId = (New-Guid).ToString().Replace('-', '')
+                    $jobName = "PoshBot_$instanceId"
+                    $job = Start-Job -ScriptBlock $sb -Name $jobName -ArgumentList $ConfigurationPath
+                    $config = Get-PoshBotConfiguration -Path $ConfigurationPath
+
+                    # Track the bot instance
+                    $botTracker = @{
+                        JobId = $job.Id
+                        Name = $jobName
+                        InstanceId = $instanceId
+                        Config = $config
+                    }
+                    $script:botTracker.Add($job.Id, $botTracker)
+
+                    if ($PSBoundParameters.ContainsKey('PassThru')) {
+                        Get-PoshBot -Id $job.Id
+                    }
+                } else {
+                    & $sb $ConfigurationPath
                 }
-            } else {
-                & $sb $ConfigurationDirectory
             }
         }
     }
