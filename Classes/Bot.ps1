@@ -41,7 +41,8 @@ class Bot {
         $this.Backend = $Backend
         $this._PoshBotDir = $PoshBotDir
         $this.Storage = [StorageProvider]::new((Split-Path -Path $ConfigPath -Parent))
-        $this.Initialize($null)
+        $config = Get-PoshBotConfiguration -Path $ConfigPath
+        $this.Initialize($config)
     }
 
     [void]Initialize([BotConfiguration]$Config) {
@@ -55,6 +56,13 @@ class Bot {
         $this.PluginManager = [PluginManager]::new($this.RoleManager, $this.Storage, $this._Logger, $this._PoshBotDir)
         $this.Executor = [CommandExecutor]::new($this.RoleManager)
         $this.GenerateCommandPrefixList()
+
+        # Add Plugin directory to PSModulePath
+        if (-not [string]::IsNullOrEmpty($this.Configuration.PluginDirectory)) {
+            if ($env:PSModulePath.Split(';') -notcontains $this.Configuration.PluginDirectory) {
+                $env:PSModulePath = $this.Configuration.PluginDirectory + ';' + $env:PSModulePath
+            }
+        }
 
         # Load in plugins listed in configuration
         if ($this.Configuration.ModuleManifestsToLoad.Count -gt 0) {
