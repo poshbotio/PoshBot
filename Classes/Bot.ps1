@@ -64,6 +64,15 @@ class Bot {
             }
         }
 
+        # Set PS repository to trusted
+        foreach ($repo in $this.Configuration.PluginRepository) {
+            if (Get-PSRepository -Name $repo -Verbose:$false -ErrorAction SilentlyContinue) {
+                Set-PSRepository -Name $repo -Verbose:$false -InstallationPolicy Trusted
+            } else {
+                [LogSeverity]::Error, "[Bot:Initialize] PowerShell repository [$repo)] is not defined"
+            }
+        }
+
         # Load in plugins listed in configuration
         if ($this.Configuration.ModuleManifestsToLoad.Count -gt 0) {
             $this._Logger.Info([LogMessage]::new('[Bot:Initialize] Loading in plugins from configuration'))
