@@ -297,12 +297,12 @@ class PluginManager {
                 $this.Logger.Info([LogMessage]::new("[PluginManager:CreatePluginFromModuleManifest] Creating command [$($command.Name)] for new plugin [$($plugin.Name)]"))
                 $cmd = [Command]::new()
                 $cmd.Name = $command.Name
-                $cmd.Description = $cmdHelp.Synopsis
+                $cmd.Description = $cmdHelp.Synopsis.Trim()
                 $cmd.ManifestPath = $manifestPath
                 $cmd.FunctionInfo = $command
                 $cmd.Trigger = [Trigger]::new('Command', $command.Name)
                 if ($cmdHelp.examples) {
-                    $cmd.HelpText = $cmdHelp.examples[0].example[0].code
+                    $cmd.HelpText = $cmdHelp.examples[0].example[0].code.Trim()
                 }
                 $cmd.ModuleCommand = "$ModuleName\$($command.Name)"
                 $cmd.AsJob = $AsJob
