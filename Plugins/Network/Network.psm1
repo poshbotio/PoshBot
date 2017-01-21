@@ -1,10 +1,10 @@
 
-function Test-Connection {
+function Ping {
     <#
     .SYNOPSIS
         Tests a connection to a host
     .EXAMPLE
-        !test connection --name www.google.com
+        !ping --name www.google.com
     .Role
         Network
     #>
@@ -14,7 +14,7 @@ function Test-Connection {
         [string]$Name
     )
 
-    Write-Output -InputObject (Test-NetConnection -ComputerName $Name -TraceRoute | Format-List)
+    Write-Output (Test-NetConnection -ComputerName $Name -TraceRoute | Format-List | Out-String)
 }
 
 function Dig {
@@ -22,9 +22,9 @@ function Dig {
     .SYNOPSIS
         Perform DNS resolution on a host
     .EXAMPLE
-        !dig --host www.google.com
+        !dig --name www.google.com
     .EXAMPLE
-        !dig --host www.google.com -Type CNAME --server 8.8.8.8
+        !dig --name www.google.com -Type CNAME --server 8.8.8.8
     .Role
         Network
     #>
@@ -42,8 +42,8 @@ function Dig {
     )
 
     if ($PSBoundParameters.ContainsKey('Server')) {
-        Resolve-DnsName -Name $Name -Type $Type -Server $Server | Format-Table -Autosize
+        Resolve-DnsName -Name $Name -Type $Type -Server $Server | Format-Table -Autosize | Out-String
     } else {
-        Resolve-DnsName -Name $Name -Type $Type | Format-Table -Autosize
+        Resolve-DnsName -Name $Name -Type $Type | Format-Table -Autosize | Out-String
     }
 }
