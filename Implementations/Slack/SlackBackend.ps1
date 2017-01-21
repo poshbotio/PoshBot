@@ -5,6 +5,8 @@ class SlackBackend : Backend {
     # All othere will be ignored
     [string[]]$MessageTypes
 
+    [int]$MaxMessageLength = 1300
+
     # Buffer to receive data from websocket
     hidden [Byte[]]$Buffer = (New-Object System.Byte[] 4096)
 
@@ -220,7 +222,8 @@ class SlackBackend : Backend {
                 }
             }
         } catch {
-            Write-Error [ExceptionFormatter]::ToJson($_)
+            Write-Error $_
+            #Write-Error [ExceptionFormatter]::ToJson($_)
         }
         return $msg
     }
@@ -295,33 +298,6 @@ class SlackBackend : Backend {
     }
 
     [void]SendMessage([Response]$Response) {
-        # $textBlock = '```' + $Response.Text + '```'
-        # if (($Response.Text -eq [string]::Empty) -or ($null -eq $Response.Text)) {
-        #     $fbText = 'no data'
-        # } else {
-        #     $fbText = $Response.Text
-        # }
-
-        # $msgAtt = New-SlackMessageAttachment -Fallback $fbText -Text $textBlock -MarkDownFields 'text'
-
-        # switch ($Response.Severity) {
-        #     'Success' {
-        #         $msgAtt.color = $this._PSSlackColorMap.green
-        #     }
-        #     'Warning' {
-        #         $msgAtt.color = $this._PSSlackColorMap.orange
-        #     }
-        #     'Error' {
-        #         $msgAtt.color = $this._PSSlackColorMap.red
-        #     }
-        #     'None' {
-        #         # no color
-        #     }
-        # }
-
-        # $msg = $msgAtt | New-SlackMessage -Channel $Response.To -AsUser
-        # $slackResponse = $msg | Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Verbose:$false
-
         if ($Response.Data.Count -gt 0) {
             # Process our custom responses
             foreach ($customResponse in $Response.Data) {
@@ -332,19 +308,13 @@ class SlackBackend : Backend {
                 }
 
                 if ($customResponse.PSObject.TypeNames[0] -eq 'PoshBot.Card.Response') {
-                    # TODO
-                    # Build this out more
-                    #$textBlock = '```' + $customResponse.Text + '```'
-
                     $attParams = @{
-                        #Fallback = $fbText
-                        #Text = $textBlock
                         MarkdownFields = 'text'
                         Color = $customResponse.Color
                     }
                     $fbText = 'no data'
                     if (-not [string]::IsNullOrEmpty($customResponse.Text)) {
-                        $attParams.Text = '```' + $customResponse.Text + '```'
+                        Write-Verbose "response size: $($customResponse.Text.Length)"
                         $fbText = $customResponse.Text
                     }
                     $attParams.Fallback = $fbText
@@ -374,10 +344,16 @@ class SlackBackend : Backend {
                         $attParams.Fields = $arr
                     }
 
-                    #$msgAtt = New-SlackMessageAttachment -Fallback $fbText -Text $textBlock -MarkDownFields 'text' -Color $customResponse.Color
-                    $msgAtt = New-SlackMessageAttachment @attParams
-                    $msg = $msgAtt | New-SlackMessage -Channel $sendTo -AsUser
-                    $slackResponse = $msg | Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Verbose:$false
+                    $chunks = $this._ChunkString($customResponse.Text)
+                    Write-Verbose "Split response into [$($chunks.Count)] chunks"
+
+                    foreach ($chunk in $chunks) {
+                        $copy = Copy-Object -InputObject $attParams
+                        $copy.Text = '```' + $chunk + '```'
+                        $att = New-SlackMessageAttachment @copy
+                        $msg = $att | New-SlackMessage -Channel $sendTo -AsUser
+                        $slackResponse = $msg | Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Verbose:$false
+                    }
                 } elseif ($customResponse.PSObject.TypeNames[0] -eq 'PoshBot.Text.Response') {
                     $slackResponse = Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Channel $sendTo -Text $customResponse.Text -Verbose:$false -AsUser
                 }
@@ -389,10 +365,6 @@ class SlackBackend : Backend {
                 $slackResponse = Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Channel $Response.To -Text $t -Verbose:$false -AsUser
             }
         }
-
-        #$slackResponse = Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Channel $Response.To -Text $Response.Text -Verbose:$false -AsUser
-        #$slackResponse = Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Channel $Response.To -Text $Response.Text -Verbose:$false -AsUser
-        #Write-Verbose "[SlackBackend:SendMessage] Result: $($slackResponse | Format-List * | Out-String)"
     }
 
     [string]ResolveChannelId([string]$ChannelName) {
@@ -508,6 +480,28 @@ class SlackBackend : Backend {
             return $this.Users[$UserId].Nickname
             #return $allUsers | Where-Object {$_.Id -eq $UserId} | Select-Object -ExpandProperty Name
         }
+    }
+
+    hidden [System.Collections.ArrayList] _ChunkString([string]$Text) {
+
+        return [regex]::Split($Text, "(?<=\G.{$($this.MaxMessageLength)})", [System.Text.RegularExpressions.RegexOptions]::Singleline)
+
+        # $chunks = New-Object -TypeName System.Collections.Arraylist
+
+        # if ($Text.Length -ge $this.MaxMessageLength) {
+        #     $parts = [Math]::Floor($Text.Length / $this.MaxMessageLength)
+        #     Write-Host "Parts: $parts"
+
+        #     for ($x = 0; $x -lt $parts; $x++) {
+        #         $chunks.Add($Text.SubString($x * $this.MaxMessageLength, $this.MaxMessageLength)) | Out-Null
+        #     }
+        #     if ($remainder = $Text.Length % $this.MaxMessageLength) {
+        #         $chunks.Add($Text.SubString($Text.Length - $remainder)) | Out-Null
+        #     }
+        # } else {
+        #     $chunks.Add($Text) | Out-Null
+        # }
+        # return $chunks
     }
 }
 
