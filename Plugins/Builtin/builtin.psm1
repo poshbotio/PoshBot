@@ -470,6 +470,12 @@ function Plugin-Disable {
 }
 
 function About {
+    <#
+    .SYNOPSIS
+        Display details about PoshBot
+    .EXAMPLE
+        !about
+    #>
     [cmdletbinding()]
     param(
         $Bot
