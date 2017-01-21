@@ -57,9 +57,14 @@ class Bot {
         $this.Executor = [CommandExecutor]::new($this.RoleManager)
         $this.GenerateCommandPrefixList()
 
-        # Add Plugin directory to PSModulePath
+        # Add internal plugin directory and user-defined plugin directory to PSModulePath
         if (-not [string]::IsNullOrEmpty($this.Configuration.PluginDirectory)) {
-            if ($env:PSModulePath.Split(';') -notcontains $this.Configuration.PluginDirectory) {
+            $internalPluginDir = Join-Path -Path $this._PoshBotDir -ChildPath 'Plugins'
+            $modulePaths = $env:PSModulePath.Split(';')
+            if ($modulePaths -notcontains $internalPluginDir) {
+                $env:PSModulePath = $internalPluginDir + ';' + $env:PSModulePath
+            }
+            if ($modulePaths -notcontains $this.Configuration.PluginDirectory) {
                 $env:PSModulePath = $this.Configuration.PluginDirectory + ';' + $env:PSModulePath
             }
         }
