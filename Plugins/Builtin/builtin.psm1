@@ -226,9 +226,6 @@ function Plugin-List {
         Get all installed plugins
     .EXAMPLE
         !plugin list
-    .ROLE
-        Admin
-        PluginAdmin
     #>
     [cmdletbinding()]
     param(
@@ -254,9 +251,6 @@ function Plugin-Show {
         Get the details of a specific plugin
     .EXAMPLE
         !plugin show --plugin <plugin name>
-    .ROLE
-        Admin
-        PluginAdmin
     #>
     [cmdletbinding()]
     param(
