@@ -145,3 +145,31 @@ function Giphy {
         Write-Output 'No results found'
     }
 }
+
+function Roll-Dice {
+    <#
+    .SYNOPSIS
+        Roll dice
+    .EXAMPLE
+        !role dice -dice 1d6
+    .EXAMPLE
+        !role dice -dice 2d20 -bonus 5
+    .Role
+        Demo
+    #>
+    param(
+        [parameter(mandatory)]
+        [string]$Dice,
+
+        [int]$Bonus = 0
+    )
+    $quantity, $faces = $Dice -split 'd'
+    $total = (1..$quantity | ForEach-Object {
+        Get-Random -Minimum $quantity -Maximum ([int]$faces * 2)
+    } | Measure-Object -Sum).Sum
+
+    [pscustomobject]@{
+        Bonus = [int]$bonus
+        Total = ([int]$bonus + $total)
+    }
+}
