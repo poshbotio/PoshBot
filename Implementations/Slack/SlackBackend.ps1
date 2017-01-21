@@ -193,9 +193,17 @@ class SlackBackend : Backend {
             #     $jsonResult = [System.Text.Encoding]::UTF8.GetString($this.buffer, 0, $task.Result.Count)
             # }
 
-            $cts = New-Object System.Threading.CancellationTokenSource
-            $taskResult = $this.Connection.WebSocket.ReceiveAsync($this.buffer, $cts.Token).GetAwaiter().GetResult()
-            $jsonResult = [System.Text.Encoding]::UTF8.GetString($this.buffer, 0, $taskResult.Count)
+            $ct = New-Object System.Threading.CancellationToken
+            $taskResult = $null
+            do {
+                $taskResult = $this.Connection.WebSocket.ReceiveAsync($this.buffer, $ct)
+                while (-not $taskResult.IsCompleted) {
+                    Start-Sleep -Milliseconds 100
+                }
+            } until (
+                $taskResult.Result.Count -lt 4096
+            )
+            $jsonResult = [System.Text.Encoding]::UTF8.GetString($this.buffer, 0, $taskResult.Result.Count)
 
             if ($null -ne $jsonResult -and $jsonResult -ne [string]::Empty) {
                 Write-Debug -Message "[SlackBackend:ReceiveMessage] Received `n$jsonResult"
@@ -349,7 +357,11 @@ class SlackBackend : Backend {
 
                     foreach ($chunk in $chunks) {
                         $copy = Copy-Object -InputObject $attParams
-                        $copy.Text = '```' + $chunk + '```'
+                        if (-not [string]::IsNullOrEmpty($chunk)) {
+                            $copy.Text = '```' + $chunk + '```'
+                        } else {
+                            $copy.Text = [string]::Empty
+                        }
                         $att = New-SlackMessageAttachment @copy
                         $msg = $att | New-SlackMessage -Channel $sendTo -AsUser
                         $slackResponse = $msg | Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Verbose:$false
