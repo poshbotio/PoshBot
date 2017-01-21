@@ -184,6 +184,42 @@ function Role-AddUser {
     }
 }
 
+function Command-Show {
+    <#
+    .SYNOPSIS
+        Show the details of a specific command
+    .EXAMPLE
+        !command show --name <command name>
+    #>
+    [cmdletbinding()]
+    param(
+        [parameter(Mandatory)]
+        $Bot,
+
+        [parameter(Mandatory)]
+        [string]$Name
+    )
+
+    $commands = @($Bot.PluginManager.Commands.Keys | Where-Object {$_ -like "*$Name*" })
+
+    if ($commands.Count -gt 0) {
+        foreach ($key in $commands) {
+            $command = $Bot.Pluginmanager.Commands[$key]
+            $fields = [ordered]@{
+                Name = $command.Name
+                Description = $command.Description
+                HelpText = $command.HelpText
+                Enabled = $command.Enabled.ToString()
+                AllowedRoles = $command.AccessFilter.AllowRoles.Keys  | Format-List | Out-String
+                DeniedRoles = $command.AccessFilter.DenyRoles.Keys | Format-List | Out-String
+            }
+            New-PoshBotCardResponse -Type Normal -Title "Details for [$($command.Name)]" -Fields $fields
+        }
+    } else {
+        New-PoshBotCardResponse -Type Warning -Text "Command [$Name] not found."
+    }
+}
+
 function Plugin-List {
     <#
     .SYNOPSIS
@@ -240,13 +276,7 @@ function Plugin-Show {
             Roles = $p.Roles.Keys
             Commands = $p.Commands
         }
-
-        $msg = [string]::Empty
-        $msg += "Name: $($r.Name)"
-        $msg += "`nEnabled: $($r.Enabled)"
-        $msg += "`nCommandCount: $($r.CommandCount)"
-        $msg += "`nRoles: `n$($r.Roles | Format-List | Out-String)"
-        $fields = @(
+        $properties = @(
             @{
                 Expression = {$_.Name}
                 Label = 'Name'
@@ -260,8 +290,58 @@ function Plugin-Show {
                 Label = 'Usage'
             }
         )
-        $msg += "`nCommands: `n$($r.Commands.GetEnumerator() | Select-Object -Property $fields | Format-List | Out-String)"
-        New-PoshBotCardResponse -Type Normal -Text $msg
+        $fields = [ordered]@{
+            Title = $r.Name
+            Enabled = $r.Enabled.ToString()
+            CommandCount = $r.CommandCount
+            Roles = $r.Roles | Format-List | Out-String
+            #Commands = $r.Commands.GetEnumerator() | Select-Object -Property $properties | Format-List | Out-String
+            Commands = $r.Commands.Keys | Format-List | Out-String
+        }
+        # $fields = @(
+        #     @{
+        #         title = 'Name'
+        #         value = $r.Name
+        #         short = $true
+        #     }
+        #     @{
+        #         title = 'Enabled'
+        #         value = $r.Enabled
+        #         short = $true
+        #     }
+        #     @{
+        #         title = 'CommandCount'
+        #         value = $r.CommandCount
+        #         short = $true
+        #     }
+        #     @{
+        #         title = 'Roles'
+        #         value = $r.Roles | Format-List | Out-String
+        #         short = $false
+        #     }
+        # )
+
+        $msg = [string]::Empty
+        #$msg += "Name: $($r.Name)"
+        #$msg += "`nEnabled: $($r.Enabled)"
+        #$msg += "`nCommandCount: $($r.CommandCount)"
+        #$msg += "`nRoles: `n$($r.Roles | Format-List | Out-String)"
+        $properties = @(
+            @{
+                Expression = {$_.Name}
+                Label = 'Name'
+            }
+            @{
+                Expression = {$_.Value.Description}
+                Label = 'Description'
+            }
+            @{
+                Expression = {$_.Value.HelpText}
+                Label = 'Usage'
+            }
+        )
+        $msg += "`nCommands: `n$($r.Commands.GetEnumerator() | Select-Object -Property $properties | Format-List | Out-String)"
+        New-PoshBotCardResponse -Type Normal -Fields $fields
     } else {
         New-PoshBotCardResponse -Type Warning -Text "Plugin [$Plugin] not found."
     }
