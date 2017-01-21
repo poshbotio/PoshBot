@@ -37,7 +37,11 @@ function Help {
         $availableCommands = $availableCommands.Where({$_.Command -like "*$Filter*"})
     }
 
-    New-PoshBotCardResponse -Type Normal -DM -Text ($availableCommands | Format-Table -AutoSize | Out-String -Width 200)
+    if ($Filter) {
+        New-PoshBotCardResponse -Type Normal -DM -Title "Help for [$Filter]" -Text ($availableCommands | Format-List | Out-String)
+    } else {
+        New-PoshBotCardResponse -Type Normal -DM -Text ($availableCommands | Format-List | Out-String)
+    }
 }
 
 function Status {
@@ -256,10 +260,60 @@ function Plugin-Show {
                 Label = 'Usage'
             }
         )
-        $msg += "`nCommands: `n$($r.Commands.GetEnumerator() | Select-Object -Property $fields | Format-Table -AutoSize | Out-String)"
+        $msg += "`nCommands: `n$($r.Commands.GetEnumerator() | Select-Object -Property $fields | Format-List | Out-String)"
         New-PoshBotCardResponse -Type Normal -Text $msg
     } else {
         New-PoshBotCardResponse -Type Warning -Text "Plugin [$Plugin] not found."
+    }
+}
+
+function Plugin-Install {
+    <#
+    .SYNOPSIS
+        Install a new plugin
+    .EXAMPLE
+        !plugin install --plugin <plugin name>
+    .ROLE
+        Admin
+        PluginAdmin
+    #>
+    [cmdletbinding()]
+    param(
+        [parameter(Mandatory)]
+        $Bot,
+
+        [parameter(Mandatory)]
+        [string]$Plugin
+    )
+
+    if ($Plugin -ne 'Builtin') {
+        # Attempt to find the module in $env:PSModulePath or in the configurated repository
+        $mod = Get-Module -Name $Plugin -ListAvailable
+        if (-not $mod) {
+            $onlineMod = Find-Module -Name $Plugin -Repository $bot.Configuration.PluginRepository -ErrorAction SilentlyContinue
+            if ($onlineMod) {
+                Install-Module -Name $Plugin -Repository $bot.Configuration.PluginRepository -Scope CurrentUser -ErrorAction Stop
+                $mod = Get-Module -Name $Plugin -ListAvailable
+            }
+        }
+
+        if ($mod) {
+            try {
+                $bot | Add-PoshBotPlugin -ModuleManifest $mod.Path -ErrorAction Stop
+                $resp = Plugin-Show -Bot $bot -Plugin $Plugin
+                if (-not ($resp | Get-Member -Name 'Title' -MemberType NoteProperty)) {
+                    $resp | Add-Member -Name 'Title' -MemberType NoteProperty -Value $null
+                }
+                $resp.Title = "Plugin [$Plugin] successfully installed"
+                return $resp
+            } catch {
+                return New-PoshBotCardResponse -Type Error -Text $_.Exception.Message -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
+            }
+        } else {
+            return New-PoshBotCardResponse -Type Warning -Text "Plugin [$Plugin] not found in configured plugin directory [$($Bot.Configuration.PluginDirectory)] or repository [$($Bot.Configuration.PluginRepository)]" -ThumbnailUrl 'http://p1cdn05.thewrap.com/images/2015/06/don-draper-shrug.jpg'
+        }
+    } else {
+        return New-PoshBotCardResponse -Type Warning -Text 'The builtin plugin is already... well... builtin :)' -Title 'Not gonna do it'
     }
 }
 
