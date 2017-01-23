@@ -3,7 +3,7 @@ class SlackBackend : Backend {
 
     # The types of message that we care about from Slack
     # All othere will be ignored
-    [string[]]$MessageTypes
+    [string[]]$MessageTypes = @('channel_rename', 'message', 'pin_added', 'pin_removed', 'presence_change', 'reaction_added', 'reaction_removed', 'star_added', 'star_removed')
 
     [int]$MaxMessageLength = 1300
 
@@ -161,7 +161,6 @@ class SlackBackend : Backend {
         $conn = [SlackConnection]::New()
         $conn.Config = $config
         $this.Connection = $conn
-        $this.MessageTypes = @('message', 'channel_join', 'channel_leave', 'channel_topic')
     }
 
     [void]Connect() {
@@ -195,7 +194,59 @@ class SlackBackend : Backend {
                     # We only care about certain message types from Slack
                     if ($slackMessage.Type -in $this.MessageTypes) {
                         $msg = [Message]::new()
-                        $msg.Type = $slackMessage.type
+
+                        # Set the message type and optionally the subtype
+                        #$msg.Type = $slackMessage.type
+                        switch ($slackMessage.type) {
+                            'channel_rename' {
+                                $msg.Type = [MessageType]::ChannelRenamed
+                            }
+                            'message' {
+                                $msg.Type = [MessageType]::Message
+                            }
+                            'pin_added' {
+                                $msg.Type = [MessageType]::PinAdded
+                            }
+                            'pin_removed' {
+                                $msg.Type = [MessageType]::PinRemoved
+                            }
+                            'presence_change' {
+                                $msg.Type = [MessageType]::PresenceChange
+                            }
+                            'reaction_added' {
+                                $msg.Type = [MessageType]::ReactionAdded
+                            }
+                            'reaction_removed' {
+                                $msg.Type = [MessageType]::ReactionRemoved
+                            }
+                            'star_added' {
+                                $msg.Type = [MessageType]::StarAdded
+                            }
+                            'star_removed' {
+                                $msg.Type = [MessageType]::StarRemoved
+                            }
+                        }
+
+                        if ($slackMessage.subtype) {
+                            switch ($slackMessage.subtype) {
+                                'channel_join' {
+                                    $msg.Subtype = [MessageSubtype]::ChannelJoined
+                                }
+                                'channel_leave' {
+                                    $msg.Subtype = [MessageSubtype]::ChannelLeft
+                                }
+                                'channel_name' {
+                                    $msg.Subtype = [MessageSubtype]::ChannelRenamed
+                                }
+                                'channel_purpose' {
+                                    $msg.Subtype = [MessageSubtype]::ChannelPurposeChanged
+                                }
+                                'channel_topic' {
+                                    $msg.Subtype = [MessageSubtype]::ChannelTopicChanged
+                                }
+                            }
+                        }
+
                         $msg.RawMessage = $slackMessage
                         if ($slackMessage.text)    { $msg.Text = $slackMessage.text }
                         if ($slackMessage.channel) { $msg.To   = $slackMessage.channel }

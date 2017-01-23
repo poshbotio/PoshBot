@@ -6,12 +6,12 @@ class ParsedCommand {
     [string[]]$Tokens = @()
     [hashtable]$NamedParameters = @{}
     [System.Collections.ArrayList]$PositionalParameters = (New-Object System.Collections.ArrayList)
-    [System.Management.Automation.FunctionInfo]$ModuleCommand = $null
-
+    #[System.Management.Automation.FunctionInfo]$ModuleCommand = $null
+    [Message]$OriginalMessage
 }
 
 class CommandParser {
-    [ParsedCommand] static Parse([string]$CommandString) {
+    [ParsedCommand] static Parse([string]$CommandString, [Message]$OriginalMessage) {
 
         $CommandString = $CommandString.Trim()
 
@@ -22,7 +22,10 @@ class CommandParser {
 
         # The command COULD be in the form of <command> or <plugin:command>
         # Figure out which one
-        $plugin = $command.Split(':')[0]
+        $plugin = [string]::Empty
+        if ($OriginalMessage.Type -eq [MessageType]::Message -and $OriginalMessage.SubType -eq [MessageSubtype]::None ) {
+            $plugin = $command.Split(':')[0]
+        }
         $command = $command.Split(':')[1]
         if (-not $command) {
             $command = $plugin
@@ -44,6 +47,7 @@ class CommandParser {
         $parsedCommand.CommandString = $CommandString
         $parsedCommand.Plugin = $plugin
         $parsedCommand.Command = $command
+        $parsedCommand.OriginalMessage = $OriginalMessage
 
         # Parse parameters
         if (-not [string]::IsNullOrEmpty($params)) {

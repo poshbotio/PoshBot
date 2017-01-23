@@ -299,13 +299,50 @@ class PluginManager {
                 $this.Logger.Info([LogMessage]::new("[PluginManager:CreatePluginFromModuleManifest] Creating command [$($command.Name)] for new plugin [$($plugin.Name)]"))
                 $cmd = [Command]::new()
 
+                # Normally, bot commands only respond to normal messages received from the chat network
+                # To respond to other message types/subtypes, metadata must be added to the function to
+                # call out the exact message type/subtype the command is designed to respond to
+                $trigger = [Trigger]::new('Command', $command.Name)
+                $cmd.Trigger = $trigger
+
                 # Set command properties based on metadata from module
                 if ($metadata) {
-                    $cmd.Name = $metadata.CommandName
+                    if ($metadata.CommandName) {
+                        $cmd.Name = $metadata.CommandName
+                    } else {
+                        $cmd.name = $command.Name
+                    }
                     $cmd.KeepHistory = $metadata.KeepHistory
                     $cmd.HideFromHelp = $metadata.HideFromHelp
-                    if ($metadata.TriggerType -eq 'Regex') {
-                        $cmd.Trigger = [Trigger]::new('Regex', $metadata.Regex)
+
+                    # Set the trigger type
+                    if ($metadata.TriggerType) {
+                        switch ($metadata.TriggerType) {
+                            'Comamnd' {
+                                $cmd.Trigger.Type = [TriggerType]::Command
+                            }
+                            'Event' {
+                                $cmd.Trigger.Type = [TriggerType]::Event
+                            }
+                            'Regex' {
+                                $cmd.Trigger.Type = [TriggerType]::Regex
+                                $cmd.Trigger.Trigger = $metadata.Regex
+                            }
+                        }
+                    } else {
+                        $cmd.Trigger.Type = [TriggerType]::Command
+                    }
+
+                    # if ($metadata.TriggerType -eq 'Regex') {
+                    #     $cmd.Trigger.Type = 'Regex'
+                    #     $cmd.Trigger.Trigger = $metadata.Regex
+                    # }
+
+                    if ($metadata.MessageType) {
+                        $cmd.Trigger.MessageType = $metadata.MessageType
+                    }
+                    if ($metadata.MessageSubtype) {
+                        $cmd.Trigger.MessageSubtype = $metadata.MessageSubtype
                     }
                 } else {
                     $cmd.Name = $command.Name

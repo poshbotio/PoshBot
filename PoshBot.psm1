@@ -12,6 +12,7 @@ namespace PoshBot {
 
     public enum TriggerType {
         Command,
+        Event,
         Regex,
         Timer
     }
@@ -20,8 +21,9 @@ namespace PoshBot {
 
         public string CommandName { get; set; }
         public bool HideFromHelp { get; set; }
-
         public string Regex { get; set; }
+        public string MessageType { get; set; }
+        public string MessageSubtype { get; set; }
 
         private TriggerType _triggerType = TriggerType.Command;
         private bool _command = true;
@@ -91,6 +93,7 @@ enum ConnectionStatus {
 
 enum TriggerType {
     Command
+    Event
     Regex
     Timer
 }

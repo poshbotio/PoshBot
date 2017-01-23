@@ -206,7 +206,7 @@ class Bot {
     [void]HandleMessage([Message]$Message) {
         # If the message text starts with our bot prefix (!) then assume it's a message
         # for the bot and look for a command matching it
-        if ($Message.Text) {
+        #if ($Message.Text) {
 
             # If message is intended to be a bot command
             # if this is false, and a trigger match is not found
@@ -218,7 +218,7 @@ class Bot {
             $Message = $this.TrimPrefix($Message)
             $commandString = $Message.Text
 
-            $parsedCommand = [CommandParser]::Parse($commandString)
+            $parsedCommand = [CommandParser]::Parse($commandString, $Message)
             $this._Logger.Debug([LogMessage]::new('[Bot:HandleMessage] Parsed bot command', $parsedCommand))
 
             $response = [Response]::new()
@@ -293,7 +293,7 @@ class Bot {
             }
 
             $this.SendMessage($response)
-        }
+        #}
     }
 
     # Dispatch the command to the executor

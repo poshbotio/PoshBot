@@ -1,8 +1,30 @@
 
+enum MessageType {
+    ChannelRenamed
+    Message
+    PinAdded
+    PinRemoved
+    PresenceChange
+    ReactionAdded
+    ReactionRemoved
+    StarAdded
+    StarRemoved
+}
+
+enum MessageSubtype {
+    None
+    ChannelJoined
+    ChannelLeft
+    ChannelRenamed
+    ChannelPurposeChanged
+    ChannelTopicChanged
+}
+
 # A chat message that is received from the chat network
 class Message {
     [string]$Id                 # MAY have this
-    [string]$Type               # Type of message
+    [MessageType]$Type = [MessageType]::Message
+    [MessageSubtype]$Subtype = [MessageSubtype]::None    # Some messages have subtypes
     [string]$Text               # Text of message. This may be empty depending on the message type
     [string]$To
     [string]$From               # Who sent the message
