@@ -362,7 +362,7 @@ function Plugin-Install {
 
     if ($Plugin -ne 'Builtin') {
         # Attempt to find the module in $env:PSModulePath or in the configurated repository
-        $mod = Get-Module -Name $Plugin -ListAvailable
+        $mod = Get-Module -Name $Plugin -ListAvailable | Select-Object -First 1
         if (-not $mod) {
             $onlineMod = Find-Module -Name $Plugin -Repository $bot.Configuration.PluginRepository -ErrorAction SilentlyContinue
             if ($onlineMod) {
