@@ -366,7 +366,7 @@ function Plugin-Install {
         if (-not $mod) {
             $onlineMod = Find-Module -Name $Plugin -Repository $bot.Configuration.PluginRepository -ErrorAction SilentlyContinue
             if ($onlineMod) {
-                Install-Module -Name $Plugin -Repository $bot.Configuration.PluginRepository -Scope CurrentUser -ErrorAction Stop
+                Install-Module -Name $Plugin -Repository $bot.Configuration.PluginRepository -Scope CurrentUser -Force -ErrorAction Stop
                 $mod = Get-Module -Name $Plugin -ListAvailable
             }
         }
