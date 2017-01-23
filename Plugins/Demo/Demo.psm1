@@ -181,6 +181,12 @@ function Shipit {
     .EXAMPLE
         !shipit
     #>
+    [PoshBot.BotCommand(
+        Command = $false,
+        CommandName = 'shipit',
+        TriggerType = 'regex',
+        Regex = 'shipit'
+    )]
     [cmdletbinding()]
     param()
 
