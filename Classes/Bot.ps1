@@ -173,15 +173,8 @@ class Bot {
         $msg = $this.Backend.ReceiveMessage()
         # The backend MAY return a NULL message. Ignore it
         if ($msg) {
-            # If the message is a bot command or another type of message we should care
-            # about, add it to the message queue for processing
-            if ($this.IsBotCommand($msg)) {
-                $this._Logger.Debug([LogMessage]::new('[Bot:ReceiveMessage] Received bot message from chat network. Adding to message queue.', $msg))
-                $this.MessageQueue.Enqueue($msg)
-            } else {
-                # TODO
-                # Some other type of message we are watching for
-            }
+            $this._Logger.Debug([LogMessage]::new('[Bot:ReceiveMessage] Received bot message from chat network. Adding to message queue.', $msg))
+            $this.MessageQueue.Enqueue($msg)
         }
         return $msg
     }
@@ -214,6 +207,13 @@ class Bot {
         # If the message text starts with our bot prefix (!) then assume it's a message
         # for the bot and look for a command matching it
         if ($Message.Text) {
+
+            # If message is intended to be a bot command
+            # if this is false, and a trigger match is not found
+            # then the message is just normal conversation that didn't
+            # match a regex trigger. In that case, don't respond with an
+            # error that we couldn't find the command
+            $isBotCommand = $this.IsBotCommand($Message)
 
             $Message = $this.TrimPrefix($Message)
             $commandString = $Message.Text
@@ -272,12 +272,14 @@ class Bot {
                     #$response.Text = $($result.Output | Format-List * | Out-String)
                 }
             } else {
-                $msg = "No command found matching [$commandString]"
-                $this._Logger.Info([LogMessage]::new([LogSeverity]::Warning, $msg, $parsedCommand))
-                # Only respond with command not found message if configuration allows it.
-                if (-not $this.Configuration.MuteUnknownCommand) {
-                    $response.Severity = [Severity]::Warning
-                    $response.Data = New-PoshBotCardResponse -Type Warning -Text $msg
+                if ($isBotCommand) {
+                    $msg = "No command found matching [$commandString]"
+                    $this._Logger.Info([LogMessage]::new([LogSeverity]::Warning, $msg, $parsedCommand))
+                    # Only respond with command not found message if configuration allows it.
+                    if (-not $this.Configuration.MuteUnknownCommand) {
+                        $response.Severity = [Severity]::Warning
+                        $response.Data = New-PoshBotCardResponse -Type Warning -Text $msg
+                    }
                 }
             }
 
