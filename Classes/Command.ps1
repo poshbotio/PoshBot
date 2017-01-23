@@ -47,6 +47,10 @@ class Command {
 
     [string]$HelpText
 
+    [bool]$KeepHistory = $true
+
+    [bool]$HideFromHelp = $false
+
     [bool]$AsJob = $true
 
     # Fully qualified name of a cmdlet or function in a module to execute
