@@ -226,3 +226,87 @@ function Cookies {
 
     Write-Output 'Did someone mention cookies? I love cookies! Nom Nom Nom!'
 }
+
+function ChannelTopicChange {
+    <#
+    .SYNOPSIS
+        Responds to channel topic change events
+    #>
+    [PoshBot.BotCommand(
+        Command = $false,
+        TriggerType = 'event',
+        MessageType = 'Message',
+        MessageSubType = 'ChannelTopicChanged'
+    )]
+    [cmdletbinding()]
+    param()
+
+    Write-Output 'I kind of liked the old topic'
+}
+
+function ChannelPurposeChange {
+    <#
+    .SYNOPSIS
+        Responds to channel topic change events
+    #>
+    [PoshBot.BotCommand(
+        Command = $false,
+        TriggerType = 'event',
+        MessageType = 'Message',
+        MessageSubType = 'ChannelPurposeChanged'
+    )]
+    [cmdletbinding()]
+    param()
+
+    Write-Output 'So we have a new purpose in live huh?'
+}
+
+function WelcomeUserToRoom {
+    <#
+    .SYNOPSIS
+        Responds to channel join events with a friendly message
+    #>
+    [PoshBot.BotCommand(
+        Command = $false,
+        TriggerType = 'event',
+        MessageType = 'Message',
+        MessageSubType = 'ChannelJoined'
+    )]
+    [cmdletbinding()]
+    param()
+
+    Write-Output 'Greeting! We were just talking about you.'
+}
+
+function SayGoodbyeTouser {
+    <#
+    .SYNOPSIS
+        Say goodbye to a user when they leave a channel
+    #>
+    [PoshBot.BotCommand(
+        Command = $false,
+        TriggerType = 'event',
+        MessageType = 'Message',
+        MessageSubType = 'ChannelLeft'
+    )]
+    [cmdletbinding()]
+    param()
+
+    Write-Output 'Good riddance. I never liked that person anyway.'
+}
+
+function GoldStar {
+    <#
+    .SYNOPSIS
+        Say goodbye to a user when they leave a channel
+    #>
+    [PoshBot.BotCommand(
+        Command = $false,
+        TriggerType = 'event',
+        MessageType = 'StarAdded'
+    )]
+    [cmdletbinding()]
+    param()
+
+    Write-Output 'Hey everyone look! Someone got a gold star :)'
+}
