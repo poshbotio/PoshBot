@@ -175,24 +175,6 @@ class SlackBackend : Backend {
     [Message]ReceiveMessage() {
         [Message]$msg = $null
         try {
-            # This will block waiting to receive something so let's manage that with a
-            # short lived cancellation token
-            # $cts = New-Object System.Threading.CancellationTokenSource -ArgumentList 5000
-            # $jsonResult = [string]::Empty
-            # $task = $this.Connection.WebSocket.ReceiveAsync($this.buffer, $cts.Token)
-            # if ($task.Exception) {
-            #     Write-Error "$($Task | Format-List * | Out-String)"
-            #     #$this.Connection.Disconnect([System.Net.WebSockets.WebSocketCloseStatus]::EndpointUnavailable)
-            #     #throw $task.Exception.ToString()
-            # }
-            # do { Start-Sleep -Milliseconds 100 }
-            # until ($task.IsCompleted -or $task.IsCancelled)
-
-            # # Get result from socket
-            # if ($task.IsCompleted -and -not $task.IsCancelled) {
-            #     $jsonResult = [System.Text.Encoding]::UTF8.GetString($this.buffer, 0, $task.Result.Count)
-            # }
-
             $ct = New-Object System.Threading.CancellationToken
             $taskResult = $null
             do {
@@ -231,7 +213,6 @@ class SlackBackend : Backend {
             }
         } catch {
             Write-Error $_
-            #Write-Error [ExceptionFormatter]::ToJson($_)
         }
         return $msg
     }
