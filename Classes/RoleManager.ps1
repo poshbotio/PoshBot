@@ -19,7 +19,7 @@ class RoleManager {
         $this._Logger.Info([LogMessage]::new('[RoleManager:Initialize] Initializing'))
 
         $adminrole = [Role]::New('Admin', 'Bot administrators')
-        $this.AddRole($adminRole)
+        $this.Roles.Add($adminRole.Name, $adminRole)
 
         $this.LoadState()
     }
