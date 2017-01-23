@@ -294,13 +294,28 @@ class PluginManager {
                 # to construct the bot command
                 $cmdHelp = Get-Help -Name $command.Name
 
+                $metadata = $this.GetCommandMetadata($command)
+
                 $this.Logger.Info([LogMessage]::new("[PluginManager:CreatePluginFromModuleManifest] Creating command [$($command.Name)] for new plugin [$($plugin.Name)]"))
                 $cmd = [Command]::new()
-                $cmd.Name = $command.Name
+
+                # Set command properties based on metadata from module
+                if ($metadata) {
+                    $cmd.Name = $metadata.CommandName
+                    $cmd.KeepHistory = $metadata.KeepHistory
+                    $cmd.HideFromHelp = $metadata.HideFromHelp
+                    if ($metadata.TriggerType -eq 'Regex') {
+                        $cmd.Trigger = [Trigger]::new('Regex', $metadata.Regex)
+                    }
+                } else {
+                    $cmd.Name = $command.Name
+                    $cmd.Trigger = [Trigger]::new('Command', $command.Name)
+                }
+
                 $cmd.Description = $cmdHelp.Synopsis.Trim()
                 $cmd.ManifestPath = $manifestPath
                 $cmd.FunctionInfo = $command
-                $cmd.Trigger = [Trigger]::new('Command', $command.Name)
+
                 if ($cmdHelp.examples) {
                     $cmd.HelpText = $cmdHelp.examples[0].example[0].code.Trim()
                 }
@@ -348,6 +363,15 @@ class PluginManager {
         }
     }
 
+    [PoshBot.BotCommand]GetCommandMetadata([System.Management.Automation.FunctionInfo]$Command) {
+        $attrs = $Command.ScriptBlock.Attributes
+        $botCmdAttr = $attrs | ForEach-Object {
+            if ($_.TypeId.ToString() -eq 'PoshBot.BotCommand') {
+                $_
+            }
+        }
+        return $botCmdAttr
+    }
     # Subcommands are identified with either a '-' or '_' in the
     # function name
     # [bool]IsSubcommand([string]$Name) {
