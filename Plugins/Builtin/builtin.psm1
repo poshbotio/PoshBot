@@ -482,7 +482,6 @@ function About {
     )
 
     $path = "$PSScriptRoot/../../PoshBot.psd1"
-    #$manifest = Test-ModuleManifest -Path $path -Verbose:$false
     $manifest = Import-PowerShellDataFile -Path $path
     $ver = $manifest.ModuleVersion
 
