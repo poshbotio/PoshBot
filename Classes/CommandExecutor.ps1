@@ -121,7 +121,9 @@ class CommandExecutor {
             $r.Duration = $jobDuration
 
             # Add command result to history
-            $this.AddToHistory($Command.Name, $UserId, $r, $ParsedCommand)
+            if ($Command.KeepHistory) {
+                $this.AddToHistory($Command.Name, $UserId, $r, $ParsedCommand)
+            }
         } else {
             $r.Success = $false
             $r.Authorized = $false
