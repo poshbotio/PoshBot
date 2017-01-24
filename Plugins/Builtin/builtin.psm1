@@ -34,7 +34,11 @@ function Help {
 
     # If we asked for help about a particular plugin or command, filter on it
     if ($PSBoundParameters.ContainsKey('Filter')) {
-        $availableCommands = $availableCommands.Where({$_.Command -like "*$Filter*"})
+        $availableCommands = $availableCommands | Where-Object {
+            ($_.Command -like "*$Filter*") -or
+            ($_.Description -like "*$Filter*") -or
+            ($_.HelpText -like "*$Filter*")
+        }
     }
 
     if ($Filter) {
