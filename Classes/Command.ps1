@@ -264,12 +264,6 @@ class Command {
                 }
             }
             'Event' {
-                Write-Host "Command: $($this.Name)"
-                Write-Host "Type: $($this.Trigger.Type)"
-                Write-Host "Command message type: $($this.Trigger.MessageType)"
-                Write-Host "Command message subtype: $($this.Trigger.MessageSubtype)"
-                Write-Host "Parsed command type: $($ParsedCommand.OriginalMessage.Type)"
-                Write-Host "Parsed command subtype: $($ParsedCommand.OriginalMessage.Subtype)"
                 if ($this.Trigger.MessageType -eq $ParsedCommand.OriginalMessage.Type) {
                     if ($this.Trigger.MessageSubtype -eq $ParsedCommand.OriginalMessage.Subtype) {
                         return $true

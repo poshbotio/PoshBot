@@ -261,11 +261,8 @@ class Bot {
                 } else {
                     foreach ($r in $result.Output) {
                         if (($r.PSObject.TypeNames[0] -eq 'PoshBot.Text.Response') -or ($r.PSObject.TypeNames[0] -eq 'PoshBot.Card.Response')) {
-                            Write-Host "Received custom PoshBot response: [$($r.PSObject.TypeNames[0])]"
-                            Write-host $r
                             $response.Data += $r
                         } else {
-                            Write-Host "Received text response: [$($result.Output)]"
                             $response.Text += $($r | Format-List * | Out-String)
                         }
                     }
