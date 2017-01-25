@@ -33,13 +33,16 @@ class CommandExecutor {
             return $r
         }
 
-        # Verify that all mandatory parameters have been provided
-        if (-not $this.ValidateMandatoryParameters($ParsedCommand, $Command)) {
-            $err = [CommandRequirementsNotMet]::New("Mandatory parameters for [$($Command.Name)] not provided.`nHelpText: $($Command.HelpText)")
-            $r.Success = $false
-            $r.Errors += $err
-            Write-Error -Exception $err
-            return $r
+        # Verify that all mandatory parameters have been provided for "command" type bot commands
+        # This doesn't apply to commands triggered from regex matches, timers, or events
+        if ($Command.Trigger.TriggerType -eq [TriggerType]::Command) {
+            if (-not $this.ValidateMandatoryParameters($ParsedCommand, $Command)) {
+                $err = [CommandRequirementsNotMet]::New("Mandatory parameters for [$($Command.Name)] not provided.`nHelpText: $($Command.HelpText)")
+                $r.Success = $false
+                $r.Errors += $err
+                Write-Error -Exception $err
+                return $r
+            }
         }
 
         # Verify that the caller can execute this command and execute if authorized
@@ -73,31 +76,6 @@ class CommandExecutor {
                 } else {
                     try {
                         $hash = $Command.Invoke($ParsedCommand, $false)
-                        #write-host "$($hash | format-list | out-string)"
-
-                        #$global:poshbotcmd = $hash
-
-                        # # Wait for command to complete
-                        # $done = $hash.job.AsyncWaitHandle.WaitOne()
-
-                        # $result = $hash.ps.EndInvoke($hash.job)
-
-                        # Write-host $result
-
-                        # $r.Streams.Error = $hash.ps.Streams.Error.ReadAll()
-                        # $r.Streams.Information = $hash.ps.Streams.Information.ReadAll()
-                        # $r.Streams.Verbose = $hash.ps.Streams.Verbose.ReadAll()
-                        # $r.Streams.Warning = $hash.ps.Streams.Warning.ReadAll()
-                        # $r.Output = $result
-
-                        # Write-Verbose -Message "Command results: `n$($r | ConvertTo-Json)"
-                        # # Determine if job had any terminating errors
-                        # if ($r.Streams.Error.Count -gt 0) {
-                        #     $r.Success = $false
-                        # } else {
-                        #     $r.Success = $true
-                        # }
-
                         $r.Errors = $hash.Error
                         $r.Streams.Error = $hash.Error
                         $r.Streams.Information = $hash.Information
@@ -108,9 +86,6 @@ class CommandExecutor {
                         } else {
                             $r.Success = $true
                         }
-
-                        #$r.Output = $Command.Invoke($ParsedCommand, $false)
-                        #$r.Success = $true
                     } catch {
                         $r.Success = $false
                         $r.Errors = $_.Exception.Message
@@ -151,15 +126,27 @@ class CommandExecutor {
         $functionInfo = $Command.FunctionInfo
         $matchedParamSet = $null
 
-        #Write-Host "$($ParsedCommand.NamedParameters | out-string)"
-
         foreach ($parameterSet in $functionInfo.ParameterSets) {
-            $mandatoryParameters = ($parameterSet.Parameters | where IsMandatory -eq $true).Name
-            if ($mandatoryParameters) {
-                #Write-Host $mandatoryParameters
-                if ( -not @($mandatoryParameters| where {$ParsedCommand.NamedParameters.Keys -notcontains $_}).Count) {
+            $mandatoryParameters = @($parameterSet.Parameters | where IsMandatory -eq $true).Name
+
+            # Remove each provided mandatory parameter from the list
+            # so we can find any that will have to be coverd by positional parameters
+            foreach ($providedNamedParameter in $ParsedCommand.NamedParameters.Keys ) {
+                $mandatoryParameters = @($mandatoryParameters | Where-Object {$_ -ne $providedNamedParameter})
+            }
+
+            if ($mandatoryParameters.Count -gt 0) {
+
+                if ($ParsedCommand.PositionalParameters.Count -lt $mandatoryParameters.Count) {
+                    # Not enough positional parametes to cover the remaining mandatory parameters
+                    return $false
+                } else {
                     return $true
                 }
+
+                #if ( -not @($mandatoryParameters| where {$ParsedCommand.NamedParameters.Keys -notcontains $_}).Count) {
+                #    return $true
+                #}
             } else {
                 return $true
             }
