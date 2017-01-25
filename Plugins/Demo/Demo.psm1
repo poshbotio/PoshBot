@@ -121,12 +121,13 @@ function Giphy {
     #>
     [cmdletbinding(DefaultParameterSetName = 'search')]
     param(
-        [parameter(Mandatory, ParameterSetName = 'search')]
+        [parameter(Mandatory, Position = 0, ParameterSetName = 'search')]
         [string]$Search,
 
-        [parameter(Mandatory, ParameterSetName = 'trending')]
+        [parameter(Mandatory, Position = 0, ParameterSetName = 'trending')]
         [switch]$Trending,
 
+        [parameter(Position = 1)]
         [ValidateRange(1, 10)]
         [int]$Number = 1
     )
@@ -158,9 +159,10 @@ function Roll-Dice {
         Demo
     #>
     param(
-        [parameter(mandatory)]
-        [string]$Dice,
+        [parameter(position = 0)]
+        [string]$Dice = '2d20',
 
+        [parameter(position = 1)]
         [int]$Bonus = 0
     )
     $quantity, $faces = $Dice -split 'd'
@@ -188,7 +190,10 @@ function Shipit {
         Regex = 'shipit'
     )]
     [cmdletbinding()]
-    param()
+    param(
+        [parameter(ValueFromRemainingArguments)]
+        $Dummy
+    )
 
     $squirrels = @(
         'http://28.media.tumblr.com/tumblr_lybw63nzPp1r5bvcto1_500.jpg',
@@ -222,7 +227,10 @@ function Cookies {
         Regex = 'cookies'
     )]
     [cmdletbinding()]
-    param()
+    param(
+        [parameter(ValueFromRemainingArguments)]
+        $Dummy
+    )
 
     Write-Output 'Did someone mention cookies? I love cookies! Nom Nom Nom!'
 }
