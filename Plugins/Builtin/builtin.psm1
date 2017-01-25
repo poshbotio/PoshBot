@@ -117,7 +117,7 @@ function Role-Show {
         [parameter(Mandatory)]
         $Bot,
 
-        [parameter(Mandatory)]
+        [parameter(Mandatory, Position = 0)]
         [string]$Role
     )
 
@@ -163,10 +163,10 @@ function Role-AddUser {
         [parameter(Mandatory)]
         $Bot,
 
-        [parameter(Mandatory)]
+        [parameter(Mandatory, Position = 0)]
         [string]$Role,
 
-        [parameter(Mandatory)]
+        [parameter(Mandatory, Position = 1)]
         [string]$User
     )
 
@@ -200,7 +200,7 @@ function Command-Show {
         [parameter(Mandatory)]
         $Bot,
 
-        [parameter(Mandatory)]
+        [parameter(Mandatory, Position = 0)]
         [string]$Name
     )
 
@@ -261,7 +261,7 @@ function Plugin-Show {
         [parameter(Mandatory)]
         $Bot,
 
-        [parameter(Mandatory)]
+        [parameter(Mandatory, Position = 0)]
         [string]$Plugin
     )
 
@@ -360,7 +360,7 @@ function Plugin-Install {
         [parameter(Mandatory)]
         $Bot,
 
-        [parameter(Mandatory)]
+        [parameter(Mandatory, Position = 0)]
         [string]$Plugin
     )
 
@@ -410,7 +410,7 @@ function Plugin-Enable {
         [parameter(Mandatory)]
         $Bot,
 
-        [parameter(Mandatory)]
+        [parameter(Mandatory, Position = 0)]
         [string]$Plugin
     )
 
@@ -449,7 +449,7 @@ function Plugin-Disable {
         [parameter(Mandatory)]
         $Bot,
 
-        [parameter(Mandatory)]
+        [parameter(Mandatory, Position = 0)]
         [string]$Plugin
     )
 
