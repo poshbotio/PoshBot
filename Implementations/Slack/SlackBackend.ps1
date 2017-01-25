@@ -251,6 +251,21 @@ class SlackBackend : Backend {
                         if ($slackMessage.text)    { $msg.Text = $slackMessage.text }
                         if ($slackMessage.channel) { $msg.To   = $slackMessage.channel }
                         if ($slackMessage.user)    { $msg.From = $slackMessage.user }
+
+                        # Sometimes the message is nested in a 'message' subproperty. This could be
+                        # if the message contained a link that was unfurled.  We would receive a
+                        # 'message_changed' message and need to look in the 'message' subproperty
+                        # to see who the message was from.  Slack is weird
+                        # https://api.slack.com/events/message/message_changed
+                        if ($slackMessage.message) {
+                            if ($slackMessage.message.user) {
+                                $msg.From = $slackMessage.message.user
+                            }
+                            if ($slackMessage.message.text) {
+                                $msg.Text = $slackMessage.message.text
+                            }
+                        }
+
                         if (-not $this.MsgFromBot($msg.From)) {
                             return $msg
                         } else {
@@ -519,33 +534,13 @@ class SlackBackend : Backend {
         if ($this.Users.ContainsKey($UserId)) {
             return $this.Users[$UserId].Nickname
         } else {
-            #$allUsers = Get-SlackUser -Token $this.Connection.Config.Credential.GetNetworkCredential().Password
             $this.LoadUsers()
             return $this.Users[$UserId].Nickname
-            #return $allUsers | Where-Object {$_.Id -eq $UserId} | Select-Object -ExpandProperty Name
         }
     }
 
     hidden [System.Collections.ArrayList] _ChunkString([string]$Text) {
-
         return [regex]::Split($Text, "(?<=\G.{$($this.MaxMessageLength)})", [System.Text.RegularExpressions.RegexOptions]::Singleline)
-
-        # $chunks = New-Object -TypeName System.Collections.Arraylist
-
-        # if ($Text.Length -ge $this.MaxMessageLength) {
-        #     $parts = [Math]::Floor($Text.Length / $this.MaxMessageLength)
-        #     Write-Host "Parts: $parts"
-
-        #     for ($x = 0; $x -lt $parts; $x++) {
-        #         $chunks.Add($Text.SubString($x * $this.MaxMessageLength, $this.MaxMessageLength)) | Out-Null
-        #     }
-        #     if ($remainder = $Text.Length % $this.MaxMessageLength) {
-        #         $chunks.Add($Text.SubString($Text.Length - $remainder)) | Out-Null
-        #     }
-        # } else {
-        #     $chunks.Add($Text) | Out-Null
-        # }
-        # return $chunks
     }
 }
 
