@@ -251,7 +251,7 @@ class Bot {
                                 if ($_.Exception) {
                                     New-PoshBotCardResponse -Type Error -Text $_.Exception.Message -Title 'Command Exception'
                                 } else {
-                                    New-PoshBotCardResponse -Type Error -Text $_.Message -Title 'Command Exception'
+                                    New-PoshBotCardResponse -Type Error -Text $_ -Title 'Command Exception'
                                 }
                             }
                         } else {
@@ -305,12 +305,14 @@ class Bot {
     # Trim the command prefix or any alternate prefix or seperators off the message
     # as we won't need them anymore.
     [Message]TrimPrefix([Message]$Message) {
-        $Message.Text = $Message.Text.Trim()
-        $firstWord = ($Message.Text -split ' ')[0]
+        if (-not [string]::IsNullOrEmpty($Message.Text)) {
+            $Message.Text = $Message.Text.Trim()
+            $firstWord = ($Message.Text -split ' ')[0]
 
-        foreach ($prefix in $this._PossibleCommandPrefixes) {
-            if ($firstWord -match "^$prefix") {
-                $Message.Text = $Message.Text.TrimStart($prefix).Trim()
+            foreach ($prefix in $this._PossibleCommandPrefixes) {
+                if ($firstWord -match "^$prefix") {
+                    $Message.Text = $Message.Text.TrimStart($prefix).Trim()
+                }
             }
         }
         return $Message
