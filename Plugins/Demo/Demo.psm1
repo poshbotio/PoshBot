@@ -247,7 +247,10 @@ function ChannelTopicChange {
         MessageSubType = 'ChannelTopicChanged'
     )]
     [cmdletbinding()]
-    param()
+    param(
+        [parameter(ValueFromRemainingArguments)]
+        $Dummy
+    )
 
     Write-Output 'I kind of liked the old topic'
 }
@@ -264,7 +267,10 @@ function ChannelPurposeChange {
         MessageSubType = 'ChannelPurposeChanged'
     )]
     [cmdletbinding()]
-    param()
+    param(
+        [parameter(ValueFromRemainingArguments)]
+        $Dummy
+    )
 
     Write-Output 'So we have a new purpose in live huh?'
 }
@@ -281,7 +287,10 @@ function WelcomeUserToRoom {
         MessageSubType = 'ChannelJoined'
     )]
     [cmdletbinding()]
-    param()
+    param(
+        [parameter(ValueFromRemainingArguments)]
+        $Dummy
+    )
 
     Write-Output 'Greeting! We were just talking about you.'
 }
@@ -298,7 +307,10 @@ function SayGoodbyeTouser {
         MessageSubType = 'ChannelLeft'
     )]
     [cmdletbinding()]
-    param()
+    param(
+        [parameter(ValueFromRemainingArguments)]
+        $Dummy
+    )
 
     Write-Output 'Good riddance. I never liked that person anyway.'
 }
@@ -314,7 +326,10 @@ function GoldStar {
         MessageType = 'StarAdded'
     )]
     [cmdletbinding()]
-    param()
+    param(
+        [parameter(ValueFromRemainingArguments)]
+        $Dummy
+    )
 
     Write-Output 'Hey everyone look! Someone got a gold star :)'
 }
