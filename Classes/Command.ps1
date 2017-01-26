@@ -247,9 +247,6 @@ class Command {
 
     # Returns TRUE/FALSE if this command matches a parsed command from the chat network
     [bool]TriggerMatch([ParsedCommand]$ParsedCommand) {
-
-        Write-Verbose "Checking command [$($this.Name)] for trigger match"
-
         switch ($this.Trigger.Type) {
             'Command' {
                 # Command tiggers only work with normal messages received from chat network
