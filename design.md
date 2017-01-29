@@ -35,11 +35,28 @@ If found, that command will get executed (if enabled and allowed via roles).
 * Command - Execute command by name
 * Regex - Match message typed in chat to a regex expression
 
-# Roles
+# Authorization
 
-Roles are associated with commands.
-Users of the chat network are added to roles.
-Only members of a role associated to a command can execute that command.
+Execution of bot commands is managed by a series of permissions, roles, and groups.
+1. Permissions are assigned to a command
+2. Roles are a collection of permissions
+3. A group is a collection of permission and roles
+4. Users are assigned to groups
+
+## Permissions
+
+Permissions are named tokens that are (optionally) associated to bot commands).
+Permission are namespaced so the permissions `myplugin:create` and `myotherplugin:create` are two different permissions even though they have the same name `create`.
+
+## Roles
+
+Roles are a collection of one or more permissions.
+Roles can include permissions from any namespace.
+
+## Groups
+
+A group is a collection of one or more users and one or more roles.
+A user in a group can execute any command associated with any permission that is a part of that group.
 
 # Backends
 
