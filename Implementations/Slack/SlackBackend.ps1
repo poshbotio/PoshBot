@@ -5,7 +5,7 @@ class SlackBackend : Backend {
     # All othere will be ignored
     [string[]]$MessageTypes = @('channel_rename', 'message', 'pin_added', 'pin_removed', 'presence_change', 'reaction_added', 'reaction_removed', 'star_added', 'star_removed')
 
-    [int]$MaxMessageLength = 1300
+    [int]$MaxMessageLength = 4000
 
     # Buffer to receive data from websocket
     hidden [Byte[]]$Buffer = (New-Object System.Byte[] 4096)
@@ -363,53 +363,57 @@ class SlackBackend : Backend {
                 }
 
                 if ($customResponse.PSObject.TypeNames[0] -eq 'PoshBot.Card.Response') {
-                    $attParams = @{
-                        MarkdownFields = 'text'
-                        Color = $customResponse.Color
-                    }
-                    $fbText = 'no data'
-                    if (-not [string]::IsNullOrEmpty($customResponse.Text)) {
-                        Write-Verbose "response size: $($customResponse.Text.Length)"
-                        $fbText = $customResponse.Text
-                    }
-                    $attParams.Fallback = $fbText
-                    if ($customResponse.Title) {
-                        $attParams.Title = $customResponse.Title
-                    }
-                    if ($customResponse.ImageUrl) {
-                        $attParams.ImageURL = $customResponse.ImageUrl
-                    }
-                    if ($customResponse.ThumbnailUrl) {
-                        $attParams.ThumbURL = $customResponse.ThumbnailUrl
-                    }
-                    if ($customResponse.LinkUrl) {
-                        $attParams.TitleLink = $customResponse.LinkUrl
-                    }
-                    if ($customResponse.Fields) {
-                        $arr = New-Object System.Collections.ArrayList
-                        foreach ($key in $customResponse.Fields.Keys) {
-                            $arr.Add(
-                                @{
-                                    title = $key;
-                                    value = $customResponse.Fields[$key];
-                                    short = $true
-                                }
-                            )
-                        }
-                        $attParams.Fields = $arr
-                    }
 
                     $chunks = $this._ChunkString($customResponse.Text)
                     Write-Verbose "Split response into [$($chunks.Count)] chunks"
-
+                    $x = 0
                     foreach ($chunk in $chunks) {
-                        $copy = Copy-Object -InputObject $attParams
-                        if (-not [string]::IsNullOrEmpty($chunk)) {
-                            $copy.Text = '```' + $chunk + '```'
-                        } else {
-                            $copy.Text = [string]::Empty
+                        $attParams = @{
+                            MarkdownFields = 'text'
+                            Color = $customResponse.Color
                         }
-                        $att = New-SlackMessageAttachment @copy
+                        $fbText = 'no data'
+                        if (-not [string]::IsNullOrEmpty($chunk.Text)) {
+                            Write-Verbose "response size: $($chunk.Text.Length)"
+                            $fbText = $chunk.Text
+                        }
+                        $attParams.Fallback = $fbText
+                        if ($customResponse.Title) {
+
+                            # If we chunked up the response, only display the title on the first one
+                            if ($x -eq 0) {
+                                $attParams.Title = $customResponse.Title
+                            }
+                        }
+                        if ($customResponse.ImageUrl) {
+                            $attParams.ImageURL = $customResponse.ImageUrl
+                        }
+                        if ($customResponse.ThumbnailUrl) {
+                            $attParams.ThumbURL = $customResponse.ThumbnailUrl
+                        }
+                        if ($customResponse.LinkUrl) {
+                            $attParams.TitleLink = $customResponse.LinkUrl
+                        }
+                        if ($customResponse.Fields) {
+                            $arr = New-Object System.Collections.ArrayList
+                            foreach ($key in $customResponse.Fields.Keys) {
+                                $arr.Add(
+                                    @{
+                                        title = $key;
+                                        value = $customResponse.Fields[$key];
+                                        short = $true
+                                    }
+                                )
+                            }
+                            $attParams.Fields = $arr
+                        }
+
+                        if (-not [string]::IsNullOrEmpty($chunk)) {
+                            $attParams.Text = '```' + $chunk + '```'
+                        } else {
+                            $attParams.Text = [string]::Empty
+                        }
+                        $att = New-SlackMessageAttachment @attParams
                         $msg = $att | New-SlackMessage -Channel $sendTo -AsUser
                         $slackResponse = $msg | Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Verbose:$false
                     }
