@@ -5,6 +5,7 @@
     * Enhance !help by filtering on plugins or commands with !help <plugin> | <command>
     * Validate mandatory parameters before calling command and respond back with appropriate error message
 * Don't allow a failing command to crash the bot
+* Allow passing arrays to bot commands (--param val1, val2, val3)
 
 # Class gotchas
     * Using module statement only looks in modules PSM1 for classes, not dot sourced files.
