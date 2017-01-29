@@ -40,6 +40,8 @@ class Plugin {
     # Roles that come bundles with plugin
     [hashtable]$Roles = @{}
 
+    [hashtable]$Permissions = @{}
+
     hidden [string]$_ManifestPath
 
     Plugin() {
@@ -121,6 +123,22 @@ class Plugin {
     [void]RemoveRole([Role]$Role) {
         if ($this.Roles.ContainsKey($Role.Name)) {
             $this.Roles.Remove($Role.Name, $Role)
+        }
+    }
+
+    [void]AddPermission([Permission]$Permission) {
+        if (-not $this.Permissions.ContainsKey($Permission.ToString())) {
+            $this.Permissions.Add($Permission.ToString(), $Permission)
+        }
+    }
+
+    [Permission]GetPermission([string]$Name) {
+        return $this.Permissions[$Name]
+    }
+
+    [void]RemovePermission([Permission]$Permission) {
+        if ($this.Permissions.ContainsKey($Permission.ToString())) {
+            $this.Permissions.Remove($Permission.ToString())
         }
     }
 

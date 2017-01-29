@@ -70,11 +70,18 @@ class PluginManager {
             $this.Logger.Info([LogMessage]::new("[PluginManager:AddPlugin] Attaching plugin [$($Plugin.Name)]"))
             $this.Plugins.Add($Plugin.Name, $Plugin)
 
-            # Register the plugin's roles with the role manager
-            foreach ($role in $Plugin.Roles.GetEnumerator()) {
-                $this.Logger.Info([LogMessage]::new("[PluginManager:AddPlugin] Adding role [$($Role.Name)] to Role Manager"))
-                $this.RoleManager.AddRole($role.Value)
+            # # Register the plugin's roles with the role manager
+            # foreach ($role in $Plugin.Roles.GetEnumerator()) {
+            #     $this.Logger.Info([LogMessage]::new("[PluginManager:AddPlugin] Adding role [$($Role.Name)] to Role Manager"))
+            #     $this.RoleManager.AddRole($role.Value)
+            # }
+
+            # Register the plugins permission set with the role manager
+            foreach ($permission in $Plugin.Permissions.GetEnumerator()) {
+                $this.Logger.Info([LogMessage]::new("[PluginManager:AddPlugin] Adding permission [$($permission.Value.ToString())] to Role Manager"))
+                $this.RoleManager.AddPermission($permission.Value)
             }
+
         }
 
         # # Reload commands and role from all currently loading (and active) plugins
@@ -87,21 +94,27 @@ class PluginManager {
     [void]RemovePlugin([Plugin]$Plugin) {
         if ($this.Plugins.ContainsKey($Plugin.Name)) {
 
-            # Remove the roles for this plugin from the role manager
-            # if those roles are not associtate with any other plugins
-            foreach ($role in $Plugin.Roles) {
-                $roleIsUnique = $true
-                $otherPluginKeys = $this.Plugins.Keys | Where {$_ -ne $Plugin.Name}
-                foreach ($otherPluginKey in $otherPluginKeys) {
-                    if ($this.Plugins[$otherPluginKey].Roles -contains $role.Name) {
-                        $roleIsUnique = $false
-                    }
-                }
-                if ($roleIsUnique) {
-                    $this.Logger.Verbose([LogMessage]::new("[PluginManager:RemovePlugin] Removing role [$Role.Name]. No longer in use"))
-                    $this.RoleManager.RemoveRole($role)
-                }
+            # Remove the permissions for this plugin from the role manaager
+            foreach ($permission in $Plugin.Permissions) {
+                $this.Logger.Verbose([LogMessage]::new("[PluginManager:RemovePlugin] Removing permission [$($Permission.ToString())]. No longer in use"))
+                $this.RoleManager.RemovePermission($Permission)
             }
+
+            # # Remove the roles for this plugin from the role manager
+            # # if those roles are not associtate with any other plugins
+            # foreach ($role in $Plugin.Roles) {
+            #     $roleIsUnique = $true
+            #     $otherPluginKeys = $this.Plugins.Keys | Where {$_ -ne $Plugin.Name}
+            #     foreach ($otherPluginKey in $otherPluginKeys) {
+            #         if ($this.Plugins[$otherPluginKey].Roles -contains $role.Name) {
+            #             $roleIsUnique = $false
+            #         }
+            #     }
+            #     if ($roleIsUnique) {
+            #         $this.Logger.Verbose([LogMessage]::new("[PluginManager:RemovePlugin] Removing role [$Role.Name]. No longer in use"))
+            #         $this.RoleManager.RemoveRole($role)
+            #     }
+            # }
 
             $this.Logger.Info([LogMessage]::new("[PluginManager:RemovePlugin] Removing plugin [$Plugin.Name]"))
             $this.Plugins.Remove($Plugin.Name)
@@ -265,10 +278,16 @@ class PluginManager {
             $plugin.Name = $ModuleName
             $plugin._ManifestPath = $ManifestPath
 
-            # Create new roles from metadata in the module manifest
-            $pluginRoles = $this.GetRoleFromModuleManifest($manifest)
-            $pluginRoles | ForEach-Object {
-                $plugin.AddRole($_)
+            # # Create new roles from metadata in the module manifest
+            # $pluginRoles = $this.GetRoleFromModuleManifest($manifest)
+            # $pluginRoles | ForEach-Object {
+            #     $plugin.AddRole($_)
+            # }
+
+            # Create new permissions from metadata in the module manifest
+            $this.GetPermissionsFromModuleManifest($manifest) | ForEach-Object {
+                $_.Plugin = $plugin.Name
+                $plugin.AddPermission($_)
             }
 
             # Add the plugin so the roles can be registered with the role manager
@@ -276,7 +295,7 @@ class PluginManager {
             $this.Logger.Info([LogMessage]::new("[PluginManager:CreatePluginFromModuleManifest] Created new plugin [$($plugin.Name)]"))
 
             Import-Module -Name $manifestPath -Scope Local -Verbose:$false
-            $moduleCommands = Get-Command -Module $ModuleName -CommandType Cmdlet, Function, Workflow
+            $moduleCommands = Microsoft.PowerShell.Core\Get-Command -Module $ModuleName -CommandType Cmdlet, Function, Workflow
             foreach ($command in $moduleCommands) {
 
                 # # See if this command should be a subcommand
@@ -312,6 +331,22 @@ class PluginManager {
                     } else {
                         $cmd.name = $command.Name
                     }
+
+                    # Add any defined permissions to the command
+                    if ($metadata.Permissions) {
+                        foreach ($item in $metadata.Permissions) {
+                            $p = [Permission]::new($item, $plugin.Name)
+                            if (-not $plugin.GetPermission($p.ToString())) {
+                                Write-Error -Message "Permission [$($p.ToString())] is not defined in the plugin module manifest. Command will not be added to plugin."
+                                continue
+                            } else {
+                                $cmd.AddPermission($p)
+                            }
+                            # TODO
+                            # Get description from permissions defined in module manifest
+                        }
+                    }
+
                     $cmd.KeepHistory = $metadata.KeepHistory
                     $cmd.HideFromHelp = $metadata.HideFromHelp
 
@@ -362,18 +397,18 @@ class PluginManager {
                 # Add the desired roles for this command
                 # This assumes that the roles have already been loaded in
                 # to the role manager when the plugin was loaded
-                if ($cmdHelp.Role) {
-                    $rolesForCmd = @($this.GetRoleFromModuleCommand($cmdHelp))
-                    foreach($r in $rolesForCmd) {
-                        $role = $this.RoleManager.GetRole($r)
-                        if ($role) {
-                            $this.Logger.Info([LogMessage]::new("[PluginManager:CreatePluginFromModuleManifest] Adding role [$($role.Name)] to command [$($command.Name)]"))
-                            $cmd.AddRole($role)
-                        } else {
-                            $this.Logger.Info([LogMessage]::new("[PluginManager:CreatePluginFromModuleManifest] Couldn't get role [$($role.Name)] for command [$($command.Name)]"))
-                        }
-                    }
-                }
+                # if ($cmdHelp.Role) {
+                #     $rolesForCmd = @($this.GetRoleFromModuleCommand($cmdHelp))
+                #     foreach($r in $rolesForCmd) {
+                #         $role = $this.RoleManager.GetRole($r)
+                #         if ($role) {
+                #             $this.Logger.Info([LogMessage]::new("[PluginManager:CreatePluginFromModuleManifest] Adding role [$($role.Name)] to command [$($command.Name)]"))
+                #             $cmd.AddRole($role)
+                #         } else {
+                #             $this.Logger.Info([LogMessage]::new("[PluginManager:CreatePluginFromModuleManifest] Couldn't get role [$($role.Name)] for command [$($command.Name)]"))
+                #         }
+                #     }
+                # }
 
                 # If this is a subcommand, attach it to the primary command
                 # Subcommands will also be in the plugin manager command list
@@ -431,6 +466,23 @@ class PluginManager {
             }
         }
         return $pluginRoles
+    }
+
+    [Permission[]]GetPermissionsFromModuleManifest($Manifest) {
+        $permissions = New-Object System.Collections.ArrayList
+        foreach ($permission in $Manifest.PrivateData.Permissions) {
+            if ($permission -is [string]) {
+                $p = [Permission]::new($Permission)
+                $permissions.Add($p)
+            } elseIf ($permission -is [hashtable]) {
+                $p = [Permission]::new($permission.Name)
+                if ($permission.Description) {
+                    $p.Description = $permission.Description
+                }
+                $permissions.Add($p)
+            }
+        }
+        return $permissions
     }
 
     [string[]]GetRoleFromModuleCommand($CmdHelp) {

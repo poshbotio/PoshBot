@@ -153,9 +153,12 @@ class Bot {
         # That that we're connected, resolve any bot administrators defined in
         # configuration to their IDs and add to the [admin] role
         foreach ($admin in $this.Configuration.BotAdmins) {
-            $adminId = $this.Backend.UsernameToUserId($admin)
-            if ($adminId) {
-                $this.RoleManager.AddUserToRole($adminId, 'admin')
+            if ($adminId = $this.RoleManager.ResolveUserToId($admin)) {
+                try {
+                    $this.RoleManager.AddUserToGroup($adminId, 'Admin')
+                } catch {
+                    Write-Error $_
+                }
             } else {
                 $this._Logger.Info([LogMessage]::new([LogSeverity]::Warning, "[Bot:Connect] Unable to resolve ID for admin [$admin]"))
             }
@@ -285,7 +288,7 @@ class Bot {
             if ($pluginCmd) {
                 if ($this.Configuration.SendCommandResponseToPrivate -Contains $pluginCmd.ToString()) {
                     $this._Logger.Info([LogMessage]::new("[Bot:HandleMessage] Deverting response from command [$pluginCmd.ToString()] to private channel"))
-                    $Response.To = "@$($this.Backend.UserIdToUsername($Message.From))"
+                    $Response.To = "@$($this.RoleManager.ResolveUserToId($Message.From))"
                 }
             }
 

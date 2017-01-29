@@ -184,16 +184,26 @@ class Command {
 
     [bool]IsAuthorized([string]$UserId, [RoleManager]$RoleManager) {
 
-        $userRoles = $RoleManager.GetUserRoles($UserId)
-        if (-not $userRoles) {
-            $userRoles = @('Anyone')
-        }
-        foreach ($userRole in $userRoles) {
-            $result = $this.AccessFilter.AuthorizeRole($userRole)
+        $perms = $RoleManager.GetUserPermissions($UserId)
+        Write-Verbose "[Command:IsAuthorized] User permissions: $($Perms.Name)"
+        foreach ($perm in $perms) {
+            $result = $this.AccessFilter.Authorize($perm.Name)
             if ($result.Authorized) {
                 return $true
             }
         }
+
+        # $userRoles = $RoleManager.GetUserRoles($UserId)
+        # if (-not $userRoles) {
+        #     $userRoles = @('Anyone')
+        # }
+        # foreach ($userRole in $userRoles) {
+        #     $result = $this.AccessFilter.AuthorizeRole($userRole)
+        #     if ($result.Authorized) {
+        #         return $true
+        #     }
+        # }
+
         return $false
 
         # $userResult = $this.AccessFilter.AuthorizeUser($UserId)
@@ -243,6 +253,14 @@ class Command {
     # Remove a role
     [void]RemoveRole([Role]$Role) {
         $this.AccessFilter.RemoveAllowedRole($Role.Name)
+    }
+
+    [void]AddPermission([Permission]$Permission) {
+        $this.AccessFilter.AddPermission($Permission)
+    }
+
+    [void]RemovePermission([Permission]$Permission) {
+        $this.AccessFilter.RemovePermission($Permission)
     }
 
     # Returns TRUE/FALSE if this command matches a parsed command from the chat network

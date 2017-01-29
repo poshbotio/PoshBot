@@ -93,18 +93,50 @@ AliasesToExport = '*'
 PrivateData = @{
 
     # Define the bot roles for used by this module
-    Roles = @(
+    # Roles = @(
+    #     @{
+    #         Name = 'PluginAdmin'
+    #         Description = 'Plugin administrators'
+    #     }
+    #     @{
+    #         Name = 'RoleAdmin'
+    #         Description = 'Role administrators'
+    #     }
+    #     @{
+    #         Name = 'Anyone'
+    #         Description = 'Any user'
+    #     }
+    # )
+
+    # Define the set of permissions exposed by this module
+    Permissions = @(
         @{
-            Name = 'PluginAdmin'
-            Description = 'Plugin administrators'
+            Name = 'show-help'
+            Description = 'Can display help about commands'
         }
         @{
-            Name = 'RoleAdmin'
-            Description = 'Role administrators'
+            Name = 'view'
+            Description = 'Can display details about running bot instance'
         }
         @{
-            Name = 'Anyone'
-            Description = 'Any user'
+            Name = 'view-role'
+            Description = 'Can view details about roles defined in bot'
+        }
+        @{
+            Name = 'view-group'
+            Description = 'Can view details about groups defined in bot'
+        }
+        @{
+            Name = 'manage-groups'
+            Description = 'Can create/create/update/delete groups'
+        }
+        @{
+            Name = 'manage-roles'
+            Description = 'Can create/create/update/delete roles'
+        }
+        @{
+            Name = 'manage-plugins'
+            Description = 'Can install/enable/disable plugins'
         }
     )
 

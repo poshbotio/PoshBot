@@ -18,12 +18,12 @@ namespace PoshBot {
     }
 
     public class BotCommand : System.Attribute {
-
         public string CommandName { get; set; }
         public bool HideFromHelp { get; set; }
         public string Regex { get; set; }
         public string MessageType { get; set; }
         public string MessageSubtype { get; set; }
+        public string[] Permissions { get; set; }
 
         private TriggerType _triggerType = TriggerType.Command;
         private bool _command = true;
@@ -60,8 +60,10 @@ namespace PoshBot {
     'Card'
     'CommandResult'
     'CommandParser'
+    'Permission'
     'AccessFilter'
     'Role'
+    'Group'
     'Trigger'
     'StorageProvider'
     'RoleManager'

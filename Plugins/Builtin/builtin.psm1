@@ -6,6 +6,7 @@ function Help {
     .EXAMPLE
         !help mycommand
     #>
+    [PoshBot.BotCommand(Permissions = 'show-help')]
     [cmdletbinding()]
     param(
         [parameter(Mandatory)]
@@ -23,7 +24,7 @@ function Help {
             $command = $plugin.Commands[$commandKey]
             $x = [pscustomobject][ordered]@{
                 Command = "$pluginKey`:$CommandKey"
-                #Plugin = $pluginKey
+                Plugin = $pluginKey
                 #Name = $commandKey
                 Description = $command.Description
                 HelpText = $command.HelpText
@@ -49,12 +50,15 @@ function Help {
 }
 
 function Status {
+
     <#
     .SYNOPSIS
         Get Bot status
     .EXAMPLE
         !status
     #>
+    [PoshBot.BotCommand(Permissions = 'view')]
+    [cmdletbinding()]
     param(
         [parameter(Mandatory)]
         $Bot
@@ -77,152 +81,141 @@ function Status {
     New-PoshBotCardResponse -Type Normal -Fields $hash -Title 'PoshBot Status'
 }
 
-function Role-List {
+function Get-Command {
     <#
     .SYNOPSIS
-        Get all roles
+        Show details about bot commands
     .EXAMPLE
-        !role list
-    .ROLE
-        Admin
-        RoleAdmin
-    #>
-    [cmdletbinding()]
-    param(
-        [parameter(Mandatory)]
-        $Bot
-    )
-
-    $roles = foreach ($key in ($Bot.RoleManager.Roles.Keys | Sort-Object)) {
-        [pscustomobject][ordered]@{
-            Name = $key
-            Description =$Bot.RoleManager.Roles[$key].Description
-        }
-    }
-    New-PoshBotCardResponse -Type Normal -Text ($roles | Format-Table -AutoSize | Out-String -Width 150)
-}
-
-function Role-Show {
-    <#
-    .SYNOPSIS
-        Show details about a role
+        !get-command
     .EXAMPLE
-        !role show --role <rolename>
-    .ROLE
-        Admin
-        RoleAdmin
+        !get-command --command help
     #>
     [cmdletbinding()]
     param(
         [parameter(Mandatory)]
         $Bot,
 
-        [parameter(Mandatory, Position = 0)]
+        [parameter(Position = 0)]
+        [string]$Command
+    )
+
+    if ($PSBoundParameters.ContainsKey('Command')) {
+        $title = "Commands matching [$Command]"
+        $commandsKeys = @($Bot.PluginManager.Commands.Keys | Where-Object {$_ -like "*$Command*" })
+    } else {
+        $commandsKeys = @($Bot.PluginManager.Commands.Keys)
+    }
+
+    if ($commandsKeys.Count -gt 0) {
+        $result = foreach ($key in $commandsKeys) {
+            $cmd = $Bot.PluginManager.Commands[$key]
+            $o = [pscustomobject][ordered]@{
+                Name = $cmd.Name
+                Description = $cmd.Description
+                HelpText = $cmd.HelpText
+                Enabled = $cmd.Enabled.ToString()
+                Permissions = $cmd.AccessFilter.Permissions.Keys | Format-List | Out-string
+            }
+            $o
+        }
+        # $result = foreach ($cmd in $commands) {
+        #     $o = [pscustomobject][ordered]@{
+        #         Name = $cmd.Name
+        #         Description = $cmd.Description
+        #         HelpText = $cmd.HelpText
+        #         Enabled = $cmd.Enabled.ToString()
+        #         Permissions = $cmd.AccessFilter.Permissions.Keys | Format-List | Out-string
+        #     }
+        # }
+
+        if ($title) {
+            New-PoshBotCardResponse -Type Normal -Title $title -Text ($result | Format-List | Out-String)
+        } else {
+            New-PoshBotCardResponse -Type Normal -Title 'All commands' -Text ($result | Format-List | Out-String)
+        }
+
+    } else {
+        New-PoshBotCardResponse -Type Error -Text "No commands found matching [$Command] :(" -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
+    }
+}
+
+function Get-Role {
+    <#
+    .SYNOPSIS
+        Show details about bot roles
+    .EXAMPLE
+        !get-role
+    .EXAMPLE
+        !get-role --role admin
+    #>
+    [PoshBot.BotCommand(Permissions = 'view-role')]
+    [cmdletbinding()]
+    param(
+        [parameter(Mandatory)]
+        $Bot,
+
+        [parameter(Position = 0)]
         [string]$Role
     )
 
-    $r = $Bot.RoleManager.GetRole($Role)
-    if (-not $r) {
-        New-PoshBotCardResponse -Type Error -Text "Role [$Role] not found :(" -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
-        return
-    }
-    $roleMapping = $Bot.RoleManager.RoleUserMapping[$Role]
-    $members = New-Object System.Collections.ArrayList
-    if ($roleMapping) {
-        $roleMapping.GetEnumerator() | ForEach-Object {
-            $user = $bot.Backend.GetUser($_.Value)
-            if ($user) {
-                $m = [pscustomobject][ordered]@{
-                    Nickname = $user.Nickname
-                    FullName = $user.FullName
-                }
-                $members.Add($m) | Out-Null
-            }
-        }
-    }
-
-    $msg = [string]::Empty
-    $msg += "Role details for [$Role]"
-    $msg += "`nDescription: $($r.Description)"
-    $msg += "`nMembers:`n$($Members | Format-Table | Out-String)"
-    New-PoshBotCardResponse -Type Normal -Text $msg
-}
-
-function Role-AddUser {
-    <#
-    .SYNOPSIS
-        Add a user to a role
-    .EXAMPLE
-        !role adduser --role <rolename> --user <username>
-    .ROLE
-        Admin
-        RoleAdmin
-    #>
-    [cmdletbinding()]
-    param(
-        [parameter(Mandatory)]
-        $Bot,
-
-        [parameter(Mandatory, Position = 0)]
-        [string]$Role,
-
-        [parameter(Mandatory, Position = 1)]
-        [string]$User
-    )
-
-    # Validate role and username
-    $id = $Bot.RoleManager.ResolveUserToId($User)
-    if (-not $id) {
-        throw "Username [$User] was not found."
-    }
-    $r = $Bot.RoleManager.GetRole($Role)
-    if (-not $r) {
-        throw "Username [$User] was not found."
-    }
-
-    try {
-        $Bot.RoleManager.AddUserToRole($id, $Role)
-        New-PoshBotCardResponse -Type Normal -Text "OK, user [$User] added to role [$Role]"
-    } catch {
-        throw $_
-    }
-}
-
-function Command-Show {
-    <#
-    .SYNOPSIS
-        Show the details of a specific command
-    .EXAMPLE
-        !command show --name <command name>
-    #>
-    [cmdletbinding()]
-    param(
-        [parameter(Mandatory)]
-        $Bot,
-
-        [parameter(Mandatory, Position = 0)]
-        [string]$Name
-    )
-
-    $commands = @($Bot.PluginManager.Commands.Keys | Where-Object {$_ -like "*$Name*" })
-
-    if ($commands.Count -gt 0) {
-        foreach ($key in $commands) {
-            $command = $Bot.Pluginmanager.Commands[$key]
-            $fields = [ordered]@{
-                Name = $command.Name
-                Description = $command.Description
-                HelpText = $command.HelpText
-                Enabled = $command.Enabled.ToString()
-                AllowedRoles = $command.AccessFilter.AllowRoles.Keys  | Format-List | Out-String
-                DeniedRoles = $command.AccessFilter.DenyRoles.Keys | Format-List | Out-String
-            }
-            New-PoshBotCardResponse -Type Normal -Title "Details for [$($command.Name)]" -Fields $fields
+    if ($PSBoundParameters.ContainsKey('Role')) {
+        $r = $Bot.RoleManager.GetRole($Role)
+        if (-not $r) {
+            New-PoshBotCardResponse -Type Error -Text "Role [$Role] not found :(" -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
+            return
+        } else {
+            $permissions = $r.Permissions.Keys
+            $msg = [string]::Empty
+            $msg += "`nDescription: $($r.Description)"
+            $msg += "`nPermissions:`n$($r.Permissions.Keys | Format-List | Out-String)"
+            New-PoshBotCardResponse -Type Normal -Title "Details for role [$Role]" -Text $msg
         }
     } else {
-        New-PoshBotCardResponse -Type Warning -Text "Command [$Name] not found."
+        $roles = foreach ($key in ($Bot.RoleManager.Roles.Keys | Sort-Object)) {
+            [pscustomobject][ordered]@{
+                Name = $key
+                Description = $Bot.RoleManager.Roles[$key].Description
+                Permissions = $Bot.RoleManager.Roles[$key].Permissions.Keys
+            }
+        }
+        New-PoshBotCardResponse -Type Normal -Text ($roles | Format-List | Out-String)
     }
 }
+
+# function Command-Show {
+#     <#
+#     .SYNOPSIS
+#         Show the details of a specific command
+#     .EXAMPLE
+#         !command show --name <command name>
+#     #>
+#     [cmdletbinding()]
+#     param(
+#         [parameter(Mandatory)]
+#         $Bot,
+
+#         [parameter(Mandatory, Position = 0)]
+#         [string]$Name
+#     )
+
+#     $commands = @($Bot.PluginManager.Commands.Keys | Where-Object {$_ -like "*$Name*" })
+
+#     if ($commands.Count -gt 0) {
+#         foreach ($key in $commands) {
+#             $command = $Bot.Pluginmanager.Commands[$key]
+#             $fields = [ordered]@{
+#                 Name = $command.Name
+#                 Description = $command.Description
+#                 HelpText = $command.HelpText
+#                 Enabled = $command.Enabled.ToString()
+#                 Permissions = $command.AccessFilter.Permissions.Keys | Format-List | Out-string
+#             }
+#             New-PoshBotCardResponse -Type Normal -Title "Details for [$($command.Name)]" -Fields $fields
+#         }
+#     } else {
+#         New-PoshBotCardResponse -Type Warning -Text "Command [$Name] not found."
+#     }
+# }
 
 function Plugin-List {
     <#
@@ -355,6 +348,7 @@ function Plugin-Install {
         Admin
         PluginAdmin
     #>
+    [PoshBot.BotCommand(Permissions = 'manage-plugins')]
     [cmdletbinding()]
     param(
         [parameter(Mandatory)]
@@ -405,6 +399,7 @@ function Plugin-Enable {
         Admin
         PluginAdmin
     #>
+    [PoshBot.BotCommand(Permissions = 'manage-plugins')]
     [cmdletbinding()]
     param(
         [parameter(Mandatory)]
@@ -444,6 +439,7 @@ function Plugin-Disable {
         Admin
         PluginAdmin
     #>
+    [PoshBot.BotCommand(Permissions = 'manage-plugins')]
     [cmdletbinding()]
     param(
         [parameter(Mandatory)]
@@ -473,6 +469,381 @@ function Plugin-Disable {
     }
 }
 
+function Get-Group {
+    <#
+    .SYNOPSIS
+        Show details about bot groups
+    .EXAMPLE
+        !get-group
+    .EXAMPLE
+        !get-group --name admin
+    #>
+    [PoshBot.BotCommand(Permissions = 'view-group')]
+    [cmdletbinding()]
+    param(
+        [parameter(Mandatory)]
+        $Bot,
+
+        [parameter(Position = 0)]
+        [string]$Name
+    )
+
+    if ($PSBoundParameters.ContainsKey('Name')) {
+        $g = $Bot.RoleManager.GetGroup($Name)
+        if (-not $g) {
+            New-PoshBotCardResponse -Type Error -Text "Group [$Name] not found :(" -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
+            return
+        } else {
+            $membership = [pscustomobject]@{
+                Users = $g.Users.Keys | foreach-object {
+                    $Bot.RoleManager.ResolveUserToId($_)
+                }
+                Roles = $g.Roles.Keys
+            }
+            $msg = [string]::Empty
+            $msg += "`nDescription: $($g.Description)"
+            $msg += "`nMembers:`n$($membership | Format-Table | Out-String)"
+            New-PoshBotCardResponse -Type Normal -Title "Details for group [$Name]" -Text $msg
+        }
+    } else {
+        $groups = foreach ($key in ($Bot.RoleManager.Groups.Keys | Sort-Object)) {
+            [pscustomobject][ordered]@{
+                Name = $key
+                Description = $Bot.RoleManager.Groups[$key].Description
+                Users = $Bot.RoleManager.Groups[$key].Users.Keys
+                Roles = $Bot.RoleManager.Groups[$key].Roles.Keys
+            }
+        }
+        New-PoshBotCardResponse -Type Normal -Text ($groups | Format-List | Out-String)
+    }
+}
+
+function Get-Permission {
+    <#
+    .SYNOPSIS
+        Show details about bot permissions
+    .EXAMPLE
+        !get-permission
+    .EXAMPLE
+        !get-permission --name 'builtin:view'
+    #>
+    [PoshBot.BotCommand(Permissions = 'view')]
+    [cmdletbinding()]
+    param(
+        [parameter(Mandatory)]
+        $Bot,
+
+        [parameter(Position = 0)]
+        [string]$Name
+    )
+
+    if ($PSBoundParameters.ContainsKey('Name')) {
+        if ($p = $Bot.RoleManager.GetPermission($Name)) {
+            $o = [pscustomobject][ordered]@{
+                FullName = $p.ToString()
+                Name = $p.Name
+                Plugin = $p.Plugin
+                Description = $p.Description
+            }
+            New-PoshBotCardResponse -Type Normal -Text ($o | Format-List | Out-String)
+        } else {
+            New-PoshBotCardResponse -Type Error -Text "Permission [$Name] not found :(" -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
+            return
+        }
+    } else {
+        $permissions = foreach ($key in ($Bot.RoleManager.Permissions.Keys | Sort-Object)) {
+            [pscustomobject][ordered]@{
+                Name = $key
+                Description = $Bot.RoleManager.Permissions[$key].Description
+            }
+        }
+        New-PoshBotCardResponse -Type Normal -Text ($permissions | Format-Table -AutoSize | Out-String)
+    }
+}
+
+function New-Group {
+    <#
+    .SYNOPSIS
+        Create a new group
+    .EXAMPLE
+        !new-group --name <groupname> --description <groupdescription>
+    #>
+    [PoshBot.BotCommand(Permissions = 'manage-groups')]
+    [cmdletbinding()]
+    param(
+        [parameter(Mandatory)]
+        $Bot,
+
+        [parameter(Mandatory, Position = 0)]
+        [string]$Name,
+
+        [parameter(Position = 1)]
+        [string]$Description
+    )
+
+    $group = [Group]::New($Name)
+    if ($PSBoundParameters.ContainsKey('Description')) {
+        $group.Description = $Description
+    }
+
+    $Bot.RoleManager.AddGroup($group)
+    if ($g = $Bot.RoleManager.GetGroup($Name)) {
+        return New-PoshBotCardResponse -Type Normal -Text "Group [$Name] created." -ThumbnailUrl 'https://www.streamsports.com/images/icon_green_check_256.png'
+    } else {
+        return New-PoshBotCardResponse -Type Warning -Text "Group [$Name] could not be created. Check logs for more information." -ThumbnailUrl 'http://hairmomentum.com/wp-content/uploads/2016/07/warning.png'
+    }
+}
+
+function New-Role {
+    <#
+    .SYNOPSIS
+        Create a new role
+    .EXAMPLE
+        !new-role --name <rolename> --description <roledescription>
+    #>
+    [PoshBot.BotCommand(Permissions = 'manage-roles')]
+    [cmdletbinding()]
+    param(
+        [parameter(Mandatory)]
+        $Bot,
+
+        [parameter(Mandatory, Position = 0)]
+        [string]$Name,
+
+        [parameter(Position = 1)]
+        [string]$Description
+    )
+
+    $role = [Role]::New($Name)
+    if ($PSBoundParameters.ContainsKey('Description')) {
+        $role.Description = $Description
+    }
+
+    $Bot.RoleManager.AddRole($role)
+    if ($g = $Bot.RoleManager.GetRole($Name)) {
+        return New-PoshBotCardResponse -Type Normal -Text "Role [$Name] created." -ThumbnailUrl 'https://www.streamsports.com/images/icon_green_check_256.png'
+    } else {
+        return New-PoshBotCardResponse -Type Warning -Text "Role [$Name] could not be created. Check logs for more information." -ThumbnailUrl 'http://hairmomentum.com/wp-content/uploads/2016/07/warning.png'
+    }
+}
+
+function Add-RolePermission {
+    <#
+    .SYNOPSIS
+        Add a permission to a role
+    .EXAMPLE
+        !add-rolepermission --role <rolename> --permission <permissionname>
+    #>
+    [PoshBot.BotCommand(Permissions = 'manage-roles')]
+    [cmdletbinding()]
+    param(
+        [parameter(Mandatory)]
+        $Bot,
+
+        [parameter(Mandatory, Position = 0)]
+        [string]$Role,
+
+        [parameter(Position = 1)]
+        [string]$Permission
+    )
+
+    if ($r = $Bot.RoleManager.GetRole($Role)) {
+        if ($p = $Bot.RoleManager.Permissions[$Permission]) {
+            try {
+                $Bot.RoleManager.AddPermissionToRole($Permission, $Role)
+                return New-PoshBotCardResponse -Type Normal -Text "Permission [$Permission] added to role [$Role]." -ThumbnailUrl 'https://www.streamsports.com/images/icon_green_check_256.png'
+            } catch {
+                return New-PoshBotCardResponse -Type Error -Text "Failed to add [$Permission] to group [$Role]" -ThumbnailUrl 'https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-128.png'
+            }
+        } else {
+            New-PoshBotCardResponse -Type Warning -Text "Permission [$Permission] not found :(" -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
+        }
+    } else {
+        New-PoshBotCardResponse -Type Warning -Text "Role [$Role] not found :(" -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
+    }
+}
+
+function Remove-RolePermission {
+    <#
+    .SYNOPSIS
+        Remove a permission from a role
+    .EXAMPLE
+        !remove-rolepermission --Role <rolename> --permission <permissioname>
+    #>
+    [PoshBot.BotCommand(Permissions = 'manage-roles')]
+    [cmdletbinding()]
+    param(
+        [parameter(Mandatory)]
+        $Bot,
+
+        [parameter(Mandatory, Position = 0)]
+        [string]$Role,
+
+        [parameter(Position = 1)]
+        [string]$Permission
+    )
+
+    if ($r = $Bot.RoleManager.GetRole($Role)) {
+        if ($p = $Bot.RoleManager.Permissions[$Permission]) {
+            try {
+                $Bot.RoleManager.RemovePermissionFromRole($Permission, $Role)
+                return New-PoshBotCardResponse -Type Normal -Text "Permission [$Permission] removed from role [$role]." -ThumbnailUrl 'https://www.streamsports.com/images/icon_green_check_256.png'
+            } catch {
+                return New-PoshBotCardResponse -Type Error -Text "Failed to remove [$Permission] from role [$role]" -ThumbnailUrl 'https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-128.png'
+            }
+        } else {
+            New-PoshBotCardResponse -Type Warning -Text "Permission [$Permission] not found :(" -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
+        }
+    } else {
+        New-PoshBotCardResponse -Type Warning -Text "Role [$Role] not found :(" -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
+    }
+}
+
+function Add-GroupUser {
+    <#
+    .SYNOPSIS
+        Add a user to a group
+    .EXAMPLE
+        !add-groupuser --group <groupname> --user <username>
+    #>
+    [PoshBot.BotCommand(Permissions = 'manage-groups')]
+    [cmdletbinding()]
+    param(
+        [parameter(Mandatory)]
+        $Bot,
+
+        [parameter(Mandatory, Position = 0)]
+        [string]$Group,
+
+        [parameter(Position = 1)]
+        [string]$User
+    )
+
+    if ($g = $Bot.RoleManager.GetGroup($Group)) {
+        # Resolve username to user id
+        if ($userId = $Bot.RoleManager.ResolveUserToId($User)) {
+            try {
+                $bot.RoleManager.AddUserToGroup($userId, $Group)
+                return New-PoshBotCardResponse -Type Normal -Text "User [$User] added to group [$Group]." -ThumbnailUrl 'https://www.streamsports.com/images/icon_green_check_256.png'
+            } catch {
+                return New-PoshBotCardResponse -Type Error -Text "Failed to add [$User] to group [$Group]" -ThumbnailUrl 'https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-128.png'
+            }
+        } else {
+            New-PoshBotCardResponse -Type Warning -Text "User [$User] not found :(" -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
+        }
+    } else {
+        New-PoshBotCardResponse -Type Warning -Text "Group [$Group] not found :(" -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
+    }
+}
+
+function Remove-GroupUser {
+    <#
+    .SYNOPSIS
+        Remove a user to a group
+    .EXAMPLE
+        !remove-groupuser --group <groupname> --user <username>
+    #>
+    [PoshBot.BotCommand(Permissions = 'manage-groups')]
+    [cmdletbinding()]
+    param(
+        [parameter(Mandatory)]
+        $Bot,
+
+        [parameter(Mandatory, Position = 0)]
+        [string]$Group,
+
+        [parameter(Position = 1)]
+        [string]$User
+    )
+
+    if ($g = $Bot.RoleManager.GetGroup($Group)) {
+        if ($userId = $Bot.RoleManager.ResolveUserToId($User)) {
+            try {
+                $bot.RoleManager.RemoveUserFromGroup($userId, $Group)
+                return New-PoshBotCardResponse -Type Normal -Text "User [$User] removed from group [$Group]." -ThumbnailUrl 'https://www.streamsports.com/images/icon_green_check_256.png'
+            } catch {
+                return New-PoshBotCardResponse -Type Error -Text "Failed to remove [$User] from group [$Group]" -ThumbnailUrl 'https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-128.png'
+            }
+        } else {
+            New-PoshBotCardResponse -Type Warning -Text "User [$User] not found :(" -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
+        }
+    } else {
+        New-PoshBotCardResponse -Type Warning -Text "Group [$Group] not found :(" -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
+    }
+}
+
+function Add-GroupRole {
+    <#
+    .SYNOPSIS
+        Add a role to a group
+    .EXAMPLE
+        !add-grouprole --group <groupname> --role <rolename>
+    #>
+    [PoshBot.BotCommand(Permissions = 'manage-groups')]
+    [cmdletbinding()]
+    param(
+        [parameter(Mandatory)]
+        $Bot,
+
+        [parameter(Mandatory, Position = 0)]
+        [string]$Group,
+
+        [parameter(Position = 1)]
+        [string]$Role
+    )
+
+    if ($g = $Bot.RoleManager.GetGroup($Group)) {
+        if ($r = $Bot.RoleManager.GetRole($Role)) {
+            try {
+                $bot.RoleManager.AddRoleToGroup($Role, $Group)
+                return New-PoshBotCardResponse -Type Normal -Text "Role [$Role] added to group [$Group]." -ThumbnailUrl 'https://www.streamsports.com/images/icon_green_check_256.png'
+            } catch {
+                return New-PoshBotCardResponse -Type Error -Text "Failed to add [$Role] to group [$Group]" -ThumbnailUrl 'https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-128.png'
+            }
+        } else {
+            New-PoshBotCardResponse -Type Warning -Text "Role [$Role] not found :(" -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
+        }
+    } else {
+        New-PoshBotCardResponse -Type Warning -Text "Group [$Group] not found :(" -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
+    }
+}
+
+function Remove-GroupRole {
+    <#
+    .SYNOPSIS
+        Remove a role from a group
+    .EXAMPLE
+        !remove-grouprole --group <groupname> --role <rolename>
+    #>
+    [PoshBot.BotCommand(Permissions = 'manage-groups')]
+    [cmdletbinding()]
+    param(
+        [parameter(Mandatory)]
+        $Bot,
+
+        [parameter(Mandatory, Position = 0)]
+        [string]$Group,
+
+        [parameter(Position = 1)]
+        [string]$Role
+    )
+
+    if ($g = $Bot.RoleManager.GetGroup($Group)) {
+        if ($r = $Bot.RoleManager.GetRole($Role)) {
+            try {
+                $bot.RoleManager.RemoveRoleFromGroup($Role, $Group)
+                return New-PoshBotCardResponse -Type Normal -Text "Role [$Role] removed from group [$Group]." -ThumbnailUrl 'https://www.streamsports.com/images/icon_green_check_256.png'
+            } catch {
+                return New-PoshBotCardResponse -Type Error -Text "Failed to remove [$Role] from group [$Group]" -ThumbnailUrl 'https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-128.png'
+            }
+        } else {
+            New-PoshBotCardResponse -Type Warning -Text "Role [$Role] not found :(" -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
+        }
+    } else {
+        New-PoshBotCardResponse -Type Warning -Text "Group [$Group] not found :(" -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
+    }
+}
+
 function About {
     <#
     .SYNOPSIS
@@ -480,6 +851,7 @@ function About {
     .EXAMPLE
         !about
     #>
+    [PoshBot.BotCommand(Permissions = 'view')]
     [cmdletbinding()]
     param(
         $Bot

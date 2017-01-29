@@ -21,9 +21,11 @@ class CommandAuthorizationResult {
 class AccessFilter {
 
     # Allow command only from users in these roles
-    [hashtable]$AllowRoles = @{}
+    # [hashtable]$AllowRoles = @{}
 
-    [hashtable]$DenyRoles = @{}
+    # [hashtable]$DenyRoles = @{}
+
+    [hashtable]$Permissions = @{}
 
     # Allow command only from these users (or from users in AllowRoles)
     # [hashtable]$AllowUsers = @{}
@@ -43,19 +45,43 @@ class AccessFilter {
     # Deny command from inside room (only allow DM)
     # [bool]$AllowChannel = $true
 
-    # Is a role authorized to run this command?
-    [CommandAuthorizationResult]AuthorizeRole([string]$Role) {
-
-        if ($this.DenyRoles.ContainsKey($Role)) {
-            return [CommandAuthorizationResult]::new($false, "Role [$Role] is not authorized to execute this command")
+    [CommandAuthorizationResult]Authorize([string]$PermissionName) {
+        if ($this.Permissions.Count -eq 0) {
+            return $true
+        } else {
+            if (-not $this.Permissions.ContainsKey($PermissionName)) {
+                return [CommandAuthorizationResult]::new($false, "Permission [$PermissionName] is not authorized to execute this command")
+            } else {
+                return $true
+            }
         }
+    }
 
-        if (($this.AllowRoles.Count -gt 0) -and
-           (-not $this.AllowRoles.ContainsKey($Role))) {
-            return [CommandAuthorizationResult]::new($false, "Role [$Role] is not authorized to execute this command")
+    # # Is a role authorized to run this command?
+    # [CommandAuthorizationResult]AuthorizeRole([string]$Role) {
+
+    #     if ($this.DenyRoles.ContainsKey($Role)) {
+    #         return [CommandAuthorizationResult]::new($false, "Role [$Role] is not authorized to execute this command")
+    #     }
+
+    #     if (($this.AllowRoles.Count -gt 0) -and
+    #        (-not $this.AllowRoles.ContainsKey($Role))) {
+    #         return [CommandAuthorizationResult]::new($false, "Role [$Role] is not authorized to execute this command")
+    #     }
+
+    #     return [CommandAuthorizationResult]::new($true)
+    # }
+
+    [void]AddPermission([Permission]$Permission) {
+        if (-not $this.Permissions.ContainsKey($Permission.ToString())) {
+            $this.Permissions.Add($Permission.ToString(), $Permission)
         }
+    }
 
-        return [CommandAuthorizationResult]::new($true)
+    [void]RemovePermission([Permission]$Permission) {
+        if ($this.Permissions.ContainsKey($Permission.ToString())) {
+            $this.Permissions.Remove($Permission.ToString())
+        }
     }
 
     # [CommandAuthorizationResult]AuthorizeUser([string]$UserId) {
@@ -107,32 +133,32 @@ class AccessFilter {
     #     return [CommandAuthorizationResult]::new($true)
     # }
 
-    [void]AddAllowedRole([string]$Role) {
-        if (-not $this.AllowRoles.ContainsKey($Role)) {
-            $this.AllowRoles.Add($Role, $null)
-        }
-    }
+    # [void]AddAllowedRole([string]$Role) {
+    #     if (-not $this.AllowRoles.ContainsKey($Role)) {
+    #         $this.AllowRoles.Add($Role, $null)
+    #     }
+    # }
 
-    [void]RemoveAllowedRole([string]$Role) {
-        if ($this.AllowRoles.ContainsKey($Role)) {
-            $this.AllowRoles.Remove($Role)
-        }
-    }
+    # [void]RemoveAllowedRole([string]$Role) {
+    #     if ($this.AllowRoles.ContainsKey($Role)) {
+    #         $this.AllowRoles.Remove($Role)
+    #     }
+    # }
 
-    [void]AddDeniedRole([string]$Role) {
-        if (-not $this.DenyRoles.ContainsKey($Role)) {
-            $this.DenyRoles.Add($Role, $null)
-        }
-        if ($this.AllowRoles.ContainsKey($Role)) {
-            $this.AllowRoles.Remove($Role)
-        }
-    }
+    # [void]AddDeniedRole([string]$Role) {
+    #     if (-not $this.DenyRoles.ContainsKey($Role)) {
+    #         $this.DenyRoles.Add($Role, $null)
+    #     }
+    #     if ($this.AllowRoles.ContainsKey($Role)) {
+    #         $this.AllowRoles.Remove($Role)
+    #     }
+    # }
 
-    [void]RemoveDeniedRole([string]$Role) {
-        if ($this.DenyRoles.ContainsKey($Role)) {
-            $this.DenyRoles.Remove($Role)
-        }
-    }
+    # [void]RemoveDeniedRole([string]$Role) {
+    #     if ($this.DenyRoles.ContainsKey($Role)) {
+    #         $this.DenyRoles.Remove($Role)
+    #     }
+    # }
 
     # [void]AddAllowedUser([string]$UserId) {
     #     if (-not $this.AllowUsers.ContainsKey($UserId)) {
