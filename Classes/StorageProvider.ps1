@@ -18,6 +18,7 @@ class StorageProvider {
             $config = Get-Content -Path $path -Raw | ConvertFrom-Metadata
             return $config
         } else {
+            Write-Error "Configuration [$path] not found"
             return $null
         }
     }
