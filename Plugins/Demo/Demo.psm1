@@ -333,3 +333,19 @@ function GoldStar {
 
     Write-Output 'Hey everyone look! Someone got a gold star :)'
 }
+
+function Start-LongRunningCommand {
+    <#
+    .SYNOPSIS
+        Start a long running command
+    .EXAMPLE
+        !start-longrunningcommand --seconds 20
+    #>
+    param(
+        [parameter(position = 0)]
+        [int]$Seconds = 10
+    )
+
+    Start-Sleep -Seconds $Seconds
+    Write-Output "Comamnd finished after [$Seconds] seconds"
+}
