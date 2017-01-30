@@ -74,6 +74,7 @@ function Status {
         Uptime = $uptime
         Plugins = $Bot.PluginManager.Plugins.Count
         Commands = $Bot.PluginManager.Commands.Count
+        CommandsExecuted = $Bot.Executor.ExecutedCount
     }
 
     $status = [pscustomobject]$hash
@@ -118,15 +119,6 @@ function Get-Command {
             }
             $o
         }
-        # $result = foreach ($cmd in $commands) {
-        #     $o = [pscustomobject][ordered]@{
-        #         Name = $cmd.Name
-        #         Description = $cmd.Description
-        #         HelpText = $cmd.HelpText
-        #         Enabled = $cmd.Enabled.ToString()
-        #         Permissions = $cmd.AccessFilter.Permissions.Keys | Format-List | Out-string
-        #     }
-        # }
 
         if ($title) {
             New-PoshBotCardResponse -Type Normal -Title $title -Text ($result | Format-List | Out-String)
