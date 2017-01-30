@@ -22,6 +22,9 @@ class RoleManager {
         # Create the builtin Admin role and add all the permissions defined
         # in the [Builtin] module
         $adminrole = [Role]::New('Admin', 'Bot administrator role')
+
+        # TODO
+        # Get these from the builtin module manifest rather than hard coding them here
         @(
             'manage-roles'
             'show-help'

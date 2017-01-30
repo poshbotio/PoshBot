@@ -70,12 +70,6 @@ class PluginManager {
             $this.Logger.Info([LogMessage]::new("[PluginManager:AddPlugin] Attaching plugin [$($Plugin.Name)]"))
             $this.Plugins.Add($Plugin.Name, $Plugin)
 
-            # # Register the plugin's roles with the role manager
-            # foreach ($role in $Plugin.Roles.GetEnumerator()) {
-            #     $this.Logger.Info([LogMessage]::new("[PluginManager:AddPlugin] Adding role [$($Role.Name)] to Role Manager"))
-            #     $this.RoleManager.AddRole($role.Value)
-            # }
-
             # Register the plugins permission set with the role manager
             foreach ($permission in $Plugin.Permissions.GetEnumerator()) {
                 $this.Logger.Info([LogMessage]::new("[PluginManager:AddPlugin] Adding permission [$($permission.Value.ToString())] to Role Manager"))
@@ -99,22 +93,6 @@ class PluginManager {
                 $this.Logger.Verbose([LogMessage]::new("[PluginManager:RemovePlugin] Removing permission [$($Permission.ToString())]. No longer in use"))
                 $this.RoleManager.RemovePermission($Permission)
             }
-
-            # # Remove the roles for this plugin from the role manager
-            # # if those roles are not associtate with any other plugins
-            # foreach ($role in $Plugin.Roles) {
-            #     $roleIsUnique = $true
-            #     $otherPluginKeys = $this.Plugins.Keys | Where {$_ -ne $Plugin.Name}
-            #     foreach ($otherPluginKey in $otherPluginKeys) {
-            #         if ($this.Plugins[$otherPluginKey].Roles -contains $role.Name) {
-            #             $roleIsUnique = $false
-            #         }
-            #     }
-            #     if ($roleIsUnique) {
-            #         $this.Logger.Verbose([LogMessage]::new("[PluginManager:RemovePlugin] Removing role [$Role.Name]. No longer in use"))
-            #         $this.RoleManager.RemoveRole($role)
-            #     }
-            # }
 
             $this.Logger.Info([LogMessage]::new("[PluginManager:RemovePlugin] Removing plugin [$Plugin.Name]"))
             $this.Plugins.Remove($Plugin.Name)
@@ -168,7 +146,6 @@ class PluginManager {
             if ($command.TriggerMatch($ParsedCommand)) {
                 $this.Logger.Info([LogMessage]::new("[PluginManagerBot:MatchCommand] Matched parsed command [$($ParsedCommand.Plugin)`:$($ParsedCommand.Command)] to builtin command [Builtin:$commandKey]"))
                 return [PluginCommand]::new($builtinPlugin, $command)
-                #return $command
             }
         }
 
@@ -181,7 +158,6 @@ class PluginManager {
                     if ($command.TriggerMatch($ParsedCommand)) {
                         $this.Logger.Info([LogMessage]::new("[PluginManager:MatchCommand] Matched parsed command [$($ParsedCommand.Plugin)`:$($ParsedCommand.Command)] to plugin command [$($plugin.Name)`:$commandKey]"))
                         return [PluginCommand]::new($plugin, $command)
-                        #return $command
                     }
                 }
                 $this.Logger.Info([LogMessage]::new([LogSeverity]::Warning, "[PluginManager:MatchCommand] Unable to match parsed command [$($ParsedCommand.Plugin)`:$($ParsedCommand.Command)] to a command in plugin [$($plugin.Name)]"))
@@ -197,39 +173,8 @@ class PluginManager {
                 foreach ($commandKey in $plugin.Commands.Keys) {
                     $command = $plugin.Commands[$commandKey]
                     if ($command.TriggerMatch($ParsedCommand)) {
-
-                        # # Check if this is a subcommand
-                        # if ($command.SubCommands.Count -gt 0) {
-                        #     $this.Logger.Log([LogMessage]::new("[PluginManager:MatchCommand] This command has subcommands"), [LogType]::System)
-
-                        #     # Is subcommand given?
-                        #     if ($ParsedCommand.PositionalParameters.Count -gt 0) {
-
-                        #         # The subcommand name should be the second token of the command string
-                        #         $subCommandName = $ParsedCommand.Tokens[1]
-
-                        #         # Remove the subCommandName from the PositionalParameters collection so it doesn't get passed
-                        #         # as an argument when invoking the command
-                        #         $ParsedCommand.PositionalParameters = @($ParsedCommand.PositionalParameters | where {$_ -ne $subCommandName})
-
-                        #         $this.Logger.Log([LogMessage]::new("[PluginManager:MatchCommand] Looking for subcommand [$subCommandName]"), [LogType]::System)
-
-                        #         foreach ($subCommand in $command.Subcommands.GetEnumerator()) {
-                        #             $this.Logger.Log([LogMessage]::new("[PluginManager:MatchCommand] looking for [$subCommandName]"), [LogType]::System)
-                        #             if ($subCommand.Value.Name -eq $subCommandName) {
-                        #                 $this.Logger.Log([LogMessage]::new("[PluginManager:MatchCommand] Found subcommand [$subCommandName]"), [LogType]::System)
-                        #                 return [PluginCommand]::new($plugin, $subCommand.Value)
-                        #             }
-                        #         }
-                        #     }
-
-                        #     # The command has subcommands bet we are invoking the primary command
-                        #     $this.Logger.Log([LogMessage]::new("[PluginManager:MatchCommand] Matched parsed command [$($ParsedCommand.Plugin)`:$($ParsedCommand.Command)] to plugin command [$pluginKey`:$commandKey]"), [LogType]::System)
-                        #     return [PluginCommand]::new($plugin, $command)
-                        # } else {
-                            $this.Logger.Info([LogMessage]::new("[PluginManager:MatchCommand] Matched parsed command [$($ParsedCommand.Plugin)`:$($ParsedCommand.Command)] to plugin command [$pluginKey`:$commandKey]"))
-                            return [PluginCommand]::new($plugin, $command)
-                        #}
+                        $this.Logger.Info([LogMessage]::new("[PluginManager:MatchCommand] Matched parsed command [$($ParsedCommand.Plugin)`:$($ParsedCommand.Command)] to plugin command [$pluginKey`:$commandKey]"))
+                        return [PluginCommand]::new($plugin, $command)
                     }
                 }
             }
@@ -267,7 +212,6 @@ class PluginManager {
         $remove | ForEach-Object {
             $this.Logger.Verbose([LogMessage]::new("[PluginManager:LoadCommands] Removing command [$_]. Plugin has either been removed or is deactivated."))
             $this.Commands.Remove($_)
-            #$this.Triggers.Remove($_)
         }
     }
 
@@ -277,12 +221,6 @@ class PluginManager {
             $plugin = [Plugin]::new()
             $plugin.Name = $ModuleName
             $plugin._ManifestPath = $ManifestPath
-
-            # # Create new roles from metadata in the module manifest
-            # $pluginRoles = $this.GetRoleFromModuleManifest($manifest)
-            # $pluginRoles | ForEach-Object {
-            #     $plugin.AddRole($_)
-            # }
 
             # Create new permissions from metadata in the module manifest
             $this.GetPermissionsFromModuleManifest($manifest) | ForEach-Object {
@@ -298,21 +236,12 @@ class PluginManager {
             $moduleCommands = Microsoft.PowerShell.Core\Get-Command -Module $ModuleName -CommandType Cmdlet, Function, Workflow
             foreach ($command in $moduleCommands) {
 
-                # # See if this command should be a subcommand
-                # $isSubcommand = $this.IsSubcommand($Command.Name)
-                # $primaryCommandName = $null
-                # #$subCommandName = $null
-                # $subCommandTrigger = $null
-                # if ($isSubcommand) {
-                #     $primaryCommandName = $Command.Name.Split('-')[0].Split('_')[0]
-                #     $subCommandTrigger = $Command.Name.Replace('-', ' ').Replace('_', ' ')
-                #     $this.Logger.Log([LogMessage]::new("[PluginManager:CreatePluginFromModuleManifest] Command [$($command.Name)] is a subcommand of [$primaryCommandName] "), [LogType]::System)
-                # }
-
                 # Get the command help so we can pull information from it
                 # to construct the bot command
                 $cmdHelp = Get-Help -Name $command.Name
 
+                # Get any command metadata that may be attached to the command
+                # via the PoshBot.BotCommand extended attribute
                 $metadata = $this.GetCommandMetadata($command)
 
                 $this.Logger.Info([LogMessage]::new("[PluginManager:CreatePluginFromModuleManifest] Creating command [$($command.Name)] for new plugin [$($plugin.Name)]"))
@@ -335,15 +264,13 @@ class PluginManager {
                     # Add any defined permissions to the command
                     if ($metadata.Permissions) {
                         foreach ($item in $metadata.Permissions) {
-                            $p = [Permission]::new($item, $plugin.Name)
-                            if (-not $plugin.GetPermission($p.ToString())) {
-                                Write-Error -Message "Permission [$($p.ToString())] is not defined in the plugin module manifest. Command will not be added to plugin."
-                                continue
-                            } else {
+                            $fqPermission = "$($plugin.Name):$($item)"
+                            if ($p = $plugin.GetPermission($fqPermission)) {
                                 $cmd.AddPermission($p)
+                            } else {
+                                Write-Error -Message "Permission [$fqPermission] is not defined in the plugin module manifest. Command will not be added to plugin."
+                                continue
                             }
-                            # TODO
-                            # Get description from permissions defined in module manifest
                         }
                     }
 
@@ -368,11 +295,6 @@ class PluginManager {
                         $cmd.Trigger.Type = [TriggerType]::Command
                     }
 
-                    # if ($metadata.TriggerType -eq 'Regex') {
-                    #     $cmd.Trigger.Type = 'Regex'
-                    #     $cmd.Trigger.Trigger = $metadata.Regex
-                    # }
-
                     if ($metadata.MessageType) {
                         $cmd.Trigger.MessageType = $metadata.MessageType
                     }
@@ -394,40 +316,6 @@ class PluginManager {
                 $cmd.ModuleCommand = "$ModuleName\$($command.Name)"
                 $cmd.AsJob = $AsJob
 
-                # Add the desired roles for this command
-                # This assumes that the roles have already been loaded in
-                # to the role manager when the plugin was loaded
-                # if ($cmdHelp.Role) {
-                #     $rolesForCmd = @($this.GetRoleFromModuleCommand($cmdHelp))
-                #     foreach($r in $rolesForCmd) {
-                #         $role = $this.RoleManager.GetRole($r)
-                #         if ($role) {
-                #             $this.Logger.Info([LogMessage]::new("[PluginManager:CreatePluginFromModuleManifest] Adding role [$($role.Name)] to command [$($command.Name)]"))
-                #             $cmd.AddRole($role)
-                #         } else {
-                #             $this.Logger.Info([LogMessage]::new("[PluginManager:CreatePluginFromModuleManifest] Couldn't get role [$($role.Name)] for command [$($command.Name)]"))
-                #         }
-                #     }
-                # }
-
-                # If this is a subcommand, attach it to the primary command
-                # Subcommands will also be in the plugin manager command list
-                # and can be invoked directly with a fully qualified command name as well (plugin:command-subcommand)
-                # if ($isSubcommand) {
-                #     $cmd.Trigger.Type = [TriggerType]::Regex
-                #     $cmd.Trigger.Trigger = ("^$subCommandTrigger").Replace(' ', '\s')
-                #     $primaryCommand = $plugin.Commands[$primaryCommandName]
-                #     if ($primaryCommand) {
-                #         if (-not $primaryCommand.Subcommands.ContainsKey($command.Name)) {
-                #             #$cmd.Name = $subCommandName
-                #             $this.Logger.Log([LogMessage]::new("[PluginManager:CreatePluginFromModuleManifest] Adding command [$($command.Name)] as a subcommand to [$primaryCommandName] "), [LogType]::System)
-                #             $primaryCommand.Subcommands.Add($command.Name, $cmd)
-                #         }
-                #     } else {
-                #         # Primary command not found
-                #     }
-                # }
-
                 $plugin.AddCommand($cmd)
             }
             $this.LoadCommands()
@@ -443,29 +331,6 @@ class PluginManager {
             }
         }
         return $botCmdAttr
-    }
-    # Subcommands are identified with either a '-' or '_' in the
-    # function name
-    # [bool]IsSubcommand([string]$Name) {
-    #     return ($Name.Contains('-') -or $Name.Contains('_'))
-    # }
-
-    # Return roles defined in module manifest
-    [Role[]]GetRoleFromModuleManifest($Manifest) {
-        $pluginRoles = New-Object System.Collections.ArrayList
-        foreach ($role in $Manifest.PrivateData.Roles) {
-            if ($role -is [string]) {
-                $pluginRole = [Role]::new($role)
-                $pluginRoles.Add($pluginRole)
-            } elseIf ($role -is [hashtable]) {
-                $pluginRole = [Role]::new($role.Name)
-                if ($role.Description) {
-                    $pluginRole.Description = $role.Description
-                }
-                $pluginRoles.Add($pluginRole)
-            }
-        }
-        return $pluginRoles
     }
 
     [Permission[]]GetPermissionsFromModuleManifest($Manifest) {
@@ -485,16 +350,8 @@ class PluginManager {
         return $permissions
     }
 
-    [string[]]GetRoleFromModuleCommand($CmdHelp) {
-        if ($CmdHelp.Role) {
-            return @($CmdHelp.Role.split("`n") | ForEach-Object { $_.Split(',').Trim()})
-        } else {
-            return $null
-        }
-    }
-
     # Load in the built in plugins
-    # Thee will be marked so that they DON't execute in a PowerShell job
+    # These will be marked so that they DON't execute in a PowerShell job
     # as they need access to the bot internals
     [void]LoadBuiltinPlugins() {
         $this.Logger.Info([LogMessage]::new('[PluginManager:LoadBuiltinPlugins] Loading builtin plugins'))

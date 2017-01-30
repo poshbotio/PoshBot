@@ -37,9 +37,6 @@ class Plugin {
 
     [bool]$Enabled
 
-    # Roles that come bundles with plugin
-    [hashtable]$Roles = @{}
-
     [hashtable]$Permissions = @{}
 
     hidden [string]$_ManifestPath
@@ -95,34 +92,6 @@ class Plugin {
         $existingCommand = $this.FindCommand($Command)
         if ($existingCommand) {
             $existingCommand.Deactivate()
-        }
-    }
-
-    # Add roles
-    [void]AddRoles([Role[]]$Roles) {
-        $Roles | ForEach-Object {
-            $this.AddRole($_)
-        }
-    }
-
-    # Add a role
-    [void]AddRole([Role]$Role) {
-        if (-not $this.Roles.ContainsKey($Role.Name)) {
-            $this.Roles.Add($Role.Name, $Role)
-        }
-    }
-
-    # Remove roles
-    [void]RemoveRoles([Role[]]$Roles) {
-        $Roles | ForEach-Object {
-            $this.RemoveRole($_)
-        }
-    }
-
-    # Remove a role
-    [void]RemoveRole([Role]$Role) {
-        if ($this.Roles.ContainsKey($Role.Name)) {
-            $this.Roles.Remove($Role.Name, $Role)
         }
     }
 

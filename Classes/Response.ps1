@@ -1,3 +1,4 @@
+
 enum Severity {
     Success
     Warning

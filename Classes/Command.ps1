@@ -28,21 +28,13 @@ class CommandRequirementsNotMet : CommandException {
 # Represent a command that can be executed
 class Command {
 
-    # Unique Id of command
-    #[string]$Id
-
     # Unique (to the plugin) name of the command
     [string]$Name
 
     #[hashtable]$Subcommands = @{}
 
-    # The type of message this command is designed to respond to
-    # Most of the type, this will be EMPTY so the
-    #[string]$MessageType
-
     [string]$Description
 
-    #[string]$Trigger
     [Trigger]$Trigger
 
     [string]$HelpText
@@ -66,34 +58,6 @@ class Command {
 
     # Execute the command in a PowerShell job and return the running job
     [object]Invoke([ParsedCommand]$ParsedCommand, [bool]$InvokeAsJob = $this.AsJob) {
-
-        $ts = [System.Math]::Truncate((Get-Date -Date (Get-Date) -UFormat %s))
-        $jobName = "$($this.Name)_$ts"
-
-        # Wrap the command scriptblock so we can splat parameters to it
-
-        # The inner scriptblock gets passed in as a string so we must convert it back to a scriptblock
-        # https://www.reddit.com/r/PowerShell/comments/3vwlog/nested_scriptblocks_and_invokecommand/?st=ix0wdgg5&sh=73baa0b2
-        # $outer = {
-        #     [cmdletbinding()]
-        #     param(
-        #         [hashtable]$Options
-        #     )
-
-        #     $named = $Options.NamedParameters
-        #     $pos = $Options.PositionalParameters
-
-        #     if ($Options.IsScriptBlock) {
-        #         $sb = [scriptblock]::create($options.ScriptBlock)
-        #         & $sb @named @pos
-        #     } else {
-        #         $inner = [scriptblock]::Create($Options.ScriptBlock)
-        #         $ps = $inner.GetPowerShell()
-        #         $ps.AddParameters($named) | Out-Null
-        #         $ps.AddParameters($pos) | Out-Null
-        #         $ps.Invoke()
-        #     }
-        # }
 
         $outer = {
             [cmdletbinding()]
@@ -122,6 +86,8 @@ class Command {
         }
 
         if ($InvokeAsJob) {
+            $ts = [System.Math]::Truncate((Get-Date -Date (Get-Date) -UFormat %s))
+            $jobName = "$($this.Name)_$ts"
             $jobParams = @{
                 Name = $jobName
                 ScriptBlock = $outer
@@ -133,59 +99,27 @@ class Command {
             $information = $null
             $warning = $null
             New-Variable -Name opts -Value $options
-            $output = Invoke-Command -ScriptBlock $outer -ArgumentList $Options -ErrorVariable errors -InformationVariable information -WarningVariable warning -Verbose -NoNewScope
-            #$ps = [PowerShell]::Create()
-            #$ps.AddScript($outer) | Out-Null
-            #$ps.AddArgument($Options) | Out-Null
-            #$job = $ps.BeginInvoke()
+            $cmdParams = @{
+                ScriptBlock = $outer
+                ArgumentList = $Options
+                ErrorVariable = 'errors'
+                InformationVariable = 'information'
+                WarningVariable = 'warning'
+                Verbose = $true
+                NoNewScope = $true
+            }
+            $output = Invoke-Command @cmdParams
             return @{
                 Error = @($errors)
                 Information = @($Information)
                 Output = $output
                 Warning = @($warning)
             }
-            #return @{
-            #    ps = $ps
-            #    job = $job
-            #}
-            #$done = $job.AsyncWaitHandle.WaitOne()
-
-            #$result = $ps.EndInvoke($job)
-            #return $result
         }
-
-        # if ($this.ModuleCommand) {
-        #     $sb = $this.ModuleCommand
-        # } elseif ($this.ScriptBlock) {
-        #     $sb = $this.ScriptBlock
-        #     $options.IsScriptBlock = $true
-        # } elseif ($this.ScriptPath) {
-        #     $sb = $this.ScriptPath
-        # }
-        # $options.ScriptBlock = $sb
-
-
-
-
-        # if ($this.AsJob) {
-
-        # } else {
-
-        # }
-
-        # block here until job is complete
-        # $done = $job.AsyncWaitHandle.WaitOne()
-
-        # $result = $ps.EndInvoke($job)
-        # return $result
-
-        #return Start-Job @jobParams
     }
 
     [bool]IsAuthorized([string]$UserId, [RoleManager]$RoleManager) {
-
         $perms = $RoleManager.GetUserPermissions($UserId)
-        Write-Verbose "[Command:IsAuthorized] User permissions: $($Perms.Name)"
         foreach ($perm in $perms) {
             $result = $this.AccessFilter.Authorize($perm.Name)
             if ($result.Authorized) {
@@ -193,34 +127,7 @@ class Command {
             }
         }
 
-        # $userRoles = $RoleManager.GetUserRoles($UserId)
-        # if (-not $userRoles) {
-        #     $userRoles = @('Anyone')
-        # }
-        # foreach ($userRole in $userRoles) {
-        #     $result = $this.AccessFilter.AuthorizeRole($userRole)
-        #     if ($result.Authorized) {
-        #         return $true
-        #     }
-        # }
-
         return $false
-
-        # $userResult = $this.AccessFilter.AuthorizeUser($UserId)
-        # if ($userResult.Authorized) {
-        #     return $true
-        # } else {
-        #     # User not explicitly authorized.
-        #     # Now check if any roles the user is a member of are
-        #     $userRoles = $RoleManager.GetUserRoles($UserId)
-        #     foreach ($userRole in $userRoles) {
-        #         $roleResult = $this.AccessFilter.AuthorizeRole($userRole)
-        #         if ($roleResult.Authorized) {
-        #             return $true
-        #         }
-        #     }
-        #     return $false
-        # }
     }
 
     [void]Activate() {
@@ -231,29 +138,19 @@ class Command {
         $this.Enabled = $false
     }
 
-    [void]AddSubCommand([Command]$Command) {
-        $subCommandName = $null
-        if ($Command.Name.Contains('-')) {
-            $subCommandName = $Command.Name.Split('-')[0]
-        } elseIf ($Command.Name.Contains('_')) {
-            $subCommandName = $Command.Name.Split('_')[0]
-        }
-        if ($subCommandName) {
-            if (-not $this.Subcommands.ContainsKey($subCommandName)) {
-                $this.Subcommands.Add($subCommandName, $Command)
-            }
-        }
-    }
-
-    # Add a role
-    [void]AddRole([Role]$Role) {
-        $this.AccessFilter.AddAllowedRole($Role.Name)
-    }
-
-    # Remove a role
-    [void]RemoveRole([Role]$Role) {
-        $this.AccessFilter.RemoveAllowedRole($Role.Name)
-    }
+    # [void]AddSubCommand([Command]$Command) {
+    #     $subCommandName = $null
+    #     if ($Command.Name.Contains('-')) {
+    #         $subCommandName = $Command.Name.Split('-')[0]
+    #     } elseIf ($Command.Name.Contains('_')) {
+    #         $subCommandName = $Command.Name.Split('_')[0]
+    #     }
+    #     if ($subCommandName) {
+    #         if (-not $this.Subcommands.ContainsKey($subCommandName)) {
+    #             $this.Subcommands.Add($subCommandName, $Command)
+    #         }
+    #     }
+    # }
 
     [void]AddPermission([Permission]$Permission) {
         $this.AccessFilter.AddPermission($Permission)
