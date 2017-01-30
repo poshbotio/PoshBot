@@ -38,8 +38,6 @@ function Random-Insult {
         Send a random insult to someone
     .EXAMPLE
         !random insult -who 'bob'
-    .Role
-        Demo
     #>
     [cmdletbinding()]
     param(
@@ -63,8 +61,6 @@ function Random-Fact {
         Gets a random fact
     .EXAMPLE
         !random fact
-    .Role
-        Demo
     #>
     [cmdletbinding()]
     param()
@@ -80,8 +76,6 @@ function Random-Joke {
         Gets a random joke
     .EXAMPLE
         !random joke
-    .Role
-        Demo
     #>
     [cmdletbinding()]
     param()
@@ -97,8 +91,6 @@ function Random-Quote {
         Gets a quote from a famous person
     .EXAMPLE
         !random quote
-    .Role
-        Demo
     #>
     [cmdletbinding()]
     param()
@@ -116,8 +108,6 @@ function Giphy {
         !giphy --search 'cats'
     .EXAMPLE
         !giphy --trending
-    .Role
-        Demo
     #>
     [cmdletbinding(DefaultParameterSetName = 'search')]
     param(
@@ -150,14 +140,14 @@ function Giphy {
 function Roll-Dice {
     <#
     .SYNOPSIS
-        Roll dice
+        Roll one or more (n) sided dice
     .EXAMPLE
         !role dice -dice 1d6
     .EXAMPLE
         !role dice -dice 2d20 -bonus 5
-    .Role
-        Demo
     #>
+    [PoshBot.BotCommand(Permissions = 'dice-master')]
+    [cmdletbinding()]
     param(
         [parameter(position = 0)]
         [string]$Dice = '2d20',

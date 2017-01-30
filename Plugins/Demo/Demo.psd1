@@ -92,10 +92,10 @@ AliasesToExport = '*'
 # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
 PrivateData = @{
 
-    Roles = @(
+    Permissions = @(
         @{
-            Name = 'Demo'
-            Description = 'Demo role'
+            Name = 'dice-master'
+            Description = 'Can roll the dice'
         }
     )
 
