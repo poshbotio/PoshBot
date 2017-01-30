@@ -86,8 +86,8 @@ class Command {
         }
 
         if ($InvokeAsJob) {
-            $ts = [System.Math]::Truncate((Get-Date -Date (Get-Date) -UFormat %s))
-            $jobName = "$($this.Name)_$ts"
+            $fdt = Get-Date -Format FileDateTimeUniversal
+            $jobName = "$($this.Name)_$fdt"
             $jobParams = @{
                 Name = $jobName
                 ScriptBlock = $outer
