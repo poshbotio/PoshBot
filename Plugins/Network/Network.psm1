@@ -5,9 +5,8 @@ function Ping {
         Tests a connection to a host
     .EXAMPLE
         !ping --name www.google.com
-    .Role
-        Network
     #>
+    [PoshBot.BotCommand(Permissions = 'test-network')]
     [cmdletbinding()]
     param(
         [parameter(Mandatory)]
@@ -25,9 +24,8 @@ function Dig {
         !dig --name www.google.com
     .EXAMPLE
         !dig --name www.google.com -Type CNAME --server 8.8.8.8
-    .Role
-        Network
     #>
+    [PoshBot.BotCommand(Permissions = 'test-network')]
     [cmdletbinding()]
     param(
         [parameter(Mandatory)]
