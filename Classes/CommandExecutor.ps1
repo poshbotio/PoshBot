@@ -6,8 +6,10 @@ class CommandExecutor {
 
     [int]$HistoryToKeep = 100
 
+    [int]$ExecutedCount = 0
+
     # Recent history of commands executed
-    [CommandHistory[]]$History = @()
+    [System.Collections.ArrayList]$History = (New-Object System.Collections.ArrayList)
 
     # Plugin commands get executed as PowerShell jobs
     # This is to keep track of those
@@ -45,8 +47,14 @@ class CommandExecutor {
             }
         }
 
-        # Verify that the caller can execute this command and execute if authorized
-        if ($Command.IsAuthorized($UserId, $this.RoleManager)) {
+        # If command is [command] type verify that the caller is authorized to execute command
+        if ($Command.Trigger.Type -eq [TriggerType]::Command) {
+            $authorized = $Command.IsAuthorized($UserId, $this.RoleManager)
+        } else {
+            $authorized = $true
+        }
+
+        if ($authorized) {
             $jobDuration = Measure-Command -Expression {
                 if ($existingCommand.AsJob) {
                     $job = $Command.Invoke($ParsedCommand, $true)
@@ -104,6 +112,11 @@ class CommandExecutor {
             $r.Authorized = $false
             $r.Errors += [CommandNotAuthorized]::New("Command [$($Command.Name)] was not authorized for user [$($UserId)]")
         }
+
+        # Track number of commands executed
+        if ($r.Success) {
+            $this.ExecutedCount++
+        }
         return $r
     }
 
@@ -115,10 +128,11 @@ class CommandExecutor {
 
     # Add command result to history
     [void]AddToHistory([string]$CommandName, [string]$UserId, [CommandResult]$Result, [ParsedCommand]$ParsedCommand) {
-        $this.History += [CommandHistory]::New($CommandName, $UserId, $Result, $ParsedCommand)
-
-        # TODO
-        # Implement rolling history
+        #$this.History += [CommandHistory]::New($CommandName, $UserId, $Result, $ParsedCommand)
+        if ($this.History.Count -ge $this.HistoryToKeep) {
+            $this.History.RemoveAt(0) > $null
+        }
+        $this.History.Add([CommandHistory]::New($CommandName, $UserId, $Result, $ParsedCommand))
     }
 
     # Validate that all mandatory parameters have been provided
@@ -153,5 +167,4 @@ class CommandExecutor {
         }
         return $false
     }
-
 }
