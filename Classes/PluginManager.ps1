@@ -89,9 +89,9 @@ class PluginManager {
         if ($this.Plugins.ContainsKey($Plugin.Name)) {
 
             # Remove the permissions for this plugin from the role manaager
-            foreach ($permission in $Plugin.Permissions) {
-                $this.Logger.Verbose([LogMessage]::new("[PluginManager:RemovePlugin] Removing permission [$($Permission.ToString())]. No longer in use"))
-                $this.RoleManager.RemovePermission($Permission)
+            foreach ($permission in $Plugin.Permissions.GetEnumerator()) {
+                $this.Logger.Verbose([LogMessage]::new("[PluginManager:RemovePlugin] Removing permission [$($Permission.Value.ToString())]. No longer in use"))
+                $this.RoleManager.RemovePermission($Permission.Value)
             }
 
             $this.Logger.Info([LogMessage]::new("[PluginManager:RemovePlugin] Removing plugin [$Plugin.Name]"))
