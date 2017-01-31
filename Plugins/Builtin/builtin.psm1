@@ -174,41 +174,6 @@ function Get-Role {
     }
 }
 
-# function Command-Show {
-#     <#
-#     .SYNOPSIS
-#         Show the details of a specific command
-#     .EXAMPLE
-#         !command show --name <command name>
-#     #>
-#     [cmdletbinding()]
-#     param(
-#         [parameter(Mandatory)]
-#         $Bot,
-
-#         [parameter(Mandatory, Position = 0)]
-#         [string]$Name
-#     )
-
-#     $commands = @($Bot.PluginManager.Commands.Keys | Where-Object {$_ -like "*$Name*" })
-
-#     if ($commands.Count -gt 0) {
-#         foreach ($key in $commands) {
-#             $command = $Bot.Pluginmanager.Commands[$key]
-#             $fields = [ordered]@{
-#                 Name = $command.Name
-#                 Description = $command.Description
-#                 HelpText = $command.HelpText
-#                 Enabled = $command.Enabled.ToString()
-#                 Permissions = $command.AccessFilter.Permissions.Keys | Format-List | Out-string
-#             }
-#             New-PoshBotCardResponse -Type Normal -Title "Details for [$($command.Name)]" -Fields $fields
-#         }
-#     } else {
-#         New-PoshBotCardResponse -Type Warning -Text "Command [$Name] not found."
-#     }
-# }
-
 function Plugin-List {
     <#
     .SYNOPSIS
@@ -336,9 +301,6 @@ function Plugin-Install {
         Install a new plugin
     .EXAMPLE
         !plugin install --plugin <plugin name>
-    .ROLE
-        Admin
-        PluginAdmin
     #>
     [PoshBot.BotCommand(Permissions = 'manage-plugins')]
     [cmdletbinding()]
@@ -387,9 +349,6 @@ function Plugin-Enable {
         Enable a currently loaded plugin
     .EXAMPLE
         !plugin enable --plugin <plugin name>
-    .ROLE
-        Admin
-        PluginAdmin
     #>
     [PoshBot.BotCommand(Permissions = 'manage-plugins')]
     [cmdletbinding()]
@@ -427,9 +386,6 @@ function Plugin-Disable {
         Disable a currently loaded plugin
     .EXAMPLE
         !plugin disable --plugin <plugin name>
-    .ROLE
-        Admin
-        PluginAdmin
     #>
     [PoshBot.BotCommand(Permissions = 'manage-plugins')]
     [cmdletbinding()]
