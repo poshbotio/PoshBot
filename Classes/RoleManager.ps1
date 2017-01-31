@@ -427,7 +427,7 @@ class RoleManager {
 
         if ($userRoles = $this.GetUserRoles($UserId)) {
             foreach ($role in $userRoles) {
-                $userPermissions = $role.Permissions.Keys
+                $userPermissions.AddRange($role.Permissions.Keys)
             }
         }
 
