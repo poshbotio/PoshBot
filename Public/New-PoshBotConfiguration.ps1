@@ -8,6 +8,7 @@ function New-PoshBotConfiguration {
         [string[]]$PluginRepository = @('PSGallery'),
         [string[]]$ModuleManifestsToLoad = @(),
         [LogLevel]$LogLevel = [LogLevel]::Verbose,
+        [hashtable]$BackendConfiguration = @{},
         [string[]]$BotAdmins = @(),
         [char]$CommandPrefix = '!',
         [string[]]$AlternateCommandPrefixes = @('poshbot'),
@@ -25,6 +26,7 @@ function New-PoshBotConfiguration {
     $config.CommandPrefix = $CommandPrefix
     $config.LogDirectory = $LogDirectory
     $config.LogLevel = $LogLevel
+    $config.BackendConfiguration = $BackendConfiguration
     $config.ModuleManifestsToLoad = $ModuleManifestsToLoad
     $config.MuteUnknownCommand = $MuteUnknownCommand
     $config.PluginDirectory = $PluginDirectory

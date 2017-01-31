@@ -15,9 +15,7 @@ class BotConfiguration {
 
     [LogLevel]$LogLevel = [LogLevel]::Verbose
 
-    [hashtable]$BackendConfiguration = @{
-        Type = 'Slack'
-    }
+    [hashtable]$BackendConfiguration = @{}
 
     [string[]]$BotAdmins = @()
 

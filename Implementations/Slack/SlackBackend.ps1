@@ -551,16 +551,17 @@ class SlackBackend : Backend {
 function New-PoshBotSlackBackend {
     param(
         [parameter(Mandatory)]
-        [string]$BotToken,
-
-        [string]$Name
+        [hashtable]$Configuration
     )
 
-    $backend = [SlackBackend]::New($BotToken)
+    if (-not $Configuration.Token) {
+        throw 'Configuration is missing [Token] parameter'
+    } else {
+        $backend = [SlackBackend]::new($Configuration.Token)
 
-    if ($PSBoundParameters.ContainsKey('Name')) {
-        $backend.Name = $Name
+        if ($Configuration.Name) {
+            $backend.Name = $Configuration.Name
+        }
+        return $backend
     }
-
-    return $backend
 }
