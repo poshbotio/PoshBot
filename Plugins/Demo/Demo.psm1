@@ -331,6 +331,7 @@ function Start-LongRunningCommand {
     .EXAMPLE
         !start-longrunningcommand --seconds 20
     #>
+    [cmdletbinding()]
     param(
         [parameter(position = 0)]
         [int]$Seconds = 10
@@ -338,4 +339,18 @@ function Start-LongRunningCommand {
 
     Start-Sleep -Seconds $Seconds
     Write-Output "Comamnd finished after [$Seconds] seconds"
+}
+
+function Bad-Command {
+    <#
+    .SYNOPSIS
+        Intentionally throws errors
+    .EXAMPLE
+        !bad-command
+    #>
+    [cmdletbinding()]
+    param()
+
+    Write-Error -Message "I'm error number one"
+    Write-Error -Message "I'm error number two"
 }
