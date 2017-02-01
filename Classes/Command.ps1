@@ -37,7 +37,7 @@ class Command {
 
     [Trigger]$Trigger
 
-    [string]$HelpText
+    [string[]]$Usage
 
     [bool]$KeepHistory = $true
 

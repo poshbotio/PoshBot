@@ -311,7 +311,9 @@ class PluginManager {
                 $cmd.FunctionInfo = $command
 
                 if ($cmdHelp.examples) {
-                    $cmd.HelpText = $cmdHelp.examples[0].example[0].code.Trim()
+                    foreach ($example in $cmdHelp.Examples.Example) {
+                        $cmd.Usage += $example.code.Trim()
+                    }
                 }
                 $cmd.ModuleCommand = "$ModuleName\$($command.Name)"
                 $cmd.AsJob = $AsJob

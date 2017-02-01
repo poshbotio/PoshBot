@@ -39,7 +39,7 @@ class CommandExecutor {
         # This doesn't apply to commands triggered from regex matches, timers, or events
         if ($Command.Trigger.TriggerType -eq [TriggerType]::Command) {
             if (-not $this.ValidateMandatoryParameters($ParsedCommand, $Command)) {
-                $err = [CommandRequirementsNotMet]::New("Mandatory parameters for [$($Command.Name)] not provided.`nHelpText: $($Command.HelpText)")
+                $err = [CommandRequirementsNotMet]::New("Mandatory parameters for [$($Command.Name)] not provided.`nUsage: $($Command.Usage)")
                 $r.Success = $false
                 $r.Errors += $err
                 Write-Error -Exception $err

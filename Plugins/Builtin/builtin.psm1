@@ -27,7 +27,7 @@ function Help {
                 Plugin = $pluginKey
                 #Name = $commandKey
                 Description = $command.Description
-                HelpText = $command.HelpText
+                Usage = $command.Usage
             }
             $availableCommands.Add($x) | Out-Null
         }
@@ -38,7 +38,7 @@ function Help {
         $availableCommands = $availableCommands | Where-Object {
             ($_.Command -like "*$Filter*") -or
             ($_.Description -like "*$Filter*") -or
-            ($_.HelpText -like "*$Filter*")
+            ($_.Usage -like "*$Filter*")
         }
     }
 
@@ -113,7 +113,7 @@ function Get-Command {
             $o = [pscustomobject][ordered]@{
                 Name = $cmd.Name
                 Description = $cmd.Description
-                HelpText = $cmd.HelpText
+                Usage = $cmd.Usage
                 Enabled = $cmd.Enabled.ToString()
                 Permissions = $cmd.AccessFilter.Permissions.Keys | Format-List | Out-string
             }
@@ -234,7 +234,7 @@ function Plugin-Show {
                 Label = 'Description'
             }
             @{
-                Expression = {$_.Value.HelpText}
+                Expression = {$_.Value.Usage}
                 Label = 'Usage'
             }
         )
@@ -284,7 +284,7 @@ function Plugin-Show {
                 Label = 'Description'
             }
             @{
-                Expression = {$_.Value.HelpText}
+                Expression = {$_.Value.Usage}
                 Label = 'Usage'
             }
         )
