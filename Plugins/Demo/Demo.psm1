@@ -19,9 +19,7 @@ function Random-number {
     .SYNOPSIS
         Get a random number
     .EXAMPLE
-        !random number
-    .EXAMPLE
-        !random number -min 42 -Max 8675309
+        !random number [--min 42] [--max 8675309]
     #>
     [cmdletbinding()]
     param(
@@ -37,7 +35,7 @@ function Random-Insult {
     .SYNOPSIS
         Send a random insult to someone
     .EXAMPLE
-        !random insult -who 'bob'
+        !random-insult [--who <bob>]
     #>
     [cmdletbinding()]
     param(
@@ -60,7 +58,7 @@ function Random-Fact {
     .SYNOPSIS
         Gets a random fact
     .EXAMPLE
-        !random fact
+        !random-fact
     #>
     [cmdletbinding()]
     param()
@@ -75,7 +73,7 @@ function Random-Joke {
     .SYNOPSIS
         Gets a random joke
     .EXAMPLE
-        !random joke
+        !random-joke
     #>
     [cmdletbinding()]
     param()
@@ -90,7 +88,7 @@ function Random-Quote {
     .SYNOPSIS
         Gets a quote from a famous person
     .EXAMPLE
-        !random quote
+        !random-quote
     #>
     [cmdletbinding()]
     param()
@@ -105,9 +103,7 @@ function Giphy {
     .SYNOPSIS
         Search Giphy
     .EXAMPLE
-        !giphy --search 'cats'
-    .EXAMPLE
-        !giphy --trending
+        !giphy (--search 'cats' [--number 3] | --trending [--number 3])
     #>
     [cmdletbinding(DefaultParameterSetName = 'search')]
     param(
@@ -142,9 +138,7 @@ function Roll-Dice {
     .SYNOPSIS
         Roll one or more (n) sided dice
     .EXAMPLE
-        !role dice -dice 1d6
-    .EXAMPLE
-        !role dice -dice 2d20 -bonus 5
+        !role-dice [--dice 2d20] [--bonus 5]
     #>
     [PoshBot.BotCommand(Permissions = 'dice-master')]
     [cmdletbinding()]
@@ -329,7 +323,7 @@ function Start-LongRunningCommand {
     .SYNOPSIS
         Start a long running command
     .EXAMPLE
-        !start-longrunningcommand --seconds 20
+        !start-longrunningcommand [--seconds 20]
     #>
     [cmdletbinding()]
     param(

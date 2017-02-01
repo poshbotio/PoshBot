@@ -4,7 +4,7 @@ function Ping {
     .SYNOPSIS
         Tests a connection to a host
     .EXAMPLE
-        !ping --name www.google.com
+        !ping --name <www.google.com>
     #>
     [PoshBot.BotCommand(Permissions = 'test-network')]
     [cmdletbinding()]
@@ -21,9 +21,7 @@ function Dig {
     .SYNOPSIS
         Perform DNS resolution on a host
     .EXAMPLE
-        !dig --name www.google.com
-    .EXAMPLE
-        !dig --name www.google.com -Type CNAME --server 8.8.8.8
+        !dig --name <www.google.com> [--type <A>] [--server <8.8.8.8>]
     #>
     [PoshBot.BotCommand(Permissions = 'test-network')]
     [cmdletbinding()]

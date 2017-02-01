@@ -4,7 +4,7 @@ function Help {
     .SYNOPSIS
         List bot commands
     .EXAMPLE
-        !help mycommand
+        !help [<mycommand> | --filter <mycommand>]
     #>
     [PoshBot.BotCommand(Permissions = 'show-help')]
     [cmdletbinding()]
@@ -87,9 +87,7 @@ function Get-Command {
     .SYNOPSIS
         Show details about bot commands
     .EXAMPLE
-        !get-command
-    .EXAMPLE
-        !get-command --command help
+        !get-command [<commandname> | --command <commandname>]
     #>
     [cmdletbinding()]
     param(
@@ -113,17 +111,24 @@ function Get-Command {
             $o = [pscustomobject][ordered]@{
                 Name = $cmd.Name
                 Description = $cmd.Description
-                Usage = $cmd.Usage
+                Usage = $cmd.Usage -join "`n"
                 Enabled = $cmd.Enabled.ToString()
                 Permissions = $cmd.AccessFilter.Permissions.Keys | Format-List | Out-string
             }
             $o
         }
+        $result = $result | Sort-Object -Property Name
+
+        if ($result.Count -gt 1) {
+            $text = ($result | Select-Object -Property Name, Description | Format-Table -AutoSize | Out-String)
+        } else {
+            $text = ($result | Format-List | Out-String)
+        }
 
         if ($title) {
-            New-PoshBotCardResponse -Type Normal -Title $title -Text ($result | Format-List | Out-String)
+            New-PoshBotCardResponse -Type Normal -Title $title -Text $text
         } else {
-            New-PoshBotCardResponse -Type Normal -Title 'All commands' -Text ($result | Format-List | Out-String)
+            New-PoshBotCardResponse -Type Normal -Title 'All commands' -Text $text
         }
 
     } else {
@@ -136,9 +141,7 @@ function Get-Role {
     .SYNOPSIS
         Show details about bot roles
     .EXAMPLE
-        !get-role
-    .EXAMPLE
-        !get-role --role admin
+        !get-role [<rolename> | --role <rollname>]
     #>
     [PoshBot.BotCommand(Permissions = 'view-role')]
     [cmdletbinding()]
@@ -179,7 +182,7 @@ function Plugin-List {
     .SYNOPSIS
         Get all installed plugins
     .EXAMPLE
-        !plugin list
+        !plugin-list
     #>
     [cmdletbinding()]
     param(
@@ -204,7 +207,7 @@ function Plugin-Show {
     .SYNOPSIS
         Get the details of a specific plugin
     .EXAMPLE
-        !plugin show --plugin <plugin name>
+        !plugin-show [<pluginname> | --plugin <pluginname>]
     #>
     [cmdletbinding()]
     param(
@@ -300,7 +303,7 @@ function Plugin-Install {
     .SYNOPSIS
         Install a new plugin
     .EXAMPLE
-        !plugin install --plugin <plugin name>
+        !plugin-install [<pluginname> | --plugin <pluginname>]
     #>
     [PoshBot.BotCommand(Permissions = 'manage-plugins')]
     [cmdletbinding()]
@@ -348,7 +351,7 @@ function Plugin-Enable {
     .SYNOPSIS
         Enable a currently loaded plugin
     .EXAMPLE
-        !plugin enable --plugin <plugin name>
+        !plugin-enable [<pluginname> | --plugin <pluginname>]
     #>
     [PoshBot.BotCommand(Permissions = 'manage-plugins')]
     [cmdletbinding()]
@@ -385,7 +388,7 @@ function Plugin-Disable {
     .SYNOPSIS
         Disable a currently loaded plugin
     .EXAMPLE
-        !plugin disable --plugin <plugin name>
+        !plugin-disable [<pluginname> | --plugin <pluginname>]
     #>
     [PoshBot.BotCommand(Permissions = 'manage-plugins')]
     [cmdletbinding()]
@@ -422,9 +425,7 @@ function Get-Group {
     .SYNOPSIS
         Show details about bot groups
     .EXAMPLE
-        !get-group
-    .EXAMPLE
-        !get-group --name admin
+        !get-group [<groupname> | --name <groupname>]
     #>
     [PoshBot.BotCommand(Permissions = 'view-group')]
     [cmdletbinding()]
@@ -471,9 +472,7 @@ function Get-Permission {
     .SYNOPSIS
         Show details about bot permissions
     .EXAMPLE
-        !get-permission
-    .EXAMPLE
-        !get-permission --name 'builtin:view'
+        !get-permission [<permissionname> | --name <permissionname>]
     #>
     [PoshBot.BotCommand(Permissions = 'view')]
     [cmdletbinding()]
@@ -514,7 +513,7 @@ function New-Group {
     .SYNOPSIS
         Create a new group
     .EXAMPLE
-        !new-group --name <groupname> --description <groupdescription>
+        !new-group (<groupname> | --name <groupname>) (<groupdescription> | --description <groupdescription>)
     #>
     [PoshBot.BotCommand(Permissions = 'manage-groups')]
     [cmdletbinding()]
@@ -547,7 +546,7 @@ function New-Role {
     .SYNOPSIS
         Create a new role
     .EXAMPLE
-        !new-role --name <rolename> --description <roledescription>
+        !new-role (<rolename> | --name <rolename>) (<roledescription>) | --description <roledescription>)
     #>
     [PoshBot.BotCommand(Permissions = 'manage-roles')]
     [cmdletbinding()]
@@ -580,7 +579,7 @@ function Add-RolePermission {
     .SYNOPSIS
         Add a permission to a role
     .EXAMPLE
-        !add-rolepermission --role <rolename> --permission <permissionname>
+        !add-rolepermission (<rolename> | --role <rolename>) (<permissionname> | --permission <permissionname>)
     #>
     [PoshBot.BotCommand(Permissions = 'manage-roles')]
     [cmdletbinding()]
@@ -616,7 +615,7 @@ function Remove-RolePermission {
     .SYNOPSIS
         Remove a permission from a role
     .EXAMPLE
-        !remove-rolepermission --Role <rolename> --permission <permissioname>
+        !remove-rolepermission (<rolename> | --role <rolename>) (<permissioname> | --permission <permissioname>)
     #>
     [PoshBot.BotCommand(Permissions = 'manage-roles')]
     [cmdletbinding()]
@@ -652,7 +651,7 @@ function Add-GroupUser {
     .SYNOPSIS
         Add a user to a group
     .EXAMPLE
-        !add-groupuser --group <groupname> --user <username>
+        !add-groupuser (<groupname> | --group <groupname>) (<username> | --user <username>)
     #>
     [PoshBot.BotCommand(Permissions = 'manage-groups')]
     [cmdletbinding()]
@@ -689,7 +688,7 @@ function Remove-GroupUser {
     .SYNOPSIS
         Remove a user to a group
     .EXAMPLE
-        !remove-groupuser --group <groupname> --user <username>
+        !remove-groupuser (<groupname> | --group <groupname>) (<username> | --user <username>)
     #>
     [PoshBot.BotCommand(Permissions = 'manage-groups')]
     [cmdletbinding()]
@@ -725,7 +724,7 @@ function Add-GroupRole {
     .SYNOPSIS
         Add a role to a group
     .EXAMPLE
-        !add-grouprole --group <groupname> --role <rolename>
+        !add-grouprole (<groupname> | --group <groupname>) (<rolename> | --role <rolename>)
     #>
     [PoshBot.BotCommand(Permissions = 'manage-groups')]
     [cmdletbinding()]
@@ -761,7 +760,7 @@ function Remove-GroupRole {
     .SYNOPSIS
         Remove a role from a group
     .EXAMPLE
-        !remove-grouprole --group <groupname> --role <rolename>
+        !remove-grouprole (<groupname> | --group <groupname>) (<rolename> | --role <rolename>)
     #>
     [PoshBot.BotCommand(Permissions = 'manage-groups')]
     [cmdletbinding()]
