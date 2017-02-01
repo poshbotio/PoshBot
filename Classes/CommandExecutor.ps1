@@ -37,9 +37,13 @@ class CommandExecutor {
 
         # Verify that all mandatory parameters have been provided for "command" type bot commands
         # This doesn't apply to commands triggered from regex matches, timers, or events
-        if ($Command.Trigger.TriggerType -eq [TriggerType]::Command) {
+        if ($Command.Trigger.Type -eq [TriggerType]::Command) {
             if (-not $this.ValidateMandatoryParameters($ParsedCommand, $Command)) {
-                $err = [CommandRequirementsNotMet]::New("Mandatory parameters for [$($Command.Name)] not provided.`nUsage: $($Command.Usage)")
+                $msg = "Mandatory parameters for [$($Command.Name)] not provided.`nUsage:`n"
+                foreach ($usage in $Command.Usage) {
+                    $msg += "    $usage`n"
+                }
+                $err = [CommandRequirementsNotMet]::New($msg)
                 $r.Success = $false
                 $r.Errors += $err
                 Write-Error -Exception $err
@@ -140,7 +144,9 @@ class CommandExecutor {
         $functionInfo = $Command.FunctionInfo
         $matchedParamSet = $null
 
+        $validated = $false
         foreach ($parameterSet in $functionInfo.ParameterSets) {
+            Write-Verbose -Message "[CommandExecutor:ValidateMandatoryParameters] Validating parameters for parameter set [$($parameterSet.Name)]"
             $mandatoryParameters = @($parameterSet.Parameters | where IsMandatory -eq $true).Name
 
             # Remove each provided mandatory parameter from the list
@@ -150,21 +156,20 @@ class CommandExecutor {
             }
 
             if ($mandatoryParameters.Count -gt 0) {
-
                 if ($ParsedCommand.PositionalParameters.Count -lt $mandatoryParameters.Count) {
-                    # Not enough positional parametes to cover the remaining mandatory parameters
-                    return $false
+                    $validated = $false
                 } else {
-                    return $true
+                    $validated = $true
                 }
-
-                #if ( -not @($mandatoryParameters| where {$ParsedCommand.NamedParameters.Keys -notcontains $_}).Count) {
-                #    return $true
-                #}
             } else {
-                return $true
+                $validated = $true
+            }
+            Write-Verbose -Message "[CommandExecutor:ValidateMandatoryParameters] Valid parameters for parameterset [$($parameterSet.Name)] [$($validated.ToString())]"
+            if ($validated) {
+                break
             }
         }
-        return $false
+
+        return $validated
     }
 }
