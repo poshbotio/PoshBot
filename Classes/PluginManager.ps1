@@ -232,7 +232,7 @@ class PluginManager {
             $this.AddPlugin($plugin)
             $this.Logger.Info([LogMessage]::new("[PluginManager:CreatePluginFromModuleManifest] Created new plugin [$($plugin.Name)]"))
 
-            Import-Module -Name $manifestPath -Scope Local -Verbose:$false
+            Import-Module -Name $manifestPath -Scope Local -Verbose:$false -WarningAction SilentlyContinue
             $moduleCommands = Microsoft.PowerShell.Core\Get-Command -Module $ModuleName -CommandType Cmdlet, Function, Workflow
             foreach ($command in $moduleCommands) {
 

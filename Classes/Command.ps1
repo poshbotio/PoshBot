@@ -65,7 +65,7 @@ class Command {
                 [hashtable]$Options
             )
 
-            Import-Module -Name $Options.ManifestPath -Scope Local -Force -Verbose:$false
+            Import-Module -Name $Options.ManifestPath -Scope Local -Force -Verbose:$false -WarningAction SilentlyContinue
 
             $named = $Options.NamedParameters
             $pos = $Options.PositionalParameters
