@@ -148,22 +148,28 @@ class CommandExecutor {
         foreach ($parameterSet in $functionInfo.ParameterSets) {
             Write-Verbose -Message "[CommandExecutor:ValidateMandatoryParameters] Validating parameters for parameter set [$($parameterSet.Name)]"
             $mandatoryParameters = @($parameterSet.Parameters | where IsMandatory -eq $true).Name
-
-            # Remove each provided mandatory parameter from the list
-            # so we can find any that will have to be coverd by positional parameters
-            foreach ($providedNamedParameter in $ParsedCommand.NamedParameters.Keys ) {
-                $mandatoryParameters = @($mandatoryParameters | Where-Object {$_ -ne $providedNamedParameter})
-            }
-
             if ($mandatoryParameters.Count -gt 0) {
-                if ($ParsedCommand.PositionalParameters.Count -lt $mandatoryParameters.Count) {
-                    $validated = $false
+                # Remove each provided mandatory parameter from the list
+                # so we can find any that will have to be coverd by positional parameters
+
+                Write-Verbose -Message "Provided named parameters: $($ParsedCommand.NamedParameters.Keys | Format-List | Out-String)"
+                foreach ($providedNamedParameter in $ParsedCommand.NamedParameters.Keys ) {
+                    Write-Verbose -Message "Named parameter [$providedNamedParameter] provided"
+                    $mandatoryParameters = @($mandatoryParameters | Where-Object {$_ -ne $providedNamedParameter})
+                }
+                if ($mandatoryParameters.Count -gt 0) {
+                    if ($ParsedCommand.PositionalParameters.Count -lt $mandatoryParameters.Count) {
+                        $validated = $false
+                    } else {
+                        $validated = $true
+                    }
                 } else {
                     $validated = $true
                 }
             } else {
                 $validated = $true
             }
+
             Write-Verbose -Message "[CommandExecutor:ValidateMandatoryParameters] Valid parameters for parameterset [$($parameterSet.Name)] [$($validated.ToString())]"
             if ($validated) {
                 break
