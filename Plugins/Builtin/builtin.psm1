@@ -1,56 +1,69 @@
-
 function Help {
     <#
     .SYNOPSIS
-        List bot commands
+        Show details about bot commands
     .EXAMPLE
-        !help [<mycommand> | --filter <mycommand>]
+        !help [<commandname> | --filter <commandname>]
     #>
-    [PoshBot.BotCommand(Permissions = 'show-help')]
     [cmdletbinding()]
     param(
         [parameter(Mandatory)]
         $Bot,
 
+        [parameter(Position = 0)]
         [string]$Filter
     )
 
-    #Write-Output ($bot | format-list | out-string)
-
-    $availableCommands = New-Object System.Collections.ArrayList
-    foreach ($pluginKey in $Bot.PluginManager.Plugins.Keys) {
+    $result = foreach ($pluginKey in $Bot.PluginManager.Plugins.Keys) {
         $plugin = $Bot.PluginManager.Plugins[$pluginKey]
         foreach ($commandKey in $plugin.Commands.Keys) {
             $command = $plugin.Commands[$commandKey]
             $x = [pscustomobject][ordered]@{
-                Command = "$pluginKey`:$CommandKey"
+                FullCommandName = "$pluginKey`:$CommandKey"
+                Command = $CommandKey
                 Plugin = $pluginKey
-                #Name = $commandKey
                 Description = $command.Description
                 Usage = $command.Usage
+                Enabled = $command.Enabled.ToString()
+                Permissions = $command.AccessFilter.Permissions.Keys | Format-List | Out-string
             }
-            $availableCommands.Add($x) | Out-Null
+            $x
         }
     }
 
-    # If we asked for help about a particular plugin or command, filter on it
+    $respParams = @{
+        Type = 'Normal'
+        DM = $true
+    }
+
     if ($PSBoundParameters.ContainsKey('Filter')) {
-        $availableCommands = $availableCommands | Where-Object {
+        $respParams.Title = "Commands matching [$Filter]"
+        $result = @($result | Where-Object {
+            ($_.FullCommandName -like "*$Filter*") -or
             ($_.Command -like "*$Filter*") -or
+            ($_.Plugin -like "*$Filter*") -or
             ($_.Description -like "*$Filter*") -or
             ($_.Usage -like "*$Filter*")
-        }
-    }
-
-    if ($Filter) {
-        New-PoshBotCardResponse -Type Normal -DM -Title "Help for [$Filter]" -Text ($availableCommands | Format-List | Out-String)
+        })
     } else {
-        New-PoshBotCardResponse -Type Normal -DM -Text ($availableCommands | Format-List | Out-String)
+        $respParams.Title = 'All commands'
+    }
+    $result = $result | Sort-Object -Property FullCommandName
+
+    if ($result) {
+        if ($result.Count -ge 1) {
+            $respParams.Text = ($result | Select-Object -ExpandProperty FullCommandName | Out-String)
+        } else {
+            $respParams.Text = ($result | Format-List | Out-String)
+        }
+
+        New-PoshBotCardResponse @respParams
+    } else {
+        New-PoshBotCardResponse -Type Warning -Text "No commands found matching [$Filter] :(" -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
     }
 }
 
 function Status {
-
     <#
     .SYNOPSIS
         Get Bot status
@@ -69,8 +82,9 @@ function Status {
     } else {
         $uptime = $null
     }
+    $manifest = Import-PowerShellDataFile -Path "$PSScriptRoot/../../PoshBot.psd1"
     $hash = [ordered]@{
-        Version = '1.0.0'
+        Version = $manifest.Version
         Uptime = $uptime
         Plugins = $Bot.PluginManager.Plugins.Count
         Commands = $Bot.PluginManager.Commands.Count
@@ -80,60 +94,6 @@ function Status {
     $status = [pscustomobject]$hash
     #New-PoshBotCardResponse -Type Normal -Text ($status | Format-List | Out-String)
     New-PoshBotCardResponse -Type Normal -Fields $hash -Title 'PoshBot Status'
-}
-
-function Get-Command {
-    <#
-    .SYNOPSIS
-        Show details about bot commands
-    .EXAMPLE
-        !get-command [<commandname> | --command <commandname>]
-    #>
-    [cmdletbinding()]
-    param(
-        [parameter(Mandatory)]
-        $Bot,
-
-        [parameter(Position = 0)]
-        [string]$Command
-    )
-
-    if ($PSBoundParameters.ContainsKey('Command')) {
-        $title = "Commands matching [$Command]"
-        $commandsKeys = @($Bot.PluginManager.Commands.Keys | Where-Object {$_ -like "*$Command*" })
-    } else {
-        $commandsKeys = @($Bot.PluginManager.Commands.Keys)
-    }
-
-    if ($commandsKeys.Count -gt 0) {
-        $result = foreach ($key in $commandsKeys) {
-            $cmd = $Bot.PluginManager.Commands[$key]
-            $o = [pscustomobject][ordered]@{
-                Name = $cmd.Name
-                Description = $cmd.Description
-                Usage = $cmd.Usage -join "`n"
-                Enabled = $cmd.Enabled.ToString()
-                Permissions = $cmd.AccessFilter.Permissions.Keys | Format-List | Out-string
-            }
-            $o
-        }
-        $result = $result | Sort-Object -Property Name
-
-        if ($result.Count -gt 1) {
-            $text = ($result | Select-Object -Property Name, Description | Format-Table -AutoSize | Out-String)
-        } else {
-            $text = ($result | Format-List | Out-String)
-        }
-
-        if ($title) {
-            New-PoshBotCardResponse -Type Normal -Title $title -Text $text
-        } else {
-            New-PoshBotCardResponse -Type Normal -Title 'All commands' -Text $text
-        }
-
-    } else {
-        New-PoshBotCardResponse -Type Error -Text "No commands found matching [$Command] :(" -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
-    }
 }
 
 function Get-Role {
@@ -801,6 +761,7 @@ function About {
     [PoshBot.BotCommand(Permissions = 'view')]
     [cmdletbinding()]
     param(
+        [parameter(Mandatory)]
         $Bot
     )
 
