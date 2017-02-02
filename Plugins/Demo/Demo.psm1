@@ -138,7 +138,7 @@ function Roll-Dice {
     .SYNOPSIS
         Roll one or more (n) sided dice
     .EXAMPLE
-        !role-dice [--dice 2d20] [--bonus 5]
+        !roll-dice [--dice 2d20] [--bonus 5]
     #>
     [PoshBot.BotCommand(Permissions = 'dice-master')]
     [cmdletbinding()]
