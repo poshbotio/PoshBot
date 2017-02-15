@@ -35,6 +35,8 @@ class Plugin {
     # Commands bundled with plugin
     [hashtable]$Commands = @{}
 
+    [version]$Version
+
     [bool]$Enabled
 
     [hashtable]$Permissions = @{}
