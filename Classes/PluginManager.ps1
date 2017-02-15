@@ -221,6 +221,11 @@ class PluginManager {
             $plugin = [Plugin]::new()
             $plugin.Name = $ModuleName
             $plugin._ManifestPath = $ManifestPath
+            if ($manifest.ModuleVersion) {
+                $plugin.Version = $manifest.ModuleVersion
+            } else {
+                $plugin.Version = '0.0.0'
+            }
 
             # Create new permissions from metadata in the module manifest
             $this.GetPermissionsFromModuleManifest($manifest) | ForEach-Object {
