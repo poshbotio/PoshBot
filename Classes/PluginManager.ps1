@@ -44,6 +44,7 @@ class PluginManager {
         $this.Plugins.GetEnumerator() | Where {$_.Value.Name -ne 'Builtin'} | ForEach-Object {
             $p = @{
                 Name = $_.Name
+                Version = $_.Value.Version
                 ManifestPath = $_.Value._ManifestPath
                 Enabled = $_.Value.Enabled
             }
