@@ -24,14 +24,17 @@ class PluginManager {
     }
 
     [void]LoadState() {
-        $this.Logger.Verbose([LogMessage]::new('[PluginManager:SaveState] Loading plugin state from storage'))
+        $this.Logger.Verbose([LogMessage]::new('[PluginManager:LoadState] Loading plugin state from storage'))
 
         $pluginsToLoad = $this._Storage.GetConfig('plugins')
         if ($pluginsToLoad) {
             $pluginsToLoad.GetEnumerator() | ForEach-Object {
-                $pluginName = $_.Value.Name
-                $manifestPath = $_.Value.ManifestPath
-                $this.CreatePluginFromModuleManifest($pluginName, $manifestPath, $true)
+                $pluginVersions = $_.Value.Keys
+                foreach ($pluginVersion in $pluginVersions) {
+                    $pluginName = $_.Value[$pluginVersion].Name
+                    $manifestPath = $_.Value[$pluginVersion].ManifestPath
+                    $this.CreatePluginFromModuleManifest($pluginName, $manifestPath, $true)
+                }
             }
         }
     }
@@ -41,16 +44,20 @@ class PluginManager {
 
         # Skip saving builtin plugin as it will always be loaded at initialization
         $pluginsToSave = @{}
-        $this.Plugins.GetEnumerator() | Where {$_.Value.Name -ne 'Builtin'} | ForEach-Object {
-            $p = @{
-                Name = $_.Name
-                Version = $_.Value.Version
-                ManifestPath = $_.Value._ManifestPath
-                Enabled = $_.Value.Enabled
+        $this.Plugins.GetEnumerator() | Where {$_.Name -ne 'Builtin'} | ForEach-Object {
+            $versions = @{}
+            foreach ($versionKey in $_.Value.Keys) {
+                $p = @{
+                    Name = $_.Name
+                    Version = $_.Value[$versionKey].Version
+                    ManifestPath = $_.Value[$versionKey]._ManifestPath
+                    Enabled = $_.Value[$versionKey].Enabled
+                }
+                $versions.Add($versionKey, $p)
             }
-            $pluginsToSave.Add($_.Name, $p)
-            $this._Storage.SaveConfig('plugins', $pluginsToSave)
+            $pluginsToSave.Add($_.Name, $versions)
         }
+        $this._Storage.SaveConfig('plugins', $pluginsToSave)
     }
 
     # TODO
@@ -69,14 +76,33 @@ class PluginManager {
     [void]AddPlugin([Plugin]$Plugin) {
         if (-not $this.Plugins.ContainsKey($Plugin.Name)) {
             $this.Logger.Info([LogMessage]::new("[PluginManager:AddPlugin] Attaching plugin [$($Plugin.Name)]"))
-            $this.Plugins.Add($Plugin.Name, $Plugin)
+
+            $pluginVersion = @{
+                ($Plugin.Version).ToString() = $Plugin
+            }
+            $this.Plugins.Add($Plugin.Name, $pluginVersion)
 
             # Register the plugins permission set with the role manager
             foreach ($permission in $Plugin.Permissions.GetEnumerator()) {
                 $this.Logger.Info([LogMessage]::new("[PluginManager:AddPlugin] Adding permission [$($permission.Value.ToString())] to Role Manager"))
                 $this.RoleManager.AddPermission($permission.Value)
             }
+        } else {
 
+            if (-not $this.Plugins[$Plugin.Name].ContainsKey($Plugin.Version)) {
+                # Install a new plugin version
+                $this.Logger.Info([LogMessage]::new("[PluginManager:AddPlugin] Attaching version [$($Plugin.Version)] of plugin [$($Plugin.Name)]"))
+
+                $this.Plugins[$Plugin.Name].Add($Plugin.Version)
+
+                # Register the plugins permission set with the role manager
+                foreach ($permission in $Plugin.Permissions.GetEnumerator()) {
+                    $this.Logger.Info([LogMessage]::new("[PluginManager:AddPlugin] Adding permission [$($permission.Value.ToString())] to Role Manager"))
+                    $this.RoleManager.AddPermission($permission.Value)
+                }
+            } else {
+                throw [PluginException]::New("Plugin [$($Plugin.Name)] version [$($Plugin.Version)] is already loaded")
+            }
         }
 
         # # Reload commands and role from all currently loading (and active) plugins
@@ -88,15 +114,24 @@ class PluginManager {
     # Remove a plugin from the bot
     [void]RemovePlugin([Plugin]$Plugin) {
         if ($this.Plugins.ContainsKey($Plugin.Name)) {
-
-            # Remove the permissions for this plugin from the role manaager
-            foreach ($permission in $Plugin.Permissions.GetEnumerator()) {
-                $this.Logger.Verbose([LogMessage]::new("[PluginManager:RemovePlugin] Removing permission [$($Permission.Value.ToString())]. No longer in use"))
-                $this.RoleManager.RemovePermission($Permission.Value)
+            $pluginVersions = $this.Plugins[$Plugin.Name]
+            if ($pluginVersions.Keys.Count -eq 1) {
+                # Remove the permissions for this plugin from the role manaager
+                # but only if this is the only version of the plugin loaded
+                foreach ($permission in $Plugin.Permissions.GetEnumerator()) {
+                    $this.Logger.Verbose([LogMessage]::new("[PluginManager:RemovePlugin] Removing permission [$($Permission.Value.ToString())]. No longer in use"))
+                    $this.RoleManager.RemovePermission($Permission.Value)
+                }
+                $this.Logger.Info([LogMessage]::new("[PluginManager:RemovePlugin] Removing plugin [$($Plugin.Name)]"))
+                $this.Plugins.Remove($Plugin.Name)
+            } else {
+                if ($pluginVersions.ContainsKey($Plugin.Version)) {
+                    $this.Logger.Info([LogMessage]::new("[PluginManager:RemovePlugin] Removing plugin [$($Plugin.Name)] version [$($Plugin.Version)]"))
+                    $pluginVersions.Remove($Plugin.Version)
+                } else {
+                    throw [PluginNotFoundException]::New("Plugin [$($Plugin.Name)] version [$($Plugin.Version)] is not loaded in bot")
+                }
             }
-
-            $this.Logger.Info([LogMessage]::new("[PluginManager:RemovePlugin] Removing plugin [$Plugin.Name]"))
-            $this.Plugins.Remove($Plugin.Name)
         }
 
         # Reload commands from all currently loading (and active) plugins
@@ -109,10 +144,12 @@ class PluginManager {
     [void]ActivatePlugin([Plugin]$Plugin) {
         $p = $this.Plugins[$Plugin.Name]
         if ($p) {
-            $this.Logger.Info([LogMessage]::new("[PluginManager:ActivatePlugin] Activating plugin [$Plugin.Name]"))
-            $p.Activate()
+            if ($pv = $p[$Plugin.Version.ToString()]) {
+                $this.Logger.Info([LogMessage]::new("[PluginManager:ActivatePlugin] Activating plugin [$($Plugin.Name)] version [$($Plugin.Version)]"))
+                $pv.Activate()
+            }
         } else {
-            throw [PluginNotFoundException]::New("Plugin [$($Plugin.Name)] is not loaded in bot")
+            throw [PluginNotFoundException]::New("Plugin [$($Plugin.Name)] version [$($Plugin.Version)] is not loaded in bot")
         }
 
         # Reload commands from all currently loading (and active) plugins
@@ -125,10 +162,12 @@ class PluginManager {
     [void]DeactivatePlugin([Plugin]$Plugin) {
         $p = $this.Plugins[$Plugin.Name]
         if ($p) {
-            $this.Logger.Info([LogMessage]::new("[PluginManager:DeactivatePlugin] Deactivating plugin [$Plugin.Name]"))
-            $p.Deactivate()
+            if ($pv = $p[$Plugin.Version.ToString()]) {
+                $this.Logger.Info([LogMessage]::new("[PluginManager:DeactivatePlugin] Deactivating plugin [$($Plugin.Name)] version [$($Plugin.Version)]"))
+                $pv.Deactivate()
+            }
         } else {
-            throw [PluginNotFoundException]::New("Plugin [$($Plugin.Name)] is not loaded in bot")
+            throw [PluginNotFoundException]::New("Plugin [$($Plugin.Name)] version [$($Plugin.Version)] is not loaded in bot")
         }
 
         # # Reload commands from all currently loading (and active) plugins
@@ -141,7 +180,8 @@ class PluginManager {
     [PluginCommand]MatchCommand([ParsedCommand]$ParsedCommand) {
 
         # Check builtin commands first
-        $builtinPlugin = $this.Plugins['Builtin']
+        $builtinKey = $this.Plugins['Builtin'].Keys | Select -First 1
+        $builtinPlugin = $this.Plugins['Builtin'][$builtinKey]
         foreach ($commandKey in $builtinPlugin.Commands.Keys) {
             $command = $builtinPlugin.Commands[$commandKey]
             if ($command.TriggerMatch($ParsedCommand)) {
@@ -154,7 +194,12 @@ class PluginManager {
         if (($ParsedCommand.Plugin -ne [string]::Empty) -and ($ParsedCommand.Command -ne [string]::Empty)) {
             $plugin = $this.Plugins[$ParsedCommand.Plugin]
             if ($plugin) {
-                foreach ($commandKey in $plugin.Commands.Keys) {
+
+                # Just look in the latest version of the plugin.
+                # This should be improved later to allow specifying a specific version to execute
+                $latestVersionKey = $plugin.Keys | Sort -Descending | Select-Object -First 1
+
+                foreach ($commandKey in $plugin[$latestVersionKey].Commands.Keys) {
                     $command = $plugin.Commands[$commandKey]
                     if ($command.TriggerMatch($ParsedCommand)) {
                         $this.Logger.Info([LogMessage]::new("[PluginManager:MatchCommand] Matched parsed command [$($ParsedCommand.Plugin)`:$($ParsedCommand.Command)] to plugin command [$($plugin.Name)`:$commandKey]"))
@@ -171,11 +216,18 @@ class PluginManager {
             # Check all regular plugins/commands now
             foreach ($pluginKey in $this.Plugins.Keys) {
                 $plugin = $this.Plugins[$pluginKey]
-                foreach ($commandKey in $plugin.Commands.Keys) {
-                    $command = $plugin.Commands[$commandKey]
-                    if ($command.TriggerMatch($ParsedCommand)) {
-                        $this.Logger.Info([LogMessage]::new("[PluginManager:MatchCommand] Matched parsed command [$($ParsedCommand.Plugin)`:$($ParsedCommand.Command)] to plugin command [$pluginKey`:$commandKey]"))
-                        return [PluginCommand]::new($plugin, $command)
+
+                # Just look in the latest version of the plugin.
+                # This should be improved later to allow specifying a specific version to execute
+                foreach ($pluginVersionKey in $plugin.Keys | Sort -Descending | Select-Object -Firs 1) {
+                    $pluginVersion = $plugin[$pluginVersionKey]
+
+                    foreach ($commandKey in $pluginVersion.Commands.Keys) {
+                        $command = $pluginVersion.Commands[$commandKey]
+                        if ($command.TriggerMatch($ParsedCommand)) {
+                            $this.Logger.Info([LogMessage]::new("[PluginManager:MatchCommand] Matched parsed command [$($ParsedCommand.Plugin)`:$($ParsedCommand.Command)] to plugin command [$pluginKey`:$commandKey]"))
+                            return [PluginCommand]::new($pluginVersion, $command)
+                        }
                     }
                 }
             }
@@ -190,14 +242,18 @@ class PluginManager {
         $allCommands = New-Object System.Collections.ArrayList
         foreach ($pluginKey in $this.Plugins.Keys) {
             $plugin = $this.Plugins[$pluginKey]
-            if ($plugin.Enabled) {
-                foreach ($commandKey in $plugin.Commands.Keys) {
-                    $command =  $plugin.Commands[$commandKey]
-                    $fullyQualifiedCommandName = "$pluginKey`:$CommandKey"
-                    $allCommands.Add($fullyQualifiedCommandName)
-                    if (-not $this.Commands.ContainsKey($fullyQualifiedCommandName)) {
-                        $this.Logger.Verbose([LogMessage]::new("[PluginManager:LoadCommands] Loading command [$fullyQualifiedCommandName]"))
-                        $this.Commands.Add($fullyQualifiedCommandName, $command)
+
+            foreach ($pluginVersionKey in $plugin.Keys | Sort -Descending | Select-Object -Firs 1) {
+                $pluginVersion = $plugin[$pluginVersionKey]
+                if ($pluginVersion.Enabled) {
+                    foreach ($commandKey in $pluginVersion.Commands.Keys) {
+                        $command =  $pluginVersion.Commands[$commandKey]
+                        $fullyQualifiedCommandName = "$pluginKey`:$CommandKey"
+                        $allCommands.Add($fullyQualifiedCommandName)
+                        if (-not $this.Commands.ContainsKey($fullyQualifiedCommandName)) {
+                            $this.Logger.Verbose([LogMessage]::new("[PluginManager:LoadCommands] Loading command [$fullyQualifiedCommandName]"))
+                            $this.Commands.Add($fullyQualifiedCommandName, $command)
+                        }
                     }
                 }
             }
