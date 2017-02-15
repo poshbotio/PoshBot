@@ -152,14 +152,17 @@ function Plugin-List {
 
     $plugins = foreach ($key in ($Bot.PluginManager.Plugins.Keys | Sort-Object)) {
         $plugin = $Bot.PluginManager.Plugins[$key]
-        [pscustomobject][ordered]@{
-            Name = $key
-            Commands = $plugin.Commands.Keys
-            Roles = $plugin.Roles.Keys
-            Enabled = $plugin.Enabled
+
+        foreach ($versionKey in $plugin.Keys | Sort -Descending) {
+            $pluginVersion = $plugin[$versionKey]
+            [pscustomobject][ordered]@{
+                Name = $key
+                Version = $pluginVersion.Version.ToString()
+                Enabled = $pluginVersion.Enabled
+            }
         }
     }
-    New-PoshBotCardResponse -Type Normal -Text ($plugins | Format-List | Out-String -Width 150)
+    New-PoshBotCardResponse -Type Normal -Text ($plugins | Format-Table -AutoSize | Out-String -Width 150)
 }
 
 function Plugin-Show {
