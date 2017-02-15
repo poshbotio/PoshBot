@@ -170,7 +170,7 @@ function Plugin-Show {
     .SYNOPSIS
         Get the details of a specific plugin
     .EXAMPLE
-        !plugin-show [<pluginname> | --plugin <pluginname>]
+        !plugin-show (<pluginname> | --plugin <pluginname>) [--version 1.2.3]
     #>
     [cmdletbinding()]
     param(
@@ -178,84 +178,72 @@ function Plugin-Show {
         $Bot,
 
         [parameter(Mandatory, Position = 0)]
-        [string]$Plugin
+        [string]$Plugin,
+
+        [parameter(Position = 1)]
+        [string]$Version
     )
 
     $p = $Bot.PluginManager.Plugins[$Plugin]
     if ($p) {
-        $r = [pscustomobject]@{
-            Name = $P.Name
-            Enabled = $p.Enabled
-            CommandCount = $p.Commands.Count
-            Roles = $p.Roles.Keys
-            Commands = $p.Commands
-        }
-        $properties = @(
-            @{
-                Expression = {$_.Name}
-                Label = 'Name'
-            }
-            @{
-                Expression = {$_.Value.Description}
-                Label = 'Description'
-            }
-            @{
-                Expression = {$_.Value.Usage}
-                Label = 'Usage'
-            }
-        )
-        $fields = [ordered]@{
-            Title = $r.Name
-            Enabled = $r.Enabled.ToString()
-            CommandCount = $r.CommandCount
-            Roles = $r.Roles | Format-List | Out-String
-            #Commands = $r.Commands.GetEnumerator() | Select-Object -Property $properties | Format-List | Out-String
-            Commands = $r.Commands.Keys | Format-List | Out-String
-        }
-        # $fields = @(
-        #     @{
-        #         title = 'Name'
-        #         value = $r.Name
-        #         short = $true
-        #     }
-        #     @{
-        #         title = 'Enabled'
-        #         value = $r.Enabled
-        #         short = $true
-        #     }
-        #     @{
-        #         title = 'CommandCount'
-        #         value = $r.CommandCount
-        #         short = $true
-        #     }
-        #     @{
-        #         title = 'Roles'
-        #         value = $r.Roles | Format-List | Out-String
-        #         short = $false
-        #     }
-        # )
 
-        $msg = [string]::Empty
-        #$msg += "Name: $($r.Name)"
-        #$msg += "`nEnabled: $($r.Enabled)"
-        #$msg += "`nCommandCount: $($r.CommandCount)"
-        #$msg += "`nRoles: `n$($r.Roles | Format-List | Out-String)"
-        $properties = @(
-            @{
-                Expression = {$_.Name}
-                Label = 'Name'
+        $versions = New-Object -TypeName System.Collections.ArrayList
+
+        if ($PSBoundParameters.ContainsKey('Version')) {
+            if ($pv = $p[$Version]) {
+                $verions.Add($pv) > $null
             }
-            @{
-                Expression = {$_.Value.Description}
-                Label = 'Description'
+        } else {
+            foreach ($pvk in $p.Keys | Sort-Object -Descending) {
+                $pv = $p[$pvk]
+                $versions.Add($pv) > $null
             }
-            @{
-                Expression = {$_.Value.Usage}
-                Label = 'Usage'
+        }
+
+        if ($versions.Count -gt 0) {
+            foreach ($pv in $versions) {
+                # $r = [pscustomobject]@{
+                #     Name = $pv.Name
+                #     Version = $pv.Version
+                #     Enabled = $pv.Enabled
+                #     CommandCount = $pv.Commands.Count
+                #     Permissions = $pv.Permissions.Keys
+                #     Commands = $pv.Commands
+                # }
+                $fields = [ordered]@{
+                    Title = $pv.Name
+                    Version = $pv.Version.ToString()
+                    Enabled = $pv.Enabled.ToString()
+                    CommandCount = $pv.Commands.Count
+                    Permissions = $pv.Permissions.Keys | Format-List | Out-String
+                    Commands = $pv.Commands.Keys | Format-List | Out-String
+                }
+
+                $msg = [string]::Empty
+                $properties = @(
+                    @{
+                        Expression = {$_.Name}
+                        Label = 'Name'
+                    }
+                    @{
+                        Expression = {$_.Value.Description}
+                        Label = 'Description'
+                    }
+                    @{
+                        Expression = {$_.Value.Usage}
+                        Label = 'Usage'
+                    }
+                )
+                $msg += "`nCommands: `n$($pv.Commands.GetEnumerator() | Select-Object -Property $properties | Format-List | Out-String)"
+                New-PoshBotCardResponse -Type Normal -Fields $fields
             }
-        )
-        $msg += "`nCommands: `n$($r.Commands.GetEnumerator() | Select-Object -Property $properties | Format-List | Out-String)"
-        New-PoshBotCardResponse -Type Normal -Fields $fields
+        } else {
+            if ($PSBoundParameters.ContainsKey('Version')) {
+                New-PoshBotCardResponse -Type Warning -Text "Plugin [$Plugin] version [$Version] not found."
+            } else {
+                New-PoshBotCardResponse -Type Warning -Text "Plugin [$Plugin] not found."
+            }
+        }
     } else {
         New-PoshBotCardResponse -Type Warning -Text "Plugin [$Plugin] not found."
     }
@@ -323,18 +311,37 @@ function Plugin-Enable {
         $Bot,
 
         [parameter(Mandatory, Position = 0)]
-        [string]$Plugin
+        [string]$Plugin,
+
+        [parameter(Position = 1)]
+        [string]$Version
     )
 
     if ($Plugin -ne 'Builtin') {
-        if ($p = $bot.PluginManager.Plugins[$Plugin]) {
-            try {
-                $bot.PluginManager.ActivatePlugin($p)
-                #Write-Output "Plugin [$Plugin] activated. All commands in this plugin are now enabled."
-                return New-PoshBotCardResponse -Type Normal -Text "Plugin [$Plugin] activated. All commands in this plugin are now enabled." -ThumbnailUrl 'https://www.streamsports.com/images/icon_green_check_256.png'
-            } catch {
-                #Write-Error $_
-                return New-PoshBotCardResponse -Type Error -Text $_.Exception.Message -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
+        if ($p = $Bot.PluginManager.Plugins[$Plugin]) {
+            $pv = $null
+            if ($Bot.PluginManager.Plugins[$Plugin].Keys -gt 1) {
+                if (-not $PSBoundParameters.ContainsKey('Version')) {
+                    $versions = $Bot.PluginManager.Plugins[$Plugin].Keys -join ', ' | Out-String
+                    return New-PoshBotCardResponse -Type Warning -Text "Plugin [$Plugin] has multiple versions installed. Specify version from list`n$versions" -ThumbnailUrl 'http://hairmomentum.com/wp-content/uploads/2016/07/warning.png'
+                } else {
+                    $pv = $Bot.PluginManager.Plugins[$Plugin][$Version]
+                }
+            } else {
+                $pv = $p
+            }
+
+            if ($pv) {
+                try {
+                    $Bot.PluginManager.ActivatePlugin($pv)
+                    #Write-Output "Plugin [$Plugin] activated. All commands in this plugin are now enabled."
+                    return New-PoshBotCardResponse -Type Normal -Text "Plugin [$Plugin] activated. All commands in this plugin are now enabled." -ThumbnailUrl 'https://www.streamsports.com/images/icon_green_check_256.png'
+                } catch {
+                    #Write-Error $_
+                    return New-PoshBotCardResponse -Type Error -Text $_.Exception.Message -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
+                }
+            } else {
+                return New-PoshBotCardResponse -Type Warning -Text "Plugin [$Plugin] version [$Version] not found." -ThumbnailUrl 'http://hairmomentum.com/wp-content/uploads/2016/07/warning.png'
             }
         } else {
             #Write-Warning "Plugin [$Plugin] not found."
@@ -360,18 +367,37 @@ function Plugin-Disable {
         $Bot,
 
         [parameter(Mandatory, Position = 0)]
-        [string]$Plugin
+        [string]$Plugin,
+
+        [parameter(Position = 1)]
+        [string]$Version
     )
 
     if ($Plugin -ne 'Builtin') {
         if ($p = $bot.PluginManager.Plugins[$Plugin]) {
-            try {
-                $bot.PluginManager.DeactivatePlugin($p)
-                #Write-Output "Plugin [$Plugin] deactivated. All commands in this plugin are now disabled."
-                return New-PoshBotCardResponse -Type Normal -Text "Plugin [$Plugin] deactivated. All commands in this plugin are now disabled." -Title 'Plugin deactivated' -ThumbnailUrl 'https://www.streamsports.com/images/icon_green_check_256.png'
-            } catch {
-                #Write-Error $_
-                return New-PoshBotCardResponse -Type Error -Text $_.Exception.Message -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
+            $pv = $null
+            if ($Bot.PluginManager.Plugins[$Plugin].Keys -gt 1) {
+                if (-not $PSBoundParameters.ContainsKey('Version')) {
+                    $versions = $Bot.PluginManager.Plugins[$Plugin].Keys -join ', ' | Out-String
+                    return New-PoshBotCardResponse -Type Warning -Text "Plugin [$Plugin] has multiple versions installed. Specify version from list`n$versions" -ThumbnailUrl 'http://hairmomentum.com/wp-content/uploads/2016/07/warning.png'
+                } else {
+                    $pv = $Bot.PluginManager.Plugins[$Plugin][$Version]
+                }
+            } else {
+                $pv = $p
+            }
+
+            if ($pv) {
+                try {
+                    $bot.PluginManager.DeactivatePlugin($pv)
+                    #Write-Output "Plugin [$Plugin] deactivated. All commands in this plugin are now disabled."
+                    return New-PoshBotCardResponse -Type Normal -Text "Plugin [$Plugin] deactivated. All commands in this plugin are now disabled." -Title 'Plugin deactivated' -ThumbnailUrl 'https://www.streamsports.com/images/icon_green_check_256.png'
+                } catch {
+                    #Write-Error $_
+                    return New-PoshBotCardResponse -Type Error -Text $_.Exception.Message -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
+                }
+            } else {
+                return New-PoshBotCardResponse -Type Warning -Text "Plugin [$Plugin] version [$Version] not found." -ThumbnailUrl 'http://hairmomentum.com/wp-content/uploads/2016/07/warning.png'
             }
         } else {
             #Write-Warning "Plugin [$Plugin] not found."
