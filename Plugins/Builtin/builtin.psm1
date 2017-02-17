@@ -283,7 +283,7 @@ function Plugin-Install {
 
         if ($mod) {
             try {
-                $bot | Add-PoshBotPlugin -ModuleManifest $mod.Path -ErrorAction Stop
+                $Bot.PluginManager.InstallPlugin($mod.Path)
                 $resp = Plugin-Show -Bot $bot -Plugin $Plugin
                 if (-not ($resp | Get-Member -Name 'Title' -MemberType NoteProperty)) {
                     $resp | Add-Member -Name 'Title' -MemberType NoteProperty -Value $null
