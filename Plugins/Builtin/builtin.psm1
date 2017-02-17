@@ -16,8 +16,12 @@ function Help {
 
     $result = foreach ($pluginKey in $Bot.PluginManager.Plugins.Keys) {
         $plugin = $Bot.PluginManager.Plugins[$pluginKey]
-        foreach ($commandKey in $plugin.Commands.Keys) {
-            $command = $plugin.Commands[$commandKey]
+
+        $pluginVersionKey = $plugin.Keys[0]
+        $pluginVersion = $plugin[$pluginVersionKey]
+
+        foreach ($commandKey in $pluginVersion.Commands.Keys) {
+            $command = $pluginVersion.Commands[$commandKey]
             $x = [pscustomobject][ordered]@{
                 FullCommandName = "$pluginKey`:$CommandKey"
                 Command = $CommandKey
