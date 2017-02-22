@@ -88,7 +88,7 @@ function Status {
     }
     $manifest = Import-PowerShellDataFile -Path "$PSScriptRoot/../../PoshBot.psd1"
     $hash = [ordered]@{
-        Version = $manifest.Version
+        Version = $manifest.ModuleVersion
         Uptime = $uptime
         Plugins = $Bot.PluginManager.Plugins.Count
         Commands = $Bot.PluginManager.Commands.Count
