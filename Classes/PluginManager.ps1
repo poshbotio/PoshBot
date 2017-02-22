@@ -141,6 +141,24 @@ class PluginManager {
     }
 
     # Activate a plugin
+    [void]ActivatePlugin([string]$PluginName, [string]$Version) {
+        if ($p = $this.Plugins[$PluginName]) {
+            if ($pv = $p[$Version]) {
+                $this.Logger.Info([LogMessage]::new("[PluginManager:ActivatePlugin] Activating plugin [$PluginName] version [$Version]"))
+                $pv.Activate()
+
+                # Reload commands from all currently loading (and active) plugins
+                $this.LoadCommands()
+                $this.SaveState()
+            } else {
+                throw [PluginNotFoundException]::New("Plugin [$PluginName] version [$Version] is not loaded in bot")
+            }
+        } else {
+            throw [PluginNotFoundException]::New("Plugin [$PluginName] is not loaded in bot")
+        }
+    }
+
+    # Activate a plugin
     [void]ActivatePlugin([Plugin]$Plugin) {
         $p = $this.Plugins[$Plugin.Name]
         if ($p) {
@@ -174,6 +192,24 @@ class PluginManager {
         $this.LoadCommands()
 
         $this.SaveState()
+    }
+
+    # Deactivate a plugin
+    [void]DeactivatePlugin([string]$PluginName, [string]$Version) {
+        if ($p = $this.Plugins[$PluginName]) {
+            if ($pv = $p[$Version]) {
+                $this.Logger.Info([LogMessage]::new("[PluginManager:DeactivatePlugin] Deactivating plugin [$PluginName)] version [$Version]"))
+                $pv.Deactivate()
+
+                # Reload commands from all currently loading (and active) plugins
+                $this.LoadCommands()
+                $this.SaveState()
+            } else {
+                throw [PluginNotFoundException]::New("Plugin [$PluginName] version [$Version] is not loaded in bot")
+            }
+        } else {
+            throw [PluginNotFoundException]::New("Plugin [$PluginName] is not loaded in bot")
+        }
     }
 
      # Match a parsed command to a command in one of the currently loaded plugins

@@ -324,20 +324,22 @@ function Plugin-Enable {
     if ($Plugin -ne 'Builtin') {
         if ($p = $Bot.PluginManager.Plugins[$Plugin]) {
             $pv = $null
-            if ($Bot.PluginManager.Plugins[$Plugin].Keys -gt 1) {
+            if ($p.Keys.Count -gt 1) {
                 if (-not $PSBoundParameters.ContainsKey('Version')) {
-                    $versions = $Bot.PluginManager.Plugins[$Plugin].Keys -join ', ' | Out-String
+                    $versions = $p.Keys -join ', ' | Out-String
                     return New-PoshBotCardResponse -Type Warning -Text "Plugin [$Plugin] has multiple versions installed. Specify version from list`n$versions" -ThumbnailUrl 'http://hairmomentum.com/wp-content/uploads/2016/07/warning.png'
                 } else {
-                    $pv = $Bot.PluginManager.Plugins[$Plugin][$Version]
+                    $pv = $p[$Version]
                 }
             } else {
-                $pv = $p
+                $pvKey = $p.Keys[0]
+                $pv = $p[$pvKey]
             }
 
             if ($pv) {
                 try {
-                    $Bot.PluginManager.ActivatePlugin($pv)
+                    $Bot.PluginManager.ActivatePlugin($pv.Name, $pv.Version)
+                    #$Bot.PluginManager.ActivatePlugin($pv)
                     #Write-Output "Plugin [$Plugin] activated. All commands in this plugin are now enabled."
                     return New-PoshBotCardResponse -Type Normal -Text "Plugin [$Plugin] activated. All commands in this plugin are now enabled." -ThumbnailUrl 'https://www.streamsports.com/images/icon_green_check_256.png'
                 } catch {
@@ -378,22 +380,23 @@ function Plugin-Disable {
     )
 
     if ($Plugin -ne 'Builtin') {
-        if ($p = $bot.PluginManager.Plugins[$Plugin]) {
+        if ($p = $Bot.PluginManager.Plugins[$Plugin]) {
             $pv = $null
-            if ($Bot.PluginManager.Plugins[$Plugin].Keys -gt 1) {
+            if ($p.Keys.Count -gt 1) {
                 if (-not $PSBoundParameters.ContainsKey('Version')) {
-                    $versions = $Bot.PluginManager.Plugins[$Plugin].Keys -join ', ' | Out-String
+                    $versions = $p.Keys -join ', ' | Out-String
                     return New-PoshBotCardResponse -Type Warning -Text "Plugin [$Plugin] has multiple versions installed. Specify version from list`n$versions" -ThumbnailUrl 'http://hairmomentum.com/wp-content/uploads/2016/07/warning.png'
                 } else {
-                    $pv = $Bot.PluginManager.Plugins[$Plugin][$Version]
+                    $pv = $p[$Version]
                 }
             } else {
-                $pv = $p
+                $pvKey = $p.Keys[0]
+                $pv = $p[$pvKey]
             }
 
             if ($pv) {
                 try {
-                    $bot.PluginManager.DeactivatePlugin($pv)
+                    $Bot.PluginManager.DeactivatePlugin($pv.Name, $pv.Version)
                     #Write-Output "Plugin [$Plugin] deactivated. All commands in this plugin are now disabled."
                     return New-PoshBotCardResponse -Type Normal -Text "Plugin [$Plugin] deactivated. All commands in this plugin are now disabled." -Title 'Plugin deactivated' -ThumbnailUrl 'https://www.streamsports.com/images/icon_green_check_256.png'
                 } catch {
