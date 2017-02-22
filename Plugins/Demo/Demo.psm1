@@ -348,3 +348,25 @@ function Bad-Command {
     Write-Error -Message "I'm error number one"
     Write-Error -Message "I'm error number two"
 }
+
+function WolframAlpha {
+    <#
+    .SYNOPSIS
+        Asks Wolfram Alpha a question
+    .EXAMPLE
+        !wolframalpha '34th president of the united states'
+    #>
+    [cmdletbinding()]
+    param(
+        [parameter(ValueFromRemainingArguments = $true)]
+        [string[]]$Arguments
+    )
+
+    $q = $Arguments -join ' '
+    $url = "http://api.wolframalpha.com/v2/query?input=$q&appid=$env:WOLFRAM_ALPHA_API_KEY"
+    $r = (Invoke-RestMethod -Uri $url).queryresult
+    $possibleTitles='result|Approximate result|total|response|basic information|Public observances|Latest trades|Basic movie information|Latest recorded weather|calendar'
+    $r.pod | Where-Object {$_.title -match $possibleTitles} |
+        ForEach-Object subpod |
+            ForEach-Object plaintext
+}
