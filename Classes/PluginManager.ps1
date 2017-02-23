@@ -93,7 +93,7 @@ class PluginManager {
                 # Install a new plugin version
                 $this.Logger.Info([LogMessage]::new("[PluginManager:AddPlugin] Attaching version [$($Plugin.Version)] of plugin [$($Plugin.Name)]"))
 
-                $this.Plugins[$Plugin.Name].Add($Plugin.Version)
+                $this.Plugins[$Plugin.Name].Add($Plugin.Version, $Plugin)
 
                 # Register the plugins permission set with the role manager
                 foreach ($permission in $Plugin.Permissions.GetEnumerator()) {
