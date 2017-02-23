@@ -36,7 +36,8 @@ function Start-PoshBot {
                         $ConfigPath
                     )
 
-                    $backend = New-PoshBotSlackBackend -Name 'SlackBackend' -BotToken $env:SLACK_TOKEN
+                    $config = Get-PoshBotConfiguration -Path $ConfigPath
+                    $backend = New-PoshBotSlackBackend -Configuration $config.BackendConfiguration
                     $bot = New-PoshBotInstance -Name 'SlackBot' -Backend $backend -ConfigurationPath $ConfigPath
                     $bot.Start()
                 }
