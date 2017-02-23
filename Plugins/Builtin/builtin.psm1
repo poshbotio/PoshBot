@@ -195,7 +195,7 @@ function Plugin-Show {
 
         if ($PSBoundParameters.ContainsKey('Version')) {
             if ($pv = $p[$Version]) {
-                $verions.Add($pv) > $null
+                $versions.Add($pv) > $null
             }
         } else {
             foreach ($pvk in $p.Keys | Sort-Object -Descending) {
@@ -205,17 +205,12 @@ function Plugin-Show {
         }
 
         if ($versions.Count -gt 0) {
+            if ($PSBoundParameters.ContainsKey('Version')) {
+                $versions = $versions | where Version -eq $Version
+            }
             foreach ($pv in $versions) {
-                # $r = [pscustomobject]@{
-                #     Name = $pv.Name
-                #     Version = $pv.Version
-                #     Enabled = $pv.Enabled
-                #     CommandCount = $pv.Commands.Count
-                #     Permissions = $pv.Permissions.Keys
-                #     Commands = $pv.Commands
-                # }
                 $fields = [ordered]@{
-                    Title = $pv.Name
+                    Name = $pv.Name
                     Version = $pv.Version.ToString()
                     Enabled = $pv.Enabled.ToString()
                     CommandCount = $pv.Commands.Count
@@ -258,7 +253,7 @@ function Plugin-Install {
     .SYNOPSIS
         Install a new plugin
     .EXAMPLE
-        !plugin-install [<pluginname> | --plugin <pluginname>]
+        !plugin-install (<pluginname> | --plugin <pluginname>) [--version 1.2.3]
     #>
     [PoshBot.BotCommand(Permissions = 'manage-plugins')]
     [cmdletbinding()]
@@ -267,38 +262,75 @@ function Plugin-Install {
         $Bot,
 
         [parameter(Mandatory, Position = 0)]
-        [string]$Plugin
+        [string]$Plugin,
+
+        [parameter(Position = 1)]
+        [ValidateScript({
+            if ($_ -as [Version]) {
+                $true
+            } else {
+                throw 'Version parameter must be a valid semantic version string (1.2.3)'
+            }
+        })]
+        [string]$Version
     )
 
     if ($Plugin -ne 'Builtin') {
+
         # Attempt to find the module in $env:PSModulePath or in the configurated repository
-        $mod = Get-Module -Name $Plugin -ListAvailable | Select-Object -First 1
+
+        if ($PSBoundParameters.ContainsKey('Version')) {
+            $mod = Get-Module -Name $Plugin -ListAvailable | Where-Object {$_.Version -eq $Version}
+        } else {
+            $mod = Get-Module -Name $Plugin -ListAvailable | Sort-Object -Property Version | Select-Object -First 1
+        }
         if (-not $mod) {
-            $onlineMod = Find-Module -Name $Plugin -Repository $bot.Configuration.PluginRepository -ErrorAction SilentlyContinue
+            if ($PSBoundParameters.ContainsKey('Version')) {
+                $onlineMod = Find-Module -Name $Plugin -Repository $bot.Configuration.PluginRepository -RequiredVersion $Version -ErrorAction SilentlyContinue
+            } else {
+                $onlineMod = Find-Module -Name $Plugin -Repository $bot.Configuration.PluginRepository -ErrorAction SilentlyContinue
+            }
             if ($onlineMod) {
-                Install-Module -Name $Plugin -Repository $bot.Configuration.PluginRepository -Scope CurrentUser -Force -ErrorAction Stop
-                $mod = Get-Module -Name $Plugin -ListAvailable
+                $onlineMod | Install-Module -Scope CurrentUser -Force -ErrorAction Stop
+
+                if ($PSBoundParameters.ContainsKey('Version')) {
+                    $mod = Get-Module -Name $Plugin -ListAvailable | Where-Object {$_.Version -eq $Version}
+                } else {
+                    $mod = Get-Module -Name $Plugin -ListAvailable | Sort-Object -Property Version | Select-Object -First 1
+                }
             }
         }
 
         if ($mod) {
             try {
-                $Bot.PluginManager.InstallPlugin($mod.Path)
-                $resp = Plugin-Show -Bot $bot -Plugin $Plugin
-                if (-not ($resp | Get-Member -Name 'Title' -MemberType NoteProperty)) {
-                    $resp | Add-Member -Name 'Title' -MemberType NoteProperty -Value $null
+                $existingPlugin = $Bot.PluginManager.Plugins[$Plugin]
+                $existingPluginVersions = $existingPlugin.Keys
+                if ($existingPluginVersions -notcontains $mod.Version) {
+                    $Bot.PluginManager.InstallPlugin($mod.Path)
+                    $resp = Plugin-Show -Bot $bot -Plugin $Plugin -Version $mod.Version
+                    if (-not ($resp | Get-Member -Name 'Title' -MemberType NoteProperty)) {
+                        $resp | Add-Member -Name 'Title' -MemberType NoteProperty -Value $null
+                    }
+                    $resp.Title = "Plugin [$Plugin] version [$($mod.Version)] successfully installed"
+                } else {
+                    $resp = New-PoshBotCardResponse -Type Warning -Text "Plugin [$Plugin] version [$($mod.Version)] is already installed" -Title 'Plugin already installed'
                 }
-                $resp.Title = "Plugin [$Plugin] successfully installed"
-                return $resp
             } catch {
-                return New-PoshBotCardResponse -Type Error -Text $_.Exception.Message -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
+                $resp = New-PoshBotCardResponse -Type Error -Text $_.Exception.Message -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
             }
         } else {
-            return New-PoshBotCardResponse -Type Warning -Text "Plugin [$Plugin] not found in configured plugin directory [$($Bot.Configuration.PluginDirectory)] or repository [$($Bot.Configuration.PluginRepository)]" -ThumbnailUrl 'http://p1cdn05.thewrap.com/images/2015/06/don-draper-shrug.jpg'
+            if ($PSBoundParameters.ContainsKey('Version')) {
+                $text = "Plugin [$Plugin] version [$Version] not found in configured plugin directory [$($Bot.Configuration.PluginDirectory)] or repository [$($Bot.Configuration.PluginRepository)]"
+            } else {
+                $text = "Plugin [$Plugin] not found in configured plugin directory [$($Bot.Configuration.PluginDirectory)] or repository [$($Bot.Configuration.PluginRepository)]"
+            }
+            $resp = New-PoshBotCardResponse -Type Warning -Text $text -ThumbnailUrl 'http://p1cdn05.thewrap.com/images/2015/06/don-draper-shrug.jpg'
         }
     } else {
-        return New-PoshBotCardResponse -Type Warning -Text 'The builtin plugin is already... well... builtin :)' -Title 'Not gonna do it'
+        $resp = New-PoshBotCardResponse -Type Warning -Text 'The builtin plugin is already... well... builtin :)' -Title 'Not gonna do it'
     }
+
+    $resp
 }
 
 function Plugin-Enable {
