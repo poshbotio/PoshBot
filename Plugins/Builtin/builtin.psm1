@@ -141,119 +141,135 @@ function Get-Role {
     }
 }
 
-function Plugin-List {
+# function Plugin-List {
+#     <#
+#     .SYNOPSIS
+#         Get all installed plugins
+#     .EXAMPLE
+#         !plugin-list
+#     #>
+#     [cmdletbinding()]
+#     param(
+#         [parameter(Mandatory)]
+#         $Bot
+#     )
+
+#     $plugins = foreach ($key in ($Bot.PluginManager.Plugins.Keys | Sort-Object)) {
+#         $plugin = $Bot.PluginManager.Plugins[$key]
+
+#         foreach ($versionKey in $plugin.Keys | Sort -Descending) {
+#             $pluginVersion = $plugin[$versionKey]
+#             [pscustomobject][ordered]@{
+#                 Name = $key
+#                 Version = $pluginVersion.Version.ToString()
+#                 Enabled = $pluginVersion.Enabled
+#             }
+#         }
+#     }
+#     New-PoshBotCardResponse -Type Normal -Text ($plugins | Format-Table -AutoSize | Out-String -Width 150)
+# }
+
+function Get-Plugin {
     <#
     .SYNOPSIS
-        Get all installed plugins
+        Get the details of a specific plugin or list all plugins
     .EXAMPLE
-        !plugin-list
-    #>
-    [cmdletbinding()]
-    param(
-        [parameter(Mandatory)]
-        $Bot
-    )
-
-    $plugins = foreach ($key in ($Bot.PluginManager.Plugins.Keys | Sort-Object)) {
-        $plugin = $Bot.PluginManager.Plugins[$key]
-
-        foreach ($versionKey in $plugin.Keys | Sort -Descending) {
-            $pluginVersion = $plugin[$versionKey]
-            [pscustomobject][ordered]@{
-                Name = $key
-                Version = $pluginVersion.Version.ToString()
-                Enabled = $pluginVersion.Enabled
-            }
-        }
-    }
-    New-PoshBotCardResponse -Type Normal -Text ($plugins | Format-Table -AutoSize | Out-String -Width 150)
-}
-
-function Plugin-Show {
-    <#
-    .SYNOPSIS
-        Get the details of a specific plugin
-    .EXAMPLE
-        !plugin-show (<pluginname> | --plugin <pluginname>) [--version 1.2.3]
+        !get-plugin <pluginname> | --plugin <pluginname> [--version 1.2.3]
     #>
     [cmdletbinding()]
     param(
         [parameter(Mandatory)]
         $Bot,
 
-        [parameter(Mandatory, Position = 0)]
+        [parameter(Position = 0)]
         [string]$Plugin,
 
         [parameter(Position = 1)]
         [string]$Version
     )
 
-    $p = $Bot.PluginManager.Plugins[$Plugin]
-    if ($p) {
+    if ($PSBoundParameters.ContainsKey('Plugin')) {
 
-        $versions = New-Object -TypeName System.Collections.ArrayList
+        $p = $Bot.PluginManager.Plugins[$Plugin]
+        if ($p) {
 
-        if ($PSBoundParameters.ContainsKey('Version')) {
-            if ($pv = $p[$Version]) {
-                $versions.Add($pv) > $null
-            }
-        } else {
-            foreach ($pvk in $p.Keys | Sort-Object -Descending) {
-                $pv = $p[$pvk]
-                $versions.Add($pv) > $null
-            }
-        }
+            $versions = New-Object -TypeName System.Collections.ArrayList
 
-        if ($versions.Count -gt 0) {
             if ($PSBoundParameters.ContainsKey('Version')) {
-                $versions = $versions | where Version -eq $Version
-            }
-            foreach ($pv in $versions) {
-                $fields = [ordered]@{
-                    Name = $pv.Name
-                    Version = $pv.Version.ToString()
-                    Enabled = $pv.Enabled.ToString()
-                    CommandCount = $pv.Commands.Count
-                    Permissions = $pv.Permissions.Keys | Format-List | Out-String
-                    Commands = $pv.Commands.Keys | Format-List | Out-String
+                if ($pv = $p[$Version]) {
+                    $versions.Add($pv) > $null
                 }
+            } else {
+                foreach ($pvk in $p.Keys | Sort-Object -Descending) {
+                    $pv = $p[$pvk]
+                    $versions.Add($pv) > $null
+                }
+            }
 
-                $msg = [string]::Empty
-                $properties = @(
-                    @{
-                        Expression = {$_.Name}
-                        Label = 'Name'
+            if ($versions.Count -gt 0) {
+                if ($PSBoundParameters.ContainsKey('Version')) {
+                    $versions = $versions | Where Version -eq $Version
+                }
+                foreach ($pv in $versions) {
+                    $fields = [ordered]@{
+                        Name = $pv.Name
+                        Version = $pv.Version.ToString()
+                        Enabled = $pv.Enabled.ToString()
+                        CommandCount = $pv.Commands.Count
+                        Permissions = $pv.Permissions.Keys | Format-List | Out-String
+                        Commands = $pv.Commands.Keys | Format-List | Out-String
                     }
-                    @{
-                        Expression = {$_.Value.Description}
-                        Label = 'Description'
-                    }
-                    @{
-                        Expression = {$_.Value.Usage}
-                        Label = 'Usage'
-                    }
-                )
-                $msg += "`nCommands: `n$($pv.Commands.GetEnumerator() | Select-Object -Property $properties | Format-List | Out-String)"
-                New-PoshBotCardResponse -Type Normal -Fields $fields
+
+                    $msg = [string]::Empty
+                    $properties = @(
+                        @{
+                            Expression = {$_.Name}
+                            Label = 'Name'
+                        }
+                        @{
+                            Expression = {$_.Value.Description}
+                            Label = 'Description'
+                        }
+                        @{
+                            Expression = {$_.Value.Usage}
+                            Label = 'Usage'
+                        }
+                    )
+                    $msg += "`nCommands: `n$($pv.Commands.GetEnumerator() | Select-Object -Property $properties | Format-List | Out-String)"
+                    New-PoshBotCardResponse -Type Normal -Fields $fields
+                }
+            } else {
+                if ($PSBoundParameters.ContainsKey('Version')) {
+                    New-PoshBotCardResponse -Type Warning -Text "Plugin [$Plugin] version [$Version] not found."
+                } else {
+                    New-PoshBotCardResponse -Type Warning -Text "Plugin [$Plugin] not found."
+                }
             }
         } else {
-            if ($PSBoundParameters.ContainsKey('Version')) {
-                New-PoshBotCardResponse -Type Warning -Text "Plugin [$Plugin] version [$Version] not found."
-            } else {
-                New-PoshBotCardResponse -Type Warning -Text "Plugin [$Plugin] not found."
-            }
+            New-PoshBotCardResponse -Type Warning -Text "Plugin [$Plugin] not found."
         }
     } else {
-        New-PoshBotCardResponse -Type Warning -Text "Plugin [$Plugin] not found."
+        $plugins = foreach ($key in ($Bot.PluginManager.Plugins.Keys | Sort-Object)) {
+            $p = $Bot.PluginManager.Plugins[$key]
+            foreach ($versionKey in $p.Keys | Sort-Object -Descending) {
+                $pluginVersion = $p[$versionKey]
+                [pscustomobject][ordered]@{
+                    Name = $key
+                    Version = $pluginVersion.Version.ToString()
+                    Enabled = $pluginVersion.Enabled
+                }
+            }
+        }
+        New-PoshBotCardResponse -Type Normal -Text ($plugins | Format-Table -AutoSize | Out-String -Width 80)
     }
 }
 
-function Plugin-Install {
+function Install-Plugin {
     <#
     .SYNOPSIS
         Install a new plugin
     .EXAMPLE
-        !plugin-install (<pluginname> | --plugin <pluginname>) [--version 1.2.3]
+        !install-plugin (<pluginname> | --plugin <pluginname>) [--version 1.2.3]
     #>
     [PoshBot.BotCommand(Permissions = 'manage-plugins')]
     [cmdletbinding()]
@@ -307,7 +323,7 @@ function Plugin-Install {
                 $existingPluginVersions = $existingPlugin.Keys
                 if ($existingPluginVersions -notcontains $mod.Version) {
                     $Bot.PluginManager.InstallPlugin($mod.Path)
-                    $resp = Plugin-Show -Bot $bot -Plugin $Plugin -Version $mod.Version
+                    $resp = Get-Plugin -Bot $bot -Plugin $Plugin -Version $mod.Version
                     if (-not ($resp | Get-Member -Name 'Title' -MemberType NoteProperty)) {
                         $resp | Add-Member -Name 'Title' -MemberType NoteProperty -Value $null
                     }
@@ -333,12 +349,12 @@ function Plugin-Install {
     $resp
 }
 
-function Plugin-Enable {
+function Enable-Plugin {
     <#
     .SYNOPSIS
         Enable a currently loaded plugin
     .EXAMPLE
-        !plugin-enable [<pluginname> | --plugin <pluginname>]
+        !enable-plugin [<pluginname> | --plugin <pluginname>]
     #>
     [PoshBot.BotCommand(Permissions = 'manage-plugins')]
     [cmdletbinding()]
@@ -391,12 +407,12 @@ function Plugin-Enable {
     }
 }
 
-function Plugin-Disable {
+function Disable-Plugin {
     <#
     .SYNOPSIS
         Disable a currently loaded plugin
     .EXAMPLE
-        !plugin-disable [<pluginname> | --plugin <pluginname>]
+        !disable-plugin [<pluginname> | --plugin <pluginname>]
     #>
     [PoshBot.BotCommand(Permissions = 'manage-plugins')]
     [cmdletbinding()]
@@ -487,7 +503,9 @@ function Get-Group {
             [pscustomobject][ordered]@{
                 Name = $key
                 Description = $Bot.RoleManager.Groups[$key].Description
-                Users = $Bot.RoleManager.Groups[$key].Users.Keys
+                Users = $Bot.RoleManager.Groups[$key].Users.Keys | foreach-object {
+                    $Bot.RoleManager.ResolveUserToId($_)
+                }
                 Roles = $Bot.RoleManager.Groups[$key].Roles.Keys
             }
         }
