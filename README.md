@@ -1,13 +1,21 @@
 
 # PoshBot
 
-## Overview
+PoshBot is a chat bot written in [PowerShell](https://msdn.microsoft.com/powershell).
+It makes extensive use of classes introduced in PowerShell 5.0.
+PowerShell modules are loaded into PoshBot and instantly become available at bot commands.
+PoshBot currently supports connecting to Slack to provide you with awesome ChatOps goodness.
 
-A Powershell-based bot framework. Under developement.
+<p align="center">
+  <img src="https://github.com/devblackops/PoshBot/raw/master/Media/poshbot_logo_500_720.png" alt="PoshBot logo"/>
+</p>
 
 ## Quickstart
 
-Set environment variable SLACK_TOKEN to your bot token.
+PoshBot is currently under active developemnt.
+Docs will be coming soon.
+
+To get started now, set the environment variable SLACK_TOKEN to your bot token.
 
 [https://api.slack.com/bot-users](https://api.slack.com/bot-users)
 
