@@ -7,7 +7,7 @@ PowerShell modules are loaded into PoshBot and instantly become available at bot
 PoshBot currently supports connecting to Slack to provide you with awesome ChatOps goodness.
 
 <p align="center">
-  <img src="https://github.com/devblackops/PoshBot/raw/master/Media/poshbot_logo_500_720.png" alt="PoshBot logo"/>
+  <img src="https://github.com/devblackops/PoshBot/raw/master/Media/poshbot_logo_300_432.png" alt="PoshBot logo"/>
 </p>
 
 ## Quickstart
