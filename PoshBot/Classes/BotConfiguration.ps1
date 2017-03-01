@@ -17,6 +17,8 @@ class BotConfiguration {
 
     [hashtable]$BackendConfiguration = @{}
 
+    [hashtable]$PluginConfiguration = @{}
+
     [string[]]$BotAdmins = @()
 
     [char]$CommandPrefix = '!'

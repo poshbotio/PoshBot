@@ -44,6 +44,16 @@ namespace PoshBot {
             set { _keepHistory = value; }
         }
     }
+
+    public class FromConfig : System.Attribute {
+        public string Name { get; set; }
+
+        public FromConfig() {}
+
+        public FromConfig(string Name) {
+            this.Name = Name;
+        }
+    }
 }
 "@
 
@@ -72,6 +82,7 @@ namespace PoshBot {
     'CommandExecutor'
     'Plugin'
     'PluginCommand'
+    'ConfigProvidedParameter'
     'PluginManager'
     'ConnectionConfig'
     'Connection'

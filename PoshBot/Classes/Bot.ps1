@@ -234,6 +234,16 @@ class Bot {
                 $parsedCommand.NamedParameters.Add('Bot', $this)
             }
 
+            # Inspect the command and find any parameters that should
+            # be provided from the bot configuration
+            # Insert these as named parameters
+            $configProvidedParams = $this.GetConfigProvidedParameters($pluginCmd)
+            foreach ($cp in $configProvidedParams.GetEnumerator()) {
+                if (-not $parsedCommand.NamedParameters.ContainsKey($cp.Name)) {
+                    $parsedCommand.NamedParameters.Add($cp.Name, $cp.Value)
+                }
+            }
+
             $result = $this.DispatchCommand($pluginCmd.Command, $parsedCommand, $Message.From)
             if (-not $result.Success) {
 
@@ -331,5 +341,45 @@ class Bot {
 
     [void]SendMessage([Card]$Response) {
         $this.Backend.SendMessage($Response)
+    }
+
+    # Get any parameters with the
+    [hashtable]GetConfigProvidedParameters([PluginCommand]$PluginCmd) {
+
+        $command = $PluginCmd.Command.FunctionInfo
+
+        $this._Logger.Debug([LogMessage]::new("[Bot:GetConfigProvidedParameters] Inspecting command [$($PluginCmd.ToString())] for configuration-provided parameters"))
+        $configParams = foreach($param in $Command.Parameters.GetEnumerator() | Select-Object -ExpandProperty Value) {
+            foreach ($attr in $param.Attributes) {
+                if ($attr.TypeId.ToString() -eq 'PoshBot.FromConfig') {
+                    [ConfigProvidedParameter]::new($attr, $param)
+                }
+            }
+        }
+
+        $configProvidedParams = @{}
+        if ($configParams) {
+            $pluginConfig = $this.Configuration.PluginConfiguration[$PluginCmd.Plugin.Name]
+            if ($pluginConfig) {
+                $this._Logger.Info([LogMessage]::new("[Bot:GetConfigProvidedParameters] Inspecting bot configuration for parameter values matching command [$($PluginCmd.ToString())]"))
+                foreach ($cp in $configParams) {
+
+                    if (-not [string]::IsNullOrEmpty($cp.Metadata.Name)) {
+                        $configParamName = $cp.Metadata.Name
+                    } else {
+                        $configParamName = $cp.Parameter.Name
+                    }
+
+                    if ($pluginConfig.ContainsKey($configParamName)) {
+                        $configProvidedParams.Add($cp.Parameter.Name, $pluginConfig[$configParamName])
+                    }
+                }
+            } else {
+                # No plugin configuration defined.
+                # Unable to provide values for these parameters
+            }
+        }
+
+        return $configProvidedParams
     }
 }

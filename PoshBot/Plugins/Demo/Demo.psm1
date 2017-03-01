@@ -358,15 +358,33 @@ function WolframAlpha {
     #>
     [cmdletbinding()]
     param(
+        [PoshBot.FromConfig('WolframAlphaApiKey')]
+        [parameter(Mandatory)]
+        [string]$ApiKey,
+
         [parameter(ValueFromRemainingArguments = $true)]
         [string[]]$Arguments
     )
 
     $q = $Arguments -join ' '
-    $url = "http://api.wolframalpha.com/v2/query?input=$q&appid=$env:WOLFRAM_ALPHA_API_KEY"
-    $r = (Invoke-RestMethod -Uri $url).queryresult
-    $possibleTitles='result|Approximate result|total|response|basic information|Public observances|Latest trades|Basic movie information|Latest recorded weather|calendar'
-    $r.pod | Where-Object {$_.title -match $possibleTitles} |
-        ForEach-Object subpod |
-            ForEach-Object plaintext
+    $url = "http://api.wolframalpha.com/v1/result?i=$q&appid=$ApiKey"
+    $r = Invoke-RestMethod -Uri $url
+    Write-Output $r
+}
+
+function Get-Foo {
+    <#
+    .SYNOPSIS
+        Gets parameter value from bot configuration
+    .EXAMPLE
+        !get-foo
+    #>
+    [cmdletbinding()]
+    param(
+        [PoshBot.FromConfig()]
+        [parameter(Mandatory)]
+        [string]$Config1
+    )
+
+    Write-Output "[$Config1] was passed in from bot configuration"
 }
