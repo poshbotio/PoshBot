@@ -13,7 +13,7 @@ function Ping {
         [string]$Name
     )
 
-    Write-Output (Test-NetConnection -ComputerName $Name -TraceRoute | Format-List | Out-String)
+    New-PoshBotCardResponse -Type Normal -Text (Test-NetConnection -ComputerName $Name -TraceRoute | Format-List | Out-String)
 }
 
 function Dig {
@@ -38,8 +38,9 @@ function Dig {
     )
 
     if ($PSBoundParameters.ContainsKey('Server')) {
-        Resolve-DnsName -Name $Name -Type $Type -Server $Server | Format-Table -Autosize | Out-String
+        $r = Resolve-DnsName -Name $Name -Type $Type -Server $Server | Format-Table -Autosize | Out-String
     } else {
-        Resolve-DnsName -Name $Name -Type $Type | Format-Table -Autosize | Out-String
+        $r = Resolve-DnsName -Name $Name -Type $Type | Format-Table -Autosize | Out-String
     }
+    New-PoshBotCardResponse -Type Normal -Text $r
 }
