@@ -55,8 +55,9 @@ class LogMessage {
             LogLevel = $this.LogLevel
             Message = $this.Message
             Data = $this.Data
-        } | ConvertTo-Json -Depth 100
-        return $this.Compact($json)
+        } | ConvertTo-Json -Depth 100 -Compress
+        return $json
+        #return $this.Compact($json)
     }
 
     [string]ToString() {
