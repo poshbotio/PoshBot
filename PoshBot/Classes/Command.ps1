@@ -161,15 +161,19 @@ class Command {
     }
 
     # Returns TRUE/FALSE if this command matches a parsed command from the chat network
-    [bool]TriggerMatch([ParsedCommand]$ParsedCommand) {
+    [bool]TriggerMatch([ParsedCommand]$ParsedCommand, [bool]$CommandSearch = $true) {
         switch ($this.Trigger.Type) {
             'Command' {
-                # Command tiggers only work with normal messages received from chat network
-                if ($ParsedCommand.OriginalMessage.Type -eq [MessageType]::Message) {
-                    if ($this.Trigger.Trigger -eq $ParsedCommand.Command) {
-                            return $true
-                        } else {
-                            return $false
+                if ($CommandSearch) {
+                    # Command tiggers only work with normal messages received from chat network
+                    if ($ParsedCommand.OriginalMessage.Type -eq [MessageType]::Message) {
+                        if ($this.Trigger.Trigger -eq $ParsedCommand.Command) {
+                                return $true
+                            } else {
+                                return $false
+                        }
+                    } else {
+                        return $false
                     }
                 } else {
                     return $false

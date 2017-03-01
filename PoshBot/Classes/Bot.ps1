@@ -213,19 +213,24 @@ class Bot {
         # match a regex trigger. In that case, don't respond with an
         # error that we couldn't find the command
         $isBotCommand = $this.IsBotCommand($Message)
+        $cmdSearch = $true
+        if (-not $isBotCommand) {
+            $cmdSearch = $false
+            $this._Logger.Debug([LogMessage]::new('[Bot:HandleMessage] Message is not a bot command. Command triggers WILL NOT be searched.'))
+        } else {
+            # The message is intended to be a bot command
+            $Message = $this.TrimPrefix($Message)
+        }
 
-        $Message = $this.TrimPrefix($Message)
         $commandString = $Message.Text
-
         $parsedCommand = [CommandParser]::Parse($commandString, $Message)
         $this._Logger.Debug([LogMessage]::new('[Bot:HandleMessage] Parsed bot command', $parsedCommand))
-
         $response = [Response]::new()
         $response.MessageFrom = $Message.From
         $response.To = $Message.To
 
         # Match parsed command to a command in the plugin manager
-        $pluginCmd = $this.PluginManager.MatchCommand($parsedCommand)
+        $pluginCmd = $this.PluginManager.MatchCommand($parsedCommand, $cmdSearch)
         if ($pluginCmd) {
 
             # Pass in the bot to the module command.

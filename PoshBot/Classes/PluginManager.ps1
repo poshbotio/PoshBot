@@ -213,14 +213,14 @@ class PluginManager {
     }
 
      # Match a parsed command to a command in one of the currently loaded plugins
-    [PluginCommand]MatchCommand([ParsedCommand]$ParsedCommand) {
+    [PluginCommand]MatchCommand([ParsedCommand]$ParsedCommand, [bool]$CommandSearch = $true) {
 
         # Check builtin commands first
         $builtinKey = $this.Plugins['Builtin'].Keys | Select -First 1
         $builtinPlugin = $this.Plugins['Builtin'][$builtinKey]
         foreach ($commandKey in $builtinPlugin.Commands.Keys) {
             $command = $builtinPlugin.Commands[$commandKey]
-            if ($command.TriggerMatch($ParsedCommand)) {
+            if ($command.TriggerMatch($ParsedCommand, $CommandSearch)) {
                 $this.Logger.Info([LogMessage]::new("[PluginManagerBot:MatchCommand] Matched parsed command [$($ParsedCommand.Plugin)`:$($ParsedCommand.Command)] to builtin command [Builtin:$commandKey]"))
                 return [PluginCommand]::new($builtinPlugin, $command)
             }
@@ -237,7 +237,7 @@ class PluginManager {
 
                 foreach ($commandKey in $plugin[$latestVersionKey].Commands.Keys) {
                     $command = $plugin.Commands[$commandKey]
-                    if ($command.TriggerMatch($ParsedCommand)) {
+                    if ($command.TriggerMatch($ParsedCommand, $CommandSearch)) {
                         $this.Logger.Info([LogMessage]::new("[PluginManager:MatchCommand] Matched parsed command [$($ParsedCommand.Plugin)`:$($ParsedCommand.Command)] to plugin command [$($plugin.Name)`:$commandKey]"))
                         return [PluginCommand]::new($plugin, $command)
                     }
@@ -260,7 +260,7 @@ class PluginManager {
 
                     foreach ($commandKey in $pluginVersion.Commands.Keys) {
                         $command = $pluginVersion.Commands[$commandKey]
-                        if ($command.TriggerMatch($ParsedCommand)) {
+                        if ($command.TriggerMatch($ParsedCommand, $CommandSearch)) {
                             $this.Logger.Info([LogMessage]::new("[PluginManager:MatchCommand] Matched parsed command [$($ParsedCommand.Plugin)`:$($ParsedCommand.Command)] to plugin command [$pluginKey`:$commandKey]"))
                             return [PluginCommand]::new($pluginVersion, $command)
                         }
