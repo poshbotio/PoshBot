@@ -189,6 +189,9 @@ class SlackBackend : Backend {
             if ($null -ne $jsonResult -and $jsonResult -ne [string]::Empty) {
                 Write-Debug -Message "[SlackBackend:ReceiveMessage] Received `n$jsonResult"
 
+                # Strip out Slack's URI formatting
+                $jsonResult = $this._SanitizeURIs($jsonResult)
+
                 $slackMessage = $jsonResult | ConvertFrom-Json
                 if ($slackMessage) {
                     # We only care about certain message types from Slack
@@ -541,6 +544,12 @@ class SlackBackend : Backend {
             $this.LoadUsers()
             return $this.Users[$UserId].Nickname
         }
+    }
+
+    hidden [string] _SanitizeURIs([string]$Text) {
+        $sanitizedText = $Text -replace '<([^\|>]+)\|([^\|>]+)>', '$2'
+        $sanitizedText = $sanitizedText -replace '<(http([^>]+))>', '$1'
+        return $sanitizedText
     }
 
     hidden [System.Collections.ArrayList] _ChunkString([string]$Text) {
