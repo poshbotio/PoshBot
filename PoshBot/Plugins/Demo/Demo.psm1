@@ -276,7 +276,7 @@ function WelcomeUserToRoom {
         $Dummy
     )
 
-    Write-Output 'Greeting! We were just talking about you.'
+    Write-Output 'Greetings! We were just talking about you.'
 }
 
 function SayGoodbyeTouser {
