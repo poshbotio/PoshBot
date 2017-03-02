@@ -139,20 +139,13 @@ enum LogLevel {
 }
 
 Export-ModuleMember -Function @(
-    'Add-PoshBotPlugin'
-    'Add-PoshBotPluginCommand'
     'Get-PoshBot'
     'Get-PoshBotConfiguration'
     'New-PoshBotAce'
     'New-PoshBotBackend'
-    'New-PoshBotCommand'
-    'New-PoshBotCommandDescription'
     'New-PoshBotConfiguration'
     'New-PoshBotInstance'
-    'New-PoshBotPlugin'
-    'New-PoshBotRole'
     'New-PoshBotSlackBackend'
-    'New-PoshBotTrigger'
     'New-HelloPlugin'
     'New-PoshBotCardResponse'
     'New-PoshBotTextResponse'
