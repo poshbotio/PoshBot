@@ -688,6 +688,35 @@ function New-Role {
     }
 }
 
+function Remove-Role {
+    <#
+    .SYNOPSIS
+        Remove a role
+    .EXAMPLE
+        !remove-role (<rolename> | --name <rolename>)
+    #>
+    [PoshBot.BotCommand(Permissions = 'manage-roles')]
+    [cmdletbinding()]
+    param(
+        [parameter(Mandatory)]
+        $Bot,
+
+        [parameter(Mandatory, Position = 0)]
+        [string]$Name
+    )
+
+    if ($r = $Bot.RoleManager.GetRole($Name)) {
+        try {
+            $Bot.RoleManager.RemoveRole($r)
+            New-PoshBotCardResponse -Type Normal -Text "Role [$Name] removed" -ThumbnailUrl 'https://www.streamsports.com/images/icon_green_check_256.png'
+        } catch {
+            New-PoshBotCardResponse -Type Error -Text "Failed to remove role [$Name]" -ThumbnailUrl 'https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-128.png'
+        }
+    } else {
+        New-PoshBotCardResponse -Type Warning -Text "Role [$Name] not found :(" -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
+    }
+}
+
 function Add-RolePermission {
     <#
     .SYNOPSIS
