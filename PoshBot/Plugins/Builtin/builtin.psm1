@@ -655,6 +655,38 @@ function Remove-Group {
     }
 }
 
+function Update-GroupDescription {
+    <#
+    .SYNOPSIS
+        Update a group description
+    .EXAMPLE
+        !update-groupdescription (<groupname> | --name <groupname>) (<new description> | --description <new description>)
+    #>
+    [PoshBot.BotCommand(Permissions = 'manage-groups')]
+    [cmdletbinding()]
+    param(
+        [parameter(Mandatory)]
+        $Bot,
+
+        [parameter(Mandatory, Position = 0)]
+        [string]$Name,
+
+        [parameter(Mandatory, Position = 1)]
+        [string]$Description
+    )
+
+    if ($g = $Bot.RoleManager.GetGroup($Name)) {
+        try {
+            $Bot.RoleManager.UpdateGroupDescription($Name, $Description)
+            New-PoshBotCardResponse -Type Normal -Text "Group [$Name] description is now [$Description]" -ThumbnailUrl 'https://www.streamsports.com/images/icon_green_check_256.png'
+        } catch {
+            New-PoshBotCardResponse -Type Error -Text "Failed to update group [$Name]" -ThumbnailUrl 'https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-128.png'
+        }
+    } else {
+        New-PoshBotCardResponse -Type Warning -Text "Group [$Name] not found :(" -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
+    }
+}
+
 function New-Role {
     <#
     .SYNOPSIS
@@ -711,6 +743,38 @@ function Remove-Role {
             New-PoshBotCardResponse -Type Normal -Text "Role [$Name] removed" -ThumbnailUrl 'https://www.streamsports.com/images/icon_green_check_256.png'
         } catch {
             New-PoshBotCardResponse -Type Error -Text "Failed to remove role [$Name]" -ThumbnailUrl 'https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-128.png'
+        }
+    } else {
+        New-PoshBotCardResponse -Type Warning -Text "Role [$Name] not found :(" -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
+    }
+}
+
+function Update-RoleDescription {
+    <#
+    .SYNOPSIS
+        Update a role description
+    .EXAMPLE
+        !update-roledescription (<rolename> | --name <rolename>) (<new description> | --description <new description>)
+    #>
+    [PoshBot.BotCommand(Permissions = 'manage-roles')]
+    [cmdletbinding()]
+    param(
+        [parameter(Mandatory)]
+        $Bot,
+
+        [parameter(Mandatory, Position = 0)]
+        [string]$Name,
+
+        [parameter(Mandatory, Position = 1)]
+        [string]$Description
+    )
+
+    if ($r = $Bot.RoleManager.GetRole($Name)) {
+        try {
+            $Bot.RoleManager.UpdateRoleDescription($Name, $Description)
+            New-PoshBotCardResponse -Type Normal -Text "Role [$Name] description is now [$Description]" -ThumbnailUrl 'https://www.streamsports.com/images/icon_green_check_256.png'
+        } catch {
+            New-PoshBotCardResponse -Type Error -Text "Failed to update role [$Name]" -ThumbnailUrl 'https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-128.png'
         }
     } else {
         New-PoshBotCardResponse -Type Warning -Text "Role [$Name] not found :(" -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'

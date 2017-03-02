@@ -165,6 +165,28 @@ class RoleManager {
         }
     }
 
+    [void]UpdateGroupDescription([string]$Groupname, [string]$Description) {
+        if ($g = $this.Groups[$Groupname]) {
+            $g.Description = $Description
+            $this.SaveState()
+        } else {
+            $msg = "[RoleManager:UpdateGroupDescription] Group [$Groupname] not found"
+            $this._Logger.Info([LogMessage]::new([LogSeverity]::Warning, $msg))
+            Write-Error -Message $msg
+        }
+    }
+
+    [void]UpdateRoleDescription([string]$Rolename, [string]$Description) {
+        if ($r = $this.Roles[$Rolename]) {
+            $r.Description = $Description
+            $this.SaveState()
+        } else {
+            $msg = "[RoleManager:UpdateRoleDescription] Role [$Rolename] not found"
+            $this._Logger.Info([LogMessage]::new([LogSeverity]::Warning, $msg))
+            Write-Error -Message $msg
+        }
+    }
+
     [Permission]GetPermission([string]$PermissionName) {
         $p = $this.Permissions[$PermissionName]
         if ($p) {
