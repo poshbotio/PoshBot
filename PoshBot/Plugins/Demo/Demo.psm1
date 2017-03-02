@@ -202,7 +202,7 @@ function Shipit {
 function Cookies {
     <#
     .SYNOPSIS
-        Respond to cookied
+        Respond to cookies
     #>
     [PoshBot.BotCommand(
         Command = $false,
