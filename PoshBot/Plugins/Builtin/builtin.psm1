@@ -626,6 +626,35 @@ function New-Group {
     }
 }
 
+function Remove-Group {
+    <#
+    .SYNOPSIS
+        Remove a group
+    .EXAMPLE
+        !remove-group (<groupname> | --name <groupname>)
+    #>
+    [PoshBot.BotCommand(Permissions = 'manage-groups')]
+    [cmdletbinding()]
+    param(
+        [parameter(Mandatory)]
+        $Bot,
+
+        [parameter(Mandatory, Position = 0)]
+        [string]$Name
+    )
+
+    if ($g = $Bot.RoleManager.GetGroup($Name)) {
+        try {
+            $Bot.RoleManager.RemoveGroup($g)
+            New-PoshBotCardResponse -Type Normal -Text "Group [$Name] removed" -ThumbnailUrl 'https://www.streamsports.com/images/icon_green_check_256.png'
+        } catch {
+            New-PoshBotCardResponse -Type Error -Text "Failed to remove group [$Name]" -ThumbnailUrl 'https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-128.png'
+        }
+    } else {
+        New-PoshBotCardResponse -Type Warning -Text "Group [$Name] not found :(" -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
+    }
+}
+
 function New-Role {
     <#
     .SYNOPSIS
@@ -719,9 +748,9 @@ function Remove-RolePermission {
         if ($p = $Bot.RoleManager.Permissions[$Permission]) {
             try {
                 $Bot.RoleManager.RemovePermissionFromRole($Permission, $Role)
-                return New-PoshBotCardResponse -Type Normal -Text "Permission [$Permission] removed from role [$role]." -ThumbnailUrl 'https://www.streamsports.com/images/icon_green_check_256.png'
+                New-PoshBotCardResponse -Type Normal -Text "Permission [$Permission] removed from role [$role]." -ThumbnailUrl 'https://www.streamsports.com/images/icon_green_check_256.png'
             } catch {
-                return New-PoshBotCardResponse -Type Error -Text "Failed to remove [$Permission] from role [$role]" -ThumbnailUrl 'https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-128.png'
+                New-PoshBotCardResponse -Type Error -Text "Failed to remove [$Permission] from role [$role]" -ThumbnailUrl 'https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-128.png'
             }
         } else {
             New-PoshBotCardResponse -Type Warning -Text "Permission [$Permission] not found :(" -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
