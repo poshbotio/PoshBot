@@ -154,8 +154,8 @@ class PluginManager {
                     $this.Logger.Info([LogMessage]::new("[PluginManager:RemovePlugin] Removing plugin [$($pv.Name)]"))
                     $this.Plugins.Remove($pv.Name)
                 } else {
-                    $this.Logger.Info([LogMessage]::new("[PluginManager:RemovePlugin] Removing plugin [$($pv.Name)] version [$($pv.Version)]"))
-                    $p.Remove($pv.Version)
+                    $this.Logger.Info([LogMessage]::new("[PluginManager:RemovePlugin] Removing plugin [$($pv.Name)] version [$Version]"))
+                    $p.Remove($pv.Version.ToString())
                 }
             } else {
                 throw [PluginNotFoundException]::New("Plugin [$PluginName] version [$Version] is not loaded in bot")
