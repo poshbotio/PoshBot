@@ -4,16 +4,28 @@ function Ping {
     .SYNOPSIS
         Tests a connection to a host
     .EXAMPLE
-        !ping --name <www.google.com>
+        !ping (<www.google.com> | --name <www.google.com>) [--count 2] [--ipv6]
     #>
     [PoshBot.BotCommand(Permissions = 'test-network')]
     [cmdletbinding()]
     param(
-        [parameter(Mandatory)]
-        [string]$Name
+        [parameter(Mandatory, Position = 0)]
+        [string]$Name,
+
+        [parameter(Position = 1)]
+        [int]$Count = 5,
+
+        [parameter(position = 2)]
+        [switch]$IPv6
     )
 
-    New-PoshBotCardResponse -Type Normal -Text (Test-NetConnection -ComputerName $Name -TraceRoute | Format-List | Out-String)
+    if ($PSBoundParameters.ContainsKey('IPv6')) {
+        $r = Invoke-Command -ScriptBlock { ping.exe $Name -n $Count -6 -a }
+    } else {
+        $r = Invoke-Command -ScriptBlock { ping.exe $Name -n $Count -4 -a }
+    }
+
+    New-PoshBotCardResponse -Type Normal -Text ($r -Join "`n")
 }
 
 function Dig {
@@ -21,7 +33,7 @@ function Dig {
     .SYNOPSIS
         Perform DNS resolution on a host
     .EXAMPLE
-        !dig --name <www.google.com> [--type <A>] [--server <8.8.8.8>]
+        !dig (<www.google.com> | --name <www.google.com>) [--type <A>] [--server <8.8.8.8>]
     #>
     [PoshBot.BotCommand(Permissions = 'test-network')]
     [cmdletbinding()]
@@ -40,7 +52,12 @@ function Dig {
     if ($PSBoundParameters.ContainsKey('Server')) {
         $r = Resolve-DnsName -Name $Name -Type $Type -Server $Server | Format-Table -Autosize | Out-String
     } else {
-        $r = Resolve-DnsName -Name $Name -Type $Type | Format-Table -Autosize | Out-String
+        $r = Resolve-DnsName -Name $Name -Type $Type -ErrorAction SilentlyContinue | Format-Table -Autosize | Out-String
     }
-    New-PoshBotCardResponse -Type Normal -Text $r
+
+    if ($r) {
+        New-PoshBotCardResponse -Type Normal -Text $r
+    } else {
+        New-PoshBotCardResponse -Type Warning -Text "Unable to resolve [$Name] :(" -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
+    }
 }
