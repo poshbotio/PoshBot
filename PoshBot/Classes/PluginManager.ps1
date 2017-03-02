@@ -140,6 +140,36 @@ class PluginManager {
         $this.SaveState()
     }
 
+    [void]RemovePlugin([string]$PluginName, [string]$Version) {
+        if ($p = $this.Plugins[$PluginName]) {
+            if ($pv = $p[$Version]) {
+
+                if ($p.Keys.Count -eq 1) {
+                    # Remove the permissions for this plugin from the role manaager
+                    # but only if this is the only version of the plugin loaded
+                    foreach ($permission in $pv.Permissions.GetEnumerator()) {
+                        $this.Logger.Verbose([LogMessage]::new("[PluginManager:RemovePlugin] Removing permission [$($Permission.Value.ToString())]. No longer in use"))
+                        $this.RoleManager.RemovePermission($Permission.Value)
+                    }
+                    $this.Logger.Info([LogMessage]::new("[PluginManager:RemovePlugin] Removing plugin [$($pv.Name)]"))
+                    $this.Plugins.Remove($pv.Name)
+                } else {
+                    $this.Logger.Info([LogMessage]::new("[PluginManager:RemovePlugin] Removing plugin [$($pv.Name)] version [$($pv.Version)]"))
+                    $p.Remove($pv.Version)
+                }
+            } else {
+                throw [PluginNotFoundException]::New("Plugin [$PluginName] version [$Version] is not loaded in bot")
+            }
+        } else {
+            throw [PluginNotFoundException]::New("Plugin [$PluginName] is not loaded in bot")
+        }
+
+        # Reload commands from all currently loading (and active) plugins
+        $this.LoadCommands()
+
+        $this.SaveState()
+    }
+
     # Activate a plugin
     [void]ActivatePlugin([string]$PluginName, [string]$Version) {
         if ($p = $this.Plugins[$PluginName]) {
@@ -234,12 +264,13 @@ class PluginManager {
                 # Just look in the latest version of the plugin.
                 # This should be improved later to allow specifying a specific version to execute
                 $latestVersionKey = $plugin.Keys | Sort -Descending | Select-Object -First 1
+                $pluginVersion = $plugin[$latestVersionKey]
 
-                foreach ($commandKey in $plugin[$latestVersionKey].Commands.Keys) {
-                    $command = $plugin.Commands[$commandKey]
+                foreach ($commandKey in $pluginVersion.Commands.Keys) {
+                    $command = $pluginVersion.Commands[$commandKey]
                     if ($command.TriggerMatch($ParsedCommand, $CommandSearch)) {
                         $this.Logger.Info([LogMessage]::new("[PluginManager:MatchCommand] Matched parsed command [$($ParsedCommand.Plugin)`:$($ParsedCommand.Command)] to plugin command [$($plugin.Name)`:$commandKey]"))
-                        return [PluginCommand]::new($plugin, $command)
+                        return [PluginCommand]::new($pluginVersion, $command)
                     }
                 }
                 $this.Logger.Info([LogMessage]::new([LogSeverity]::Warning, "[PluginManager:MatchCommand] Unable to match parsed command [$($ParsedCommand.Plugin)`:$($ParsedCommand.Command)] to a command in plugin [$($plugin.Name)]"))
