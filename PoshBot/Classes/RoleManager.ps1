@@ -92,7 +92,6 @@ class RoleManager {
         $this._Logger.Verbose([LogMessage]::new("[RoleManager:LoadState] Loading role manager state from storage"))
 
         $permissionConfig = $this._Storage.GetConfig('permissions')
-        Write-verbose "permissions: $($permissionConfig | fl * | out-string)"
         if ($permissionConfig) {
             foreach($permKey in $permissionConfig.Keys) {
                 $perm = $permissionConfig[$permKey]
