@@ -2,25 +2,33 @@
 function Stop-Poshbot {
     <#
     .SYNOPSIS
-        Stop a currently running PoshBot instance.
+        Stop a currently running PoshBot instance that is running as a background job.
     .DESCRIPTION
-        Stop a currently running PoshBot instance.
+        PoshBot can be run in the background with PowerShell jobs. This function stops
+        a currently running PoshBot instance.
     .PARAMETER Id
-        The Id of the bot to stop.
+        The job Id of the bot to stop.
     .EXAMPLE
         Stop-PoshBot -Id 101
 
         Stop the bot instance with Id 101.
-
     .EXAMPLE
         Get-PoshBot | Stop-PoshBot
 
         Gets all running PoshBot instances and stops them.
+    .INPUTS
+		System.Int32
+    .LINK
+        Get-PoshBot
+    .LINK
+        Start-PoshBot
     #>
-    [cmdletbinding()]
+    [cmdletbinding(SupportsShouldProcess, ConfirmImpact = 'high')]
     param(
         [parameter(Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName)]
-        [int[]]$Id
+        [int[]]$Id,
+
+        [switch]$Force
     )
 
     begin {
@@ -29,10 +37,9 @@ function Stop-Poshbot {
 
     process {
         foreach ($jobId in $Id) {
-            if ($PSCmdlet.ShouldProcess($jobId, 'Stop PoshBot')) {
+            if ($Force -or $PSCmdlet.ShouldProcess($jobId, 'Stop PoshBot')) {
                 $bot = $script:botTracker[$jobId]
                 if ($bot) {
-
                     Write-Verbose -Message "Stopping PoshBot Id: $jobId"
                     Stop-Job -Id $jobId -Verbose:$false
                     Remove-Job -Id $JobId -Verbose:$false

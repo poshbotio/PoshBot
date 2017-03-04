@@ -1,29 +1,88 @@
 
 function New-PoshBotCardResponse {
-    [cmdletbinding(DefaultParameterSetName = 'normal')]
+    <#
+    .SYNOPSIS
+        Tells PoshBot to send a specially formatted response.
+    .DESCRIPTION
+        Responses from PoshBot commands can either be plain text or formatted. Returning a response with New-PoshBotRepsonse will tell PoshBot
+        to craft a specially formatted message when sending back to the chat network.
+    .PARAMETER Type
+        Specifies a preset color for the card response. If the [Color] parameter is specified as well, it will override this parameter.
+
+        Type      Color    Hex code
+        ---------------------------
+        Normal  = Greed  = #008000
+        Warning = Yellow = #FFA500
+        Error   = Red    = #FF0000
+    .PARAMETER Text
+        The text response from the command.
+    .PARAMETER DM
+        Tell PoshBot to redirect the response to a DM channel.
+    .PARAMETER Title
+        The title of the response. This will be the card title in chat networks like Slack.
+    .PARAMETER ThumbnailUrl
+        A URL to a thumbnail image to display in the card response.
+    .PARAMETER ImageUrl
+        A URL to an image to display in the card response.
+    .PARAMETER LinkUrl
+        Will turn the title into a hyperlink
+    .PARAMETER Fields
+        A hashtable to display as a table in the card response.
+    .PARAMETER COLOR
+        The hex color code to use for the card response. In Slack, this will be the color of the left border in the message attachment.
+    .EXAMPLE
+        function Do-Something {
+            [cmdletbinding()]
+            param(
+                [parameter(mandatory)]
+                [string]$MyParam
+            )
+
+            New-PoshBotCardResponse -Type Normal -Text 'OK, I did something.' -ThumbnailUrl 'https://www.streamsports.com/images/icon_green_check_256.png'
+        }
+
+        Tells PoshBot to send a formatted response back to the chat network. In Slack for example, this response will be a message attachment
+        with a green border on the left, some text and a green checkmark thumbnail image.
+    .EXAMPLE
+        function Do-Something {
+            [cmdletbinding()]
+            param(
+                [parameter(mandatory)]
+                [string]$ComputerName
+            )
+
+            $info = Get-ComputerInfo -ComputerName $ComputerName -ErrorAction SilentlyContinue
+            if ($info) {
+                $fields = [ordered]@{
+                    Name = $ComputerName
+                    OS = $info.OSName
+                    Uptime = $info.Uptime
+                    IPAddress = $info.IPAddress
+                }
+                New-PoshBotCardResponse -Type Normal -Fields $fields
+            } else {
+                New-PoshBotCardResponse -Type Error -Text 'Something bad happended :(' -ThumbnailUrl 'http://p1cdn05.thewrap.com/images/2015/06/don-draper-shrug.jpg'
+            }
+        }
+
+        Attempt to retrieve some information from a given computer and return a card response back to PoshBot. If the command fails for some reason,
+        return a card response specified the error and a sad image.
+    .OUTPUTS
+        PSCustomObject
+    .LINK
+        New-PoshBotTextResponse
+    #>
+    [cmdletbinding()]
     param(
         [ValidateSet('Normal', 'Warning', 'Error')]
         [string]$Type = 'Normal',
 
-        [parameter(ParameterSetName = 'private')]
-        [switch]$Private,
-
-        [parameter(ParameterSetName = 'dm')]
         [switch]$DM,
 
-        [parameter(ParameterSetName = 'normal')]
-        [parameter(ParameterSetName = 'dm')]
-        [parameter(ParameterSetName = 'private')]
         [string]$Text = [string]::empty,
 
-        [parameter(ParameterSetName = 'normal')]
-        [parameter(ParameterSetName = 'dm')]
-        [parameter(ParameterSetName = 'private')]
         [string]$Title,
 
-        [parameter(ParameterSetName = 'normal')]
-        [parameter(ParameterSetName = 'dm')]
-        [parameter(ParameterSetName = 'private')]
         [ValidateScript({
             $uri = $null
             if ([system.uri]::TryCreate($_, [System.UriKind]::Absolute, [ref]$uri)) {
@@ -35,9 +94,6 @@ function New-PoshBotCardResponse {
         })]
         [string]$ThumbnailUrl,
 
-        [parameter(ParameterSetName = 'normal')]
-        [parameter(ParameterSetName = 'dm')]
-        [parameter(ParameterSetName = 'private')]
         [ValidateScript({
             $uri = $null
             if ([system.uri]::TryCreate($_, [System.UriKind]::Absolute, [ref]$uri)) {
@@ -49,9 +105,6 @@ function New-PoshBotCardResponse {
         })]
         [string]$ImageUrl,
 
-        [parameter(ParameterSetName = 'normal')]
-        [parameter(ParameterSetName = 'dm')]
-        [parameter(ParameterSetName = 'private')]
         [ValidateScript({
             $uri = $null
             if ([system.uri]::TryCreate($_, [System.UriKind]::Absolute, [ref]$uri)) {
@@ -63,9 +116,6 @@ function New-PoshBotCardResponse {
         })]
         [string]$LinkUrl,
 
-        [parameter(ParameterSetName = 'normal')]
-        [parameter(ParameterSetName = 'dm')]
-        [parameter(ParameterSetName = 'private')]
         [hashtable]$Fields,
 
         [ValidateScript({
@@ -116,6 +166,5 @@ function New-PoshBotCardResponse {
         }
     }
 
-    $response = [pscustomobject]$response
-    $response
+    [pscustomobject]$response
 }
