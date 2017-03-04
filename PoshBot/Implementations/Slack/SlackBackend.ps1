@@ -558,19 +558,25 @@ class SlackBackend : Backend {
 }
 
 function New-PoshBotSlackBackend {
+    [cmdletbinding()]
     param(
-        [parameter(Mandatory)]
-        [hashtable]$Configuration
+        [parameter(Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [Alias('BackendConfiguration')]
+        [hashtable[]]$Configuration
     )
 
-    if (-not $Configuration.Token) {
-        throw 'Configuration is missing [Token] parameter'
-    } else {
-        $backend = [SlackBackend]::new($Configuration.Token)
-
-        if ($Configuration.Name) {
-            $backend.Name = $Configuration.Name
+    process {
+        foreach ($item in $Configuration) {
+            if (-not $item.Token) {
+                throw 'Configuration is missing [Token] parameter'
+            } else {
+                Write-Verbose 'Creating new Slack backend instance'
+                $backend = [SlackBackend]::new($item.Token)
+                if ($item.Name) {
+                    $backend.Name = $item.Name
+                }
+                $backend
+            }
         }
-        return $backend
     }
 }
