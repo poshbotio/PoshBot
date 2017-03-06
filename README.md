@@ -12,7 +12,7 @@ PoshBot currently supports connecting to Slack to provide you with awesome ChatO
 
 ## Quickstart
 
-PoshBot is currently under active developemnt.
+PoshBot is currently under active development.
 Docs will be coming soon.
 
 To get started now, set the environment variable SLACK_TOKEN to your bot token.
