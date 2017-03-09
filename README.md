@@ -1,6 +1,7 @@
 
 # PoshBot
 
+[![Build status](https://ci.appveyor.com/api/projects/status/9em7etgtlmeax7gl?svg=true)](https://ci.appveyor.com/project/devblackops/poshbot)
 [![Documentation Status](https://readthedocs.org/projects/poshbot/badge/?version=latest)](http://poshbot.readthedocs.io/en/latest/)
 
 PoshBot is a chat bot written in [PowerShell](https://msdn.microsoft.com/powershell).
