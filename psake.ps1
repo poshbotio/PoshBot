@@ -4,7 +4,7 @@ properties {
         $projectRoot = $PSScriptRoot
     }
 
-    $sut = "$projectRoot\PoshBot"
+    $sut = "$projectRoot\$env:BHProjectName"
     $tests = "$projectRoot\Tests"
 
     $psVersion = $PSVersionTable.PSVersion.Major
@@ -17,12 +17,12 @@ task Init {
     "Build System Details:"
     Get-Item ENV:BH*
 
-    $modules = 'Pester', 'PSScriptAnalyzer'
+    $modules = 'Pester', 'platyPS', 'PSScriptAnalyzer'
     Install-Module $modules -Repository PSGallery -Confirm:$false
     Import-Module $modules -Verbose:$false -Force
-}
+} -description 'Initialize build environment'
 
-task Test -Depends Init, Analyze, Pester
+task Test -Depends Init, Analyze, Pester -description 'Run test suite'
 
 task Analyze -Depends Init {
     $saResults = Invoke-ScriptAnalyzer -Path $sut -Severity Error -Recurse -Verbose:$false
@@ -30,7 +30,7 @@ task Analyze -Depends Init {
         $saResults | Format-Table
         Write-Error -Message 'One or more Script Analyzer errors/warnings where found. Build cannot continue!'
     }
-}
+} -description 'Run PSScriptAnalyzer'
 
 task Pester -Depends Init {
     if(-not $ENV:BHProjectPath) {
@@ -40,4 +40,21 @@ task Pester -Depends Init {
     Import-Module (Join-Path $ENV:BHProjectPath $ENV:BHProjectName) -Force
 
     Invoke-Pester -Path $tests -PassThru -EnableExit
-}
+} -description 'Run Pester tests'
+
+task CreateMarkdownHelp -Depends Init {
+    Import-Module -Name $sut -Force -Verbose:$false
+    New-MarkdownHelp -Module $env:BHProjectName -OutputFolder "$projectRoot\docs\reference\platyps" -WithModulePage
+} -description 'Create initial markdown help files'
+
+task UpdateMarkdownHelp -Depends Init {
+    Import-Module -Name $sut -Force -Verbose:$false
+    Update-MarkdownHelpModule -Path "$projectRoot\docs\reference\platyps"
+} -description 'Update markdown help files'
+
+task CreateExternalHelp -Depends Init {
+    New-ExternalHelp "$projectRoot\docs\reference\platyps" -OutputPath "$sut\en-US"
+
+} -description 'Create module help from markdown files'
+
+Task RegenerateHelp -Depends Init, UpdateMarkdownHelp, CreateExternalHelp
