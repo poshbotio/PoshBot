@@ -2,10 +2,9 @@
 function New-PoshBotInstance {
     <#
     .SYNOPSIS
-        Saves a PoshBot configuration object to the filesystem in the form of a PowerShell data (.psd1) file.
+        Creates a new instance of PoshBot
     .DESCRIPTION
-        PoshBot configurations can be stored on the filesytem in PowerShell data (.psd1) files.
-        This function will save a previously created configuration object to the filesystem.
+        Creates a new instance of PoshBot from an existing configuration (.psd1) file or a configuration object.
     .PARAMETER Configuration
         The bot configuration object to create a new instance from.
     .PARAMETER Path
