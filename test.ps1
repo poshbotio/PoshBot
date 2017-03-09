@@ -32,7 +32,7 @@ $VerbosePreference = 'continue'
 
 #$config = Get-PoshBotConfiguration -Path (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot\Cherry2000.psd1')
 #$backend = New-PoshBotSlackBackend -Configuration $config.BackendConfiguration
-Start-PoshBot -ConfigurationPath (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot\Cherry2000.psd1')
+Start-PoshBot -Path (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot\Cherry2000.psd1')
 
 # Start-PoshBot -(Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot\Cherry2000.psd1')
 #$bot = New-PoshBotInstance -Backend $backend -Configuration $config
