@@ -22,6 +22,7 @@ This custom attribute is how PoshBot knows what type of trigger to use for the c
 | MessageType    | string   | Type of message this command is triggered against. Only valid when TriggerType is `Event`
 | MessageSubtype | string   | Subtype of message this command is triggered against. Only valid when TriggerType is `Event`
 | Permissions    | string[] | String array of permissions to apply to the command. Only users when the given permissions are allow to execute command
+
 #### Example
 
 ```powershell
