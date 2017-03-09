@@ -1,58 +1,8 @@
 site_name: PoshBot Docs
+site_description: Documentation for PoshBot, a chat bot written in PowerShell
+site_author: Brandon Olin
 repo_url: https://github.com/devblackops/PoshBot
+edit_uri: edit/master/docs
 theme: readthedocs
-pages:
-  - Home: index.md
-  - Guides:
-    - Quickstart: guides/quickstart.md
-    - Configuration: guides/configuration.md
-    - Backends: guides/backends.md
-    - Plugins: guides/plugins.md
-    - Triggers: guides/triggers.md
-    - Command Authorization:
-      - Overview: guides/command-authorization/overview.md
-      - Permissions: guides/command-authorization/permissions.md
-      - Roles: guides/command-authorization/roles.md
-      - Groups: guides/command-authorization/groups.md
-  - Tutorials:
-    - Backend Development:
-      - Backend Development: tutorials/backend-development/backend-development.md
-    - Plugin Development:
-      - Simple: tutorials/plugin-development/simple.md
-      - Advanced: tutorials/plugin-development/advanced.md
-  - Reference:
-    - Builtin Commands:
-      - General:
-        - About: reference/commands/about.md
-        - Help: reference/commands/help.md
-        - Status: reference/commands/status.md
-        - Get-Plugin: reference/commands/get-plugin.md
-      - Security:
-        - Groups:
-          - Add-GroupRole: reference/commands/add-grouprole.md
-          - Add-GroupUser: reference/commands/add-groupuser.md
-          - Get-Group: reference/commands/get-group.md
-          - New-Group: reference/commands/new-group.md
-          - Remove-GroupRole: reference/commands/remove-grouprole.md
-          - Remove-GroupUser: reference/commands/remove-groupuser.md
-        - Permissions:
-          - Get-Permission: reference/commands/get-permission.md
-        - Roles:
-          - Add-RolePermission: reference/commands/add-rolepermission.md
-          - Get-Role: reference/commands/get-role.md
-          - New-Role: reference/commands/new-role.md
-          - Remove-RolePermission: reference/commands/remove-rolepermission.md
-      - Plugin Management:
-        - Enable-Plugin: reference/commands/enable-plugin.md
-        - Disable-Plugin: reference/commands/disable-plugin.md
-        - Install-Plugin: reference/commands/install-plugin.md
-    - Modules Functions:
-      - Get-PoshBot: reference/functions/get-poshbot.md
-      - Get-PoshBotConfiguration: reference/functions/get-poshbotconfiguration.md
-      - New-PoshBotCardResponse: reference/functions/new-poshbotcardresponse.md
-      - New-PoshBotConfiguration: reference/functions/new-poshbotconfiguration.md
-      - New-PoshBotInstance: reference/functions/new-poshbotinstance.md
-      - New-PoshBotTextResponse: reference/functions/new-poshbottextresponse.md
-      - Save-PoshBotConfiguration: reference/functions/save-poshbotconfiguration.md
-      - Start-PoshBot: reference/functions/start-poshbot.md
-      - Stop-PoshBot: reference/functions/stop-poshbot.md
+extra:
+    version: 0.1.0
