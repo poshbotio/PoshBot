@@ -1,0 +1,7 @@
+
+version: 1.0.{build}
+image: WMF 5
+skip_commits:
+  message: /updated readme.*|update readme.*s/
+build: off
+test: off
