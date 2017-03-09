@@ -9,7 +9,8 @@ Once a match is found, that command will be executed.
 ## Defining a trigger
 
 PoshBot provides a **custom attribute** called `[PoshBot.BotCommand()]` that you can decorate your functions with.
-This custom attribute is how PoshBot knows what type of trigger to use for the command. The custom attribute is applied to the function similarly to the `[CmdletBinding()]` attribute.
+This custom attribute is how PoshBot knows what type of trigger to use for the command.
+The custom attribute is applied to the function similarly to the `[CmdletBinding()]` attribute.
 
 #### [PoshBot.BotCommand()] properties
 
@@ -35,7 +36,8 @@ function Get-Foo {
 }
 ```
 
-By default, PoshBot will set each command in a plugin to the `Command` trigger. You do not need to apply the `[PoshBot.BotCommand()]` attribute in that case unless you also want to override the command name like below:
+By default, PoshBot will set each command in a plugin to the `Command` trigger.
+You do not need to apply the `[PoshBot.BotCommand()]` attribute in that case unless you also want to override the command name like below:
 
 #### Example
 
@@ -56,12 +58,15 @@ function Get-Foo {
 
 ### Command
 
-This is the most common type of trigger. It tells PoshBot to look at the text of the incomming message and match it to the name of a registered command.
-Commands will only be matched if the message includes the `command prefix` as the first character, proceeded by the command name. If `alternate command prefixes` have been defined in the bot configuration, those will be matched as well.
+This is the most common type of trigger.
+It tells PoshBot to look at the text of the incomming message and match it to the name of a registered command.
+Commands will only be matched if the message includes the `command prefix` as the first character, proceeded by the command name.
+If `alternate command prefixes` have been defined in the bot configuration, those will be matched as well.
 
 #### Example 1
 
-The default configuration sets the charater `!` as the command prefix. The syntax for executing the command would be:
+The default configuration sets the charater `!` as the command prefix.
+The syntax for executing the command would be:
 
 ```
 !mycommand --param 'some value'
@@ -86,15 +91,20 @@ hal, open-doors --type 'pod'
 ### Event
 
 This type of trigger listens for certain types of event messages that the chat network returns.
-Events like a user entering or exiting a room, channel topic change, a user's presence status is changed, etc. When a message is received by PoshBot, it will evaluate the message type and look for commands that have registered a trigger that matches this message type. When one is found, the command will be executed.
+Events like a user entering or exiting a room, channel topic change, a user's presence status is changed, etc.
+When a message is received by PoshBot, it will evaluate the message type and look for commands that have registered a trigger that matches this message type.
+When one is found, the command will be executed.
 
 ### RegEx
 
-This type of trigger matches a regex expression against the chat message text. If a match is found, the command will be executed. This type of trigger is useful if you want a command to be casually listening in the chat room and matching each message against it's regex trigger.
+This type of trigger matches a regex expression against the chat message text.
+If a match is found, the command will be executed.
+This type of trigger is useful if you want a command to be casually listening in the chat room and matching each message against it's regex trigger.
 
 #### Example 1
 
-This command will match every incomming chat message against the regex `"cookies"`. If a user types something like **"I bought some Girl Scout cookies yesterday"** Poshbot will execute this command and return a message saying **"Did someone mention cookies? I love cookies! Nom Nom Nom!"**
+This command will match every incomming chat message against the regex `"cookies"`.
+If a user types something like **"I bought some Girl Scout cookies yesterday"** Poshbot will execute this command and return a message saying **"Did someone mention cookies? I love cookies! Nom Nom Nom!"**
 
 ```powershell
 function Cookies {
