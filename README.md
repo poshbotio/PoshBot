@@ -10,10 +10,9 @@ PoshBot currently supports connecting to Slack to provide you with awesome ChatO
   <img src="https://github.com/devblackops/PoshBot/raw/master/Media/poshbot_logo_300_432.png" alt="PoshBot logo"/>
 </p>
 
-## Quickstart
+> Detailed documenation can be found at [ReadTheDocs](http://poshbot.readthedocs.io/en/latest/)
 
-PoshBot is currently under active development.
-Docs will be coming soon.
+## Quickstart
 
 To get started now, set the environment variable SLACK_TOKEN to your bot token.
 
