@@ -22,7 +22,7 @@ The custom attribute is applied to the function similarly to the `[CmdletBinding
 | Regex          | string   | A regex string to match the command against. Only valid when TriggerType is `Regex`
 | MessageType    | string   | Type of message this command is triggered against. Only valid when TriggerType is `Event`
 | MessageSubtype | string   | Subtype of message this command is triggered against. Only valid when TriggerType is `Event`
-| Permissions    | string[] | String array of permissions to apply to the command. Only users when the given permissions are allow to execute command
+| Permissions    | string[] | String array of permissions to apply to the command. Only users with the given permissions are allow to execute command
 
 #### Example
 

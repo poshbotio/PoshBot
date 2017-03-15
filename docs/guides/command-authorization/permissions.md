@@ -60,7 +60,7 @@ One of the things this attribute defines is the permission(s) needed by the user
 | Regex          | string   | A regex string to match the command against. Only valid when TriggerType is `Regex`
 | MessageType    | string   | Type of message this command is triggered against. Only valid when TriggerType is `Event`
 | MessageSubtype | string   | Subtype of message this command is triggered against. Only valid when TriggerType is `Event`
-| Permissions    | string[] | String array of permissions to apply to the command. Only users when the given permissions are allow to execute command
+| Permissions    | string[] | String array of permissions to apply to the command. Only users with the given permissions are allow to execute command
 
 In order to associate one or more permissions with a command, you attach the `[PoshBot.BotCommand()]` attribute to the function similarly to the `[cmdletbinding()]` attribute.
 By specifying the `Permissions` property, you are declaring that the user must have **one of** these permissions in order to execute the command.
