@@ -284,11 +284,10 @@ function Install-Plugin {
     if ($Plugin -ne 'Builtin') {
 
         # Attempt to find the module in $env:PSModulePath or in the configurated repository
-
         if ($PSBoundParameters.ContainsKey('Version')) {
             $mod = Get-Module -Name $Plugin -ListAvailable | Where-Object {$_.Version -eq $Version}
         } else {
-            $mod = Get-Module -Name $Plugin -ListAvailable | Sort-Object -Property Version | Select-Object -First 1
+            $mod = Get-Module -Name $Plugin -ListAvailable | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         if (-not $mod) {
             if ($PSBoundParameters.ContainsKey('Version')) {
@@ -302,7 +301,7 @@ function Install-Plugin {
                 if ($PSBoundParameters.ContainsKey('Version')) {
                     $mod = Get-Module -Name $Plugin -ListAvailable | Where-Object {$_.Version -eq $Version}
                 } else {
-                    $mod = Get-Module -Name $Plugin -ListAvailable | Sort-Object -Property Version | Select-Object -First 1
+                    $mod = Get-Module -Name $Plugin -ListAvailable | Sort-Object -Property Version -Descending | Select-Object -First 1
                 }
             }
         }
