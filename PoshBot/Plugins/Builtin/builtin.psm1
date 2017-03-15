@@ -1026,4 +1026,90 @@ https://github.com/devblackops/PoshBot
     New-PoshBotCardResponse -Type Normal -Text $msg
 }
 
+function Get-CommandHistory {
+    <#
+    .SYNOPSIS
+        Get the recent execution history of a command
+    .EXAMPLE
+        !get-commandhistory (--name <commandname>) | --id <commandid>)
+    #>
+    [PoshBot.BotCommand(Permissions = 'manage-plugins')]
+    [cmdletbinding(DefaultParameterSetName = 'all')]
+    param(
+        [parameter(Mandatory)]
+        $Bot,
+
+        [parameter(Position = 0, ParameterSetName = 'name')]
+        [string]$Name,
+
+        [parameter(Position = 0, ParameterSetName = 'id')]
+        [string]$Id,
+
+        [parameter(Position = 1)]
+        [int]$Count = 20
+    )
+
+    $shortProps = @(
+        @{
+            Label = 'Id'
+            Expression = { $_.Id }
+        }
+        @{
+            Label = 'Command'
+            Expression = { $_.CommandId }
+        }
+        @{
+            Label = 'Caller'
+            Expression = { $Bot.Backend.UserIdToUsername($_.CallerId) }
+        }
+        @{
+            Label = 'Success'
+            Expression = { $_.Result.Success }
+        }
+        @{
+            Label = 'Time'
+            Expression = { $_.Time.ToString('u')}
+        }
+
+    )
+
+    $longProps = $shortProps + @(
+        @{
+            Label = 'Duration'
+            Expression = { $_.Result.Duration.TotalSeconds }
+        }
+        @{
+            Label = 'CommandString'
+            Expression = { $_.ParsedCommand.CommandString }
+        }
+    )
+
+    $allHistory = $Bot.Executor.History | Sort-Object -Property Time -Descending
+
+    switch ($PSCmdlet.ParameterSetName) {
+        'all' {
+            $search = '*'
+            $history = $allHistory
+        }
+        'name' {
+            $search = $Name
+            $history = $allHistory | Where-Object {$_.CommandId -eq $Name} | Select-Object -First $Count
+        }
+        'id' {
+            $search = $Id
+            $history = $allHistory | Where-Object {$_.Id -eq $Id}
+        }
+    }
+
+    if ($history) {
+        if ($history.Count -gt 1) {
+            New-PoshBotCardResponse -Type Normal -Text ($history | Select-Object -Property $shortProps | Format-List | Out-String)
+        } else {
+            New-PoshBotCardResponse -Type Normal -Text ($history | Select-Object -Property $longProps | Format-List | Out-String)
+        }
+    } else {
+        New-PoshBotCardResponse -Type Warning -Text "History for [$search] not found :(" -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
+    }
+}
+
 Export-ModuleMember -Function *
