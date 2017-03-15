@@ -46,7 +46,7 @@ With namespaces, plugin authors don't need to worry about naming conflicts betwe
 
 ## Association Permissions with Commands
 
-Once permissions are defined in the module manifest, you can declare what permissions are needed in executo your commands.
+Once permissions are defined in the module manifest, you can declare what permissions are needed in order to execute your commands.
 PoshBot provides a **custom attribute** called `[PoshBot.BotCommand()]` that you can decorate your functions with.
 One of the things this attribute defines is the permission(s) needed by the user to execute this command.
 
