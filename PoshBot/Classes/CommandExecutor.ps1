@@ -21,7 +21,9 @@ class CommandExecutor {
 
     # Invoke a command
     # Should this live in the Plugin or in the main bot class?
-    [CommandResult]ExecuteCommand([Command]$Command, [ParsedCommand]$ParsedCommand, [String]$UserId) {
+    [CommandResult]ExecuteCommand([PluginCommand]$PluginCmd, [ParsedCommand]$ParsedCommand, [String]$UserId) {
+
+        $command = $pluginCmd.Command
 
         # Our result
         $r = [CommandResult]::New()
@@ -37,8 +39,8 @@ class CommandExecutor {
 
         # Verify that all mandatory parameters have been provided for "command" type bot commands
         # This doesn't apply to commands triggered from regex matches, timers, or events
-        if ($Command.Trigger.Type -eq [TriggerType]::Command) {
-            if (-not $this.ValidateMandatoryParameters($ParsedCommand, $Command)) {
+        if ($command.Trigger.Type -eq [TriggerType]::Command) {
+            if (-not $this.ValidateMandatoryParameters($ParsedCommand, $command)) {
                 $msg = "Mandatory parameters for [$($Command.Name)] not provided.`nUsage:`n"
                 foreach ($usage in $Command.Usage) {
                     $msg += "    $usage`n"
@@ -52,8 +54,8 @@ class CommandExecutor {
         }
 
         # If command is [command] type verify that the caller is authorized to execute command
-        if ($Command.Trigger.Type -eq [TriggerType]::Command) {
-            $authorized = $Command.IsAuthorized($UserId, $this.RoleManager)
+        if ($command.Trigger.Type -eq [TriggerType]::Command) {
+            $authorized = $command.IsAuthorized($UserId, $this.RoleManager)
         } else {
             $authorized = $true
         }
@@ -61,7 +63,7 @@ class CommandExecutor {
         if ($authorized) {
             $jobDuration = Measure-Command -Expression {
                 if ($existingCommand.AsJob) {
-                    $job = $Command.Invoke($ParsedCommand, $true)
+                    $job = $command.Invoke($ParsedCommand, $true)
 
                     # TODO
                     # Tracking the job will be used later so we can continue on
@@ -87,7 +89,7 @@ class CommandExecutor {
                     }
                 } else {
                     try {
-                        $hash = $Command.Invoke($ParsedCommand, $false)
+                        $hash = $command.Invoke($ParsedCommand, $false)
                         $r.Errors = $hash.Error
                         $r.Streams.Error = $hash.Error
                         $r.Streams.Information = $hash.Information
@@ -108,8 +110,8 @@ class CommandExecutor {
             $r.Duration = $jobDuration
 
             # Add command result to history
-            if ($Command.KeepHistory) {
-                $this.AddToHistory($Command.Name, $UserId, $r, $ParsedCommand)
+            if ($command.KeepHistory) {
+                $this.AddToHistory($PluginCmd.ToString(), $UserId, $r, $ParsedCommand)
             }
         } else {
             $r.Success = $false

@@ -249,7 +249,7 @@ class Bot {
                 }
             }
 
-            $result = $this.DispatchCommand($pluginCmd.Command, $parsedCommand, $Message.From)
+            $result = $this.DispatchCommand($pluginCmd, $parsedCommand, $Message.From)
             if (-not $result.Success) {
 
                 # Was the command not authorized?
@@ -307,8 +307,8 @@ class Bot {
     }
 
     # Dispatch the command to the executor
-    [CommandResult]DispatchCommand([Command]$Command, [ParsedCommand]$ParsedCommand, [string]$CallerId) {
-        $result = $this.Executor.ExecuteCommand($Command, $ParsedCommand, $CallerId)
+    [CommandResult]DispatchCommand([PluginCommand]$PluginCmd, [ParsedCommand]$ParsedCommand, [string]$CallerId) {
+        $result = $this.Executor.ExecuteCommand($PluginCmd, $ParsedCommand, $CallerId)
         return $result
     }
 
