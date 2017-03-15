@@ -1,5 +1,6 @@
 
 class CommandHistory {
+    [string]$Id
 
     # ID of command
     [string]$CommandId
@@ -16,6 +17,7 @@ class CommandHistory {
     [datetime]$Time
 
     CommandHistory([string]$CommandId, [string]$CallerId, [CommandResult]$Result, [ParsedCommand]$ParsedCommand) {
+        $this.Id = (New-Guid).ToString() -Replace '-', ''
         $this.CommandId = $CommandId
         $this.CallerId = $CallerId
         $this.Result = $Result
