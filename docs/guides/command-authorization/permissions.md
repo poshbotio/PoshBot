@@ -43,3 +43,40 @@ This would make the fully qualified permission name `MyPlugin:Read` or `MyPlugin
 This fully qualified name is what is used throughout PoshBot.
 Another plugin called `Network` may also include `Read` and `Write` permissions but the fully qualified name for these permissions would be `Network:Read` and `Network:Write` respectively.
 With namespaces, plugin authors don't need to worry about naming conflicts between plugins.
+
+## Association Permissions with Commands
+
+Once permissions are defined in the module manifest, you can declare what permissions are needed in executo your commands.
+PoshBot provides a **custom attribute** called `[PoshBot.BotCommand()]` that you can decorate your functions with.
+One of the things this attribute defines is the permission(s) needed by the user to execute this command.
+
+#### [PoshBot.BotCommand()] properties
+
+| Property       | Type     | Description |
+| :--------------|:---------|:------------|
+| CommandName    | string   | The name of the bot command. Default is the function name
+| TriggerType    | string   | The type of trigger. Values: `Command`, `Regex`, `Event`
+| HideFromHelp   | bool     | Whether to hide the command when the !help command is used. Default is `$false`
+| Regex          | string   | A regex string to match the command against. Only valid when TriggerType is `Regex`
+| MessageType    | string   | Type of message this command is triggered against. Only valid when TriggerType is `Event`
+| MessageSubtype | string   | Subtype of message this command is triggered against. Only valid when TriggerType is `Event`
+| Permissions    | string[] | String array of permissions to apply to the command. Only users when the given permissions are allow to execute command
+
+In order to associate one or more permissions with a command, you attach the `[PoshBot.BotCommand()]` attribute to the function similarly to the `[cmdletbinding()]` attribute.
+By specifying the `Permissions` property, you are declaring that the user must have **one of** these permissions in order to execute the command.
+
+> When declaring permissions on the function, the fully qualified permission name `<myplugin>:<permissionname>` is not needed.
+> Only the permission name is needed. Internally, PoshBot will store the permission fully qualified.
+
+```powershell
+function New-Thing {
+    [PoshBot.BotCommand(Permissions = 'create-things')]
+    [cmdletbinding()]
+    param(
+        [string]$Name
+    )
+
+    ...
+}
+
+```

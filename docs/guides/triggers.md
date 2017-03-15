@@ -18,7 +18,7 @@ The custom attribute is applied to the function similarly to the `[CmdletBinding
 | :--------------|:---------|:------------|
 | CommandName    | string   | The name of the bot command. Default is the function name
 | TriggerType    | string   | The type of trigger. Values: `Command`, `Regex`, `Event`
-| HideFromHelp   | bool     | Whether to show the command when the !help command is used. Default is `$false`
+| HideFromHelp   | bool     | Whether to hide the command when the !help command is used. Default is `$false`
 | Regex          | string   | A regex string to match the command against. Only valid when TriggerType is `Regex`
 | MessageType    | string   | Type of message this command is triggered against. Only valid when TriggerType is `Event`
 | MessageSubtype | string   | Subtype of message this command is triggered against. Only valid when TriggerType is `Event`
