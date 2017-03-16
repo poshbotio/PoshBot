@@ -123,7 +123,7 @@ function Get-Role {
     .SYNOPSIS
         Show details about bot roles
     .EXAMPLE
-        !get-role [<rolename> | --role <rollname>]
+        !get-role [<rolename> | --name <rollname>]
     #>
     [PoshBot.BotCommand(Permissions = 'view-role')]
     [cmdletbinding()]
@@ -132,20 +132,20 @@ function Get-Role {
         $Bot,
 
         [parameter(Position = 0)]
-        [string]$Role
+        [string]$Name
     )
 
-    if ($PSBoundParameters.ContainsKey('Role')) {
-        $r = $Bot.RoleManager.GetRole($Role)
+    if ($PSBoundParameters.ContainsKey('Name')) {
+        $r = $Bot.RoleManager.GetRole($Name)
         if (-not $r) {
-            New-PoshBotCardResponse -Type Error -Text "Role [$Role] not found :(" -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
+            New-PoshBotCardResponse -Type Error -Text "Role [$Name] not found :(" -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
             return
         } else {
             $permissions = $r.Permissions.Keys
             $msg = [string]::Empty
             $msg += "`nDescription: $($r.Description)"
             $msg += "`nPermissions:`n$($r.Permissions.Keys | Format-List | Out-String)"
-            New-PoshBotCardResponse -Type Normal -Title "Details for role [$Role]" -Text $msg
+            New-PoshBotCardResponse -Type Normal -Title "Details for role [$Name]" -Text $msg
         }
     } else {
         $roles = foreach ($key in ($Bot.RoleManager.Roles.Keys | Sort-Object)) {
@@ -164,7 +164,7 @@ function Get-Plugin {
     .SYNOPSIS
         Get the details of a specific plugin or list all plugins
     .EXAMPLE
-        !get-plugin <pluginname> | --plugin <pluginname> [--version 1.2.3]
+        !get-plugin <pluginname> | --name <pluginname> [--version 1.2.3]
     #>
     [cmdletbinding()]
     param(
@@ -172,15 +172,15 @@ function Get-Plugin {
         $Bot,
 
         [parameter(Position = 0)]
-        [string]$Plugin,
+        [string]$Name,
 
         [parameter(Position = 1)]
         [string]$Version
     )
 
-    if ($PSBoundParameters.ContainsKey('Plugin')) {
+    if ($PSBoundParameters.ContainsKey('Name')) {
 
-        $p = $Bot.PluginManager.Plugins[$Plugin]
+        $p = $Bot.PluginManager.Plugins[$Name]
         if ($p) {
 
             $versions = New-Object -TypeName System.Collections.ArrayList
@@ -230,13 +230,13 @@ function Get-Plugin {
                 }
             } else {
                 if ($PSBoundParameters.ContainsKey('Version')) {
-                    New-PoshBotCardResponse -Type Warning -Text "Plugin [$Plugin] version [$Version] not found."
+                    New-PoshBotCardResponse -Type Warning -Text "Plugin [$Name] version [$Version] not found."
                 } else {
-                    New-PoshBotCardResponse -Type Warning -Text "Plugin [$Plugin] not found."
+                    New-PoshBotCardResponse -Type Warning -Text "Plugin [$Name] not found."
                 }
             }
         } else {
-            New-PoshBotCardResponse -Type Warning -Text "Plugin [$Plugin] not found."
+            New-PoshBotCardResponse -Type Warning -Text "Plugin [$Name] not found."
         }
     } else {
         $plugins = foreach ($key in ($Bot.PluginManager.Plugins.Keys | Sort-Object)) {
