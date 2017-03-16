@@ -287,7 +287,7 @@ function Install-Plugin {
         if ($PSBoundParameters.ContainsKey('Version')) {
             $mod = Get-Module -Name $Plugin -ListAvailable | Where-Object {$_.Version -eq $Version}
         } else {
-            $mod = Get-Module -Name $Plugin -ListAvailable | Sort-Object -Property Version -Descending | Select-Object -First 1
+            $mod = @(Get-Module -Name $Plugin -ListAvailable | Sort-Object -Property Version -Descending)[0]
         }
         if (-not $mod) {
             if ($PSBoundParameters.ContainsKey('Version')) {
@@ -301,7 +301,7 @@ function Install-Plugin {
                 if ($PSBoundParameters.ContainsKey('Version')) {
                     $mod = Get-Module -Name $Plugin -ListAvailable | Where-Object {$_.Version -eq $Version}
                 } else {
-                    $mod = Get-Module -Name $Plugin -ListAvailable | Sort-Object -Property Version -Descending | Select-Object -First 1
+                    $mod = @(Get-Module -Name $Plugin -ListAvailable | Sort-Object -Property Version -Descending)[0]
                 }
             }
         }
