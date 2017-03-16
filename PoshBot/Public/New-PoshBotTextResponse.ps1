@@ -5,7 +5,7 @@ function New-PoshBotTextResponse {
         Tells PoshBot to handle the text response from a command in a special way.
     .DESCRIPTION
         Responses from PoshBot commands can be sent back to the channel they were posted from (default) or redirected to a DM channel with the
-        calling user. This could be useful if the contents the bot command returns are sensitive and should be be visible to all users
+        calling user. This could be useful if the contents the bot command returns are sensitive and should not be visible to all users
         in the channel.
     .PARAMETER Text
         The text response from the command.
@@ -23,7 +23,7 @@ function New-PoshBotTextResponse {
         }
 
         When Get-Foo is executed by PoshBot, the text response will be sent back to the calling user as a DM rather than back in the channel the
-        command was called from. This could be useful if the contents the bot command returns are sensitive and should be be visible to all users
+        command was called from. This could be useful if the contents the bot command returns are sensitive and should not be visible to all users
         in the channel.
     .INPUTS
 		String
