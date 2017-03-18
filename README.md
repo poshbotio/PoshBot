@@ -17,7 +17,7 @@ PoshBot currently supports connecting to Slack to provide you with awesome ChatO
 
 ## Quickstart
 
-To get started now, set the environment variable SLACK_TOKEN to your bot token.
+To get started now, get a SLACK-API-TOKEN for your bot:
 
 [https://api.slack.com/bot-users](https://api.slack.com/bot-users)
 
@@ -32,20 +32,52 @@ Find-Module Configuration, PSSlack | Install-Module -Scope CurrentUser
 Import-Module .\PoshBot\PoshBot
 
 # create a bot configuration
-$backend = @{Name = 'SlackBackend'; Token = 'slack-api-token'}
 $botParams = @{
     Name = 'name'
-    LogLevel = 'Info'
     BotAdmins = @('slack-chat-handle')
-    BackendConfiguration = $backend
+    CommandPrefix = '!'
+    LogLevel = 'Info'
+    BackendConfiguration = @{
+        Name = 'SlackBackend'
+        Token = 'SLACK-API-TOKEN'
+    }
+    AlternateCommandPrefixes = 'bender', 'hal'
 }
+
 $myBotConfig = New-PoshBotConfiguration @botParams
 
-# save configuration
+#start a new instance of PoshBot interactively or in a job.
+Start-PoshBot -Configuration $myBotConfig #-AsJob
+```
+
+Basic usage:
+
+```powershell
+# Create a Slack backend
+$backend = New-PoshBotSlackBackend -Configuration @{Name = 'SlackBackend'; Token = 'SLACK-API-TOKEN'}
+
+# Create a PoshBot configuration
+$pbc = New-PoshBotConfiguration -BackendConfiguration $backend
+
+# Save configuration
 Save-PoshBotConfiguration $myBotConfig -Path .\PoshBotConfig.psd1
-# load configuration
+
+# Load configuration
 $pbc = Get-PoshBotConfiguration -Path .\PoshBotConfig.psd1
 
-#start a new instance of PoshBot interactively or in a job.
-Start-PoshBot -Configuration $pbc #-AsJob
+# Available commands
+Get-Command -Module PoshBot
+
+CommandType     Name                                               Version    Source
+-----------     ----                                               -------    ------
+Function        Get-PoshBot                                        1.0        PoshBot
+Function        Get-PoshBotConfiguration                           1.0        PoshBot
+Function        New-PoshBotCardResponse                            1.0        PoshBot
+Function        New-PoshBotConfiguration                           1.0        PoshBot
+Function        New-PoshBotInstance                                1.0        PoshBot
+Function        New-PoshBotSlackBackend                            1.0        PoshBot
+Function        New-PoshBotTextResponse                            1.0        PoshBot
+Function        Save-PoshBotConfiguration                          1.0        PoshBot
+Function        Start-PoshBot                                      1.0        PoshBot
+Function        Stop-Poshbot                                       1.0        PoshBot
 ```
