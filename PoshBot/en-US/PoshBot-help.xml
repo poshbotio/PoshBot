@@ -1,0 +1,1703 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<helpItems xmlns="http://msh" schema="maml">
+
+<command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<command:details><command:name>Get-PoshBot</command:name>
+<command:verb>Get</command:verb>
+<command:noun>PoshBot</command:noun>
+<maml:description><maml:para>Gets any currently running instances of PoshBot that are running as background jobs.
+</maml:para>
+</maml:description>
+</command:details>
+<maml:description><maml:para>PoshBot can be run in the background with PowerShell jobs. This function returns any currently running PoshBot instances.
+</maml:para>
+</maml:description>
+<command:syntax><command:syntaxItem><maml:name>Get-PoshBot</maml:name>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName, ByValue)" position="1" aliases="none"><maml:name>Id</maml:name>
+<maml:Description><maml:para>One or more job IDs to retrieve.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">Int32[]</command:parameterValue>
+<dev:type><maml:name>Int32[]</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>@()</dev:defaultValue>
+</command:parameter>
+</command:syntaxItem>
+</command:syntax>
+<command:parameters><command:parameter required="false" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName, ByValue)" position="1" aliases="none"><maml:name>Id</maml:name>
+<maml:Description><maml:para>One or more job IDs to retrieve.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">Int32[]</command:parameterValue>
+<dev:type><maml:name>Int32[]</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>@()</dev:defaultValue>
+</command:parameter>
+</command:parameters>
+<command:inputTypes><command:inputType><dev:type><maml:name>System.Int32</maml:name>
+</dev:type>
+<maml:description><maml:para>
+</maml:para>
+</maml:description>
+</command:inputType>
+</command:inputTypes>
+<command:returnValues><command:returnValue><dev:type><maml:name>PSCustomObject</maml:name>
+</dev:type>
+<maml:description><maml:para>
+</maml:para>
+</maml:description>
+</command:returnValue>
+</command:returnValues>
+<maml:alertSet><maml:alert><maml:para>
+</maml:para>
+</maml:alert>
+</maml:alertSet>
+<command:examples><command:example><maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
+<dev:code>Get-PoshBot</dev:code>
+<dev:remarks><maml:para>Id         : 5 Name       : PoshBot_3ddfc676406d40fca149019d935f065d State      : Running InstanceId : 3ddfc676406d40fca149019d935f065d Config     : BotConfiguration
+</maml:para>
+</dev:remarks>
+</command:example>
+<command:example><maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
+<dev:code>Get-PoshBot -Id 100</dev:code>
+<dev:remarks><maml:para>Id         : 100 Name       : PoshBot_eab96f2ad147489b9f90e110e02ad805 State      : Running InstanceId : eab96f2ad147489b9f90e110e02ad805 Config     : BotConfiguration
+</maml:para>
+<maml:para>Gets the PoshBot job instance with ID 100.
+</maml:para>
+</dev:remarks>
+</command:example>
+</command:examples>
+<command:relatedLinks><maml:navigationLink><maml:linkText>Start-PoshBot</maml:linkText>
+<maml:uri></maml:uri>
+</maml:navigationLink>
+<maml:navigationLink><maml:linkText>Stop-PoshBot</maml:linkText>
+<maml:uri></maml:uri>
+</maml:navigationLink>
+</command:relatedLinks>
+</command:command>
+<command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<command:details><command:name>Get-PoshBotConfiguration</command:name>
+<command:verb>Get</command:verb>
+<command:noun>PoshBotConfiguration</command:noun>
+<maml:description><maml:para>Gets a PoshBot configuration from a file.
+</maml:para>
+</maml:description>
+</command:details>
+<maml:description><maml:para>PoshBot configurations can be stored on the filesytem in PowerShell data (.psd1) files. This functions will load that file and return a [BotConfiguration] object.
+</maml:para>
+</maml:description>
+<command:syntax><command:syntaxItem><maml:name>Get-PoshBotConfiguration</maml:name>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName, ByValue)" position="1" aliases="none"><maml:name>Path</maml:name>
+<maml:Description><maml:para>One or more paths to a PoshBot configuration file.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+<dev:type><maml:name>String[]</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>(Join-Path -Path (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot') -ChildPath 'PoshBot.psd1')</dev:defaultValue>
+</command:parameter>
+</command:syntaxItem>
+</command:syntax>
+<command:parameters><command:parameter required="false" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName, ByValue)" position="1" aliases="none"><maml:name>Path</maml:name>
+<maml:Description><maml:para>One or more paths to a PoshBot configuration file.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+<dev:type><maml:name>String[]</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>(Join-Path -Path (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot') -ChildPath 'PoshBot.psd1')</dev:defaultValue>
+</command:parameter>
+</command:parameters>
+<command:inputTypes><command:inputType><dev:type><maml:name>String</maml:name>
+</dev:type>
+<maml:description><maml:para>
+</maml:para>
+</maml:description>
+</command:inputType>
+</command:inputTypes>
+<command:returnValues><command:returnValue><dev:type><maml:name>BotConfiguration</maml:name>
+</dev:type>
+<maml:description><maml:para>
+</maml:para>
+</maml:description>
+</command:returnValue>
+</command:returnValues>
+<maml:alertSet><maml:alert><maml:para>
+</maml:para>
+</maml:alert>
+</maml:alertSet>
+<command:examples><command:example><maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
+<dev:code>Get-PoshBotConfiguration -Path C:\Users\joeuser\.poshbot\Cherry2000.psd1</dev:code>
+<dev:remarks><maml:para>Name                             : Cherry2000 ConfigurationDirectory           : C:\Users\joeuser\.poshbot LogDirectory                     : C:\Users\joeuser\.poshbot\Logs PluginDirectory                  : C:\Users\joeuser\.poshbot PluginRepository                 : {PSGallery} ModuleManifestsToLoad            : {} LogLevel                         : Debug BackendConfiguration             : {Token, Name} PluginConfiguration              : {} BotAdmins                        : {joeuser} CommandPrefix                    : ! AlternateCommandPrefixes         : {bender, hal} AlternateCommandPrefixSeperators : {:, ,, ;} SendCommandResponseToPrivate     : {} MuteUnknownCommand               : False
+</maml:para>
+<maml:para>Gets the bot configuration located at [C:\Users\joeuser\.poshbot\Cherry2000.psd1].
+</maml:para>
+</dev:remarks>
+</command:example>
+<command:example><maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
+<dev:code>$botConfig = 'C:\Users\joeuser\.poshbot\Cherry2000.psd1' | Get-PoshBotConfiguration</dev:code>
+<dev:remarks><maml:para>Gets the bot configuration located at [C:\Users\brand\.poshbot\Cherry2000.psd1].
+</maml:para>
+</dev:remarks>
+</command:example>
+</command:examples>
+<command:relatedLinks><maml:navigationLink><maml:linkText>New-PoshBotConfiguration</maml:linkText>
+<maml:uri></maml:uri>
+</maml:navigationLink>
+<maml:navigationLink><maml:linkText>Start-PoshBot</maml:linkText>
+<maml:uri></maml:uri>
+</maml:navigationLink>
+</command:relatedLinks>
+</command:command>
+<command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<command:details><command:name>New-PoshBotCardResponse</command:name>
+<command:verb>New</command:verb>
+<command:noun>PoshBotCardResponse</command:noun>
+<maml:description><maml:para>Tells PoshBot to send a specially formatted response.
+</maml:para>
+</maml:description>
+</command:details>
+<maml:description><maml:para>Responses from PoshBot commands can either be plain text or formatted. Returning a response with New-PoshBotRepsonse will tell PoshBot to craft a specially formatted message when sending back to the chat network.
+</maml:para>
+</maml:description>
+<command:syntax><command:syntaxItem><maml:name>New-PoshBotCardResponse</maml:name>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="none"><maml:name>Type</maml:name>
+<maml:Description><maml:para>Specifies a preset color for the card response. If the [Color] parameter is specified as well, it will override this parameter.
+</maml:para>
+<maml:para>| Type    | Color  | Hex code | |---------|--------|----------| | Normal  | Greed  | #008000  | | Warning | Yellow | #FFA500  | | Error   | Red    | #FF0000  |
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>Normal</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none"><maml:name>Text</maml:name>
+<maml:Description><maml:para>The text response from the command.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>[string]::empty</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="3" aliases="none"><maml:name>Title</maml:name>
+<maml:Description><maml:para>The title of the response. This will be the card title in chat networks like Slack.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="4" aliases="none"><maml:name>ThumbnailUrl</maml:name>
+<maml:Description><maml:para>A URL to a thumbnail image to display in the card response.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="5" aliases="none"><maml:name>ImageUrl</maml:name>
+<maml:Description><maml:para>A URL to an image to display in the card response.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="6" aliases="none"><maml:name>LinkUrl</maml:name>
+<maml:Description><maml:para>Will turn the title into a hyperlink
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="7" aliases="none"><maml:name>Fields</maml:name>
+<maml:Description><maml:para>A hashtable to display as a table in the card response.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">Hashtable</command:parameterValue>
+<dev:type><maml:name>Hashtable</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="8" aliases="none"><maml:name>Color</maml:name>
+<maml:Description><maml:para>The hex color code to use for the card response. In Slack, this will be the color of the left border in the message attachment.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>#D3D3D3</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none"><maml:name>DM</maml:name>
+<maml:Description><maml:para>Tell PoshBot to redirect the response to a DM channel.
+</maml:para>
+</maml:Description>
+<dev:type><maml:name>SwitchParameter</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+</command:syntaxItem>
+</command:syntax>
+<command:parameters><command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="none"><maml:name>Type</maml:name>
+<maml:Description><maml:para>Specifies a preset color for the card response. If the [Color] parameter is specified as well, it will override this parameter.
+</maml:para>
+<maml:para>| Type    | Color  | Hex code | |---------|--------|----------| | Normal  | Greed  | #008000  | | Warning | Yellow | #FFA500  | | Error   | Red    | #FF0000  |
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>Normal</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none"><maml:name>DM</maml:name>
+<maml:Description><maml:para>Tell PoshBot to redirect the response to a DM channel.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+<dev:type><maml:name>SwitchParameter</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none"><maml:name>Text</maml:name>
+<maml:Description><maml:para>The text response from the command.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>[string]::empty</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="3" aliases="none"><maml:name>Title</maml:name>
+<maml:Description><maml:para>The title of the response. This will be the card title in chat networks like Slack.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="4" aliases="none"><maml:name>ThumbnailUrl</maml:name>
+<maml:Description><maml:para>A URL to a thumbnail image to display in the card response.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="5" aliases="none"><maml:name>ImageUrl</maml:name>
+<maml:Description><maml:para>A URL to an image to display in the card response.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="6" aliases="none"><maml:name>LinkUrl</maml:name>
+<maml:Description><maml:para>Will turn the title into a hyperlink
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="7" aliases="none"><maml:name>Fields</maml:name>
+<maml:Description><maml:para>A hashtable to display as a table in the card response.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">Hashtable</command:parameterValue>
+<dev:type><maml:name>Hashtable</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="8" aliases="none"><maml:name>Color</maml:name>
+<maml:Description><maml:para>The hex color code to use for the card response. In Slack, this will be the color of the left border in the message attachment.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>#D3D3D3</dev:defaultValue>
+</command:parameter>
+</command:parameters>
+<command:inputTypes></command:inputTypes>
+<command:returnValues><command:returnValue><dev:type><maml:name>PSCustomObject</maml:name>
+</dev:type>
+<maml:description><maml:para>
+</maml:para>
+</maml:description>
+</command:returnValue>
+</command:returnValues>
+<maml:alertSet><maml:alert><maml:para>
+</maml:para>
+</maml:alert>
+</maml:alertSet>
+<command:examples><command:example><maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
+<dev:code>function Do-Something {</dev:code>
+<dev:remarks><maml:para>[cmdletbinding()]     param(         [parameter(mandatory)]         [string]$MyParam     )
+</maml:para>
+<maml:para>    New-PoshBotCardResponse -Type Normal -Text 'OK, I did something.' -ThumbnailUrl 'https://www.streamsports.com/images/icon_green_check_256.png' }
+</maml:para>
+<maml:para>Tells PoshBot to send a formatted response back to the chat network. In Slack for example, this response will be a message attachment with a green border on the left, some text and a green checkmark thumbnail image.
+</maml:para>
+</dev:remarks>
+</command:example>
+<command:example><maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
+<dev:code>function Do-Something {</dev:code>
+<dev:remarks><maml:para>[cmdletbinding()]     param(         [parameter(mandatory)]         [string]$ComputerName     )
+</maml:para>
+<maml:para>    $info = Get-ComputerInfo -ComputerName $ComputerName -ErrorAction SilentlyContinue     if ($info) {         $fields = [ordered]@{             Name = $ComputerName             OS = $info.OSName             Uptime = $info.Uptime             IPAddress = $info.IPAddress         }         New-PoshBotCardResponse -Type Normal -Fields $fields     } else {         New-PoshBotCardResponse -Type Error -Text 'Something bad happended :(' -ThumbnailUrl 'http://p1cdn05.thewrap.com/images/2015/06/don-draper-shrug.jpg'     } }
+</maml:para>
+<maml:para>Attempt to retrieve some information from a given computer and return a card response back to PoshBot. If the command fails for some reason, return a card response specified the error and a sad image.
+</maml:para>
+</dev:remarks>
+</command:example>
+</command:examples>
+<command:relatedLinks><maml:navigationLink><maml:linkText>New-PoshBotTextResponse</maml:linkText>
+<maml:uri></maml:uri>
+</maml:navigationLink>
+</command:relatedLinks>
+</command:command>
+<command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<command:details><command:name>New-PoshBotConfiguration</command:name>
+<command:verb>New</command:verb>
+<command:noun>PoshBotConfiguration</command:noun>
+<maml:description><maml:para>Creates a new PoshBot configuration object.
+</maml:para>
+</maml:description>
+</command:details>
+<maml:description><maml:para>Creates a new PoshBot configuration object.
+</maml:para>
+</maml:description>
+<command:syntax><command:syntaxItem><maml:name>New-PoshBotConfiguration</maml:name>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="none"><maml:name>Name</maml:name>
+<maml:Description><maml:para>The name the bot instance will be known as.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>PoshBot</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="10" aliases="none"><maml:name>CommandPrefix</maml:name>
+<maml:Description><maml:para>The prefix (single character) that must be specified in front of a command in order for PoshBot to recognize the chat message as a bot command.
+</maml:para>
+<maml:para>!get-foo --value bar
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">Char</command:parameterValue>
+<dev:type><maml:name>Char</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>!</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="11" aliases="none"><maml:name>AlternateCommandPrefixes</maml:name>
+<maml:Description><maml:para>Some users may want to specify alternate prefixes when calling bot comamnds. Use this parameter to specify an array of words that PoshBot will also check when parsing a chat message.
+</maml:para>
+<maml:para>bender get-foo --value bar
+</maml:para>
+<maml:para>hal open-doors --type pod
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+<dev:type><maml:name>String[]</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>@('poshbot')</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="12" aliases="none"><maml:name>AlternateCommandPrefixSeperators</maml:name>
+<maml:Description><maml:para>An array of characters that can also ben used when referencing bot commands.
+</maml:para>
+<maml:para>bender, get-foo --value bar
+</maml:para>
+<maml:para>hal; open-doors --type pod
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">Char[]</command:parameterValue>
+<dev:type><maml:name>Char[]</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>@(':', ',', ';')</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="13" aliases="none"><maml:name>SendCommandResponseToPrivate</maml:name>
+<maml:Description><maml:para>A list of fully qualified (&lt;PluginName&gt;:&lt;CommandName&gt;) plugin commands that will have their responses redirected back to a direct message channel with the calling user rather than a shared channel.
+</maml:para>
+<maml:para>@(     demo:get-foo     network:ping )
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+<dev:type><maml:name>String[]</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>@()</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="14" aliases="none"><maml:name>MuteUnknownCommand</maml:name>
+<maml:Description><maml:para>Instead of PoshBot returning a warning message when it is unable to find a command, use this to parameter to tell PoshBot to return nothing.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">Boolean</command:parameterValue>
+<dev:type><maml:name>Boolean</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none"><maml:name>LogDirectory</maml:name>
+<maml:Description><maml:para>The log directory logs will be written to.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>(Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot')</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="3" aliases="none"><maml:name>PluginDirectory</maml:name>
+<maml:Description><maml:para>The directory PoshBot will look for PowerShell modules. This path will be prepended to your $env:PSModulePath.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>(Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot')</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="4" aliases="none"><maml:name>PluginRepository</maml:name>
+<maml:Description><maml:para>One or more PowerShell repositories to look in when installing new plugins (modules). These will be the repository name(s) as found in Get-PSRepository.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+<dev:type><maml:name>String[]</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>@('PSGallery')</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="5" aliases="none"><maml:name>ModuleManifestsToLoad</maml:name>
+<maml:Description><maml:para>One or more paths to module manifest (.psd1) files. These modules will be automatically loaded when PoshBot starts.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+<dev:type><maml:name>String[]</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>@()</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="6" aliases="none"><maml:name>LogLevel</maml:name>
+<maml:Description><maml:para>The level of logging that PoshBot will do.
+</maml:para>
+</maml:Description>
+<command:parameterValueGroup><command:parameterValue required="false" variableLength="false">Info</command:parameterValue>
+<command:parameterValue required="false" variableLength="false">Verbose</command:parameterValue>
+<command:parameterValue required="false" variableLength="false">Debug</command:parameterValue>
+</command:parameterValueGroup>
+<command:parameterValue required="true" variableLength="false">LogLevel</command:parameterValue>
+<dev:type><maml:name>LogLevel</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>Verbose</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="7" aliases="none"><maml:name>BackendConfiguration</maml:name>
+<maml:Description><maml:para>A hashtable of configuration options required by the backend chat network implementation.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">Hashtable</command:parameterValue>
+<dev:type><maml:name>Hashtable</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>@{}</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="8" aliases="none"><maml:name>PluginConfiguration</maml:name>
+<maml:Description><maml:para>A hashtable of configuration options used by the various plugins (modules) that are installed in PoshBot. Each key in the hashtable must be the name of a plugin. The value of that hashtable item will be another hashtable with each key matching a parameter name in one or more commands of that module. A plugin command can specifiy that a parameter gets its value from this configuration by applying the custom attribute [PoshBot.FromConfig()] on the parameter.
+</maml:para>
+<maml:para>The function below is stating that the parameter $MyParam will get its value from the plugin configuration. The user running this command in PoshBot does not need to specify this parameter. PoshBot will dynamically resolve and apply the matching value from the plugin configuration when the command is executed.
+</maml:para>
+<maml:para>function Get-Foo {     [cmdletbinding()]     param(         [PoshBot.FromConfig()]         [parameter(mandatory)]         [string]$MyParam     )
+</maml:para>
+<maml:para>    Write-Output $MyParam }
+</maml:para>
+<maml:para>If the function below was part of the Demo plugin, PoshBot will look in the plugin configuration for a key matching Demo and a child key matching $MyParam.
+</maml:para>
+<maml:para>Example plugin configuration: @{     Demo = @{         MyParam = 'bar'     } }
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">Hashtable</command:parameterValue>
+<dev:type><maml:name>Hashtable</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>@{}</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="9" aliases="none"><maml:name>BotAdmins</maml:name>
+<maml:Description><maml:para>An array of chat handles that will be granted admin rights in PoshBot. Any user in this array will have full rights in PoshBot. At startup, PoshBot will resolve these handles into IDs given by the chat network.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+<dev:type><maml:name>String[]</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>@()</dev:defaultValue>
+</command:parameter>
+</command:syntaxItem>
+</command:syntax>
+<command:parameters><command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="none"><maml:name>Name</maml:name>
+<maml:Description><maml:para>The name the bot instance will be known as.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>PoshBot</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none"><maml:name>LogDirectory</maml:name>
+<maml:Description><maml:para>The log directory logs will be written to.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>(Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot')</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="3" aliases="none"><maml:name>PluginDirectory</maml:name>
+<maml:Description><maml:para>The directory PoshBot will look for PowerShell modules. This path will be prepended to your $env:PSModulePath.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>(Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot')</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="4" aliases="none"><maml:name>PluginRepository</maml:name>
+<maml:Description><maml:para>One or more PowerShell repositories to look in when installing new plugins (modules). These will be the repository name(s) as found in Get-PSRepository.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+<dev:type><maml:name>String[]</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>@('PSGallery')</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="5" aliases="none"><maml:name>ModuleManifestsToLoad</maml:name>
+<maml:Description><maml:para>One or more paths to module manifest (.psd1) files. These modules will be automatically loaded when PoshBot starts.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+<dev:type><maml:name>String[]</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>@()</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="6" aliases="none"><maml:name>LogLevel</maml:name>
+<maml:Description><maml:para>The level of logging that PoshBot will do.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">LogLevel</command:parameterValue>
+<dev:type><maml:name>LogLevel</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>Verbose</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="7" aliases="none"><maml:name>BackendConfiguration</maml:name>
+<maml:Description><maml:para>A hashtable of configuration options required by the backend chat network implementation.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">Hashtable</command:parameterValue>
+<dev:type><maml:name>Hashtable</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>@{}</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="8" aliases="none"><maml:name>PluginConfiguration</maml:name>
+<maml:Description><maml:para>A hashtable of configuration options used by the various plugins (modules) that are installed in PoshBot. Each key in the hashtable must be the name of a plugin. The value of that hashtable item will be another hashtable with each key matching a parameter name in one or more commands of that module. A plugin command can specifiy that a parameter gets its value from this configuration by applying the custom attribute [PoshBot.FromConfig()] on the parameter.
+</maml:para>
+<maml:para>The function below is stating that the parameter $MyParam will get its value from the plugin configuration. The user running this command in PoshBot does not need to specify this parameter. PoshBot will dynamically resolve and apply the matching value from the plugin configuration when the command is executed.
+</maml:para>
+<maml:para>function Get-Foo {     [cmdletbinding()]     param(         [PoshBot.FromConfig()]         [parameter(mandatory)]         [string]$MyParam     )
+</maml:para>
+<maml:para>    Write-Output $MyParam }
+</maml:para>
+<maml:para>If the function below was part of the Demo plugin, PoshBot will look in the plugin configuration for a key matching Demo and a child key matching $MyParam.
+</maml:para>
+<maml:para>Example plugin configuration: @{     Demo = @{         MyParam = 'bar'     } }
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">Hashtable</command:parameterValue>
+<dev:type><maml:name>Hashtable</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>@{}</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="9" aliases="none"><maml:name>BotAdmins</maml:name>
+<maml:Description><maml:para>An array of chat handles that will be granted admin rights in PoshBot. Any user in this array will have full rights in PoshBot. At startup, PoshBot will resolve these handles into IDs given by the chat network.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+<dev:type><maml:name>String[]</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>@()</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="10" aliases="none"><maml:name>CommandPrefix</maml:name>
+<maml:Description><maml:para>The prefix (single character) that must be specified in front of a command in order for PoshBot to recognize the chat message as a bot command.
+</maml:para>
+<maml:para>!get-foo --value bar
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">Char</command:parameterValue>
+<dev:type><maml:name>Char</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>!</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="11" aliases="none"><maml:name>AlternateCommandPrefixes</maml:name>
+<maml:Description><maml:para>Some users may want to specify alternate prefixes when calling bot comamnds. Use this parameter to specify an array of words that PoshBot will also check when parsing a chat message.
+</maml:para>
+<maml:para>bender get-foo --value bar
+</maml:para>
+<maml:para>hal open-doors --type pod
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+<dev:type><maml:name>String[]</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>@('poshbot')</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="12" aliases="none"><maml:name>AlternateCommandPrefixSeperators</maml:name>
+<maml:Description><maml:para>An array of characters that can also ben used when referencing bot commands.
+</maml:para>
+<maml:para>bender, get-foo --value bar
+</maml:para>
+<maml:para>hal; open-doors --type pod
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">Char[]</command:parameterValue>
+<dev:type><maml:name>Char[]</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>@(':', ',', ';')</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="13" aliases="none"><maml:name>SendCommandResponseToPrivate</maml:name>
+<maml:Description><maml:para>A list of fully qualified (&lt;PluginName&gt;:&lt;CommandName&gt;) plugin commands that will have their responses redirected back to a direct message channel with the calling user rather than a shared channel.
+</maml:para>
+<maml:para>@(     demo:get-foo     network:ping )
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+<dev:type><maml:name>String[]</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>@()</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="14" aliases="none"><maml:name>MuteUnknownCommand</maml:name>
+<maml:Description><maml:para>Instead of PoshBot returning a warning message when it is unable to find a command, use this to parameter to tell PoshBot to return nothing.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">Boolean</command:parameterValue>
+<dev:type><maml:name>Boolean</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+</command:parameters>
+<command:inputTypes></command:inputTypes>
+<command:returnValues><command:returnValue><dev:type><maml:name>BotConfiguration</maml:name>
+</dev:type>
+<maml:description><maml:para>
+</maml:para>
+</maml:description>
+</command:returnValue>
+</command:returnValues>
+<maml:alertSet><maml:alert><maml:para>
+</maml:para>
+</maml:alert>
+</maml:alertSet>
+<command:examples><command:example><maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
+<dev:code>New-PoshBotConfiguration -Name Cherry2000 -AlternateCommandPrefixes @('Cherry', 'Sam')</dev:code>
+<dev:remarks><maml:para>Name                             : Cherry2000 ConfigurationDirectory           : C:\Users\brand\.poshbot LogDirectory                     : C:\Users\brand\.poshbot PluginDirectory                  : C:\Users\brand\.poshbot PluginRepository                 : {PSGallery} ModuleManifestsToLoad            : {} LogLevel                         : Verbose BackendConfiguration             : {} PluginConfiguration              : {} BotAdmins                        : {} CommandPrefix                    : ! AlternateCommandPrefixes         : {Cherry, Sam} AlternateCommandPrefixSeperators : {:, ,, ;} SendCommandResponseToPrivate     : {} MuteUnknownCommand               : False
+</maml:para>
+<maml:para>Create a new PoshBot configuration with default values except for the bot name and alternate command prefixes that it will listen for.
+</maml:para>
+</dev:remarks>
+</command:example>
+<command:example><maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
+<dev:code>$backend = @{Name = 'SlackBackend'; Token = 'xoxb-569733935137-njOPkyBThqOTTUnCZb7tZpKK'}</dev:code>
+<dev:remarks><maml:para>PS C:\&gt; $botParams = @{             Name = 'HAL9000'             LogLevel = 'Info'             BotAdmins = @('JoeUser')             BackendConfiguration = $backend         } PS C:\&gt; $myBotConfig = New-PoshBotConfiguration @botParams PS C:\&gt; $myBotConfig
+</maml:para>
+<maml:para>Name                             : HAL9000 ConfigurationDirectory           : C:\Users\brand\.poshbot LogDirectory                     : C:\Users\brand\.poshbot PluginDirectory                  : C:\Users\brand\.poshbot PluginRepository                 : {MyLocalRepo} ModuleManifestsToLoad            : {} LogLevel                         : Info BackendConfiguration             : {} PluginConfiguration              : {} BotAdmins                        : {JoeUser} CommandPrefix                    : ! AlternateCommandPrefixes         : {poshbot} AlternateCommandPrefixSeperators : {:, ,, ;} SendCommandResponseToPrivate     : {} MuteUnknownCommand               : False
+</maml:para>
+<maml:para>PS C:\&gt; $myBotConfig | Start-PoshBot -AsJob
+</maml:para>
+<maml:para>Create a new PoshBot configuration with a Slack backend. Slack's backend only requires a bot token to be specified. Ensure the person with Slack handle 'JoeUser' is a bot admin.
+</maml:para>
+</dev:remarks>
+</command:example>
+</command:examples>
+<command:relatedLinks><maml:navigationLink><maml:linkText>Get-PoshBotConfiguration</maml:linkText>
+<maml:uri></maml:uri>
+</maml:navigationLink>
+<maml:navigationLink><maml:linkText>Save-PoshBotConfiguration</maml:linkText>
+<maml:uri></maml:uri>
+</maml:navigationLink>
+<maml:navigationLink><maml:linkText>New-PoshBotInstance</maml:linkText>
+<maml:uri></maml:uri>
+</maml:navigationLink>
+<maml:navigationLink><maml:linkText>Start-PoshBot</maml:linkText>
+<maml:uri></maml:uri>
+</maml:navigationLink>
+</command:relatedLinks>
+</command:command>
+<command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<command:details><command:name>New-PoshBotInstance</command:name>
+<command:verb>New</command:verb>
+<command:noun>PoshBotInstance</command:noun>
+<maml:description><maml:para>Creates a new instance of PoshBot
+</maml:para>
+</maml:description>
+</command:details>
+<maml:description><maml:para>Creates a new instance of PoshBot from an existing configuration (.psd1) file or a configuration object.
+</maml:para>
+</maml:description>
+<command:syntax><command:syntaxItem><maml:name>New-PoshBotInstance</maml:name>
+<command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName, ByValue)" position="named" aliases="none"><maml:name>Path</maml:name>
+<maml:Description><maml:para>The path to a PowerShell data (.psd1) file to create a new instance from.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+<dev:type><maml:name>String[]</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>(Join-Path -Path (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot') -ChildPath 'PoshBot.psd1')</dev:defaultValue>
+</command:parameter>
+<command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none"><maml:name>Backend</maml:name>
+<maml:Description><maml:para>The backend object that hosts logic for receiving and sending messages to a chat network.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">Backend</command:parameterValue>
+<dev:type><maml:name>Backend</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+</command:syntaxItem>
+<command:syntaxItem><maml:name>New-PoshBotInstance</maml:name>
+<command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName, ByValue)" position="named" aliases="none"><maml:name>Configuration</maml:name>
+<maml:Description><maml:para>The bot configuration object to create a new instance from.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">BotConfiguration[]</command:parameterValue>
+<dev:type><maml:name>BotConfiguration[]</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none"><maml:name>Backend</maml:name>
+<maml:Description><maml:para>The backend object that hosts logic for receiving and sending messages to a chat network.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">Backend</command:parameterValue>
+<dev:type><maml:name>Backend</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+</command:syntaxItem>
+</command:syntax>
+<command:parameters><command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName, ByValue)" position="named" aliases="none"><maml:name>Path</maml:name>
+<maml:Description><maml:para>The path to a PowerShell data (.psd1) file to create a new instance from.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+<dev:type><maml:name>String[]</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>(Join-Path -Path (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot') -ChildPath 'PoshBot.psd1')</dev:defaultValue>
+</command:parameter>
+<command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName, ByValue)" position="named" aliases="none"><maml:name>Configuration</maml:name>
+<maml:Description><maml:para>The bot configuration object to create a new instance from.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">BotConfiguration[]</command:parameterValue>
+<dev:type><maml:name>BotConfiguration[]</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none"><maml:name>Backend</maml:name>
+<maml:Description><maml:para>The backend object that hosts logic for receiving and sending messages to a chat network.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">Backend</command:parameterValue>
+<dev:type><maml:name>Backend</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+</command:parameters>
+<command:inputTypes><command:inputType><dev:type><maml:name>String</maml:name>
+</dev:type>
+<maml:description><maml:para>
+</maml:para>
+</maml:description>
+</command:inputType>
+<command:inputType><dev:type><maml:name>BotConfiguration</maml:name>
+</dev:type>
+<maml:description><maml:para>
+</maml:para>
+</maml:description>
+</command:inputType>
+</command:inputTypes>
+<command:returnValues><command:returnValue><dev:type><maml:name>Bot</maml:name>
+</dev:type>
+<maml:description><maml:para>
+</maml:para>
+</maml:description>
+</command:returnValue>
+</command:returnValues>
+<maml:alertSet><maml:alert><maml:para>
+</maml:para>
+</maml:alert>
+</maml:alertSet>
+<command:examples><command:example><maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
+<dev:code>New-PoshBotInstance -Path 'C:\Users\joeuser\.poshbot\Cherry2000.psd1' -Backend $backend</dev:code>
+<dev:remarks><maml:para>Name          : Cherry2000 Backend       : SlackBackend Storage       : StorageProvider PluginManager : PluginManager RoleManager   : RoleManager Executor      : CommandExecutor MessageQueue  : {} Configuration : BotConfiguration
+</maml:para>
+<maml:para>Create a new PoshBot instance from configuration file [C:\Users\joeuser\.poshbot\Cherry2000.psd1] and Slack backend object [$backend].
+</maml:para>
+</dev:remarks>
+</command:example>
+<command:example><maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
+<dev:code>$botConfig = Get-PoshBotConfiguration -Path (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot\Cherry2000.psd1')</dev:code>
+<dev:remarks><maml:para>PS C:\&gt; $backend = New-PoshBotSlackBackend -Configuration $botConfig.BackendConfiguration PS C:\&gt; $myBot = $botConfig | New-PoshBotInstance -Backend $backend PS C:\&gt; $myBot | Format-List
+</maml:para>
+<maml:para>Name          : Cherry2000 Backend       : SlackBackend Storage       : StorageProvider PluginManager : PluginManager RoleManager   : RoleManager Executor      : CommandExecutor MessageQueue  : {} Configuration : BotConfiguration
+</maml:para>
+<maml:para>Gets a bot configuration from the filesytem, creates a chat backend object, and then creates a new bot instance.
+</maml:para>
+</dev:remarks>
+</command:example>
+<command:example><maml:title>-------------------------- EXAMPLE 3 --------------------------</maml:title>
+<dev:code>$botConfig = Get-PoshBotConfiguration -Path (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot\Cherry2000.psd1')</dev:code>
+<dev:remarks><maml:para>PS C:\&gt; $backend = $botConfig | New-PoshBotSlackBackend PS C:\&gt; $myBotJob = $botConfig | New-PoshBotInstance -Backend $backend | Start-PoshBot -AsJob -PassThru
+</maml:para>
+<maml:para>Gets a bot configuration, creates a Slack backend from it, then creates a new PoshBot instance and starts it as a background job.
+</maml:para>
+</dev:remarks>
+</command:example>
+</command:examples>
+<command:relatedLinks><maml:navigationLink><maml:linkText>Get-PoshBotConfiguration</maml:linkText>
+<maml:uri></maml:uri>
+</maml:navigationLink>
+<maml:navigationLink><maml:linkText>New-PoshBotSlackBackend</maml:linkText>
+<maml:uri></maml:uri>
+</maml:navigationLink>
+<maml:navigationLink><maml:linkText>Start-PoshBot</maml:linkText>
+<maml:uri></maml:uri>
+</maml:navigationLink>
+</command:relatedLinks>
+</command:command>
+<command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<command:details><command:name>New-PoshBotScheduledTask</command:name>
+<command:verb>New</command:verb>
+<command:noun>PoshBotScheduledTask</command:noun>
+<maml:description><maml:para>Creates a new scheduled task to run PoshBot in the background.
+</maml:para>
+</maml:description>
+</command:details>
+<maml:description><maml:para>Creates a new scheduled task to run PoshBot in the background. The scheduled task will always be configured to run on startup and to not stop after any time period.
+</maml:para>
+</maml:description>
+<command:syntax><command:syntaxItem><maml:name>New-PoshBotScheduledTask</maml:name>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="none"><maml:name>Name</maml:name>
+<maml:Description><maml:para>The name for the scheduled task
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>PoshBot</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none"><maml:name>Description</maml:name>
+<maml:Description><maml:para>The description for the scheduled task
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>Start PoshBot</dev:defaultValue>
+</command:parameter>
+<command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="3" aliases="none"><maml:name>Path</maml:name>
+<maml:Description><maml:para>The path to the PoshBot configuration file to load and execute
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="4" aliases="none"><maml:name>Credential</maml:name>
+<maml:Description><maml:para>The credential to run the scheduled task under.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">PSCredential</command:parameterValue>
+<dev:type><maml:name>PSCredential</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none"><maml:name>PassThru</maml:name>
+<maml:Description><maml:para>Return the newly created scheduled task object
+</maml:para>
+</maml:Description>
+<dev:type><maml:name>SwitchParameter</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none"><maml:name>Force</maml:name>
+<maml:Description><maml:para>Overwrite a previously created scheduled task
+</maml:para>
+</maml:Description>
+<dev:type><maml:name>SwitchParameter</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="wi"><maml:name>WhatIf</maml:name>
+<maml:Description><maml:para>Shows what would happen if the cmdlet runs. The cmdlet is not run.
+</maml:para>
+</maml:Description>
+<dev:type><maml:name>SwitchParameter</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="cf"><maml:name>Confirm</maml:name>
+<maml:Description><maml:para>Prompts you for confirmation before running the cmdlet.
+</maml:para>
+</maml:Description>
+<dev:type><maml:name>SwitchParameter</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+</command:syntaxItem>
+</command:syntax>
+<command:parameters><command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="none"><maml:name>Name</maml:name>
+<maml:Description><maml:para>The name for the scheduled task
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>PoshBot</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none"><maml:name>Description</maml:name>
+<maml:Description><maml:para>The description for the scheduled task
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>Start PoshBot</dev:defaultValue>
+</command:parameter>
+<command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="3" aliases="none"><maml:name>Path</maml:name>
+<maml:Description><maml:para>The path to the PoshBot configuration file to load and execute
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="4" aliases="none"><maml:name>Credential</maml:name>
+<maml:Description><maml:para>The credential to run the scheduled task under.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">PSCredential</command:parameterValue>
+<dev:type><maml:name>PSCredential</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none"><maml:name>PassThru</maml:name>
+<maml:Description><maml:para>Return the newly created scheduled task object
+</maml:para>
+</maml:Description>
+<command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+<dev:type><maml:name>SwitchParameter</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none"><maml:name>Force</maml:name>
+<maml:Description><maml:para>Overwrite a previously created scheduled task
+</maml:para>
+</maml:Description>
+<command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+<dev:type><maml:name>SwitchParameter</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="wi"><maml:name>WhatIf</maml:name>
+<maml:Description><maml:para>Shows what would happen if the cmdlet runs. The cmdlet is not run.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+<dev:type><maml:name>SwitchParameter</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="cf"><maml:name>Confirm</maml:name>
+<maml:Description><maml:para>Prompts you for confirmation before running the cmdlet.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+<dev:type><maml:name>SwitchParameter</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+</command:parameters>
+<command:inputTypes></command:inputTypes>
+<command:returnValues><command:returnValue><dev:type><maml:name>Microsoft.Management.Infrastructure.CimInstance#root/Microsoft/Windows/TaskScheduler/MSFT_ScheduledTask</maml:name>
+</dev:type>
+<maml:description><maml:para>
+</maml:para>
+</maml:description>
+</command:returnValue>
+</command:returnValues>
+<maml:alertSet><maml:alert><maml:para>
+</maml:para>
+</maml:alert>
+</maml:alertSet>
+<command:examples><command:example><maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
+<dev:code>$cred = Get-Credential</dev:code>
+<dev:remarks><maml:para>PS C:\&gt; New-PoshBotScheduledTask -Name PoshBot -Path C:\PoshBot\myconfig.psd1 -Credential $cred
+</maml:para>
+<maml:para>Creates a new scheduled task to start PoshBot using the configuration file located at C:\PoshBot\myconfig.psd1 and the specified credential.
+</maml:para>
+</dev:remarks>
+</command:example>
+<command:example><maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
+<dev:code>$cred = Get-Credential</dev:code>
+<dev:remarks><maml:para>PC C:\&gt; $params = @{     Name = 'PoshBot'     Path = 'C:\PoshBot\myconfig.psd1'     Credential = $cred     Description = 'Awesome ChatOps bot'     PassThru = $true } PS C:\&gt; $task = New-PoshBotScheduledTask @params PS C:\&gt; $task | Start-ScheduledTask
+</maml:para>
+<maml:para>Creates a new scheduled task to start PoshBot using the configuration file located at C:\PoshBot\myconfig.psd1 and the specified credential then starts the task.
+</maml:para>
+</dev:remarks>
+</command:example>
+</command:examples>
+<command:relatedLinks><maml:navigationLink><maml:linkText>Get-PoshBotConfiguration</maml:linkText>
+<maml:uri></maml:uri>
+</maml:navigationLink>
+<maml:navigationLink><maml:linkText>New-PoshBotConfiguration</maml:linkText>
+<maml:uri></maml:uri>
+</maml:navigationLink>
+<maml:navigationLink><maml:linkText>Save-PoshBotConfiguration</maml:linkText>
+<maml:uri></maml:uri>
+</maml:navigationLink>
+<maml:navigationLink><maml:linkText>Start-PoshBot</maml:linkText>
+<maml:uri></maml:uri>
+</maml:navigationLink>
+</command:relatedLinks>
+</command:command>
+<command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<command:details><command:name>New-PoshBotSlackBackend</command:name>
+<command:verb>New</command:verb>
+<command:noun>PoshBotSlackBackend</command:noun>
+<maml:description><maml:para>{{Fill in the Synopsis}}
+</maml:para>
+</maml:description>
+</command:details>
+<maml:description><maml:para>{{Fill in the Description}}
+</maml:para>
+</maml:description>
+<command:syntax><command:syntaxItem><maml:name>New-PoshBotSlackBackend</maml:name>
+<command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName, ByValue)" position="0" aliases="BackendConfiguration"><maml:name>Configuration</maml:name>
+<maml:Description><maml:para>{{Fill Configuration Description}}
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">Hashtable[]</command:parameterValue>
+<dev:type><maml:name>Hashtable[]</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+</command:syntaxItem>
+</command:syntax>
+<command:parameters><command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName, ByValue)" position="0" aliases="BackendConfiguration"><maml:name>Configuration</maml:name>
+<maml:Description><maml:para>{{Fill Configuration Description}}
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">Hashtable[]</command:parameterValue>
+<dev:type><maml:name>Hashtable[]</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+</command:parameters>
+<command:inputTypes><command:inputType><dev:type><maml:name>System.Collections.Hashtable[]</maml:name>
+</dev:type>
+<maml:description><maml:para>
+</maml:para>
+</maml:description>
+</command:inputType>
+</command:inputTypes>
+<command:returnValues><command:returnValue><dev:type><maml:name>System.Object</maml:name>
+</dev:type>
+<maml:description><maml:para>
+</maml:para>
+</maml:description>
+</command:returnValue>
+</command:returnValues>
+<maml:alertSet><maml:alert><maml:para>
+</maml:para>
+</maml:alert>
+</maml:alertSet>
+<command:examples><command:example><maml:title>Example 1</maml:title>
+<dev:code>PS C:\&gt; {{ Add example code here }}</dev:code>
+<dev:remarks><maml:para>{{ Add example description here }}
+</maml:para>
+</dev:remarks>
+</command:example>
+</command:examples>
+<command:relatedLinks></command:relatedLinks>
+</command:command>
+<command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<command:details><command:name>New-PoshBotTextResponse</command:name>
+<command:verb>New</command:verb>
+<command:noun>PoshBotTextResponse</command:noun>
+<maml:description><maml:para>Tells PoshBot to handle the text response from a command in a special way.
+</maml:para>
+</maml:description>
+</command:details>
+<maml:description><maml:para>Responses from PoshBot commands can be sent back to the channel they were posted from (default) or redirected to a DM channel with the calling user. This could be useful if the contents the bot command returns are sensitive and should not be visible to all users in the channel.
+</maml:para>
+</maml:description>
+<command:syntax><command:syntaxItem><maml:name>New-PoshBotTextResponse</maml:name>
+<command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName, ByValue)" position="1" aliases="none"><maml:name>Text</maml:name>
+<maml:Description><maml:para>The text response from the command.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+<dev:type><maml:name>String[]</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none"><maml:name>DM</maml:name>
+<maml:Description><maml:para>Tell PoshBot to redirect the response to a DM channel.
+</maml:para>
+</maml:Description>
+<dev:type><maml:name>SwitchParameter</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+</command:syntaxItem>
+</command:syntax>
+<command:parameters><command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName, ByValue)" position="1" aliases="none"><maml:name>Text</maml:name>
+<maml:Description><maml:para>The text response from the command.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+<dev:type><maml:name>String[]</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none"><maml:name>DM</maml:name>
+<maml:Description><maml:para>Tell PoshBot to redirect the response to a DM channel.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+<dev:type><maml:name>SwitchParameter</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+</command:parameters>
+<command:inputTypes><command:inputType><dev:type><maml:name>String</maml:name>
+</dev:type>
+<maml:description><maml:para>
+</maml:para>
+</maml:description>
+</command:inputType>
+</command:inputTypes>
+<command:returnValues><command:returnValue><dev:type><maml:name>PSCustomObject</maml:name>
+</dev:type>
+<maml:description><maml:para>
+</maml:para>
+</maml:description>
+</command:returnValue>
+</command:returnValues>
+<maml:alertSet><maml:alert><maml:para>
+</maml:para>
+</maml:alert>
+</maml:alertSet>
+<command:examples><command:example><maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
+<dev:code>function Get-Foo {</dev:code>
+<dev:remarks><maml:para>[cmdletbinding()]     param(         [parameter(mandatory)]         [string]$MyParam     )
+</maml:para>
+<maml:para>    New-PoshBotTextResponse -Text $MyParam -DM }
+</maml:para>
+<maml:para>When Get-Foo is executed by PoshBot, the text response will be sent back to the calling user as a DM rather than back in the channel the command was called from. This could be useful if the contents the bot command returns are sensitive and should not be visible to all users in the channel.
+</maml:para>
+</dev:remarks>
+</command:example>
+</command:examples>
+<command:relatedLinks><maml:navigationLink><maml:linkText>New-PoshBotCardResponse</maml:linkText>
+<maml:uri></maml:uri>
+</maml:navigationLink>
+</command:relatedLinks>
+</command:command>
+<command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<command:details><command:name>Save-PoshBotConfiguration</command:name>
+<command:verb>Save</command:verb>
+<command:noun>PoshBotConfiguration</command:noun>
+<maml:description><maml:para>Saves a PoshBot configuration object to the filesystem in the form of a PowerShell data (.psd1) file.
+</maml:para>
+</maml:description>
+</command:details>
+<maml:description><maml:para>PoshBot configurations can be stored on the filesytem in PowerShell data (.psd1) files. This function will save a previously created configuration object to the filesystem.
+</maml:para>
+</maml:description>
+<command:syntax><command:syntaxItem><maml:name>Save-PoshBotConfiguration</maml:name>
+<command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName, ByValue)" position="1" aliases="Configuration"><maml:name>InputObject</maml:name>
+<maml:Description><maml:para>The bot configuration object to save to the filesystem.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">BotConfiguration</command:parameterValue>
+<dev:type><maml:name>BotConfiguration</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none"><maml:name>Path</maml:name>
+<maml:Description><maml:para>The path to a PowerShell data (.psd1) file to save the configuration to.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>(Join-Path -Path (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot') -ChildPath 'PoshBot.psd1')</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none"><maml:name>Force</maml:name>
+<maml:Description><maml:para>Overwrites an existing configuration file.
+</maml:para>
+</maml:Description>
+<dev:type><maml:name>SwitchParameter</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none"><maml:name>PassThru</maml:name>
+<maml:Description><maml:para>Returns the configuration file path.
+</maml:para>
+</maml:Description>
+<dev:type><maml:name>SwitchParameter</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="wi"><maml:name>WhatIf</maml:name>
+<maml:Description><maml:para>Shows what would happen if the cmdlet runs. The cmdlet is not run.
+</maml:para>
+</maml:Description>
+<dev:type><maml:name>SwitchParameter</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="cf"><maml:name>Confirm</maml:name>
+<maml:Description><maml:para>Prompts you for confirmation before running the cmdlet.
+</maml:para>
+</maml:Description>
+<dev:type><maml:name>SwitchParameter</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+</command:syntaxItem>
+</command:syntax>
+<command:parameters><command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName, ByValue)" position="1" aliases="Configuration"><maml:name>InputObject</maml:name>
+<maml:Description><maml:para>The bot configuration object to save to the filesystem.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">BotConfiguration</command:parameterValue>
+<dev:type><maml:name>BotConfiguration</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none"><maml:name>Path</maml:name>
+<maml:Description><maml:para>The path to a PowerShell data (.psd1) file to save the configuration to.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>(Join-Path -Path (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot') -ChildPath 'PoshBot.psd1')</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none"><maml:name>Force</maml:name>
+<maml:Description><maml:para>Overwrites an existing configuration file.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+<dev:type><maml:name>SwitchParameter</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none"><maml:name>PassThru</maml:name>
+<maml:Description><maml:para>Returns the configuration file path.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+<dev:type><maml:name>SwitchParameter</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="wi"><maml:name>WhatIf</maml:name>
+<maml:Description><maml:para>Shows what would happen if the cmdlet runs. The cmdlet is not run.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+<dev:type><maml:name>SwitchParameter</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="cf"><maml:name>Confirm</maml:name>
+<maml:Description><maml:para>Prompts you for confirmation before running the cmdlet.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+<dev:type><maml:name>SwitchParameter</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+</command:parameters>
+<command:inputTypes><command:inputType><dev:type><maml:name>BotConfiguration</maml:name>
+</dev:type>
+<maml:description><maml:para>
+</maml:para>
+</maml:description>
+</command:inputType>
+</command:inputTypes>
+<command:returnValues><command:returnValue><dev:type><maml:name>System.IO.FileInfo</maml:name>
+</dev:type>
+<maml:description><maml:para>
+</maml:para>
+</maml:description>
+</command:returnValue>
+</command:returnValues>
+<maml:alertSet><maml:alert><maml:para>
+</maml:para>
+</maml:alert>
+</maml:alertSet>
+<command:examples><command:example><maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
+<dev:code>Save-PoshBotConfiguration -InputObject $botConfig</dev:code>
+<dev:remarks><maml:para>Saves the PoshBot configuration. If now -Path is specified, the configuration will be saved to $env:USERPROFILE\.poshbot\PoshBot.psd1.
+</maml:para>
+</dev:remarks>
+</command:example>
+<command:example><maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
+<dev:code>$botConfig | Save-PoshBotConfig -Path c:\mybot\mybot.psd1</dev:code>
+<dev:remarks><maml:para>Saves the PoshBot configuration to [c:\mybot\mybot.psd1].
+</maml:para>
+</dev:remarks>
+</command:example>
+<command:example><maml:title>-------------------------- EXAMPLE 3 --------------------------</maml:title>
+<dev:code>$configFile = $botConfig | Save-PoshBotConfig -Path c:\mybot\mybot.psd1 -Force -PassThru</dev:code>
+<dev:remarks><maml:para>Saves the PoshBot configuration to [c:\mybot\mybot.psd1] and Overwrites existing file. The new file will be returned.
+</maml:para>
+</dev:remarks>
+</command:example>
+</command:examples>
+<command:relatedLinks><maml:navigationLink><maml:linkText>Get-PoshBotConfiguration</maml:linkText>
+<maml:uri></maml:uri>
+</maml:navigationLink>
+<maml:navigationLink><maml:linkText>Start-PoshBot</maml:linkText>
+<maml:uri></maml:uri>
+</maml:navigationLink>
+</command:relatedLinks>
+</command:command>
+<command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<command:details><command:name>Start-PoshBot</command:name>
+<command:verb>Start</command:verb>
+<command:noun>PoshBot</command:noun>
+<maml:description><maml:para>Starts a new instance of PoshBot interactively or in a job.
+</maml:para>
+</maml:description>
+</command:details>
+<maml:description><maml:para>Starts a new instance of PoshBot interactively or in a job.
+</maml:para>
+</maml:description>
+<command:syntax><command:syntaxItem><maml:name>Start-PoshBot</maml:name>
+<command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue)" position="named" aliases="Bot"><maml:name>InputObject</maml:name>
+<maml:Description><maml:para>An existing PoshBot instance to start.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">Bot</command:parameterValue>
+<dev:type><maml:name>Bot</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none"><maml:name>AsJob</maml:name>
+<maml:Description><maml:para>Run the PoshBot instance in a background job.
+</maml:para>
+</maml:Description>
+<dev:type><maml:name>SwitchParameter</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none"><maml:name>PassThru</maml:name>
+<maml:Description><maml:para>Return the PoshBot instance Id that is running as a job.
+</maml:para>
+</maml:Description>
+<dev:type><maml:name>SwitchParameter</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+</command:syntaxItem>
+<command:syntaxItem><maml:name>Start-PoshBot</maml:name>
+<command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue)" position="named" aliases="none"><maml:name>Configuration</maml:name>
+<maml:Description><maml:para>A PoshBot configuration object to use to start the bot instance.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">BotConfiguration</command:parameterValue>
+<dev:type><maml:name>BotConfiguration</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none"><maml:name>AsJob</maml:name>
+<maml:Description><maml:para>Run the PoshBot instance in a background job.
+</maml:para>
+</maml:Description>
+<dev:type><maml:name>SwitchParameter</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none"><maml:name>PassThru</maml:name>
+<maml:Description><maml:para>Return the PoshBot instance Id that is running as a job.
+</maml:para>
+</maml:Description>
+<dev:type><maml:name>SwitchParameter</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+</command:syntaxItem>
+<command:syntaxItem><maml:name>Start-PoshBot</maml:name>
+<command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none"><maml:name>Path</maml:name>
+<maml:Description><maml:para>The path to a PoshBot configuration file. A new instance of PoshBot will be created from this file.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none"><maml:name>AsJob</maml:name>
+<maml:Description><maml:para>Run the PoshBot instance in a background job.
+</maml:para>
+</maml:Description>
+<dev:type><maml:name>SwitchParameter</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none"><maml:name>PassThru</maml:name>
+<maml:Description><maml:para>Return the PoshBot instance Id that is running as a job.
+</maml:para>
+</maml:Description>
+<dev:type><maml:name>SwitchParameter</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+</command:syntaxItem>
+</command:syntax>
+<command:parameters><command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue)" position="named" aliases="Bot"><maml:name>InputObject</maml:name>
+<maml:Description><maml:para>An existing PoshBot instance to start.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">Bot</command:parameterValue>
+<dev:type><maml:name>Bot</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue)" position="named" aliases="none"><maml:name>Configuration</maml:name>
+<maml:Description><maml:para>A PoshBot configuration object to use to start the bot instance.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">BotConfiguration</command:parameterValue>
+<dev:type><maml:name>BotConfiguration</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none"><maml:name>Path</maml:name>
+<maml:Description><maml:para>The path to a PoshBot configuration file. A new instance of PoshBot will be created from this file.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none"><maml:name>AsJob</maml:name>
+<maml:Description><maml:para>Run the PoshBot instance in a background job.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+<dev:type><maml:name>SwitchParameter</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none"><maml:name>PassThru</maml:name>
+<maml:Description><maml:para>Return the PoshBot instance Id that is running as a job.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+<dev:type><maml:name>SwitchParameter</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+</command:parameters>
+<command:inputTypes><command:inputType><dev:type><maml:name>Bot</maml:name>
+</dev:type>
+<maml:description><maml:para>
+</maml:para>
+</maml:description>
+</command:inputType>
+<command:inputType><dev:type><maml:name>BotConfiguration</maml:name>
+</dev:type>
+<maml:description><maml:para>
+</maml:para>
+</maml:description>
+</command:inputType>
+<command:inputType><dev:type><maml:name>String</maml:name>
+</dev:type>
+<maml:description><maml:para>
+</maml:para>
+</maml:description>
+</command:inputType>
+</command:inputTypes>
+<command:returnValues><command:returnValue><dev:type><maml:name>PSCustomObject</maml:name>
+</dev:type>
+<maml:description><maml:para>
+</maml:para>
+</maml:description>
+</command:returnValue>
+</command:returnValues>
+<maml:alertSet><maml:alert><maml:para>
+</maml:para>
+</maml:alert>
+</maml:alertSet>
+<command:examples><command:example><maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
+<dev:code>Start-PoshBot -Bot $bot</dev:code>
+<dev:remarks><maml:para>Runs an instance of PoshBot that has already been created interactively in the shell.
+</maml:para>
+</dev:remarks>
+</command:example>
+<command:example><maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
+<dev:code>$bot | Start-PoshBot -Verbose</dev:code>
+<dev:remarks><maml:para>Runs an instance of PoshBot that has already been created interactively in the shell.
+</maml:para>
+</dev:remarks>
+</command:example>
+<command:example><maml:title>-------------------------- EXAMPLE 3 --------------------------</maml:title>
+<dev:code>$config = Get-PoshBotConfiguration -Path (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot\MyPoshBot.psd1')</dev:code>
+<dev:remarks><maml:para>PS C:\&gt; Start-PoshBot -Config $config
+</maml:para>
+<maml:para>Gets a PoshBot configuration from file and starts the bot interactively.
+</maml:para>
+</dev:remarks>
+</command:example>
+<command:example><maml:title>-------------------------- EXAMPLE 4 --------------------------</maml:title>
+<dev:code>Get-PoshBot -Id 100</dev:code>
+<dev:remarks><maml:para>Id         : 100 Name       : PoshBot_eab96f2ad147489b9f90e110e02ad805 State      : Running InstanceId : eab96f2ad147489b9f90e110e02ad805 Config     : BotConfiguration
+</maml:para>
+<maml:para>Gets the PoshBot job instance with ID 100.
+</maml:para>
+</dev:remarks>
+</command:example>
+</command:examples>
+<command:relatedLinks><maml:navigationLink><maml:linkText>Start-PoshBot</maml:linkText>
+<maml:uri></maml:uri>
+</maml:navigationLink>
+<maml:navigationLink><maml:linkText>Stop-PoshBot</maml:linkText>
+<maml:uri></maml:uri>
+</maml:navigationLink>
+</command:relatedLinks>
+</command:command>
+<command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<command:details><command:name>Stop-Poshbot</command:name>
+<command:verb>Stop</command:verb>
+<command:noun>Poshbot</command:noun>
+<maml:description><maml:para>Stop a currently running PoshBot instance that is running as a background job.
+</maml:para>
+</maml:description>
+</command:details>
+<maml:description><maml:para>PoshBot can be run in the background with PowerShell jobs. This function stops a currently running PoshBot instance.
+</maml:para>
+</maml:description>
+<command:syntax><command:syntaxItem><maml:name>Stop-Poshbot</maml:name>
+<command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName, ByValue)" position="1" aliases="none"><maml:name>Id</maml:name>
+<maml:Description><maml:para>The job Id of the bot to stop.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">Int32[]</command:parameterValue>
+<dev:type><maml:name>Int32[]</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none"><maml:name>Force</maml:name>
+<maml:Description><maml:para>{{Fill Force Description}}
+</maml:para>
+</maml:Description>
+<dev:type><maml:name>SwitchParameter</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="wi"><maml:name>WhatIf</maml:name>
+<maml:Description><maml:para>Shows what would happen if the cmdlet runs. The cmdlet is not run.
+</maml:para>
+</maml:Description>
+<dev:type><maml:name>SwitchParameter</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="cf"><maml:name>Confirm</maml:name>
+<maml:Description><maml:para>Prompts you for confirmation before running the cmdlet.
+</maml:para>
+</maml:Description>
+<dev:type><maml:name>SwitchParameter</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+</command:syntaxItem>
+</command:syntax>
+<command:parameters><command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName, ByValue)" position="1" aliases="none"><maml:name>Id</maml:name>
+<maml:Description><maml:para>The job Id of the bot to stop.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">Int32[]</command:parameterValue>
+<dev:type><maml:name>Int32[]</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none"><maml:name>Force</maml:name>
+<maml:Description><maml:para>{{Fill Force Description}}
+</maml:para>
+</maml:Description>
+<command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+<dev:type><maml:name>SwitchParameter</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="wi"><maml:name>WhatIf</maml:name>
+<maml:Description><maml:para>Shows what would happen if the cmdlet runs. The cmdlet is not run.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+<dev:type><maml:name>SwitchParameter</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="cf"><maml:name>Confirm</maml:name>
+<maml:Description><maml:para>Prompts you for confirmation before running the cmdlet.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+<dev:type><maml:name>SwitchParameter</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+</command:parameters>
+<command:inputTypes><command:inputType><dev:type><maml:name>System.Int32</maml:name>
+</dev:type>
+<maml:description><maml:para>
+</maml:para>
+</maml:description>
+</command:inputType>
+</command:inputTypes>
+<command:returnValues></command:returnValues>
+<maml:alertSet><maml:alert><maml:para>
+</maml:para>
+</maml:alert>
+</maml:alertSet>
+<command:examples><command:example><maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
+<dev:code>Stop-PoshBot -Id 101</dev:code>
+<dev:remarks><maml:para>Stop the bot instance with Id 101.
+</maml:para>
+</dev:remarks>
+</command:example>
+<command:example><maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
+<dev:code>Get-PoshBot | Stop-PoshBot</dev:code>
+<dev:remarks><maml:para>Gets all running PoshBot instances and stops them.
+</maml:para>
+</dev:remarks>
+</command:example>
+</command:examples>
+<command:relatedLinks><maml:navigationLink><maml:linkText>Get-PoshBot</maml:linkText>
+<maml:uri></maml:uri>
+</maml:navigationLink>
+<maml:navigationLink><maml:linkText>Start-PoshBot</maml:linkText>
+<maml:uri></maml:uri>
+</maml:navigationLink>
+</command:relatedLinks>
+</command:command>
+</helpItems>

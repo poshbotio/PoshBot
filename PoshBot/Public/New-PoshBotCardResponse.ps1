@@ -9,11 +9,11 @@ function New-PoshBotCardResponse {
     .PARAMETER Type
         Specifies a preset color for the card response. If the [Color] parameter is specified as well, it will override this parameter.
 
-        Type      Color    Hex code
-        ---------------------------
-        Normal  = Greed  = #008000
-        Warning = Yellow = #FFA500
-        Error   = Red    = #FF0000
+        | Type    | Color  | Hex code |
+        |---------|--------|----------|
+        | Normal  | Greed  | #008000  |
+        | Warning | Yellow | #FFA500  |
+        | Error   | Red    | #FF0000  |
     .PARAMETER Text
         The text response from the command.
     .PARAMETER DM

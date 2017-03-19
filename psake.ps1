@@ -44,16 +44,16 @@ task Pester -Depends Init {
 
 task CreateMarkdownHelp -Depends Init {
     Import-Module -Name $sut -Force -Verbose:$false
-    New-MarkdownHelp -Module $env:BHProjectName -OutputFolder "$projectRoot\docs\reference\platyps" -WithModulePage
+    New-MarkdownHelp -Module $env:BHProjectName -OutputFolder "$projectRoot\docs\reference\functions" -WithModulePage -Force
 } -description 'Create initial markdown help files'
 
 task UpdateMarkdownHelp -Depends Init {
     Import-Module -Name $sut -Force -Verbose:$false
-    Update-MarkdownHelpModule -Path "$projectRoot\docs\reference\platyps"
+    Update-MarkdownHelpModule -Path "$projectRoot\docs\reference\functions"
 } -description 'Update markdown help files'
 
 task CreateExternalHelp -Depends Init {
-    New-ExternalHelp "$projectRoot\docs\reference\platyps" -OutputPath "$sut\en-US"
+    New-ExternalHelp "$projectRoot\docs\reference\functions" -OutputPath "$sut\en-US"
 
 } -description 'Create module help from markdown files'
 

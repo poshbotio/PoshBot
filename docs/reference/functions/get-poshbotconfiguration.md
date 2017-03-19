@@ -1,29 +1,30 @@
+---
+external help file: PoshBot-help.xml
+online version: 
+schema: 2.0.0
+---
 
 # Get-PoshBotConfiguration
 
 ## SYNOPSIS
-
 Gets a PoshBot configuration from a file.
 
+## SYNTAX
+
+```
+Get-PoshBotConfiguration [[-Path] <String[]>] [<CommonParameters>]
+```
+
 ## DESCRIPTION
-
 PoshBot configurations can be stored on the filesytem in PowerShell data (.psd1) files.
-This functions will load that file and return a [BotConfiguration] object.
-
-## PARAMETERS
-
-### Path
-
-One or more paths to a PoshBot configuration file.
+This functions will load that file and return a \[BotConfiguration\] object.
 
 ## EXAMPLES
 
-### EXAMPLE 1
-
-Gets the bot configuration located at [C:\Users\joeuser\.poshbot\Cherry2000.psd1].
-
-```powershell
-PS C:\> Get-PoshBotConfiguration -Path C:\Users\joeuser\.poshbot\Cherry2000.psd1
+### -------------------------- EXAMPLE 1 --------------------------
+```
+Get-PoshBotConfiguration -Path C:\Users\joeuser\.poshbot\Cherry2000.psd1
+```
 
 Name                             : Cherry2000
 ConfigurationDirectory           : C:\Users\joeuser\.poshbot
@@ -40,20 +41,49 @@ AlternateCommandPrefixes         : {bender, hal}
 AlternateCommandPrefixSeperators : {:, ,, ;}
 SendCommandResponseToPrivate     : {}
 MuteUnknownCommand               : False
+
+Gets the bot configuration located at \[C:\Users\joeuser\.poshbot\Cherry2000.psd1\].
+
+### -------------------------- EXAMPLE 2 --------------------------
+```
+$botConfig = 'C:\Users\joeuser\.poshbot\Cherry2000.psd1' | Get-PoshBotConfiguration
 ```
 
-### EXAMPLE 2
+Gets the bot configuration located at \[C:\Users\brand\.poshbot\Cherry2000.psd1\].
 
-Gets the bot configuration located at [C:\Users\brand\.poshbot\Cherry2000.psd1].
+## PARAMETERS
 
-```powershell
-PS C:\> $botConfig = 'C:\Users\joeuser\.poshbot\Cherry2000.psd1' | Get-PoshBotConfiguration
+### -Path
+One or more paths to a PoshBot configuration file.
+
+```yaml
+Type: String[]
+Parameter Sets: (All)
+Aliases: 
+
+Required: False
+Position: 1
+Default value: (Join-Path -Path (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot') -ChildPath 'PoshBot.psd1')
+Accept pipeline input: True (ByPropertyName, ByValue)
+Accept wildcard characters: False
 ```
+
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
-String
+### String
 
 ## OUTPUTS
 
-BotConfiguration
+### BotConfiguration
+
+## NOTES
+
+## RELATED LINKS
+
+[New-PoshBotConfiguration]()
+
+[Start-PoshBot]()
+
