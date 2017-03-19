@@ -15,27 +15,6 @@ function Help {
         [string]$Filter
     )
 
-    # $result = foreach ($pluginKey in $Bot.PluginManager.Plugins.Keys) {
-    #     $plugin = $Bot.PluginManager.Plugins[$pluginKey]
-
-    #     $pluginVersionKey = $plugin.Keys[0]
-    #     $pluginVersion = $plugin[$pluginVersionKey]
-
-    #     foreach ($commandKey in $pluginVersion.Commands.Keys) {
-    #         $command = $pluginVersion.Commands[$commandKey]
-    #         $x = [pscustomobject][ordered]@{
-    #             FullCommandName = "$pluginKey`:$CommandKey"
-    #             Command = $CommandKey
-    #             Plugin = $pluginKey
-    #             Description = $command.Description
-    #             Usage = $command.Usage
-    #             Enabled = $command.Enabled.ToString()
-    #             Permissions = $command.AccessFilter.Permissions.Keys | Format-List | Out-string
-    #         }
-    #         $x
-    #     }
-    # }
-
     $allCommands = $Bot.PluginManager.Commands.GetEnumerator() | Foreach-Object {
         $plugin = $_.Name.Split(':')[0]
         $command = $_.Value.Name
@@ -259,7 +238,7 @@ function Install-Plugin {
     .SYNOPSIS
         Install a new plugin
     .EXAMPLE
-        !install-plugin (<pluginname> | --plugin <pluginname>) [--version 1.2.3]
+        !install-plugin (<pluginname> | --name <pluginname>) [--version 1.2.3]
     #>
     [PoshBot.BotCommand(Permissions = 'manage-plugins')]
     [cmdletbinding()]
@@ -268,7 +247,7 @@ function Install-Plugin {
         $Bot,
 
         [parameter(Mandatory, Position = 0)]
-        [string]$Plugin,
+        [string]$Name,
 
         [parameter(Position = 1)]
         [ValidateScript({
@@ -281,53 +260,53 @@ function Install-Plugin {
         [string]$Version
     )
 
-    if ($Plugin -ne 'Builtin') {
+    if ($Name -ne 'Builtin') {
 
         # Attempt to find the module in $env:PSModulePath or in the configurated repository
         if ($PSBoundParameters.ContainsKey('Version')) {
-            $mod = Get-Module -Name $Plugin -ListAvailable | Where-Object {$_.Version -eq $Version}
+            $mod = Get-Module -Name $Name -ListAvailable | Where-Object {$_.Version -eq $Version}
         } else {
-            $mod = @(Get-Module -Name $Plugin -ListAvailable | Sort-Object -Property Version -Descending)[0]
+            $mod = @(Get-Module -Name $Name -ListAvailable | Sort-Object -Property Version -Descending)[0]
         }
         if (-not $mod) {
             if ($PSBoundParameters.ContainsKey('Version')) {
-                $onlineMod = Find-Module -Name $Plugin -Repository $bot.Configuration.PluginRepository -RequiredVersion $Version -ErrorAction SilentlyContinue
+                $onlineMod = Find-Module -Name $Name -Repository $bot.Configuration.PluginRepository -RequiredVersion $Version -ErrorAction SilentlyContinue
             } else {
-                $onlineMod = Find-Module -Name $Plugin -Repository $bot.Configuration.PluginRepository -ErrorAction SilentlyContinue
+                $onlineMod = Find-Module -Name $Name -Repository $bot.Configuration.PluginRepository -ErrorAction SilentlyContinue
             }
             if ($onlineMod) {
                 $onlineMod | Install-Module -Scope CurrentUser -Force -ErrorAction Stop
 
                 if ($PSBoundParameters.ContainsKey('Version')) {
-                    $mod = Get-Module -Name $Plugin -ListAvailable | Where-Object {$_.Version -eq $Version}
+                    $mod = Get-Module -Name $Name -ListAvailable | Where-Object {$_.Version -eq $Version}
                 } else {
-                    $mod = @(Get-Module -Name $Plugin -ListAvailable | Sort-Object -Property Version -Descending)[0]
+                    $mod = @(Get-Module -Name $Name -ListAvailable | Sort-Object -Property Version -Descending)[0]
                 }
             }
         }
 
         if ($mod) {
             try {
-                $existingPlugin = $Bot.PluginManager.Plugins[$Plugin]
+                $existingPlugin = $Bot.PluginManager.Plugins[$Name]
                 $existingPluginVersions = $existingPlugin.Keys
                 if ($existingPluginVersions -notcontains $mod.Version) {
                     $Bot.PluginManager.InstallPlugin($mod.Path)
-                    $resp = Get-Plugin -Bot $bot -Plugin $Plugin -Version $mod.Version
+                    $resp = Get-Plugin -Bot $bot -Name $Name -Version $mod.Version
                     if (-not ($resp | Get-Member -Name 'Title' -MemberType NoteProperty)) {
                         $resp | Add-Member -Name 'Title' -MemberType NoteProperty -Value $null
                     }
-                    $resp.Title = "Plugin [$Plugin] version [$($mod.Version)] successfully installed"
+                    $resp.Title = "Plugin [$Name] version [$($mod.Version)] successfully installed"
                 } else {
-                    $resp = New-PoshBotCardResponse -Type Warning -Text "Plugin [$Plugin] version [$($mod.Version)] is already installed" -Title 'Plugin already installed'
+                    $resp = New-PoshBotCardResponse -Type Warning -Text "Plugin [$Name] version [$($mod.Version)] is already installed" -Title 'Plugin already installed'
                 }
             } catch {
                 $resp = New-PoshBotCardResponse -Type Error -Text $_.Exception.Message -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
             }
         } else {
             if ($PSBoundParameters.ContainsKey('Version')) {
-                $text = "Plugin [$Plugin] version [$Version] not found in configured plugin directory [$($Bot.Configuration.PluginDirectory)] or repository [$($Bot.Configuration.PluginRepository)]"
+                $text = "Plugin [$Name] version [$Version] not found in configured plugin directory [$($Bot.Configuration.PluginDirectory)] or repository [$($Bot.Configuration.PluginRepository)]"
             } else {
-                $text = "Plugin [$Plugin] not found in configured plugin directory [$($Bot.Configuration.PluginDirectory)] or repository [$($Bot.Configuration.PluginRepository)]"
+                $text = "Plugin [$Name] not found in configured plugin directory [$($Bot.Configuration.PluginDirectory)] or repository [$($Bot.Configuration.PluginRepository)]"
             }
             $resp = New-PoshBotCardResponse -Type Warning -Text $text -ThumbnailUrl 'http://p1cdn05.thewrap.com/images/2015/06/don-draper-shrug.jpg'
         }
@@ -343,7 +322,7 @@ function Enable-Plugin {
     .SYNOPSIS
         Enable a currently loaded plugin
     .EXAMPLE
-        !enable-plugin [<pluginname> | --plugin <pluginname>] [--version 1.2.3]
+        !enable-plugin [<pluginname> | --name <pluginname>] [--version 1.2.3]
     #>
     [PoshBot.BotCommand(Permissions = 'manage-plugins')]
     [cmdletbinding()]
@@ -352,19 +331,19 @@ function Enable-Plugin {
         $Bot,
 
         [parameter(Mandatory, Position = 0)]
-        [string]$Plugin,
+        [string]$Name,
 
         [parameter(Position = 1)]
         [string]$Version
     )
 
-    if ($Plugin -ne 'Builtin') {
-        if ($p = $Bot.PluginManager.Plugins[$Plugin]) {
+    if ($Name -ne 'Builtin') {
+        if ($p = $Bot.PluginManager.Plugins[$Name]) {
             $pv = $null
             if ($p.Keys.Count -gt 1) {
                 if (-not $PSBoundParameters.ContainsKey('Version')) {
                     $versions = $p.Keys -join ', ' | Out-String
-                    return New-PoshBotCardResponse -Type Warning -Text "Plugin [$Plugin] has multiple versions installed. Specify version from list`n$versions" -ThumbnailUrl 'http://hairmomentum.com/wp-content/uploads/2016/07/warning.png'
+                    return New-PoshBotCardResponse -Type Warning -Text "Plugin [$Name] has multiple versions installed. Specify version from list`n$versions" -ThumbnailUrl 'http://hairmomentum.com/wp-content/uploads/2016/07/warning.png'
                 } else {
                     $pv = $p[$Version]
                 }
@@ -378,17 +357,17 @@ function Enable-Plugin {
                     $Bot.PluginManager.ActivatePlugin($pv.Name, $pv.Version)
                     #$Bot.PluginManager.ActivatePlugin($pv)
                     #Write-Output "Plugin [$Plugin] activated. All commands in this plugin are now enabled."
-                    return New-PoshBotCardResponse -Type Normal -Text "Plugin [$Plugin] activated. All commands in this plugin are now enabled." -ThumbnailUrl 'https://www.streamsports.com/images/icon_green_check_256.png'
+                    return New-PoshBotCardResponse -Type Normal -Text "Plugin [$Name] activated. All commands in this plugin are now enabled." -ThumbnailUrl 'https://www.streamsports.com/images/icon_green_check_256.png'
                 } catch {
                     #Write-Error $_
                     return New-PoshBotCardResponse -Type Error -Text $_.Exception.Message -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
                 }
             } else {
-                return New-PoshBotCardResponse -Type Warning -Text "Plugin [$Plugin] version [$Version] not found." -ThumbnailUrl 'http://hairmomentum.com/wp-content/uploads/2016/07/warning.png'
+                return New-PoshBotCardResponse -Type Warning -Text "Plugin [$Name] version [$Version] not found." -ThumbnailUrl 'http://hairmomentum.com/wp-content/uploads/2016/07/warning.png'
             }
         } else {
             #Write-Warning "Plugin [$Plugin] not found."
-            return New-PoshBotCardResponse -Type Warning -Text "Plugin [$Plugin] not found." -ThumbnailUrl 'http://hairmomentum.com/wp-content/uploads/2016/07/warning.png'
+            return New-PoshBotCardResponse -Type Warning -Text "Plugin [$Name] not found." -ThumbnailUrl 'http://hairmomentum.com/wp-content/uploads/2016/07/warning.png'
         }
     } else {
         #Write-Output "Builtin plugins can't be disabled so no need to enable them."
@@ -401,7 +380,7 @@ function Disable-Plugin {
     .SYNOPSIS
         Disable a currently loaded plugin
     .EXAMPLE
-        !disable-plugin [<pluginname> | --plugin <pluginname>] [--version 1.2.3]
+        !disable-plugin [<pluginname> | --name <pluginname>] [--version 1.2.3]
     #>
     [PoshBot.BotCommand(Permissions = 'manage-plugins')]
     [cmdletbinding()]
@@ -410,19 +389,19 @@ function Disable-Plugin {
         $Bot,
 
         [parameter(Mandatory, Position = 0)]
-        [string]$Plugin,
+        [string]$Name,
 
         [parameter(Position = 1)]
         [string]$Version
     )
 
-    if ($Plugin -ne 'Builtin') {
-        if ($p = $Bot.PluginManager.Plugins[$Plugin]) {
+    if ($Name -ne 'Builtin') {
+        if ($p = $Bot.PluginManager.Plugins[$Name]) {
             $pv = $null
             if ($p.Keys.Count -gt 1) {
                 if (-not $PSBoundParameters.ContainsKey('Version')) {
                     $versions = $p.Keys -join ', ' | Out-String
-                    return New-PoshBotCardResponse -Type Warning -Text "Plugin [$Plugin] has multiple versions installed. Specify version from list`n$versions" -ThumbnailUrl 'http://hairmomentum.com/wp-content/uploads/2016/07/warning.png'
+                    return New-PoshBotCardResponse -Type Warning -Text "Plugin [$Name] has multiple versions installed. Specify version from list`n$versions" -ThumbnailUrl 'http://hairmomentum.com/wp-content/uploads/2016/07/warning.png'
                 } else {
                     $pv = $p[$Version]
                 }
@@ -434,15 +413,15 @@ function Disable-Plugin {
             if ($pv) {
                 try {
                     $Bot.PluginManager.DeactivatePlugin($pv.Name, $pv.Version)
-                    return New-PoshBotCardResponse -Type Normal -Text "Plugin [$Plugin] deactivated. All commands in this plugin are now disabled." -Title 'Plugin deactivated' -ThumbnailUrl 'https://www.streamsports.com/images/icon_green_check_256.png'
+                    return New-PoshBotCardResponse -Type Normal -Text "Plugin [$Name] deactivated. All commands in this plugin are now disabled." -Title 'Plugin deactivated' -ThumbnailUrl 'https://www.streamsports.com/images/icon_green_check_256.png'
                 } catch {
                     return New-PoshBotCardResponse -Type Error -Text $_.Exception.Message -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
                 }
             } else {
-                return New-PoshBotCardResponse -Type Warning -Text "Plugin [$Plugin] version [$Version] not found." -ThumbnailUrl 'http://hairmomentum.com/wp-content/uploads/2016/07/warning.png'
+                return New-PoshBotCardResponse -Type Warning -Text "Plugin [$Name] version [$Version] not found." -ThumbnailUrl 'http://hairmomentum.com/wp-content/uploads/2016/07/warning.png'
             }
         } else {
-            return New-PoshBotCardResponse -Type Warning -Text "Plugin [$Plugin] not found." -ThumbnailUrl 'http://hairmomentum.com/wp-content/uploads/2016/07/warning.png'
+            return New-PoshBotCardResponse -Type Warning -Text "Plugin [$Name] not found." -ThumbnailUrl 'http://hairmomentum.com/wp-content/uploads/2016/07/warning.png'
         }
     } else {
         return New-PoshBotCardResponse -Type Warning -Text "Sorry, builtin plugins can't be disabled. It's for your own good :)" -Title 'Ya no'
@@ -454,7 +433,7 @@ function Remove-Plugin {
     .SYNOPSIS
         Removes a currently loaded plugin
     .EXAMPLE
-        !remove-plugin [<pluginname> | --plugin <pluginname>] [--version 1.2.3]
+        !remove-plugin [<pluginname> | --name <pluginname>] [--version 1.2.3]
     #>
     [PoshBot.BotCommand(Permissions = 'manage-plugins')]
     [cmdletbinding()]
@@ -463,19 +442,19 @@ function Remove-Plugin {
         $Bot,
 
         [parameter(Mandatory, Position = 0)]
-        [string]$Plugin,
+        [string]$Name,
 
         [parameter(Position = 1)]
         [string]$Version
     )
 
-    if ($Plugin -ne 'Builtin') {
-        if ($p = $Bot.PluginManager.Plugins[$Plugin]) {
+    if ($Name -ne 'Builtin') {
+        if ($p = $Bot.PluginManager.Plugins[$Name]) {
             $pv = $null
             if ($p.Keys.Count -gt 1) {
                 if (-not $PSBoundParameters.ContainsKey('Version')) {
                     $versions = $p.Keys -join ', ' | Out-String
-                    return New-PoshBotCardResponse -Type Warning -Text "Plugin [$Plugin] has multiple versions installed. Specify version from list`n$versions" -ThumbnailUrl 'http://hairmomentum.com/wp-content/uploads/2016/07/warning.png'
+                    return New-PoshBotCardResponse -Type Warning -Text "Plugin [$Name] has multiple versions installed. Specify version from list`n$versions" -ThumbnailUrl 'http://hairmomentum.com/wp-content/uploads/2016/07/warning.png'
                 } else {
                     $pv = $p[$Version]
                 }
@@ -487,15 +466,15 @@ function Remove-Plugin {
             if ($pv) {
                 try {
                     $Bot.PluginManager.RemovePlugin($pv.Name, $pv.Version)
-                    return New-PoshBotCardResponse -Type Normal -Text "Plugin [$Plugin] version [$($pv.Version)] and all related commands have been removed." -Title 'Plugin Removed' -ThumbnailUrl 'https://www.streamsports.com/images/icon_green_check_256.png'
+                    return New-PoshBotCardResponse -Type Normal -Text "Plugin [$Name] version [$($pv.Version)] and all related commands have been removed." -Title 'Plugin Removed' -ThumbnailUrl 'https://www.streamsports.com/images/icon_green_check_256.png'
                 } catch {
                     return New-PoshBotCardResponse -Type Error -Text $_.Exception.Message -Title 'Rut row' -ThumbnailUrl 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
                 }
             } else {
-                return New-PoshBotCardResponse -Type Warning -Text "Plugin [$Plugin] version [$Version] not found." -ThumbnailUrl 'http://hairmomentum.com/wp-content/uploads/2016/07/warning.png'
+                return New-PoshBotCardResponse -Type Warning -Text "Plugin [$Name] version [$Version] not found." -ThumbnailUrl 'http://hairmomentum.com/wp-content/uploads/2016/07/warning.png'
             }
         } else {
-            return New-PoshBotCardResponse -Type Warning -Text "Plugin [$Plugin] not found." -ThumbnailUrl 'http://hairmomentum.com/wp-content/uploads/2016/07/warning.png'
+            return New-PoshBotCardResponse -Type Warning -Text "Plugin [$Name] not found." -ThumbnailUrl 'http://hairmomentum.com/wp-content/uploads/2016/07/warning.png'
         }
     } else {
         return New-PoshBotCardResponse -Type Warning -Text "Sorry, builtin plugins can't be removed. It's for your own good :)" -Title 'Ya no'
