@@ -145,6 +145,7 @@ Export-ModuleMember -Function @(
     'New-PoshBotBackend'
     'New-PoshBotConfiguration'
     'New-PoshBotInstance'
+    'New-PoshBotScheduledTask'
     'New-PoshBotSlackBackend'
     'New-HelloPlugin'
     'New-PoshBotCardResponse'
