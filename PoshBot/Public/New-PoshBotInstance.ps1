@@ -95,7 +95,7 @@ function New-PoshBotInstance {
         }
 
         foreach ($config in $Configuration) {
-            Write-Verbose -Message "Creating bot instance with name [$($config.Name)"
+            Write-Verbose -Message "Creating bot instance with name [$($config.Name)]"
             [Bot]::new($Backend, $here, $config)
         }
     }
