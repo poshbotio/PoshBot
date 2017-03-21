@@ -22,16 +22,16 @@ To get started now, get a SLACK-API-TOKEN for your bot:
 [https://api.slack.com/bot-users](https://api.slack.com/bot-users)
 
 ```powershell
-# clone the repo
+# Clone the repo
 git clone https://github.com/devblackops/PoshBot.git
 
-# install dependencies
+# Install dependencies
 Find-Module Configuration, PSSlack | Install-Module -Scope CurrentUser
 
-# import the module
+# Import the module
 Import-Module .\PoshBot\PoshBot
 
-# create a bot configuration
+# Create a bot configuration
 $botParams = @{
     Name = 'name'
     BotAdmins = @('slack-chat-handle')
@@ -46,7 +46,7 @@ $botParams = @{
 
 $myBotConfig = New-PoshBotConfiguration @botParams
 
-#start a new instance of PoshBot interactively or in a job.
+# Start a new instance of PoshBot interactively or in a job.
 Start-PoshBot -Configuration $myBotConfig #-AsJob
 ```
 
@@ -54,16 +54,24 @@ Basic usage:
 
 ```powershell
 # Create a Slack backend
-$backend = New-PoshBotSlackBackend -Configuration @{Name = 'SlackBackend'; Token = 'SLACK-API-TOKEN'}
+$backendConfig = @{Name = 'SlackBackend'; Token = 'SLACK-API-TOKEN'}
+$backend = New-PoshBotSlackBackend -Configuration $backendConfig
 
 # Create a PoshBot configuration
-$pbc = New-PoshBotConfiguration -BackendConfiguration $backend
+$pbc = New-PoshBotConfiguration -BotAdmins @('<my-slack-handle>') -BackendConfiguration $backendConfig
 
 # Save configuration
-Save-PoshBotConfiguration $myBotConfig -Path .\PoshBotConfig.psd1
+Save-PoshBotConfiguration -InputObject $pbc -Path .\PoshBotConfig.psd1
 
 # Load configuration
 $pbc = Get-PoshBotConfiguration -Path .\PoshBotConfig.psd1
+
+# Create an instance of the bot
+$bot = New-PoshBotInstance -Configuration $pbc -Backend $backend
+
+# Start the bot
+$bot.Start()
+
 
 # Available commands
 Get-Command -Module PoshBot
