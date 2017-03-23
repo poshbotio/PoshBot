@@ -349,29 +349,6 @@ function Bad-Command {
     Write-Error -Message "I'm error number two"
 }
 
-function WolframAlpha {
-    <#
-    .SYNOPSIS
-        Asks Wolfram Alpha a question
-    .EXAMPLE
-        !wolframalpha '34th president of the united states'
-    #>
-    [cmdletbinding()]
-    param(
-        [PoshBot.FromConfig('WolframAlphaApiKey')]
-        [parameter(Mandatory)]
-        [string]$ApiKey,
-
-        [parameter(ValueFromRemainingArguments = $true)]
-        [string[]]$Arguments
-    )
-
-    $q = $Arguments -join ' '
-    $url = "http://api.wolframalpha.com/v1/result?i=$q&appid=$ApiKey"
-    $r = Invoke-RestMethod -Uri $url
-    Write-Output $r
-}
-
 function Get-Foo {
     <#
     .SYNOPSIS
