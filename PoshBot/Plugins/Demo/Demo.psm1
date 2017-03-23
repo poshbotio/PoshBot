@@ -98,41 +98,6 @@ function Random-Quote {
     return $quote
 }
 
-function Giphy {
-    <#
-    .SYNOPSIS
-        Search Giphy
-    .EXAMPLE
-        !giphy (--search 'cats' [--number 3] | --trending [--number 3])
-    #>
-    [cmdletbinding(DefaultParameterSetName = 'search')]
-    param(
-        [parameter(Mandatory, Position = 0, ParameterSetName = 'search')]
-        [string]$Search,
-
-        [parameter(Mandatory, Position = 0, ParameterSetName = 'trending')]
-        [switch]$Trending,
-
-        [parameter(Position = 1)]
-        [ValidateRange(1, 10)]
-        [int]$Number = 1
-    )
-
-    $apiKey = 'dc6zaTOxFJmzC'
-
-    if ($PSCmdlet.ParameterSetName -eq 'search') {
-        $d = Invoke-RestMethod -Uri "http://api.giphy.com/v1/gifs/search?q=$Search&limit=25&api_key=$apiKey" -UseBasicParsing -UseDefaultCredentials
-    } elseif ($PSCmdlet.ParameterSetName -eq 'trending') {
-        $d = Invoke-RestMethod -Uri "http://api.giphy.com/v1/gifs/trending?limit=25&api_key=$apiKey" -UseBasicParsing -UseDefaultCredentials
-    }
-    if ($d.data) {
-        $url = ($d.data | Get-Random -Count $Number).images.downsized.url
-        Write-Output $url
-    } else {
-        Write-Output 'No results found'
-    }
-}
-
 function Roll-Dice {
     <#
     .SYNOPSIS
