@@ -6,6 +6,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.1.1] - 2017-03-23
+### Fixed error in !install-plugin command when installing plugins that had a dependency on the PoshBot module.
+
 ## [0.1.0] - 2017-03-21
 ### Added
 - Initial documentation for mkdocs

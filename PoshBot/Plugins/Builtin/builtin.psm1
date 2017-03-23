@@ -275,7 +275,7 @@ function Install-Plugin {
                 $onlineMod = Find-Module -Name $Name -Repository $bot.Configuration.PluginRepository -ErrorAction SilentlyContinue
             }
             if ($onlineMod) {
-                $onlineMod | Install-Module -Scope CurrentUser -Force -ErrorAction Stop
+                $onlineMod | Install-Module -Scope CurrentUser -Force -AllowClobber -ErrorAction Stop
 
                 if ($PSBoundParameters.ContainsKey('Version')) {
                     $mod = Get-Module -Name $Name -ListAvailable | Where-Object {$_.Version -eq $Version}
