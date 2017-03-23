@@ -92,22 +92,6 @@ AliasesToExport = '*'
 # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
 PrivateData = @{
 
-    # Define the bot roles for used by this module
-    # Roles = @(
-    #     @{
-    #         Name = 'PluginAdmin'
-    #         Description = 'Plugin administrators'
-    #     }
-    #     @{
-    #         Name = 'RoleAdmin'
-    #         Description = 'Role administrators'
-    #     }
-    #     @{
-    #         Name = 'Anyone'
-    #         Description = 'Any user'
-    #     }
-    # )
-
     # Define the set of permissions exposed by this module
     Permissions = @(
         @{
