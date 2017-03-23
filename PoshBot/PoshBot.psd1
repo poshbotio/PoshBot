@@ -12,7 +12,7 @@
 RootModule = 'PoshBot.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.0'
+ModuleVersion = '0.1.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -95,16 +95,16 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        # Tags = @()
+        Tags = @('PoshBot', 'ChatOps', 'Bot')
 
         # A URL to the license for this module.
-        # LicenseUri = ''
+        LicenseUri = 'https://raw.githubusercontent.com/devblackops/PoshBot/master/LICENSE'
 
         # A URL to the main website for this project.
-        # ProjectUri = ''
+        ProjectUri = 'https://github.com/devblackops/PoshBot'
 
         # A URL to an icon representing this module.
-        # IconUri = ''
+        IconUri = 'https://github.com/devblackops/PoshBot/raw/master/Media/poshbot_logo_thumb_256.png'
 
         # ReleaseNotes of this module
         # ReleaseNotes = ''
