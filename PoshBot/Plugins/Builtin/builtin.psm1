@@ -269,13 +269,19 @@ function Install-Plugin {
             $mod = @(Get-Module -Name $Name -ListAvailable | Sort-Object -Property Version -Descending)[0]
         }
         if (-not $mod) {
-            if ($PSBoundParameters.ContainsKey('Version')) {
-                $onlineMod = Find-Module -Name $Name -Repository $bot.Configuration.PluginRepository -RequiredVersion $Version -ErrorAction SilentlyContinue
-            } else {
-                $onlineMod = Find-Module -Name $Name -Repository $bot.Configuration.PluginRepository -ErrorAction SilentlyContinue
+
+            # Attemp to find the module in our PS repository
+            $findParams = @{
+                Name = $Name
+                Repository = $bot.Configuration.PluginRepository
+                ErrorAction = 'SilentlyContinue'
             }
-            if ($onlineMod) {
-                $onlineMod | Install-Module -Scope CurrentUser -Force -AllowClobber -ErrorAction Stop
+            if ($PSBoundParameters.ContainsKey('Version')) {
+                RequiredVersion = $Version
+            }
+
+            if ($onlineMod = Find-Module @findParams) {
+                $onlineMod | Install-Module -Scope CurrentUser -Force
 
                 if ($PSBoundParameters.ContainsKey('Version')) {
                     $mod = Get-Module -Name $Name -ListAvailable | Where-Object {$_.Version -eq $Version}
