@@ -23,6 +23,7 @@ class PluginManager {
         $this.LoadBuiltinPlugins()
     }
 
+    # Get the list of plugins to load and... wait for it... load them
     [void]LoadState() {
         $this.Logger.Verbose([LogMessage]::new('[PluginManager:LoadState] Loading plugin state from storage'))
 
@@ -39,6 +40,7 @@ class PluginManager {
         }
     }
 
+    # Save the state of currently loaded plugins to storage
     [void]SaveState() {
         $this.Logger.Verbose([LogMessage]::new('[PluginManager:SaveState] Saving loaded plugin state to storage'))
 
@@ -140,6 +142,8 @@ class PluginManager {
         $this.SaveState()
     }
 
+    # Remove a plugin and optionally a specific version from the bot
+    # If there is only one version, then remove any permissions defined in the plugin as well
     [void]RemovePlugin([string]$PluginName, [string]$Version) {
         if ($p = $this.Plugins[$PluginName]) {
             if ($pv = $p[$Version]) {
@@ -242,7 +246,7 @@ class PluginManager {
         }
     }
 
-     # Match a parsed command to a command in one of the currently loaded plugins
+    # Match a parsed command to a command in one of the currently loaded plugins
     [PluginCommand]MatchCommand([ParsedCommand]$ParsedCommand, [bool]$CommandSearch = $true) {
 
         # Check builtin commands first
@@ -339,6 +343,7 @@ class PluginManager {
         }
     }
 
+    # Create a new plugin from a given module manifest
     [void]CreatePluginFromModuleManifest([string]$ModuleName, [string]$ManifestPath, [bool]$AsJob = $true) {
         $manifest = Import-PowerShellDataFile -Path $ManifestPath -ErrorAction SilentlyContinue
         if ($manifest) {
@@ -361,6 +366,8 @@ class PluginManager {
             $this.AddPlugin($plugin)
             $this.Logger.Info([LogMessage]::new("[PluginManager:CreatePluginFromModuleManifest] Created new plugin [$($plugin.Name)]"))
 
+            # Get exported cmdlets/functions from the module and add them to the plugin
+            # Adjust bot command behaviour based on metadata as appropriate
             Import-Module -Name $manifestPath -Scope Local -Verbose:$false -WarningAction SilentlyContinue
             $moduleCommands = Microsoft.PowerShell.Core\Get-Command -Module $ModuleName -CommandType Cmdlet, Function, Workflow
             foreach ($command in $moduleCommands) {
@@ -379,14 +386,17 @@ class PluginManager {
                 # Normally, bot commands only respond to normal messages received from the chat network
                 # To respond to other message types/subtypes, metadata must be added to the function to
                 # call out the exact message type/subtype the command is designed to respond to
-                $trigger = [Trigger]::new('Command', $command.Name)
-                $cmd.Trigger = $trigger
 
                 # Set command properties based on metadata from module
                 if ($metadata) {
+
+                    # Set the command name / trigger to the module function name or to
+                    # what is defined in the metadata
                     if ($metadata.CommandName) {
+                        $cmd.Trigger = [Trigger]::new('Command', $metadata.CommandName)
                         $cmd.Name = $metadata.CommandName
                     } else {
+                        $cmd.Trigger = [Trigger]::new('Command', $command.Name)
                         $cmd.name = $command.Name
                     }
 
@@ -403,8 +413,8 @@ class PluginManager {
                         }
                     }
 
-                    $cmd.KeepHistory = $metadata.KeepHistory
-                    $cmd.HideFromHelp = $metadata.HideFromHelp
+                    $cmd.KeepHistory = $metadata.KeepHistory    # Default is $true
+                    $cmd.HideFromHelp = $metadata.HideFromHelp  # Default is $false
 
                     # Set the trigger type
                     if ($metadata.TriggerType) {
@@ -424,6 +434,7 @@ class PluginManager {
                         $cmd.Trigger.Type = [TriggerType]::Command
                     }
 
+                    # The message type/subtype the command is intended to respond to
                     if ($metadata.MessageType) {
                         $cmd.Trigger.MessageType = $metadata.MessageType
                     }
@@ -431,6 +442,7 @@ class PluginManager {
                         $cmd.Trigger.MessageSubtype = $metadata.MessageSubtype
                     }
                 } else {
+                    # No metadata defined so set the command name/trigger to the module function name
                     $cmd.Name = $command.Name
                     $cmd.Trigger = [Trigger]::new('Command', $command.Name)
                 }
@@ -454,6 +466,7 @@ class PluginManager {
         }
     }
 
+    # Get the [Poshbot.BotComamnd()] attribute from the function if it exists
     [PoshBot.BotCommand]GetCommandMetadata([System.Management.Automation.FunctionInfo]$Command) {
         $attrs = $Command.ScriptBlock.Attributes
         $botCmdAttr = $attrs | ForEach-Object {
@@ -464,6 +477,7 @@ class PluginManager {
         return $botCmdAttr
     }
 
+    # Inspect the module manifest and return any permissions defined
     [Permission[]]GetPermissionsFromModuleManifest($Manifest) {
         $permissions = New-Object System.Collections.ArrayList
         foreach ($permission in $Manifest.PrivateData.Permissions) {

@@ -6,6 +6,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.1.2] - 2017-03-24
+### Fixed
+- Bot command names are now set to the value of the CommandName property of [PoshBot.BotCommand()] if defined. Previously, this didn't work and the bot command names always used the function name
+- Fixed a bug in the builtin command [Install-Plugin] where if specified, the specific version of a plugin to install produced an error
+
 ## [0.1.1] - 2017-03-23
 ### Fixed error in !install-plugin command when installing plugins that had a dependency on the PoshBot module.
 
