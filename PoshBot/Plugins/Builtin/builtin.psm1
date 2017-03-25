@@ -277,7 +277,7 @@ function Install-Plugin {
                 ErrorAction = 'SilentlyContinue'
             }
             if ($PSBoundParameters.ContainsKey('Version')) {
-                RequiredVersion = $Version
+                $findParams.RequiredVersion = $Version
             }
 
             if ($onlineMod = Find-Module @findParams) {
@@ -310,9 +310,9 @@ function Install-Plugin {
             }
         } else {
             if ($PSBoundParameters.ContainsKey('Version')) {
-                $text = "Plugin [$Name] version [$Version] not found in configured plugin directory [$($Bot.Configuration.PluginDirectory)] or repository [$($Bot.Configuration.PluginRepository)]"
+                $text = "Plugin [$Name] version [$Version] not found in configured plugin directory [$($Bot.Configuration.PluginDirectory)], PSModulePath, or repository [$($Bot.Configuration.PluginRepository)]"
             } else {
-                $text = "Plugin [$Name] not found in configured plugin directory [$($Bot.Configuration.PluginDirectory)] or repository [$($Bot.Configuration.PluginRepository)]"
+                $text = "Plugin [$Name] not found in configured plugin directory [$($Bot.Configuration.PluginDirectory)], PSModulePath, or repository [$($Bot.Configuration.PluginRepository)]"
             }
             $resp = New-PoshBotCardResponse -Type Warning -Text $text -ThumbnailUrl 'http://p1cdn05.thewrap.com/images/2015/06/don-draper-shrug.jpg'
         }
