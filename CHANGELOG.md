@@ -6,6 +6,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- New builtin command [Find-Plugin] to find available plugins in the desired PowerShell repository
+
 ## [0.1.2] - 2017-03-24
 ### Fixed
 - Bot command names are now set to the value of the CommandName property of [PoshBot.BotCommand()] if defined. Previously, this didn't work and the bot command names always used the function name
