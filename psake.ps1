@@ -58,3 +58,7 @@ task CreateExternalHelp -Depends Init {
 } -description 'Create module help from markdown files'
 
 Task RegenerateHelp -Depends Init, UpdateMarkdownHelp, CreateExternalHelp
+
+Task Publish -Depends Init {
+    Publish-Module -Path $sut -NuGetApiKey $env:PSGalleryApiKey -Repository PSGallery
+}
