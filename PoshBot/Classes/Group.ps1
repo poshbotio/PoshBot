@@ -42,4 +42,13 @@ class Group {
             $this.Users.Remove($Username)
         }
     }
+
+    [hashtable]ToHash() {
+        return @{
+            Name = $this.Name
+            Description = $this.Description
+            Users = $this.Users.Keys
+            Roles = $this.Roles.Keys
+        }
+    }
 }

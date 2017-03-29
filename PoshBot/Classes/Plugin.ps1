@@ -128,4 +128,24 @@ class Plugin {
             $_.Value.Deactivate()
         }
     }
+
+    [hashtable]ToHash() {
+        $cmdPerms = @{}
+        $this.Commands.GetEnumerator() | Foreach-Object {
+            $cmdPerms.Add($_.Name, $_.Value.AccessFilter.Permissions.Keys)
+        }
+
+        $adhocPerms = @{}
+        $this.Permissions.GetEnumerator() | Where-Object {$_.Value.Adhoc -eq $true} | Foreach-Object {
+            $adhocPerms.Add($_.Name, $null)
+        }
+        return @{
+            Name = $this.Name
+            Version = $this.Version.ToString()
+            Enabled = $this.Enabled
+            ManifestPath = $this._ManifestPath
+            CommandPermissions = $cmdPerms
+            AdhocPermissions = $adhocPerms
+        }
+    }
 }

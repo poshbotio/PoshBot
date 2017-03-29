@@ -24,4 +24,12 @@ class Role {
             $this.Permissions.Remove($Permission.ToString())
         }
     }
+
+    [hashtable]ToHash() {
+        return @{
+            Name = $this.Name
+            Description = $this.Description
+            Permissions = @($this.Permissions.Keys)
+        }
+    }
 }
