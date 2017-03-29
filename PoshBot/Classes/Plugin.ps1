@@ -135,9 +135,9 @@ class Plugin {
             $cmdPerms.Add($_.Name, $_.Value.AccessFilter.Permissions.Keys)
         }
 
-        $adhocPerms = @{}
+        $adhocPerms = New-Object System.Collections.ArrayList
         $this.Permissions.GetEnumerator() | Where-Object {$_.Value.Adhoc -eq $true} | Foreach-Object {
-            $adhocPerms.Add($_.Name, $null)
+            $adhocPerms.Add($_.Name) > $null
         }
         return @{
             Name = $this.Name

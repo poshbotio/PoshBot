@@ -296,7 +296,7 @@ function Install-Plugin {
                 $existingPlugin = $Bot.PluginManager.Plugins[$Name]
                 $existingPluginVersions = $existingPlugin.Keys
                 if ($existingPluginVersions -notcontains $mod.Version) {
-                    $Bot.PluginManager.InstallPlugin($mod.Path)
+                    $Bot.PluginManager.InstallPlugin($mod.Path, $true)
                     $resp = Get-Plugin -Bot $bot -Name $Name -Version $mod.Version
                     if (-not ($resp | Get-Member -Name 'Title' -MemberType NoteProperty)) {
                         $resp | Add-Member -Name 'Title' -MemberType NoteProperty -Value $null
@@ -1157,6 +1157,97 @@ function Find-Plugin {
             $notFoundParams.Text = "No PoshBot plugins where found in repository [$Repository]"
         }
         New-PoshBotCardResponse @notFoundParams
+    }
+}
+
+function New-Permission {
+    <#
+    .SYNOPSIS
+        Creates a new adhoc permission associated with a plugin
+    .EXAMPLE
+        !new-permission (<permissionname> | --name <permissionname>) (<pluginname> | --plugin <pluginname>) [<description> | --description <description>)]
+    #>
+    [PoshBot.BotCommand(Permissions = 'manage-permissions')]
+    [cmdletbinding()]
+    param(
+        [parameter(Mandatory)]
+        $Bot,
+
+        [parameter(Mandatory, Position = 0)]
+        [string]$Name,
+
+        [parameter(Mandatory, Position = 1)]
+        [string]$Plugin,
+
+        [parameter(Position = 2)]
+        [string]$Description
+    )
+
+    if ($pluginVersions = $Bot.PluginManager.Plugins[$Plugin]) {
+
+        # Get the latest version of the the plugin
+        $latestPluginVersion = @($pluginVersions.Keys | Sort-Object -Descending)[0]
+
+        # Create the adhoc permission
+        $permission = [Permission]::New($Name, $Plugin)
+        $permission.Adhoc = $true
+        if ($PSBoundParameters.ContainsKey('Description')) {
+            $permission.Description = $Description
+        }
+
+        if ($pv = $pluginVersions[$latestPluginVersion]) {
+            # Assign permission to plugin and add to Role Manager
+            $Bot.RoleManager.AddPermission($permission)
+            $pv.AddPermission($permission)
+            $Bot.PluginManager.Savestate()
+
+            if ($p = $Bot.RoleManager.GetPermission($permission.ToString())) {
+                return New-PoshBotCardResponse -Type Normal -Text "Permission [$($permission.ToString())] created." -ThumbnailUrl 'https://www.streamsports.com/images/icon_green_check_256.png'
+            } else {
+                return New-PoshBotCardResponse -Type Warning -Text "Permission [$($permission.ToString())] could not be created. Check logs for more information." -ThumbnailUrl 'http://hairmomentum.com/wp-content/uploads/2016/07/warning.png'
+            }
+        } else {
+            New-PoshBotCardResponse -Type Warning -Text "Unable to get latest version of plugin [$Plugin]."
+        }
+    } else {
+        New-PoshBotCardResponse -Type Warning -Text "Plugin [$Plugin] not found."
+    }
+}
+
+function Add-CommandPermission {
+    <#
+    .SYNOPSIS
+        Adds a permission to a command
+    .EXAMPLE
+        !add-commandpermission (<pluginname:commandname> | --name <pluginname:commandname>) (<plugin:permissionname> | --permission <pluginname:permissionname>)
+    #>
+    [PoshBot.BotCommand(Permissions = 'manage-permissions')]
+    [cmdletbinding()]
+    param(
+        [parameter(Mandatory)]
+        $Bot,
+
+        [parameter(Mandatory, Position = 0)]
+        [ValidatePattern('^.+:.+')]
+        [string]$Name,
+
+        [parameter(Mandatory, Position = 1)]
+        [ValidatePattern('^.+:.+')]
+        [string]$Permission
+    )
+
+    if ($command = $Bot.PluginManager.Commands[$Name]) {
+        if ($p = $Bot.RoleManager.Permissions[$Permission]) {
+
+            $command.AddPermission($p)
+            $Bot.PluginManager.SaveState()
+
+            return New-PoshBotCardResponse -Type Normal -Text "Permission [$Permission] added to command [$Name]." -ThumbnailUrl 'https://www.streamsports.com/images/icon_green_check_256.png'
+        } else {
+            New-PoshBotCardResponse -Type Warning -Text "Permission [$Permission] not found."
+        }
+    } else {
+        New-PoshBotCardResponse -Type Warning -Text "Command [$Name] not found."
     }
 }
 

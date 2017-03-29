@@ -83,7 +83,7 @@ class Bot {
             $this._Logger.Info([LogMessage]::new('[Bot:Initialize] Loading in plugins from configuration'))
             foreach ($manifestPath in $this.Configuration.ModuleManifestsToLoad) {
                 if (Test-Path -Path $manifestPath) {
-                    $this.PluginManager.InstallPlugin($manifestPath)
+                    $this.PluginManager.InstallPlugin($manifestPath, $false)
                 } else {
                     $this._Logger.Info(
                         [LogMessage]::new(

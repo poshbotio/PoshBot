@@ -29,12 +29,38 @@ class PluginManager {
 
         $pluginsToLoad = $this._Storage.GetConfig('plugins')
         if ($pluginsToLoad) {
-            $pluginsToLoad.GetEnumerator() | ForEach-Object {
-                $pluginVersions = $_.Value.Keys
-                foreach ($pluginVersion in $pluginVersions) {
-                    $pluginName = $_.Value[$pluginVersion].Name
-                    $manifestPath = $_.Value[$pluginVersion].ManifestPath
-                    $this.CreatePluginFromModuleManifest($pluginName, $manifestPath, $true)
+            foreach ($pluginKey in $pluginsToLoad.Keys) {
+                $pluginToLoad = $pluginsToLoad[$pluginKey]
+
+                $pluginVersions = $pluginToLoad.Keys
+                foreach ($pluginVersionKey in $pluginVersions) {
+                    $pv = $pluginToLoad[$pluginVersionKey]
+                    $manifestPath = $pv.ManifestPath
+                    $adhocPermissions = $pv.AdhocPermissions
+                    $this.CreatePluginFromModuleManifest($pluginKey, $manifestPath, $true, $false)
+
+                    if ($newPlugin = $this.Plugins[$pluginKey]) {
+                        # Add adhoc permissions back to plugin (all versions)
+                        foreach ($version in $newPlugin.Keys) {
+                            $npv = $newPlugin[$version]
+                            foreach($permission in $adhocPermissions) {
+                                if ($p = $this.RoleManager.GetPermission($permission)) {
+                                    $npv.AddPermission($p)
+                                }
+                            }
+                        }
+
+                        # Add adhoc permissions back to the plugin commands (all versions)
+                        $commandPermissions = $pv.CommandPermissions
+                        foreach ($commandName in $commandPermissions.Keys ) {
+                            $commmandPermissions = $commandPermissions[$commandName]
+                            foreach ($permission in $commandPermissions) {
+                                if ($p = $this.RoleManager.GetPermission($permission)) {
+                                    $newPlugin.AddPermission($p)
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -46,18 +72,13 @@ class PluginManager {
 
         # Skip saving builtin plugin as it will always be loaded at initialization
         $pluginsToSave = @{}
-        $this.Plugins.GetEnumerator() | Where {$_.Name -ne 'Builtin'} | ForEach-Object {
+        foreach($pluginKey in $this.Plugins.Keys | Where-Object {$_ -ne 'Builtin'}) {
             $versions = @{}
-            foreach ($versionKey in $_.Value.Keys) {
-                $p = @{
-                    Name = $_.Name
-                    Version = $_.Value[$versionKey].Version
-                    ManifestPath = $_.Value[$versionKey]._ManifestPath
-                    Enabled = $_.Value[$versionKey].Enabled
-                }
-                $versions.Add($versionKey, $p)
+            foreach ($versionKey in $this.Plugins[$pluginKey].Keys) {
+                $pv = $this.Plugins[$pluginKey][$versionKey]
+                $versions.Add($versionKey, $pv.ToHash())
             }
-            $pluginsToSave.Add($_.Name, $versions)
+            $pluginsToSave.Add($pluginKey, $versions)
         }
         $this._Storage.SaveConfig('plugins', $pluginsToSave)
     }
@@ -65,17 +86,17 @@ class PluginManager {
     # TODO
     # Given a PowerShell module definition, inspect it for commands etc,
     # create a plugin instance and load the plugin
-    [void]InstallPlugin([string]$ManifestPath) {
+    [void]InstallPlugin([string]$ManifestPath, [bool]$SaveAfterInstall = $false) {
         if (Test-Path -Path $ManifestPath) {
             $moduleName = (Get-Item -Path $ManifestPath).BaseName
-            $this.CreatePluginFromModuleManifest($moduleName, $ManifestPath, $true)
+            $this.CreatePluginFromModuleManifest($moduleName, $ManifestPath, $true, $SaveAfterInstall)
         } else {
             Write-Error -Message "Module manifest path [$manifestPath] not found"
         }
     }
 
     # Add a plugin to the bot
-    [void]AddPlugin([Plugin]$Plugin) {
+    [void]AddPlugin([Plugin]$Plugin, [bool]$SaveAfterInstall = $false) {
         if (-not $this.Plugins.ContainsKey($Plugin.Name)) {
             $this.Logger.Info([LogMessage]::new("[PluginManager:AddPlugin] Attaching plugin [$($Plugin.Name)]"))
 
@@ -110,7 +131,9 @@ class PluginManager {
         # # Reload commands and role from all currently loading (and active) plugins
         $this.LoadCommands()
 
-        $this.SaveState()
+        if ($SaveAfterInstall) {
+            $this.SaveState()
+        }
     }
 
     # Remove a plugin from the bot
@@ -344,7 +367,7 @@ class PluginManager {
     }
 
     # Create a new plugin from a given module manifest
-    [void]CreatePluginFromModuleManifest([string]$ModuleName, [string]$ManifestPath, [bool]$AsJob = $true) {
+    [void]CreatePluginFromModuleManifest([string]$ModuleName, [string]$ManifestPath, [bool]$AsJob = $true, [bool]$SaveAfterCreation = $false) {
         $manifest = Import-PowerShellDataFile -Path $ManifestPath -ErrorAction SilentlyContinue
         if ($manifest) {
             $plugin = [Plugin]::new()
@@ -356,20 +379,35 @@ class PluginManager {
                 $plugin.Version = '0.0.0'
             }
 
+            # Load our plugin config
+            $pluginConfig = $this.GetPluginConfig($plugin.Name, $plugin.Version)
+
             # Create new permissions from metadata in the module manifest
             $this.GetPermissionsFromModuleManifest($manifest) | ForEach-Object {
                 $_.Plugin = $plugin.Name
                 $plugin.AddPermission($_)
             }
 
+            # Add any adhoc permissions that were previously defined back to the plugin
+            if ($pluginConfig -and $pluginConfig.AdhocPermissions.Count -gt 0) {
+                foreach ($permissionName in $pluginConfig.AdhocPermissions) {
+                    if ($p = $this.RoleManager.GetPermission($permissionName)) {
+                        $this.Logger.Debug([LogMessage]::new("[PluginManager:CreatePluginFromModuleManifest] Adding adhoc permission [$permissionName] to plugin [$($plugin.Name)]"))
+                        $plugin.AddPermission($p)
+                    } else {
+                        $this.Logger.Info([LogMessage]::new("[PluginManager:CreatePluginFromModuleManifest] Adhoc permission [$permissionName] not found in Role Manager. Can't attach permission to plugin [$($plugin.Name)]"))
+                    }
+                }
+            }
+
             # Add the plugin so the roles can be registered with the role manager
-            $this.AddPlugin($plugin)
+            $this.AddPlugin($plugin, $SaveAfterCreation)
             $this.Logger.Info([LogMessage]::new("[PluginManager:CreatePluginFromModuleManifest] Created new plugin [$($plugin.Name)]"))
 
             # Get exported cmdlets/functions from the module and add them to the plugin
             # Adjust bot command behaviour based on metadata as appropriate
             Import-Module -Name $manifestPath -Scope Local -Verbose:$false -WarningAction SilentlyContinue
-            $moduleCommands = Microsoft.PowerShell.Core\Get-Command -Module $ModuleName -CommandType Cmdlet, Function, Workflow
+            $moduleCommands = Microsoft.PowerShell.Core\Get-Command -Module $ModuleName -CommandType @('Cmdlet', 'Function', 'Workflow') -Verbose:$false
             foreach ($command in $moduleCommands) {
 
                 # Get the command help so we can pull information from it
@@ -383,13 +421,8 @@ class PluginManager {
                 $this.Logger.Info([LogMessage]::new("[PluginManager:CreatePluginFromModuleManifest] Creating command [$($command.Name)] for new plugin [$($plugin.Name)]"))
                 $cmd = [Command]::new()
 
-                # Normally, bot commands only respond to normal messages received from the chat network
-                # To respond to other message types/subtypes, metadata must be added to the function to
-                # call out the exact message type/subtype the command is designed to respond to
-
                 # Set command properties based on metadata from module
                 if ($metadata) {
-
                     # Set the command name / trigger to the module function name or to
                     # what is defined in the metadata
                     if ($metadata.CommandName) {
@@ -400,7 +433,7 @@ class PluginManager {
                         $cmd.name = $command.Name
                     }
 
-                    # Add any defined permissions to the command
+                    # Add any permissions definede within the plugin to the command
                     if ($metadata.Permissions) {
                         foreach ($item in $metadata.Permissions) {
                             $fqPermission = "$($plugin.Name):$($item)"
@@ -409,6 +442,19 @@ class PluginManager {
                             } else {
                                 Write-Error -Message "Permission [$fqPermission] is not defined in the plugin module manifest. Command will not be added to plugin."
                                 continue
+                            }
+                        }
+                    }
+
+                    # Add any adhoc permissions that we may have been added in the past
+                    # that is stored in our plugin configuration
+                    if ($pluginConfig) {
+                        foreach ($permissionName in $pluginConfig.AdhocPermissions) {
+                            if ($p = $this.RoleManager.GetPermission($permissionName)) {
+                                $this.Logger.Debug([LogMessage]::new("[PluginManager:CreatePluginFromModuleManifest] Adding adhoc permission [$permissionName] to command [$($plugin.Name):$($cmd.name)]"))
+                                $cmd.AddPermission($p)
+                            } else {
+                                $this.Logger.Info([LogMessage]::new("[PluginManager:CreatePluginFromModuleManifest] Adhoc permission [$permissionName] not found in Role Manager. Can't attach permission to command [$($plugin.Name):$($cmd.name)]"))
                             }
                         }
                     }
@@ -461,8 +507,17 @@ class PluginManager {
 
                 $plugin.AddCommand($cmd)
             }
+
+            # If the plugin was previously disabled in our plugin configuration, make sure it still is
+            if ($pluginConfig -and (-not $pluginConfig.Enabled)) {
+                $plugin.Deactivate()
+            }
+
             $this.LoadCommands()
-            $this.SaveState()
+
+            if ($SaveAfterCreation) {
+                $this.SaveState()
+            }
         }
     }
 
@@ -503,6 +558,29 @@ class PluginManager {
         $builtinPlugin = Get-Item -Path "$($this._PoshBotModuleDir)/Plugins/Builtin"
         $moduleName = $builtinPlugin.BaseName
         $manifestPath = Join-Path -Path $builtinPlugin.FullName -ChildPath "$moduleName.psd1"
-        $this.CreatePluginFromModuleManifest($moduleName, $manifestPath, $false)
+        $this.CreatePluginFromModuleManifest($moduleName, $manifestPath, $false, $false)
+    }
+
+    [hashtable]GetPluginConfig([string]$PluginName, [string]$Version) {
+        if ($pluginConfig = $this._Storage.GetConfig('plugins')) {
+            if ($thisPluginConfig = $pluginConfig[$PluginName]) {
+                if (-not [string]::IsNullOrEmpty($Version)) {
+                    if ($thisPluginConfig.ContainsKey($Version)) {
+                        $pluginVersion = $Version
+                    } else {
+                        return $null
+                    }
+                } else {
+                    $pluginVersion = @($thisPluginConfig.Keys | Sort-Object -Descending)[0]
+                }
+
+                $pv = $thisPluginConfig[$pluginVersion]
+                return $pv
+            } else {
+                return $null
+            }
+        } else {
+            return $null
+        }
     }
 }
