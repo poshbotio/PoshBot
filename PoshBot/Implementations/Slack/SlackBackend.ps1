@@ -1,4 +1,5 @@
 
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingConvertToSecureStringWithPlainText', '', Scope='Class', Target='*')]
 class SlackBackend : Backend {
 
     # The types of message that we care about from Slack
@@ -580,3 +581,5 @@ function New-PoshBotSlackBackend {
         }
     }
 }
+
+Export-ModuleMember -Function 'New-PoshBotSlackBackend'

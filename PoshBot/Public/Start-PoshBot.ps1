@@ -130,3 +130,5 @@ function Start-PoshBot {
         }
     }
 }
+
+Export-ModuleMember -Function 'Start-Poshbot'

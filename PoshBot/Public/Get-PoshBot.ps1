@@ -69,3 +69,5 @@ function Get-PoshBot {
         }
     }
 }
+
+Export-ModuleMember -Function 'Get-PoshBot'

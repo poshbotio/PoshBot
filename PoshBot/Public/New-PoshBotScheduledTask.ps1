@@ -136,3 +136,5 @@ function New-PoshBotScheduledTask {
         Write-Error -Message 'Unable to find PoshBot module! Can not scheduled the task'
     }
 }
+
+Export-ModuleMember -Function 'New-PoshBotScheduledTask'

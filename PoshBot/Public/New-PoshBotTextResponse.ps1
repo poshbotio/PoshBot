@@ -32,6 +32,7 @@ function New-PoshBotTextResponse {
     .LINK
         New-PoshBotCardResponse
     #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Scope='Function', Target='*')]
     [cmdletbinding()]
     param(
         [parameter(Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName)]
@@ -50,3 +51,5 @@ function New-PoshBotTextResponse {
         }
     }
 }
+
+Export-ModuleMember -Function 'New-PoshBotTextResponse'

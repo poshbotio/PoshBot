@@ -58,3 +58,5 @@ function Stop-Poshbot {
         }
     }
 }
+
+Export-ModuleMember -Function 'Stop-Poshbot'

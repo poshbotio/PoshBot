@@ -59,6 +59,7 @@ function New-PoshBotInstance {
     .LINK
         Start-PoshBot
     #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Scope='Function', Target='*')]
     [cmdletbinding(DefaultParameterSetName = 'path')]
     param(
         [parameter(Mandatory, ParameterSetName = 'path', ValueFromPipeline, ValueFromPipelineByPropertyName)]
@@ -100,3 +101,5 @@ function New-PoshBotInstance {
         }
     }
 }
+
+Export-ModuleMember -Function 'New-PoshBotInstance'

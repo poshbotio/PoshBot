@@ -77,3 +77,5 @@ function Get-PoshBotConfiguration {
         }
     }
 }
+
+Export-ModuleMember -Function 'Get-PoshBotConfiguration'
