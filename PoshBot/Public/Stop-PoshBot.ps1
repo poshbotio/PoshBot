@@ -8,6 +8,8 @@ function Stop-Poshbot {
         a currently running PoshBot instance.
     .PARAMETER Id
         The job Id of the bot to stop.
+    .PARAMETER Force
+        Stop PoshBot instance without prompt
     .EXAMPLE
         Stop-PoshBot -Id 101
 
