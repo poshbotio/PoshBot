@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [0.1.3] Unreleased
 ### Added
 - New builtin command [Find-Plugin] to find available plugins in the desired PowerShell repository
 
