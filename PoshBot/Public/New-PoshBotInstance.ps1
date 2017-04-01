@@ -47,9 +47,9 @@ function New-PoshBotInstance {
 
         Gets a bot configuration, creates a Slack backend from it, then creates a new PoshBot instance and starts it as a background job.
     .INPUTS
-		String
+        String
     .INPUTS
-		BotConfiguration
+        BotConfiguration
     .OUTPUTS
         Bot
     .LINK

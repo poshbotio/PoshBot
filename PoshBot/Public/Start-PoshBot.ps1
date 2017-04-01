@@ -40,11 +40,11 @@ function Start-PoshBot {
 
         Gets the PoshBot job instance with ID 100.
     .INPUTS
-		Bot
+        Bot
     .INPUTS
-		BotConfiguration
+        BotConfiguration
     .INPUTS
-		String
+        String
     .OUTPUTS
         PSCustomObject
     .LINK

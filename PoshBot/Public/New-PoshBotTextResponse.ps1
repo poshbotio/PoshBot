@@ -26,7 +26,7 @@ function New-PoshBotTextResponse {
         command was called from. This could be useful if the contents the bot command returns are sensitive and should not be visible to all users
         in the channel.
     .INPUTS
-		String
+        String
     .OUTPUTS
         PSCustomObject
     .LINK

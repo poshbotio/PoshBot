@@ -19,7 +19,7 @@ function Stop-Poshbot {
 
         Gets all running PoshBot instances and stops them.
     .INPUTS
-		System.Int32
+        System.Int32
     .LINK
         Get-PoshBot
     .LINK

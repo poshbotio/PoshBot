@@ -28,7 +28,7 @@ function Get-PoshBot {
 
         Gets the PoshBot job instance with ID 100.
     .INPUTS
-		System.Int32
+        System.Int32
     .OUTPUTS
         PSCustomObject
     .LINK

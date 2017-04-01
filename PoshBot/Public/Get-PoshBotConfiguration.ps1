@@ -33,7 +33,7 @@ function Get-PoshBotConfiguration {
 
         Gets the bot configuration located at [C:\Users\brand\.poshbot\Cherry2000.psd1].
     .INPUTS
-		String
+        String
     .OUTPUTS
         BotConfiguration
     .LINK
