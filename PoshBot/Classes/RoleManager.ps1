@@ -302,7 +302,7 @@ class RoleManager {
 
     [void]AddUserToGroup([string]$UserId, [string]$GroupName) {
         try {
-            if ($userObject = $this._Backend.GetUser($UserId)) {
+            if ($this._Backend.GetUser($UserId)) {
                 if ($group = $this.Groups[$GroupName]) {
                     $msg = "Adding user [$UserId] to [$($group.Name)]"
                     $this._Logger.Info([LogMessage]::new([LogSeverity]::Warning, "[RoleManager:AddUserToGroup] $msg"))

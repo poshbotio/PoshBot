@@ -144,12 +144,11 @@ class CommandExecutor {
     # Validate that all mandatory parameters have been provided
     [bool]ValidateMandatoryParameters([ParsedCommand]$ParsedCommand, [Command]$Command) {
         $functionInfo = $Command.FunctionInfo
-        $matchedParamSet = $null
 
         $validated = $false
         foreach ($parameterSet in $functionInfo.ParameterSets) {
             Write-Verbose -Message "[CommandExecutor:ValidateMandatoryParameters] Validating parameters for parameter set [$($parameterSet.Name)]"
-            $mandatoryParameters = @($parameterSet.Parameters | where IsMandatory -eq $true).Name
+            $mandatoryParameters = @($parameterSet.Parameters | Where-Object {$_.IsMandatory -eq $true}).Name
             if ($mandatoryParameters.Count -gt 0) {
                 # Remove each provided mandatory parameter from the list
                 # so we can find any that will have to be coverd by positional parameters

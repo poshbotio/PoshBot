@@ -53,8 +53,8 @@ class PluginManager {
                         # Add adhoc permissions back to the plugin commands (all versions)
                         $commandPermissions = $pv.CommandPermissions
                         foreach ($commandName in $commandPermissions.Keys ) {
-                            $commmandPermissions = $commandPermissions[$commandName]
-                            foreach ($permission in $commandPermissions) {
+                            $permissions = $commandPermissions[$commandName]
+                            foreach ($permission in $permissions) {
                                 if ($p = $this.RoleManager.GetPermission($permission)) {
                                     $newPlugin.AddPermission($p)
                                 }
@@ -273,7 +273,7 @@ class PluginManager {
     [PluginCommand]MatchCommand([ParsedCommand]$ParsedCommand, [bool]$CommandSearch = $true) {
 
         # Check builtin commands first
-        $builtinKey = $this.Plugins['Builtin'].Keys | Select -First 1
+        $builtinKey = $this.Plugins['Builtin'].Keys | Select-Object -First 1
         $builtinPlugin = $this.Plugins['Builtin'][$builtinKey]
         foreach ($commandKey in $builtinPlugin.Commands.Keys) {
             $command = $builtinPlugin.Commands[$commandKey]
@@ -290,7 +290,7 @@ class PluginManager {
 
                 # Just look in the latest version of the plugin.
                 # This should be improved later to allow specifying a specific version to execute
-                $latestVersionKey = $plugin.Keys | Sort -Descending | Select-Object -First 1
+                $latestVersionKey = $plugin.Keys | Sort-Object -Descending | Select-Object -First 1
                 $pluginVersion = $plugin[$latestVersionKey]
 
                 foreach ($commandKey in $pluginVersion.Commands.Keys) {
@@ -313,7 +313,7 @@ class PluginManager {
 
                 # Just look in the latest version of the plugin.
                 # This should be improved later to allow specifying a specific version to execute
-                foreach ($pluginVersionKey in $plugin.Keys | Sort -Descending | Select-Object -Firs 1) {
+                foreach ($pluginVersionKey in $plugin.Keys | Sort-Object -Descending | Select-Object -First 1) {
                     $pluginVersion = $plugin[$pluginVersionKey]
 
                     foreach ($commandKey in $pluginVersion.Commands.Keys) {
@@ -337,7 +337,7 @@ class PluginManager {
         foreach ($pluginKey in $this.Plugins.Keys) {
             $plugin = $this.Plugins[$pluginKey]
 
-            foreach ($pluginVersionKey in $plugin.Keys | Sort -Descending | Select-Object -Firs 1) {
+            foreach ($pluginVersionKey in $plugin.Keys | Sort-Object -Descending | Select-Object -First 1) {
                 $pluginVersion = $plugin[$pluginVersionKey]
                 if ($pluginVersion.Enabled) {
                     foreach ($commandKey in $pluginVersion.Commands.Keys) {

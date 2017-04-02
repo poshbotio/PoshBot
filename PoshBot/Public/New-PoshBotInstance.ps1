@@ -62,7 +62,7 @@ function New-PoshBotInstance {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Scope='Function', Target='*')]
     [cmdletbinding(DefaultParameterSetName = 'path')]
     param(
-        [parameter(Mandatory, ParameterSetName = 'path', ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [parameter(ParameterSetName = 'path', ValueFromPipeline, ValueFromPipelineByPropertyName)]
         [ValidateScript({
             if (Test-Path -Path $_) {
                 if ( (Get-Item -Path $_).Extension -eq '.psd1') {

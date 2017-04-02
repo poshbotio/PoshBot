@@ -52,6 +52,7 @@ function Start-PoshBot {
     .LINK
         Stop-PoshBot
     #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Scope='Function', Target='*')]
     [cmdletbinding(DefaultParameterSetName = 'bot')]
     param(
         [parameter(Mandatory, ValueFromPipeline, ParameterSetName = 'bot')]
