@@ -149,7 +149,7 @@ task Compile -depends Clean {
     Copy-Item -Path (Join-Path -Path $sut -ChildPath 'Plugins') -Destination $outputModVerDir -Recurse
     Copy-Item -Path (Join-Path -Path $sut -ChildPath 'Task') -Destination $outputModVerDir -Recurse
 
-    "    Created compiled module at [$$modDir]"
+    "    Created compiled module at [$modDir]"
 } -description 'Compiles module from source'
 
 task build -depends Compile, UpdateMarkdownHelp {
