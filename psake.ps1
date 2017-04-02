@@ -52,13 +52,14 @@ task Pester -Depends Init {
 } -description 'Run Pester tests'
 
 task CreateMarkdownHelp -Depends Init {
-    Import-Module -Name $sut -Force -Verbose:$false
+    Import-Module -Name $outputModDir -Verbose:$false
     New-MarkdownHelp -Module $env:BHProjectName -OutputFolder "$projectRoot\docs\reference\functions" -WithModulePage -Force
 } -description 'Create initial markdown help files'
 
 task UpdateMarkdownHelp -Depends Init {
-    Import-Module -Name $sut -Force -Verbose:$false
-    Update-MarkdownHelpModule -Path "$projectRoot\docs\reference\functions"
+    #Import-Module -Name $sut -Force -Verbose:$false
+    Import-Module -Name $outputModDir -Verbose:$false
+    $mdFiles = Update-MarkdownHelpModule -Path "$projectRoot\docs\reference\functions"
 } -description 'Update markdown help files'
 
 task CreateExternalHelp -Depends Init {
@@ -69,7 +70,8 @@ task CreateExternalHelp -Depends Init {
 Task RegenerateHelp -Depends Init, UpdateMarkdownHelp, CreateExternalHelp
 
 Task Publish -Depends Init {
-    Publish-Module -Path $sut -NuGetApiKey $env:PSGalleryApiKey -Repository PSGallery
+    "    Publishing version [$($manifest.ModuleVersion)] to PSGallery..."
+    Publish-Module -Path $outputModVerDir -NuGetApiKey $env:PSGalleryApiKey -Repository PSGallery
 }
 
 task Clean -depends Init {
@@ -80,9 +82,10 @@ task Clean -depends Init {
     } else {
         New-Item -Path $outputDir -ItemType Directory > $null
     }
+    "    Cleaned previous output directory [$$outputDir]"
 } -description 'Cleans module output directory'
 
-task Build -depends Clean, UpdateMarkdownHelp {
+task Compile -depends Clean {
 
     # Create module output directory
     $modDir = New-Item -Path $outputModDir -ItemType Directory
@@ -91,8 +94,47 @@ task Build -depends Clean, UpdateMarkdownHelp {
     # Append items to psm1
     Write-Verbose -Message 'Creating psm1...'
     $psm1 = New-Item -Path (Join-Path -Path $outputModVerDir -ChildPath "$($ENV:BHProjectName).psm1") -ItemType File
-    Get-ChildItem -Path (Join-Path -Path $sut -ChildPath 'Classes') -Recurse |
-        Get-Content -Raw | Add-Content -Path $psm1 -Encoding UTF8
+
+    # This is dumb but oh well :)
+    # We need to write out the classes in a particular order
+    $classDir = (Join-Path -Path $sut -ChildPath 'Classes')
+    @(
+        'Enums'
+        'Logger'
+        'ExceptionFormatter'
+        'BotCommand'
+        'Event'
+        'Person'
+        'Room'
+        'Message'
+        'Response'
+        'Card'
+        'CommandResult'
+        'CommandParser'
+        'Permission'
+        'AccessFilter'
+        'Role'
+        'Group'
+        'Trigger'
+        'StorageProvider'
+        'RoleManager'
+        'Command'
+        'CommandHistory'
+        'Plugin'
+        'PluginCommand'
+        'CommandExecutor'
+        'ConfigProvidedParameter'
+        'PluginManager'
+        'ConnectionConfig'
+        'Connection'
+        'Backend'
+        'BotConfiguration'
+        'Bot'
+    ) | ForEach-Object {
+        Get-Content -Path (Join-Path -Path $classDir -ChildPath "$($_).ps1") | Add-Content -Path $psm1 -Encoding UTF8
+    }
+    # Get-ChildItem -Path (Join-Path -Path $sut -ChildPath 'Classes') -Recurse |
+    #     Get-Content -Raw | Add-Content -Path $psm1 -Encoding UTF8
     Get-ChildItem -Path (Join-Path -Path $sut -ChildPath 'Private') -Recurse |
         Get-Content -Raw | Add-Content -Path $psm1 -Encoding UTF8
     Get-ChildItem -Path (Join-Path -Path $sut -ChildPath 'Public') -Recurse |
@@ -103,18 +145,24 @@ task Build -depends Clean, UpdateMarkdownHelp {
     # Copy over other items
     Copy-Item -Path $env:BHPSModuleManifest -Destination $outputModVerDir
     #Copy-Item -Path (Join-Path -Path $sut -ChildPath 'Implementations') -Destination $outputModVerDir -Recurse
+    Copy-Item -Path (Join-Path -Path $classDir -ChildPath 'PoshBotAttribute.ps1') -Destination $outputModVerDir
     Copy-Item -Path (Join-Path -Path $sut -ChildPath 'Plugins') -Destination $outputModVerDir -Recurse
     Copy-Item -Path (Join-Path -Path $sut -ChildPath 'Task') -Destination $outputModVerDir -Recurse
 
-    # External help
-    $helpXml = New-ExternalHelp "$projectRoot\docs\reference\functions" -OutputPath (Join-Path -Path $outputModVerDir -ChildPath 'en-US')
-
+    "    Created compiled module at [$$modDir]"
 } -description 'Compiles module from source'
 
+task build -depends Compile, UpdateMarkdownHelp {
+    # External help
+    $helpXml = New-ExternalHelp "$projectRoot\docs\reference\functions" -OutputPath (Join-Path -Path $outputModVerDir -ChildPath 'en-US')
+    "    XML help created at [$helpXml]"
+}
+
 task TestRun -depends Build {
-    Import-Module -Name (Join-Path -Path $outputModVerDir -ChildPath "$($env:BHProjectName).psd1")
+    Remove-Module $env:BHProjectName -Force
+    Import-Module -Name $outputModDir -Verbose:$false
     $config = Get-PoshBotConfiguration C:\Users\brand\.poshbot\Cherry2000.psd1
     $backend = New-PoshBotSlackBackend -Configuration $config.BackendConfiguration
-    $bot = New-PoshBotInstance -Backend $backend -Configuration $config
+    $bot = New-PoshBotInstance -Backend $backend -Configuration $config -Verbose
     $bot.Start()
 }
