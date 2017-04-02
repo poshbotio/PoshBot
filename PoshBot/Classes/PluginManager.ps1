@@ -48,15 +48,15 @@ class PluginManager {
                                     $npv.AddPermission($p)
                                 }
                             }
-                        }
 
-                        # Add adhoc permissions back to the plugin commands (all versions)
-                        $commandPermissions = $pv.CommandPermissions
-                        foreach ($commandName in $commandPermissions.Keys ) {
-                            $permissions = $commandPermissions[$commandName]
-                            foreach ($permission in $permissions) {
-                                if ($p = $this.RoleManager.GetPermission($permission)) {
-                                    $newPlugin.AddPermission($p)
+                            # Add adhoc permissions back to the plugin commands (all versions)
+                            $commandPermissions = $pv.CommandPermissions
+                            foreach ($commandName in $commandPermissions.Keys ) {
+                                $permissions = $commandPermissions[$commandName]
+                                foreach ($permission in $permissions) {
+                                    if ($p = $this.RoleManager.GetPermission($permission)) {
+                                        $npv.AddPermission($p)
+                                    }
                                 }
                             }
                         }
