@@ -84,7 +84,7 @@ function New-PoshBotInstance {
     )
 
     begin {
-        $here = $script:moduleRoot
+        $here = $PSScriptRoot
     }
 
     process {
