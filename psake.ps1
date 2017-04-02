@@ -30,19 +30,26 @@ task Init {
 task Test -Depends Init, Analyze, Pester -description 'Run test suite'
 
 task Analyze -Depends Init, Build {
-    $results = Invoke-ScriptAnalyzer -Path $outputModVerDir -Verbose:$false
-    if (@($results | Where-Object {$_.Severity -eq 'Error'}).Count -gt 0) {
-        $results | Format-Table
-        Write-Error -Message 'One or more Script Analyzer errors/warnings where found. Build cannot continue!'
+    $analysis = Invoke-ScriptAnalyzer -Path $outputModVerDir -Verbose:$false
+    $errors = $analysis | Where-Object {$_.Severity -eq 'Error'}
+    $warnings = $analysis | Where-Object {$_.Severity -eq 'Warning'}
+    if (@($errors).Count -gt 0) {
+        Write-Error -Message 'One or more Script Analyzer errors were found. Build cannot continue!'
+        $errors | Format-Table
+    }
+
+    if (@($warnings).Count -gt 0) {
+        Write-Warning -Message 'One or more Script Analyzer warnings were found. These should be corrected.'
+        $warnings | Format-Table
     }
 } -description 'Run PSScriptAnalyzer'
 
-task Pester -Depends Init {
+task Pester -Depends Init, Build {
     if(-not $ENV:BHProjectPath) {
         Set-BuildEnvironment -Path $PSScriptRoot\..
     }
-    Remove-Module $ENV:BHProjectName -ErrorAction SilentlyContinue
-    Import-Module -Name $outputModDir -Force
+    Remove-Module $ENV:BHProjectName -ErrorAction SilentlyContinue -Verbose:$false
+    Import-Module -Name $outputModDir -Force -Verbose:$false
     $testResultsXml = Join-Path -Path $outputDir -ChildPath 'testResults.xml'
     $testResults = Invoke-Pester -Path $tests -PassThru -OutputFile $testResultsXml -OutputFormat NUnitXml
     if ($testResults.FailedCount -gt 0) {
@@ -59,7 +66,9 @@ task CreateMarkdownHelp -Depends Init {
 task UpdateMarkdownHelp -Depends Init {
     #Import-Module -Name $sut -Force -Verbose:$false
     Import-Module -Name $outputModDir -Verbose:$false
-    $mdFiles = Update-MarkdownHelpModule -Path "$projectRoot\docs\reference\functions"
+    $mdHelpPath = Join-Path -Path $projectRoot -ChildPath 'docs/reference/functions'
+    $mdFiles = Update-MarkdownHelpModule -Path $mdHelpPath
+    "    Markdown help updated at [$mdHelpPath]"
 } -description 'Update markdown help files'
 
 task CreateExternalHelp -Depends Init {
@@ -82,7 +91,7 @@ task Clean -depends Init {
     } else {
         New-Item -Path $outputDir -ItemType Directory > $null
     }
-    "    Cleaned previous output directory [$$outputDir]"
+    "    Cleaned previous output directory [$outputDir]"
 } -description 'Cleans module output directory'
 
 task Compile -depends Clean {
@@ -159,10 +168,10 @@ task build -depends Compile, UpdateMarkdownHelp {
 }
 
 task TestRun -depends Build {
-    Remove-Module $env:BHProjectName -Force
+    Remove-Module $env:BHProjectName -Force -Verbose:$false
     Import-Module -Name $outputModDir -Verbose:$false
     $config = Get-PoshBotConfiguration C:\Users\brand\.poshbot\Cherry2000.psd1
     $backend = New-PoshBotSlackBackend -Configuration $config.BackendConfiguration
-    $bot = New-PoshBotInstance -Backend $backend -Configuration $config -Verbose
+    $bot = New-PoshBotInstance -Backend $backend -Configuration $config
     $bot.Start()
 }
