@@ -67,7 +67,7 @@ task UpdateMarkdownHelp -Depends Init {
     #Import-Module -Name $sut -Force -Verbose:$false
     Import-Module -Name $outputModDir -Verbose:$false
     $mdHelpPath = Join-Path -Path $projectRoot -ChildPath 'docs/reference/functions'
-    $mdFiles = Update-MarkdownHelpModule -Path $mdHelpPath
+    $mdFiles = Update-MarkdownHelpModule -Path $mdHelpPath -Verbose:$false
     "    Markdown help updated at [$mdHelpPath]"
 } -description 'Update markdown help files'
 
@@ -165,13 +165,4 @@ task build -depends Compile, UpdateMarkdownHelp {
     # External help
     $helpXml = New-ExternalHelp "$projectRoot\docs\reference\functions" -OutputPath (Join-Path -Path $outputModVerDir -ChildPath 'en-US')
     "    XML help created at [$helpXml]"
-}
-
-task TestRun -depends Build {
-    Remove-Module $env:BHProjectName -Force -Verbose:$false
-    Import-Module -Name $outputModDir -Verbose:$false
-    $config = Get-PoshBotConfiguration C:\Users\brand\.poshbot\Cherry2000.psd1
-    $backend = New-PoshBotSlackBackend -Configuration $config.BackendConfiguration
-    $bot = New-PoshBotInstance -Backend $backend -Configuration $config
-    $bot.Start()
 }
