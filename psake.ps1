@@ -29,7 +29,7 @@ task Init {
 
 task Test -Depends Init, Analyze, Pester -description 'Run test suite'
 
-task Analyze -Depends Init, Build {
+task Analyze -Depends Build {
     $analysis = Invoke-ScriptAnalyzer -Path $outputModVerDir -Verbose:$false
     $errors = $analysis | Where-Object {$_.Severity -eq 'Error'}
     $warnings = $analysis | Where-Object {$_.Severity -eq 'Warning'}
@@ -44,7 +44,7 @@ task Analyze -Depends Init, Build {
     }
 } -description 'Run PSScriptAnalyzer'
 
-task Pester -Depends Init, Build {
+task Pester -Depends Build {
     if(-not $ENV:BHProjectPath) {
         Set-BuildEnvironment -Path $PSScriptRoot\..
     }
@@ -58,12 +58,12 @@ task Pester -Depends Init, Build {
     }
 } -description 'Run Pester tests'
 
-task CreateMarkdownHelp -Depends Init {
+task CreateMarkdownHelp -Depends Compile {
     Import-Module -Name $outputModDir -Verbose:$false
     New-MarkdownHelp -Module $env:BHProjectName -OutputFolder "$projectRoot\docs\reference\functions" -WithModulePage -Force
 } -description 'Create initial markdown help files'
 
-task UpdateMarkdownHelp -Depends Init {
+task UpdateMarkdownHelp -Depends Compile {
     #Import-Module -Name $sut -Force -Verbose:$false
     Import-Module -Name $outputModDir -Verbose:$false
     $mdHelpPath = Join-Path -Path $projectRoot -ChildPath 'docs/reference/functions'
@@ -71,14 +71,14 @@ task UpdateMarkdownHelp -Depends Init {
     "    Markdown help updated at [$mdHelpPath]"
 } -description 'Update markdown help files'
 
-task CreateExternalHelp -Depends Init {
+task CreateExternalHelp -Depends CreateMarkdownHelp {
     New-ExternalHelp "$projectRoot\docs\reference\functions" -OutputPath "$sut\en-US"
 
 } -description 'Create module help from markdown files'
 
-Task RegenerateHelp -Depends Init, UpdateMarkdownHelp, CreateExternalHelp
+Task RegenerateHelp -Depends UpdateMarkdownHelp, CreateExternalHelp
 
-Task Publish -Depends Init {
+Task Publish -Depends Build {
     "    Publishing version [$($manifest.ModuleVersion)] to PSGallery..."
     Publish-Module -Path $outputModVerDir -NuGetApiKey $env:PSGalleryApiKey -Repository PSGallery
 }
@@ -95,7 +95,6 @@ task Clean -depends Init {
 } -description 'Cleans module output directory'
 
 task Compile -depends Clean {
-
     # Create module output directory
     $modDir = New-Item -Path $outputModDir -ItemType Directory
     New-Item -Path $outputModVerDir -ItemType Directory > $null
@@ -161,7 +160,7 @@ task Compile -depends Clean {
     "    Created compiled module at [$modDir]"
 } -description 'Compiles module from source'
 
-task build -depends Compile, UpdateMarkdownHelp {
+task Build -depends Compile, UpdateMarkdownHelp {
     # External help
     $helpXml = New-ExternalHelp "$projectRoot\docs\reference\functions" -OutputPath (Join-Path -Path $outputModVerDir -ChildPath 'en-US')
     "    XML help created at [$helpXml]"
