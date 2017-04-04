@@ -20,11 +20,12 @@ task Init {
     "Build System Details:"
     Get-Item ENV:BH*
 
-    $modules = 'Pester', 'platyPS', 'PSScriptAnalyzer'
-    Install-Module $modules -Repository PSGallery -Confirm:$false
-    Import-Module $modules -Verbose:$false -Force
-
-
+    'Pester', 'platyPS', 'PSScriptAnalyzer' | Foreach-Object {
+        if (-not (Get-Module -Name $_ -ListAvailable -ErrorAction SilentlyContinue)) {
+            Install-Module $modules -Repository PSGallery -Scope CurrentUser -Confirm:$false -ErrorAction Stop
+        }
+        Import-Module $_ -Verbose:$false -Force -ErrorAction Stop
+    }
 } -description 'Initialize build environment'
 
 task Test -Depends Init, Analyze, Pester -description 'Run test suite'
@@ -60,7 +61,9 @@ task Pester -Depends Build {
 
 task CreateMarkdownHelp -Depends Compile {
     Import-Module -Name $outputModDir -Verbose:$false
-    New-MarkdownHelp -Module $env:BHProjectName -OutputFolder "$projectRoot\docs\reference\functions" -WithModulePage -Force
+    $mdHelpPath = Join-Path -Path $projectRoot -ChildPath 'docs/reference/functions'
+    $mdFiles = New-MarkdownHelp -Module $env:BHProjectName -OutputFolder $mdHelpPath -WithModulePage -Force
+    "    Markdown help created at [$mdHelpPath]"
 } -description 'Create initial markdown help files'
 
 task UpdateMarkdownHelp -Depends Compile {
@@ -73,7 +76,6 @@ task UpdateMarkdownHelp -Depends Compile {
 
 task CreateExternalHelp -Depends CreateMarkdownHelp {
     New-ExternalHelp "$projectRoot\docs\reference\functions" -OutputPath "$sut\en-US"
-
 } -description 'Create module help from markdown files'
 
 Task RegenerateHelp -Depends UpdateMarkdownHelp, CreateExternalHelp
@@ -160,8 +162,8 @@ task Compile -depends Clean {
     "    Created compiled module at [$modDir]"
 } -description 'Compiles module from source'
 
-task Build -depends Compile, UpdateMarkdownHelp {
+task Build -depends Compile, CreateMarkdownHelp {
     # External help
     $helpXml = New-ExternalHelp "$projectRoot\docs\reference\functions" -OutputPath (Join-Path -Path $outputModVerDir -ChildPath 'en-US')
-    "    XML help created at [$helpXml]"
+    "    Module XML help created at [$helpXml]"
 }
