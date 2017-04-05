@@ -60,10 +60,11 @@ task Pester -Depends Build {
 } -description 'Run Pester tests'
 
 task CreateMarkdownHelp -Depends Compile {
-    Import-Module -Name $outputModDir -Verbose:$false
+    Import-Module -Name $outputModDir -Verbose:$false -Global
     $mdHelpPath = Join-Path -Path $projectRoot -ChildPath 'docs/reference/functions'
     $mdFiles = New-MarkdownHelp -Module $env:BHProjectName -OutputFolder $mdHelpPath -WithModulePage -Force
     "    Markdown help created at [$mdHelpPath]"
+    Remove-Module -Name $env:BHProjectName -Verbose:$false
 } -description 'Create initial markdown help files'
 
 task UpdateMarkdownHelp -Depends Compile {
