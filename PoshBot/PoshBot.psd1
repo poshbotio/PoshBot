@@ -30,7 +30,7 @@ CompanyName = 'Community'
 Copyright = '(c) 2017 Brandon Olin. All rights reserved.'
 
 # Description of the functionality provided by this module
-Description = 'Powershell-based bot framework for ChatOps'
+Description = 'A Powershell-based bot framework for ChatOps. PowerShell modules are loaded into PoshBot and instantly become available at bot commands. PoshBot currently supports connecting to Slack to provide you with awesome ChatOps goodness. Bot commands can optionally be secured via permissions, roles, and groups to control who can execute what.'
 
 # Minimum version of the Windows PowerShell engine required by this module
 PowerShellVersion = '5.0'
@@ -113,17 +113,52 @@ PrivateData = @{
         Tags = @('PoshBot', 'ChatOps', 'Bot')
 
         # A URL to the license for this module.
-        LicenseUri = 'https://raw.githubusercontent.com/devblackops/PoshBot/master/LICENSE'
+        LicenseUri = 'https://raw.githubusercontent.com/poshbotio/PoshBot/master/LICENSE'
 
         # A URL to the main website for this project.
-        ProjectUri = 'https://github.com/devblackops/PoshBot'
+        ProjectUri = 'https://github.com/poshbotio/PoshBot'
 
         # A URL to an icon representing this module.
-        IconUri = 'https://github.com/devblackops/PoshBot/raw/master/Media/poshbot_logo_thumb_256.png'
+        IconUri = 'https://raw.githubusercontent.com/poshbotio/PoshBot/master/Media/poshbot_logo_thumb_256.png'
 
         # ReleaseNotes of this module
-        # ReleaseNotes = ''
+        ReleaseNotes = @'
+## [0.2.0] 2017-04-06
+### Added
+- Commands to create and assign adhoc permissions
 
+## [0.1.3] Unreleased
+### Added
+- New builtin command [Find-Plugin] to find available plugins in the desired PowerShell repository
+
+## [0.1.2] - 2017-03-24
+### Fixed
+- Bot command names are now set to the value of the CommandName property of [PoshBot.BotCommand()] if defined. Previously, this didn't work and the bot command names always used the function name
+- Fixed a bug in the builtin command [Install-Plugin] where if specified, the specific version of a plugin to install produced an error
+
+## [0.1.1] - 2017-03-23
+### Fixed error in !install-plugin command when installing plugins that had a dependency on the PoshBot module.
+
+## [0.1.0] - 2017-03-21
+### Added
+- Initial documentation for mkdocs
+- New function to create scheduled task to run PoshBot
+- New builtin command to get recent command execution history
+- Commands to remove plugins/roles/groups
+- Support for multiple plugin versions
+
+### Changed
+- Standadized builtin bot command parameter names
+- Move demo commands (WolframAlpha, Giphy) into seperate plugin repos
+- Move network plugin into seperate repo
+
+### Fixed
+- Fix StopUpstreamCommandsException exception from being thrown in Install-Plugin command
+
+## [0.0.1] - 2016-12-18
+### Added
+- Initial commit
+'@
     } # End of PSData hashtable
 
 } # End of PrivateData hashtable
