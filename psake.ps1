@@ -21,7 +21,7 @@ task Init {
     Get-Item ENV:BH*
     "`n"
 
-    'Configuration', 'Pester', 'platyPS', 'PSScriptAnalyzer' | Foreach-Object {
+    'Configuration', 'Pester', 'platyPS', 'PSScriptAnalyzer', 'PSSlack' | Foreach-Object {
         if (-not (Get-Module -Name $_ -ListAvailable -ErrorAction SilentlyContinue)) {
             Install-Module -Name $_ -Repository PSGallery -Scope CurrentUser -AllowClobber -Confirm:$false -ErrorAction Stop
         }
