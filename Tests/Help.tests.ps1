@@ -10,9 +10,7 @@ $outputModVerDir = Join-Path -Path $outputModDir -ChildPath $manifest.ModuleVers
 # Remove all versions of the module from the session. Pester can't handle multiple versions.
 Get-Module $env:BHProjectName | Remove-Module -Force
 Import-Module -Name (Join-Path -Path $outputModVerDir -ChildPath "$($env:BHProjectName).psd1") -Verbose:$false -ErrorAction Stop
-$moduleVersion = (Test-ModuleManifest $env:BHPSModuleManifest |
-    Select-Object -ExpandProperty Version).ToString()
-$ms = [Microsoft.PowerShell.Commands.ModuleSpecification]@{ ModuleName = $env:BHProjectName; RequiredVersion = $moduleVersion }
+$ms = [Microsoft.PowerShell.Commands.ModuleSpecification]@{ ModuleName = $env:BHProjectName; RequiredVersion = $manifest.ModuleVersion.ToString() }
 $commands = Get-Command -FullyQualifiedModule $ms -CommandType Cmdlet, Function, Workflow  # Not alias
 
 ## When testing help, remember that help is cached at the beginning of each session.

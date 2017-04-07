@@ -1,7 +1,10 @@
 
 $moduleName = $env:BHProjectName
 $manifest = Import-PowerShellDataFile -Path $env:BHPSModuleManifest
+$outputDir = Join-Path -Path $ENV:BHProjectPath -ChildPath 'out'
+$outputModDir = Join-Path -Path $outputDir -ChildPath $env:BHProjectName
 $outputModVerDir = Join-Path -Path $outputModDir -ChildPath $manifest.ModuleVersion
+$outputManifestPath = Join-Path -Path $outputModVerDir -Child "$($moduleName).psd1"
 $changelogPath = Join-Path -Path $env:BHProjectPath -Child 'CHANGELOG.md'
 
 Describe 'Module manifest' {
@@ -11,7 +14,7 @@ Describe 'Module manifest' {
 
         It 'has a valid manifest' {
             {
-                $script:manifest = Test-ModuleManifest -Path $env:BHPSModuleManifest -ErrorAction Stop -WarningAction SilentlyContinue
+                $script:manifest = Test-ModuleManifest -Path $outputManifestPath -ErrorAction Stop -WarningAction SilentlyContinue
             } | Should Not Throw
         }
 

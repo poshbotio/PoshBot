@@ -19,10 +19,11 @@ task Init {
     "`nSTATUS: Testing with PowerShell $psVersion"
     "Build System Details:"
     Get-Item ENV:BH*
+    "`n"
 
     'Pester', 'platyPS', 'PSScriptAnalyzer' | Foreach-Object {
         if (-not (Get-Module -Name $_ -ListAvailable -ErrorAction SilentlyContinue)) {
-            Install-Module $modules -Repository PSGallery -Scope CurrentUser -Confirm:$false -ErrorAction Stop
+            Install-Module $_ -Repository PSGallery -Scope CurrentUser -Confirm:$false -ErrorAction Stop
         }
         Import-Module $_ -Verbose:$false -Force -ErrorAction Stop
     }
@@ -34,6 +35,11 @@ task Analyze -Depends Build {
     $analysis = Invoke-ScriptAnalyzer -Path $outputModVerDir -Verbose:$false
     $errors = $analysis | Where-Object {$_.Severity -eq 'Error'}
     $warnings = $analysis | Where-Object {$_.Severity -eq 'Warning'}
+
+    if (($errors.Count -eq 0) -and ($warnings.Count -eq 0)) {
+        '    PSScriptAnalyzer passed without errors or warnings'
+    }
+
     if (@($errors).Count -gt 0) {
         Write-Error -Message 'One or more Script Analyzer errors were found. Build cannot continue!'
         $errors | Format-Table
@@ -46,6 +52,8 @@ task Analyze -Depends Build {
 } -description 'Run PSScriptAnalyzer'
 
 task Pester -Depends Build {
+    Push-Location
+    Set-Location -PassThru $outputModDir
     if(-not $ENV:BHProjectPath) {
         Set-BuildEnvironment -Path $PSScriptRoot\..
     }
@@ -57,6 +65,7 @@ task Pester -Depends Build {
         $testResults | Format-List
         Write-Error -Message 'One or more Pester tests failed. Build cannot continue!'
     }
+    Pop-Location
 } -description 'Run Pester tests'
 
 task CreateMarkdownHelp -Depends Compile {
