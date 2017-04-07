@@ -27,7 +27,7 @@ Author = 'Brandon Olin'
 CompanyName = 'Community'
 
 # Copyright statement for this module
-Copyright = '(c) 2016 Brandon Olin. All rights reserved.'
+Copyright = '(c) 2017 Brandon Olin. All rights reserved.'
 
 # Description of the functionality provided by this module
 Description = 'Powershell-based bot framework for ChatOps'
