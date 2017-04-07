@@ -112,11 +112,15 @@ PrivateData = @{
         }
         @{
             Name = 'manage-groups'
-            Description = 'Can create/create/update/delete groups'
+            Description = 'Can create/update/delete groups'
         }
         @{
             Name = 'manage-roles'
-            Description = 'Can create/create/update/delete roles'
+            Description = 'Can create/update/delete roles'
+        }
+        @{
+            Name = 'manage-permissions'
+            Descirption = 'Can create/update/delete permissions'
         }
         @{
             Name = 'manage-plugins'

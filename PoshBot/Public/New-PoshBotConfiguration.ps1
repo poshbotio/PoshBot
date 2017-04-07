@@ -145,6 +145,7 @@ function New-PoshBotConfiguration {
     .LINK
         Start-PoshBot
     #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Scope='Function', Target='*')]
     [cmdletbinding()]
     param(
         [string]$Name = 'PoshBot',
@@ -182,3 +183,5 @@ function New-PoshBotConfiguration {
 
     $config
 }
+
+Export-ModuleMember -Function 'New-PoshBotConfiguration'

@@ -33,7 +33,7 @@ class RoleManager {
             'view-group'
             'manage-plugins'
             'manage-groups'
-            'manage-roles'
+            'manage-permissions'
         ) | foreach-object {
             $p = [Permission]::new($_, 'Builtin')
             $adminRole.AddPermission($p)
@@ -55,33 +55,19 @@ class RoleManager {
 
         $permissionsToSave = @{}
         foreach ($permission in $this.Permissions.GetEnumerator()) {
-            $p = @{
-                Name = $permission.Value.Name
-                Plugin = $permission.Value.Plugin
-                Description = $permission.Value.Description
-            }
-            $permissionsToSave.Add($permission.Name, $p)
+            $permissionsToSave.Add($permission.Name, $permission.Value.ToHash())
         }
         $this._Storage.SaveConfig('permissions', $permissionsToSave)
 
         $rolesToSave = @{}
         foreach ($role in $this.Roles.GetEnumerator()) {
-            $r = @{
-                Description = $role.Value.Description
-                Permissions = $role.Value.Permissions.Keys
-            }
-            $rolesToSave.Add($role.Name, $r)
+            $rolesToSave.Add($role.Name, $role.Value.ToHash())
         }
         $this._Storage.SaveConfig('roles', $rolesToSave)
 
         $groupsToSave = @{}
         foreach ($group in $this.Groups.GetEnumerator()) {
-            $g = @{
-                Description = $group.Value.Description
-                Users = $group.Value.Users.Keys
-                Roles = $group.Value.Roles.Keys
-            }
-            $groupsToSave.Add($group.Name, $g)
+            $groupsToSave.Add($group.Name, $group.Value.ToHash())
         }
         $this._Storage.SaveConfig('groups', $groupsToSave)
     }
@@ -96,6 +82,9 @@ class RoleManager {
             foreach($permKey in $permissionConfig.Keys) {
                 $perm = $permissionConfig[$permKey]
                 $p = [Permission]::new($perm.Name, $perm.Plugin)
+                if ($perm.Adhoc) {
+                    $p.Adhoc = $perm.Adhoc
+                }
                 if ($perm.Description) {
                     $p.Description = $perm.Description
                 }
@@ -313,7 +302,7 @@ class RoleManager {
 
     [void]AddUserToGroup([string]$UserId, [string]$GroupName) {
         try {
-            if ($userObject = $this._Backend.GetUser($UserId)) {
+            if ($this._Backend.GetUser($UserId)) {
                 if ($group = $this.Groups[$GroupName]) {
                     $msg = "Adding user [$UserId] to [$($group.Name)]"
                     $this._Logger.Info([LogMessage]::new([LogSeverity]::Warning, "[RoleManager:AddUserToGroup] $msg"))

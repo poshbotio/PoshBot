@@ -26,12 +26,13 @@ function New-PoshBotTextResponse {
         command was called from. This could be useful if the contents the bot command returns are sensitive and should not be visible to all users
         in the channel.
     .INPUTS
-		String
+        String
     .OUTPUTS
         PSCustomObject
     .LINK
         New-PoshBotCardResponse
     #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Scope='Function', Target='*')]
     [cmdletbinding()]
     param(
         [parameter(Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName)]
@@ -50,3 +51,5 @@ function New-PoshBotTextResponse {
         }
     }
 }
+
+Export-ModuleMember -Function 'New-PoshBotTextResponse'

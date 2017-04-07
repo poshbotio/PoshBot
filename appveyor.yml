@@ -1,7 +1,10 @@
 
-version: 1.0.{build}
+version: 0.2.0.{build}
 image: WMF 5
 skip_commits:
   message: /updated readme.*|update readme.*s/
 build: off
-test: off
+
+#Kick off the CI/CD pipeline
+test_script:
+  - ps: . .\build.ps1 -Task Test

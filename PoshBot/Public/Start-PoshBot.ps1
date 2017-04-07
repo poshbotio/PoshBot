@@ -40,11 +40,11 @@ function Start-PoshBot {
 
         Gets the PoshBot job instance with ID 100.
     .INPUTS
-		Bot
+        Bot
     .INPUTS
-		BotConfiguration
+        BotConfiguration
     .INPUTS
-		String
+        String
     .OUTPUTS
         PSCustomObject
     .LINK
@@ -52,6 +52,7 @@ function Start-PoshBot {
     .LINK
         Stop-PoshBot
     #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Scope='Function', Target='*')]
     [cmdletbinding(DefaultParameterSetName = 'bot')]
     param(
         [parameter(Mandatory, ValueFromPipeline, ParameterSetName = 'bot')]
@@ -130,3 +131,5 @@ function Start-PoshBot {
         }
     }
 }
+
+Export-ModuleMember -Function 'Start-Poshbot'

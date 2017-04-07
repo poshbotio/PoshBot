@@ -27,7 +27,7 @@ function Save-PoshBotConfiguration {
 
         Saves the PoshBot configuration to [c:\mybot\mybot.psd1] and Overwrites existing file. The new file will be returned.
     .INPUTS
-		BotConfiguration
+        BotConfiguration
     .OUTPUTS
         System.IO.FileInfo
     .LINK
@@ -71,3 +71,5 @@ function Save-PoshBotConfiguration {
         }
     }
 }
+
+Export-ModuleMember -Function 'Save-PoshBotConfiguration'

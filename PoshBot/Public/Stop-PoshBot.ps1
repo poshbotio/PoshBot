@@ -8,6 +8,8 @@ function Stop-Poshbot {
         a currently running PoshBot instance.
     .PARAMETER Id
         The job Id of the bot to stop.
+    .PARAMETER Force
+        Stop PoshBot instance without prompt
     .EXAMPLE
         Stop-PoshBot -Id 101
 
@@ -17,7 +19,7 @@ function Stop-Poshbot {
 
         Gets all running PoshBot instances and stops them.
     .INPUTS
-		System.Int32
+        System.Int32
     .LINK
         Get-PoshBot
     .LINK
@@ -58,3 +60,5 @@ function Stop-Poshbot {
         }
     }
 }
+
+Export-ModuleMember -Function 'Stop-Poshbot'

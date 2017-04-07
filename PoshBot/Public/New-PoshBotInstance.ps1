@@ -47,9 +47,9 @@ function New-PoshBotInstance {
 
         Gets a bot configuration, creates a Slack backend from it, then creates a new PoshBot instance and starts it as a background job.
     .INPUTS
-		String
+        String
     .INPUTS
-		BotConfiguration
+        BotConfiguration
     .OUTPUTS
         Bot
     .LINK
@@ -59,9 +59,10 @@ function New-PoshBotInstance {
     .LINK
         Start-PoshBot
     #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Scope='Function', Target='*')]
     [cmdletbinding(DefaultParameterSetName = 'path')]
     param(
-        [parameter(Mandatory, ParameterSetName = 'path', ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [parameter(ParameterSetName = 'path', ValueFromPipeline, ValueFromPipelineByPropertyName)]
         [ValidateScript({
             if (Test-Path -Path $_) {
                 if ( (Get-Item -Path $_).Extension -eq '.psd1') {
@@ -83,7 +84,7 @@ function New-PoshBotInstance {
     )
 
     begin {
-        $here = $script:moduleRoot
+        $here = $PSScriptRoot
     }
 
     process {
@@ -100,3 +101,5 @@ function New-PoshBotInstance {
         }
     }
 }
+
+Export-ModuleMember -Function 'New-PoshBotInstance'

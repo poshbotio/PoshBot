@@ -1,4 +1,5 @@
 
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingConvertToSecureStringWithPlainText', '', Scope='Class', Target='*')]
 class SlackBackend : Backend {
 
     # The types of message that we care about from Slack
@@ -558,6 +559,7 @@ class SlackBackend : Backend {
 }
 
 function New-PoshBotSlackBackend {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Scope='Function', Target='*')]
     [cmdletbinding()]
     param(
         [parameter(Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName)]
@@ -580,3 +582,5 @@ function New-PoshBotSlackBackend {
         }
     }
 }
+
+Export-ModuleMember -Function 'New-PoshBotSlackBackend'

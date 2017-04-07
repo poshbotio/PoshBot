@@ -3,6 +3,7 @@ class Permission {
     [string]$Name
     [string]$Plugin
     [string]$Description
+    [bool]$Adhoc = $false
 
     Permission([string]$Name) {
         $this.Name = $Name
@@ -17,6 +18,15 @@ class Permission {
         $this.Name = $Name
         $this.Plugin = $Plugin
         $this.Description = $Description
+    }
+
+    [hashtable]ToHash() {
+        return @{
+            Name = $this.Name
+            Plugin = $this.Plugin
+            Description = $this.Description
+            Adhoc = $this.Adhoc
+        }
     }
 
     [string]ToString() {

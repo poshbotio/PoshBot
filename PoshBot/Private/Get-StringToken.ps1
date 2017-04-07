@@ -148,7 +148,7 @@ function Get-StringToken
             # handle it before parsing the current $str.
             if ($currentToken.Length -gt 0)
             {
-                if ($currentQualifer -ne $null -and $Span)
+                if ($null -ne $currentQualifer -and $Span)
                 {
                     $null = $currentToken.Append($LineDelimiter)
                 }
