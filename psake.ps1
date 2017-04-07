@@ -23,9 +23,9 @@ task Init {
 
     'Configuration', 'Pester', 'platyPS', 'PSScriptAnalyzer' | Foreach-Object {
         if (-not (Get-Module -Name $_ -ListAvailable -ErrorAction SilentlyContinue)) {
-            Install-Module $_ -Repository PSGallery -Scope CurrentUser -Confirm:$false -ErrorAction Stop
+            Install-Module -Name $_ -Repository PSGallery -Scope CurrentUser -AllowClobber -Confirm:$false -ErrorAction Stop
         }
-        Import-Module $_ -Verbose:$false -Force -ErrorAction Stop
+        Import-Module -Name $_ -Verbose:$false -Force -ErrorAction Stop
     }
 } -description 'Initialize build environment'
 
