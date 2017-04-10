@@ -32,7 +32,6 @@ function Help {
 
     $respParams = @{
         Type = 'Normal'
-        DM = $true
     }
 
     $result = @()
