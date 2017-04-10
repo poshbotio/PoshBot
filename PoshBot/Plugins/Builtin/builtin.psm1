@@ -281,7 +281,7 @@ function Install-Plugin {
             }
 
             if ($onlineMod = Find-Module @findParams) {
-                $onlineMod | Install-Module -Scope CurrentUser -Force
+                $onlineMod | Install-Module -Scope CurrentUser -Force -AllowClobber
 
                 if ($PSBoundParameters.ContainsKey('Version')) {
                     $mod = Get-Module -Name $Name -ListAvailable | Where-Object {$_.Version -eq $Version}
