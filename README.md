@@ -10,7 +10,7 @@ PowerShell modules are loaded into PoshBot and instantly become available at bot
 PoshBot currently supports connecting to Slack to provide you with awesome ChatOps goodness.
 
 <p align="center">
-  <img src="https://github.com/devblackops/PoshBot/raw/master/Media/poshbot_logo_300_432.png" alt="PoshBot logo"/>
+  <img src="https://raw.githubusercontent.com/poshbotio/PoshBot/master/Media/poshbot_logo_300_432.png" alt="PoshBot logo"/>
 </p>
 
 > Detailed documentation can be found at [ReadTheDocs](http://poshbot.readthedocs.io/en/latest/)
@@ -22,24 +22,21 @@ To get started now, get a SLACK-API-TOKEN for your bot:
 [https://api.slack.com/bot-users](https://api.slack.com/bot-users)
 
 ```powershell
-# Clone the repo
-git clone https://github.com/devblackops/PoshBot.git
-
-# Install dependencies
-Find-Module Configuration, PSSlack | Install-Module -Scope CurrentUser
+# Install the module from PSGallery
+Install-Module -Name PoshBot -Repository PSGallery
 
 # Import the module
-Import-Module .\PoshBot\PoshBot
+Import-Module -Name PoshBot
 
 # Create a bot configuration
 $botParams = @{
     Name = 'name'
-    BotAdmins = @('slack-chat-handle')
+    BotAdmins = @('<SLACK-CHAT-HANDLE>')
     CommandPrefix = '!'
     LogLevel = 'Info'
     BackendConfiguration = @{
         Name = 'SlackBackend'
-        Token = 'SLACK-API-TOKEN'
+        Token = '<SLACK-API-TOKEN>'
     }
     AlternateCommandPrefixes = 'bender', 'hal'
 }
@@ -54,11 +51,11 @@ Basic usage:
 
 ```powershell
 # Create a Slack backend
-$backendConfig = @{Name = 'SlackBackend'; Token = 'SLACK-API-TOKEN'}
+$backendConfig = @{Name = 'SlackBackend'; Token = '<SLACK-API-TOKEN>'}
 $backend = New-PoshBotSlackBackend -Configuration $backendConfig
 
 # Create a PoshBot configuration
-$pbc = New-PoshBotConfiguration -BotAdmins @('<my-slack-handle>') -BackendConfiguration $backendConfig
+$pbc = New-PoshBotConfiguration -BotAdmins @('<MY-SLACK-HANDLE>') -BackendConfiguration $backendConfig
 
 # Save configuration
 Save-PoshBotConfiguration -InputObject $pbc -Path .\PoshBotConfig.psd1
@@ -72,20 +69,20 @@ $bot = New-PoshBotInstance -Configuration $pbc -Backend $backend
 # Start the bot
 $bot.Start()
 
-
 # Available commands
 Get-Command -Module PoshBot
 
 CommandType     Name                                               Version    Source
 -----------     ----                                               -------    ------
-Function        Get-PoshBot                                        1.0        PoshBot
-Function        Get-PoshBotConfiguration                           1.0        PoshBot
-Function        New-PoshBotCardResponse                            1.0        PoshBot
-Function        New-PoshBotConfiguration                           1.0        PoshBot
-Function        New-PoshBotInstance                                1.0        PoshBot
-Function        New-PoshBotSlackBackend                            1.0        PoshBot
-Function        New-PoshBotTextResponse                            1.0        PoshBot
-Function        Save-PoshBotConfiguration                          1.0        PoshBot
-Function        Start-PoshBot                                      1.0        PoshBot
-Function        Stop-Poshbot                                       1.0        PoshBot
+Function        Get-PoshBot                                        0.2.0      poshbot
+Function        Get-PoshBotConfiguration                           0.2.0      poshbot
+Function        New-PoshBotCardResponse                            0.2.0      poshbot
+Function        New-PoshBotConfiguration                           0.2.0      poshbot
+Function        New-PoshBotInstance                                0.2.0      poshbot
+Function        New-PoshBotScheduledTask                           0.2.0      poshbot
+Function        New-PoshBotSlackBackend                            0.2.0      poshbot
+Function        New-PoshBotTextResponse                            0.2.0      poshbot
+Function        Save-PoshBotConfiguration                          0.2.0      poshbot
+Function        Start-PoshBot                                      0.2.0      poshbot
+Function        Stop-Poshbot                                       0.2.0      poshbot
 ```
