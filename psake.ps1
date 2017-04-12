@@ -4,7 +4,7 @@ properties {
         $projectRoot = $PSScriptRoot
     }
 
-    $sut = "$projectRoot\$env:BHProjectName"
+    $sut = $env:BHModulePath
     $tests = "$projectRoot\Tests"
     $outputDir = Join-Path -Path $projectRoot -ChildPath 'out'
     $outputModDir = Join-Path -Path $outputDir -ChildPath $env:BHProjectName
@@ -32,6 +32,7 @@ task Init {
 task Test -Depends Init, Analyze, Pester -description 'Run test suite'
 
 task Analyze -Depends Build {
+    Write-Host $outputModVerDir
     $analysis = Invoke-ScriptAnalyzer -Path $outputModVerDir -Verbose:$false
     $errors = $analysis | Where-Object {$_.Severity -eq 'Error'}
     $warnings = $analysis | Where-Object {$_.Severity -eq 'Warning'}
