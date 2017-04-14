@@ -185,7 +185,7 @@ function Get-Plugin {
                         Enabled = $pv.Enabled.ToString()
                         CommandCount = $pv.Commands.Count
                         Permissions = $pv.Permissions.Keys | Format-List | Out-String
-                        Commands = $pv.Commands.Keys | Format-List | Out-String
+                        Commands = $pv.Commands.Keys | Sort-Object | Format-List | Out-String
                     }
 
                     $msg = [string]::Empty
@@ -1003,7 +1003,7 @@ function About {
 PoshBot v$ver
 $($manifest.CopyRight)
 
-https://github.com/devblackops/PoshBot
+https://github.com/poshbotio/PoshBot
 "@
 
     New-PoshBotCardResponse -Type Normal -Text $msg
