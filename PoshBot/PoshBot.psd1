@@ -30,7 +30,7 @@ CompanyName = 'Community'
 Copyright = '(c) 2017 Brandon Olin. All rights reserved.'
 
 # Description of the functionality provided by this module
-Description = 'A Powershell-based bot framework for ChatOps. PowerShell modules are loaded into PoshBot and instantly become available at bot commands. PoshBot currently supports connecting to Slack to provide you with awesome ChatOps goodness. Bot commands can optionally be secured via permissions, roles, and groups to control who can execute what.'
+Description = 'A Powershell-based bot framework for ChatOps. PowerShell modules are loaded into PoshBot and instantly become available as bot commands. PoshBot currently supports connecting to Slack to provide you with awesome ChatOps goodness. Bot commands can optionally be secured via permissions, roles, and groups to control who can execute what.'
 
 # Minimum version of the Windows PowerShell engine required by this module
 PowerShellVersion = '5.0'
