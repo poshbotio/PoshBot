@@ -32,7 +32,6 @@ task Init {
 task Test -Depends Init, Analyze, Pester -description 'Run test suite'
 
 task Analyze -Depends Build {
-    Write-Host $outputModVerDir
     $analysis = Invoke-ScriptAnalyzer -Path $outputModVerDir -Verbose:$false
     $errors = $analysis | Where-Object {$_.Severity -eq 'Error'}
     $warnings = $analysis | Where-Object {$_.Severity -eq 'Warning'}
