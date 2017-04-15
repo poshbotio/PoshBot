@@ -356,7 +356,7 @@ class Bot {
         $this._Logger.Debug([LogMessage]::new("[Bot:GetConfigProvidedParameters] Inspecting command [$($PluginCmd.ToString())] for configuration-provided parameters"))
         $configParams = foreach($param in $Command.Parameters.GetEnumerator() | Select-Object -ExpandProperty Value) {
             foreach ($attr in $param.Attributes) {
-                if ($attr.TypeId.ToString() -eq 'PoshBot.FromConfig') {
+                if ($attr.GetType().ToString() -eq 'PoshBot.FromConfig') {
                     [ConfigProvidedParameter]::new($attr, $param)
                 }
             }
