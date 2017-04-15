@@ -525,7 +525,7 @@ class PluginManager {
     [PoshBot.BotCommand]GetCommandMetadata([System.Management.Automation.FunctionInfo]$Command) {
         $attrs = $Command.ScriptBlock.Attributes
         $botCmdAttr = $attrs | ForEach-Object {
-            if ($_.TypeId.ToString() -eq 'PoshBot.BotCommand') {
+            if ($_.GetType().ToString() -eq 'PoshBot.BotCommand') {
                 $_
             }
         }
