@@ -70,7 +70,7 @@ MuteUnknownCommand                | bool      | Control whether unknown commands
 
 ## Storage
 
-PoshBot will save the state of the bot in a location defined by the bot configurations's `ConfigurationDirectory` property (the default location is $env:username\\.poshbot).
+PoshBot will save the state of the bot in a location defined by the bot configurations's `ConfigurationDirectory` property (the default location is $env:userprofile\\.poshbot).
 Four files will be saved here as well the primary configuration file.
 
 ### Groups.psd1
