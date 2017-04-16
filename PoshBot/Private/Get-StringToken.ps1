@@ -103,27 +103,39 @@ function Get-StringToken
         $delimiters = @{}
         foreach ($item in $Delimiter)
         {
-            foreach ($character in $item.GetEnumerator())
-            {
-                $delimiters[$character] = $true
+            if ($item.Length -gt 1) {
+                foreach ($character in $item.GetEnumerator())
+                {
+                    $delimiters[$character] = $true
+                }
+            } else {
+                $delimiters[[char]$item] = $true
             }
         }
 
         $qualifiers = @{}
         foreach ($item in $Qualifier)
         {
-            foreach ($character in $item.GetEnumerator())
-            {
-                $qualifiers[$character] = $true
+            if ($item.Length -gt 1) {
+                foreach ($character in $item.GetEnumerator())
+                {
+                    $qualifiers[$character] = $true
+                }
+            } else {
+                $qualifiers[[char]$item] = $true
             }
         }
 
         $escapeChars = @{}
         foreach ($item in $Escape)
         {
-            foreach ($character in $item.GetEnumerator())
-            {
-                $escapeChars[$character] = $true
+            if ($item.Length -gt 1) {
+                foreach ($character in $item.GetEnumerator())
+                {
+                    $escapeChars[$character] = $true
+                }
+            } else {
+                $escapeChars[[char]$item] = $true
             }
         }
 
