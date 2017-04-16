@@ -7,6 +7,8 @@ function New-PoshBotConfiguration {
         Creates a new PoshBot configuration object.
     .PARAMETER Name
         The name the bot instance will be known as.
+    .PARAMETER ConfigurationDirectory
+        The directory when PoshBot configuration data will be written to.
     .PARAMETER LogDirectory
         The log directory logs will be written to.
     .PARAMETER PluginDirectory
@@ -149,6 +151,7 @@ function New-PoshBotConfiguration {
     [cmdletbinding()]
     param(
         [string]$Name = 'PoshBot',
+        [string]$ConfigurationDirectory = (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot'),
         [string]$LogDirectory = (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot'),
         [string]$PluginDirectory = (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot'),
         [string[]]$PluginRepository = @('PSGallery'),
@@ -167,6 +170,7 @@ function New-PoshBotConfiguration {
     Write-Verbose -Message 'Creating new PoshBot configuration'
     $config = [BotConfiguration]::new()
     $config.Name = $Name
+    $config.ConfigurationDirectory = $ConfigurationDirectory
     $config.AlternateCommandPrefixes = $AlternateCommandPrefixes
     $config.AlternateCommandPrefixSeperators = $AlternateCommandPrefixSeperators
     $config.BotAdmins = $BotAdmins
