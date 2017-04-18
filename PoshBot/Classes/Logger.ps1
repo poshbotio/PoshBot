@@ -24,6 +24,11 @@ class LogMessage {
         $this.Data = $Data
     }
 
+    LogMessage([LogSeverity]$Severity, [string]$Message) {
+        $this.Severity = $Severity
+        $this.Message = $Message
+    }
+
     LogMessage([LogSeverity]$Severity, [string]$Message, [object]$Data) {
         $this.Severity = $Severity
         $this.Message = $Message
