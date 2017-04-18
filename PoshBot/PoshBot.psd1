@@ -12,7 +12,7 @@
 RootModule = 'PoshBot.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.2.1'
+ModuleVersion = '0.2.2'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -123,6 +123,11 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
+## [0.2.2] 2017-04-17
+### Fixed
+- Command tokenization issues on Nano Server.
+- #24: Nano Server compatability
+
 ## [0.2.1] 2017-04-14
 ### Fixed
 - #23: Issue with retrieving module command attribute type names on Nano server.
