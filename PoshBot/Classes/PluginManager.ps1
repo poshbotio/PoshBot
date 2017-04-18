@@ -520,7 +520,7 @@ class PluginManager {
             }
         } else {
             $msg = "Unable to load module manifest [$ManifestPath]"
-            $this._Logger.Info([LogMessage]::new([LogSeverity]::Error, $msg))
+            $this.Logger.Info([LogMessage]::new([LogSeverity]::Error, $msg))
             Write-Error -Message $msg
         }
     }
