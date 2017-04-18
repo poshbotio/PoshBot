@@ -13,12 +13,12 @@ Creates a new instance of PoshBot
 
 ### path (Default)
 ```
-New-PoshBotInstance -Path <String[]> -Backend <Backend> [<CommonParameters>]
+New-PoshBotInstance [-Path <String[]>] -Backend <Backend>
 ```
 
 ### config
 ```
-New-PoshBotInstance -Configuration <BotConfiguration[]> -Backend <Backend> [<CommonParameters>]
+New-PoshBotInstance -Configuration <BotConfiguration[]> -Backend <Backend>
 ```
 
 ## DESCRIPTION
@@ -82,7 +82,7 @@ Type: String[]
 Parameter Sets: path
 Aliases: 
 
-Required: True
+Required: False
 Position: Named
 Default value: (Join-Path -Path (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot') -ChildPath 'PoshBot.psd1')
 Accept pipeline input: True (ByPropertyName, ByValue)
@@ -118,9 +118,6 @@ Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
-
-### CommonParameters
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 

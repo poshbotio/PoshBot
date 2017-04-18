@@ -14,7 +14,7 @@ Tells PoshBot to send a specially formatted response.
 ```
 New-PoshBotCardResponse [[-Type] <String>] [-DM] [[-Text] <String>] [[-Title] <String>]
  [[-ThumbnailUrl] <String>] [[-ImageUrl] <String>] [[-LinkUrl] <String>] [[-Fields] <Hashtable>]
- [[-Color] <String>] [<CommonParameters>]
+ [[-Color] <String>]
 ```
 
 ## DESCRIPTION
@@ -216,9 +216,6 @@ Default value: #D3D3D3
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
-
-### CommonParameters
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 

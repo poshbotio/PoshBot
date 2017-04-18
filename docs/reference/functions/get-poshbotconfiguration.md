@@ -12,7 +12,7 @@ Gets a PoshBot configuration from a file.
 ## SYNTAX
 
 ```
-Get-PoshBotConfiguration [[-Path] <String[]>] [<CommonParameters>]
+Get-PoshBotConfiguration [[-Path] <String[]>]
 ```
 
 ## DESCRIPTION
@@ -67,9 +67,6 @@ Default value: (Join-Path -Path (Join-Path -Path $env:USERPROFILE -ChildPath '.p
 Accept pipeline input: True (ByPropertyName, ByValue)
 Accept wildcard characters: False
 ```
-
-### CommonParameters
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 

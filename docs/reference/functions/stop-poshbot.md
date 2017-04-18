@@ -12,7 +12,7 @@ Stop a currently running PoshBot instance that is running as a background job.
 ## SYNTAX
 
 ```
-Stop-Poshbot [-Id] <Int32[]> [-Force] [-WhatIf] [-Confirm] [<CommonParameters>]
+Stop-Poshbot [-Id] <Int32[]> [-Force] [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
@@ -54,7 +54,7 @@ Accept wildcard characters: False
 ```
 
 ### -Force
-{{Fill Force Description}}
+Stop PoshBot instance without prompt
 
 ```yaml
 Type: SwitchParameter
@@ -98,9 +98,6 @@ Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
-
-### CommonParameters
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 

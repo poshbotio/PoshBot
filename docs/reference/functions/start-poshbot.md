@@ -13,17 +13,17 @@ Starts a new instance of PoshBot interactively or in a job.
 
 ### bot (Default)
 ```
-Start-PoshBot -InputObject <Bot> [-AsJob] [-PassThru] [<CommonParameters>]
+Start-PoshBot -InputObject <Bot> [-AsJob] [-PassThru]
 ```
 
 ### config
 ```
-Start-PoshBot -Configuration <BotConfiguration> [-AsJob] [-PassThru] [<CommonParameters>]
+Start-PoshBot -Configuration <BotConfiguration> [-AsJob] [-PassThru]
 ```
 
 ### path
 ```
-Start-PoshBot -Path <String> [-AsJob] [-PassThru] [<CommonParameters>]
+Start-PoshBot -Path <String> [-AsJob] [-PassThru]
 ```
 
 ## DESCRIPTION
@@ -144,9 +144,6 @@ Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
-
-### CommonParameters
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 

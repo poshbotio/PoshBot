@@ -12,12 +12,12 @@ Creates a new PoshBot configuration object.
 ## SYNTAX
 
 ```
-New-PoshBotConfiguration [[-Name] <String>] [[-LogDirectory] <String>] [[-PluginDirectory] <String>]
- [[-PluginRepository] <String[]>] [[-ModuleManifestsToLoad] <String[]>] [[-LogLevel] <LogLevel>]
- [[-BackendConfiguration] <Hashtable>] [[-PluginConfiguration] <Hashtable>] [[-BotAdmins] <String[]>]
- [[-CommandPrefix] <Char>] [[-AlternateCommandPrefixes] <String[]>]
+New-PoshBotConfiguration [[-Name] <String>] [[-ConfigurationDirectory] <String>] [[-LogDirectory] <String>]
+ [[-PluginDirectory] <String>] [[-PluginRepository] <String[]>] [[-ModuleManifestsToLoad] <String[]>]
+ [[-LogLevel] <LogLevel>] [[-BackendConfiguration] <Hashtable>] [[-PluginConfiguration] <Hashtable>]
+ [[-BotAdmins] <String[]>] [[-CommandPrefix] <Char>] [[-AlternateCommandPrefixes] <String[]>]
  [[-AlternateCommandPrefixSeperators] <Char[]>] [[-SendCommandResponseToPrivate] <String[]>]
- [[-MuteUnknownCommand] <Boolean>] [<CommonParameters>]
+ [[-MuteUnknownCommand] <Boolean>]
 ```
 
 ## DESCRIPTION
@@ -102,6 +102,21 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -ConfigurationDirectory
+The directory when PoshBot configuration data will be written to.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases: 
+
+Required: False
+Position: 2
+Default value: (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot')
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -LogDirectory
 The log directory logs will be written to.
 
@@ -111,7 +126,7 @@ Parameter Sets: (All)
 Aliases: 
 
 Required: False
-Position: 2
+Position: 3
 Default value: (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot')
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -127,7 +142,7 @@ Parameter Sets: (All)
 Aliases: 
 
 Required: False
-Position: 3
+Position: 4
 Default value: (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot')
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -143,7 +158,7 @@ Parameter Sets: (All)
 Aliases: 
 
 Required: False
-Position: 4
+Position: 5
 Default value: @('PSGallery')
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -160,7 +175,7 @@ Parameter Sets: (All)
 Aliases: 
 
 Required: False
-Position: 5
+Position: 6
 Default value: @()
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -176,7 +191,7 @@ Aliases:
 Accepted values: Info, Verbose, Debug
 
 Required: False
-Position: 6
+Position: 7
 Default value: Verbose
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -191,7 +206,7 @@ Parameter Sets: (All)
 Aliases: 
 
 Required: False
-Position: 7
+Position: 8
 Default value: @{}
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -239,7 +254,7 @@ Parameter Sets: (All)
 Aliases: 
 
 Required: False
-Position: 8
+Position: 9
 Default value: @{}
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -257,7 +272,7 @@ Parameter Sets: (All)
 Aliases: 
 
 Required: False
-Position: 9
+Position: 10
 Default value: @()
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -274,7 +289,7 @@ Parameter Sets: (All)
 Aliases: 
 
 Required: False
-Position: 10
+Position: 11
 Default value: !
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -295,7 +310,7 @@ Parameter Sets: (All)
 Aliases: 
 
 Required: False
-Position: 11
+Position: 12
 Default value: @('poshbot')
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -314,7 +329,7 @@ Parameter Sets: (All)
 Aliases: 
 
 Required: False
-Position: 12
+Position: 13
 Default value: @(':', ',', ';')
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -335,7 +350,7 @@ Parameter Sets: (All)
 Aliases: 
 
 Required: False
-Position: 13
+Position: 14
 Default value: @()
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -350,14 +365,11 @@ Parameter Sets: (All)
 Aliases: 
 
 Required: False
-Position: 14
+Position: 15
 Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
-
-### CommonParameters
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
