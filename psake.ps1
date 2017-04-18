@@ -177,3 +177,25 @@ task Build -depends Compile, CreateMarkdownHelp {
     $helpXml = New-ExternalHelp "$projectRoot\docs\reference\functions" -OutputPath (Join-Path -Path $outputModVerDir -ChildPath 'en-US')
     "    Module XML help created at [$helpXml]"
 }
+
+task Build-Docker -depends Test {
+    Push-Location
+    Set-Location -Path $projectRoot
+    $version = $manifest.ModuleVersion.ToString()
+    exec {
+        & docker build -t poshbotio/poshbot-nano-slack:latest -t poshbotio/poshbot-nano-slack:$version --label version=$version .
+    }
+    Pop-Location
+} -description 'Create Docker container'
+
+task Publish-Docker -depends Build-Docker {
+    "    Publishing Docker image [$($manifest.ModuleVersion)] to Docker Hub..."
+    $version = $manifest.ModuleVersion.ToString()
+    exec {
+        docker login
+    }
+    exec {
+        docker push poshbotio/poshbot-nano-slack:latest
+        docker push poshbotio/poshbot-nano-slack:$version
+    }
+}
