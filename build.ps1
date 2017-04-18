@@ -81,6 +81,7 @@ function Resolve-Module {
 
 if ($PSBoundParameters.ContainsKey('help')) {
     Get-PSakeScriptTasks -buildFile "$PSScriptRoot\psake.ps1" |
+        Sort-Object -Property Name |
         Format-Table -Property Name, Description, Alias, DependsOn
 } else {
     Set-BuildEnvironment -Force
