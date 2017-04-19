@@ -1,8 +1,7 @@
 
 FROM microsoft/nanoserver
 
-MAINTAINER devblackops
-
+LABEL maintainer="devblackops"
 LABEL description="PoshBot container for Slack"
 LABEL vendor="poshbotio"
 
