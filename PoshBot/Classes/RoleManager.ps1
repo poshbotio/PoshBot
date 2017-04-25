@@ -19,33 +19,38 @@ class RoleManager {
         # Load in state from persistent storage
         $this._Logger.Info([LogMessage]::new('[RoleManager:Initialize] Initializing'))
 
-        # Create the builtin Admin role and add all the permissions defined
-        # in the [Builtin] module
-        $adminrole = [Role]::New('Admin', 'Bot administrator role')
-
-        # TODO
-        # Get these from the builtin module manifest rather than hard coding them here
-        @(
-            'manage-roles'
-            'show-help'
-            'view'
-            'view-role'
-            'view-group'
-            'manage-plugins'
-            'manage-groups'
-            'manage-permissions'
-        ) | foreach-object {
-            $p = [Permission]::new($_, 'Builtin')
-            $adminRole.AddPermission($p)
-        }
-        $this.Roles.Add($adminRole.Name, $adminRole)
-
-        # Creat the builtin [Admin] group and add the [Admin role] to it
-        $adminGroup = [Group]::new('Admin', 'Bot administrators')
-        $adminGroup.AddRole($adminRole)
-        $this.Groups.Add($adminGroup.Name, $adminGroup)
-
         $this.LoadState()
+
+        # Create the initial state of the [Admin] role ONLY if it didn't get loaded from storage
+        # This could be because this is the first time the bot has run and [roles.psd1] doesn't exist yet.
+        # The bot admin could have modified the permissions for the role and we want to respect those changes
+        if (-not $this.Roles['Admin']) {
+            # Create the builtin Admin role and add all the permissions defined in the [Builtin] module
+            $adminrole = [Role]::New('Admin', 'Bot administrator role')
+
+            # TODO
+            # Get the builtin permissions from the module manifest rather than hard coding them here
+            @(
+                'manage-roles'
+                'show-help'
+                'view'
+                'view-role'
+                'view-group'
+                'manage-plugins'
+                'manage-groups'
+                'manage-permissions'
+            ) | foreach-object {
+                $p = [Permission]::new($_, 'Builtin')
+                $adminRole.AddPermission($p)
+            }
+            $this.Roles.Add($adminRole.Name, $adminRole)
+
+            # Creat the builtin [Admin] group and add the [Admin] role to it
+            $adminGroup = [Group]::new('Admin', 'Bot administrators')
+            $adminGroup.AddRole($adminRole)
+            $this.Groups.Add($adminGroup.Name, $adminGroup)
+            $this.SaveState()
+        }
     }
 
     # TODO
