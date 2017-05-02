@@ -21,6 +21,7 @@ function Help {
         [pscustomobject]@{
             FullCommandName = "$plugin`:$command"
             Command = $command
+            Aliases = ($_.Value.Aliases -join ', ')
             Plugin = $plugin
             Type = $_.Value.Trigger.Type
             Description = $_.Value.Description
@@ -239,7 +240,10 @@ function Install-Plugin {
     .EXAMPLE
         !install-plugin (<pluginname> | --name <pluginname>) [--version 1.2.3]
     #>
-    [PoshBot.BotCommand(Permissions = 'manage-plugins')]
+    [PoshBot.BotCommand(
+        CommandName = 'ip',
+        Permissions = 'manage-plugins'
+    )]
     [cmdletbinding()]
     param(
         [parameter(Mandatory)]
