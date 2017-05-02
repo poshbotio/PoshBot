@@ -153,8 +153,6 @@ task Compile -depends Clean {
     ) | ForEach-Object {
         Get-Content -Path (Join-Path -Path $classDir -ChildPath "$($_).ps1") | Add-Content -Path $psm1 -Encoding UTF8
     }
-    # Get-ChildItem -Path (Join-Path -Path $sut -ChildPath 'Classes') -Recurse |
-    #     Get-Content -Raw | Add-Content -Path $psm1 -Encoding UTF8
     Get-ChildItem -Path (Join-Path -Path $sut -ChildPath 'Private') -Recurse |
         Get-Content -Raw | Add-Content -Path $psm1 -Encoding UTF8
     Get-ChildItem -Path (Join-Path -Path $sut -ChildPath 'Public') -Recurse |
@@ -164,7 +162,6 @@ task Compile -depends Clean {
 
     # Copy over other items
     Copy-Item -Path $env:BHPSModuleManifest -Destination $outputModVerDir
-    #Copy-Item -Path (Join-Path -Path $sut -ChildPath 'Implementations') -Destination $outputModVerDir -Recurse
     Copy-Item -Path (Join-Path -Path $classDir -ChildPath 'PoshBotAttribute.ps1') -Destination $outputModVerDir
     Copy-Item -Path (Join-Path -Path $sut -ChildPath 'Plugins') -Destination $outputModVerDir -Recurse
     Copy-Item -Path (Join-Path -Path $sut -ChildPath 'Task') -Destination $outputModVerDir -Recurse
