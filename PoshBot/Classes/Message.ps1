@@ -28,6 +28,7 @@ class Message {
     [string]$Text               # Text of message. This may be empty depending on the message type
     [string]$To
     [string]$From               # Who sent the message
+    [datetime]$Time             # The date/time (UTC) the message was received
     [hashtable]$Options         # Any other bits of information about a message. This will be backend specific
     [pscustomobject]$RawMessage # The raw message as received by the backend. This can be usefull for the backend
 }

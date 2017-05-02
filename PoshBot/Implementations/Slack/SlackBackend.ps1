@@ -256,6 +256,13 @@ class SlackBackend : Backend {
                         if ($slackMessage.channel) { $msg.To   = $slackMessage.channel }
                         if ($slackMessage.user)    { $msg.From = $slackMessage.user }
 
+                        if ($slackMessage.ts) {
+                            $unixEpoch = [datetime]'1970-01-01'
+                            $msg.Time = $unixEpoch.AddSeconds($slackMessage.ts)
+                        } else {
+                            $msg.Time = (Get-Date).ToUniversalTime()
+                        }
+
                         # Sometimes the message is nested in a 'message' subproperty. This could be
                         # if the message contained a link that was unfurled.  We would receive a
                         # 'message_changed' message and need to look in the 'message' subproperty

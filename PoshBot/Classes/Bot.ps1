@@ -233,6 +233,12 @@ class Bot {
         $pluginCmd = $this.PluginManager.MatchCommand($parsedCommand, $cmdSearch)
         if ($pluginCmd) {
 
+            # Add the name of the plugin to the parsed command
+            # if it wasn't fully qualified to begin with
+            if ([string]::IsNullOrEmpty($parsedCommand.Plugin)) {
+                $parsedCommand.Plugin = $pluginCmd.Plugin.Name
+            }
+
             # Pass in the bot to the module command.
             # We need this for builtin commands
             if ($pluginCmd.Plugin.Name -eq 'Builtin') {

@@ -39,7 +39,7 @@ class CommandExecutor {
 
         # Verify that all mandatory parameters have been provided for "command" type bot commands
         # This doesn't apply to commands triggered from regex matches, timers, or events
-        if ($command.Trigger.Type -eq [TriggerType]::Command) {
+        if ([TriggerType]::Command -in $command.Triggers.Type ) {
             if (-not $this.ValidateMandatoryParameters($ParsedCommand, $command)) {
                 $msg = "Mandatory parameters for [$($Command.Name)] not provided.`nUsage:`n"
                 foreach ($usage in $Command.Usage) {
@@ -54,7 +54,7 @@ class CommandExecutor {
         }
 
         # If command is [command] type verify that the caller is authorized to execute command
-        if ($command.Trigger.Type -eq [TriggerType]::Command) {
+        if ([TriggerType]::Command -in $command.Triggers.Type ) {
             $authorized = $command.IsAuthorized($UserId, $this.RoleManager)
         } else {
             $authorized = $true

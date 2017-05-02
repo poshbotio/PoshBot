@@ -31,11 +31,11 @@ class Command {
     # Unique (to the plugin) name of the command
     [string]$Name
 
-    #[hashtable]$Subcommands = @{}
+    [string[]]$Aliases = @()
 
     [string]$Description
 
-    [Trigger]$Trigger
+    [Trigger[]]$Triggers = @()
 
     [string[]]$Usage
 
@@ -71,6 +71,9 @@ class Command {
             $pos = $Options.PositionalParameters
             $func = $Options.Function
 
+            # Context for who/how the command was called
+            $global:PoshBotContext = $options.ParsedCommand
+
             & $func @named @pos
         }
 
@@ -80,6 +83,7 @@ class Command {
             PositionalParameters = $ParsedCommand.PositionalParameters
             ManifestPath = $this.ManifestPath
             Function = $this.FunctionInfo
+            ParsedCommand = $ParsedCommand
         }
         if ($this.FunctionInfo) {
             $options.FunctionInfo = $this.FunctionInfo
@@ -138,20 +142,6 @@ class Command {
         $this.Enabled = $false
     }
 
-    # [void]AddSubCommand([Command]$Command) {
-    #     $subCommandName = $null
-    #     if ($Command.Name.Contains('-')) {
-    #         $subCommandName = $Command.Name.Split('-')[0]
-    #     } elseIf ($Command.Name.Contains('_')) {
-    #         $subCommandName = $Command.Name.Split('_')[0]
-    #     }
-    #     if ($subCommandName) {
-    #         if (-not $this.Subcommands.ContainsKey($subCommandName)) {
-    #             $this.Subcommands.Add($subCommandName, $Command)
-    #         }
-    #     }
-    # }
-
     [void]AddPermission([Permission]$Permission) {
         $this.AccessFilter.AddPermission($Permission)
     }
@@ -160,42 +150,40 @@ class Command {
         $this.AccessFilter.RemovePermission($Permission)
     }
 
-    # Returns TRUE/FALSE if this command matches a parsed command from the chat network
+    # Search all the triggers for this command and return TRUE if we have a match
+    # with the parsed command
     [bool]TriggerMatch([ParsedCommand]$ParsedCommand, [bool]$CommandSearch = $true) {
-        switch ($this.Trigger.Type) {
-            'Command' {
-                if ($CommandSearch) {
-                    # Command tiggers only work with normal messages received from chat network
-                    if ($ParsedCommand.OriginalMessage.Type -eq [MessageType]::Message) {
-                        if ($this.Trigger.Trigger -eq $ParsedCommand.Command) {
-                                return $true
-                            } else {
-                                return $false
+        $match = $false
+        foreach ($trigger in $this.Triggers) {
+            switch ($trigger.Type) {
+                'Command' {
+                    if ($CommandSearch) {
+                        # Command tiggers only work with normal messages received from chat network
+                        if ($ParsedCommand.OriginalMessage.Type -eq [MessageType]::Message) {
+                            if ($trigger.Trigger -eq $ParsedCommand.Command) {
+                                $match = $true
+                                break
+                            }
                         }
-                    } else {
-                        return $false
                     }
-                } else {
-                    return $false
                 }
-            }
-            'Event' {
-                if ($this.Trigger.MessageType -eq $ParsedCommand.OriginalMessage.Type) {
-                    if ($this.Trigger.MessageSubtype -eq $ParsedCommand.OriginalMessage.Subtype) {
-                        return $true
+                'Event' {
+                    if ($trigger.MessageType -eq $ParsedCommand.OriginalMessage.Type) {
+                        if ($trigger.MessageSubtype -eq $ParsedCommand.OriginalMessage.Subtype) {
+                            $match = $true
+                            break
+                        }
                     }
-                } else {
-                    return $false
                 }
-            }
-            'Regex' {
-                if ($ParsedCommand.CommandString -match $this.Trigger.Trigger) {
-                    return $true
-                } else {
-                    return $false
+                'Regex' {
+                    if ($ParsedCommand.CommandString -match $trigger.Trigger) {
+                        $match = $true
+                        break
+                    }
                 }
             }
         }
-        return $false
+
+        return $match
     }
 }

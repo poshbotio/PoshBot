@@ -412,7 +412,7 @@ class PluginManager {
 
                 # Get the command help so we can pull information from it
                 # to construct the bot command
-                $cmdHelp = Get-Help -Name $command.Name
+                $cmdHelp = Get-Help -Name "$ModuleName\$($command.Name)"
 
                 # Get any command metadata that may be attached to the command
                 # via the PoshBot.BotCommand extended attribute
@@ -420,17 +420,22 @@ class PluginManager {
 
                 $this.Logger.Info([LogMessage]::new("[PluginManager:CreatePluginFromModuleManifest] Creating command [$($command.Name)] for new plugin [$($plugin.Name)]"))
                 $cmd = [Command]::new()
+                $cmd.Name = $command.Name
 
                 # Set command properties based on metadata from module
                 if ($metadata) {
+
                     # Set the command name / trigger to the module function name or to
                     # what is defined in the metadata
                     if ($metadata.CommandName) {
-                        $cmd.Trigger = [Trigger]::new('Command', $metadata.CommandName)
-                        $cmd.Name = $metadata.CommandName
+
+                        # Add any alternate command names as aliases to the command
+                        $metadata.CommandName | Foreach-Object {
+                            $cmd.Aliases += $_
+                            $cmd.Triggers += [Trigger]::new('Command', $_)
+                        }
                     } else {
-                        $cmd.Trigger = [Trigger]::new('Command', $command.Name)
-                        $cmd.name = $command.Name
+                        $cmd.Triggers += [Trigger]::new('Command', $command.Name)
                     }
 
                     # Add any permissions definede within the plugin to the command
@@ -462,46 +467,46 @@ class PluginManager {
                     $cmd.KeepHistory = $metadata.KeepHistory    # Default is $true
                     $cmd.HideFromHelp = $metadata.HideFromHelp  # Default is $false
 
-                    # Set the trigger type
+                    # Set the trigger type to something other than 'Command'
                     if ($metadata.TriggerType) {
                         switch ($metadata.TriggerType) {
-                            'Comamnd' {
-                                $cmd.Trigger.Type = [TriggerType]::Command
-                            }
                             'Event' {
-                                $cmd.Trigger.Type = [TriggerType]::Event
+                                $t = [Trigger]::new('Event', $command.Name)
+                                $t.Type = [TriggerType]::Event
+
+                                # The message type/subtype the command is intended to respond to
+                                if ($metadata.MessageType) {
+                                    $t.MessageType = $metadata.MessageType
+                                }
+                                if ($metadata.MessageSubtype) {
+                                    $t.MessageSubtype = $metadata.MessageSubtype
+                                }
+                                $cmd.Triggers += $t
                             }
                             'Regex' {
-                                $cmd.Trigger.Type = [TriggerType]::Regex
-                                $cmd.Trigger.Trigger = $metadata.Regex
+                                $t = [Trigger]::new([TriggerType]::Regex, $command.Name)
+                                $t.Type = [TriggerType]::Regex
+                                $t.Trigger = $metadata.Regex
+                                $cmd.Triggers += $t
                             }
                         }
-                    } else {
-                        $cmd.Trigger.Type = [TriggerType]::Command
-                    }
-
-                    # The message type/subtype the command is intended to respond to
-                    if ($metadata.MessageType) {
-                        $cmd.Trigger.MessageType = $metadata.MessageType
-                    }
-                    if ($metadata.MessageSubtype) {
-                        $cmd.Trigger.MessageSubtype = $metadata.MessageSubtype
                     }
                 } else {
                     # No metadata defined so set the command name/trigger to the module function name
                     $cmd.Name = $command.Name
-                    $cmd.Trigger = [Trigger]::new('Command', $command.Name)
+                    $cmd.Triggers += [Trigger]::new('Command', $command.Name)
                 }
 
                 $cmd.Description = $cmdHelp.Synopsis.Trim()
                 $cmd.ManifestPath = $manifestPath
                 $cmd.FunctionInfo = $command
 
-                if ($cmdHelp.examples) {
-                    foreach ($example in $cmdHelp.Examples.Example) {
-                        $cmd.Usage += $example.code.Trim()
-                    }
-                }
+                $cmd.Usage = ($cmdHelp.syntax | Out-String).Trim()
+                # if ($cmdHelp.examples) {
+                #     foreach ($example in $cmdHelp.Examples.Example) {
+                #         $cmd.Usage += $example.code.Trim()
+                #     }
+                # }
                 $cmd.ModuleCommand = "$ModuleName\$($command.Name)"
                 $cmd.AsJob = $AsJob
 

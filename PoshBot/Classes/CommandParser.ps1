@@ -7,6 +7,9 @@ class ParsedCommand {
     [hashtable]$NamedParameters = @{}
     [System.Collections.ArrayList]$PositionalParameters = (New-Object System.Collections.ArrayList)
     #[System.Management.Automation.FunctionInfo]$ModuleCommand = $null
+    [datetime]$Time = (Get-Date).ToUniversalTime()
+    [string]$From = $null
+    [string]$To = $null
     [Message]$OriginalMessage
 }
 
@@ -35,6 +38,9 @@ class CommandParser {
         $parsedCommand.Plugin = $plugin
         $parsedCommand.Command = $command
         $parsedCommand.OriginalMessage = $OriginalMessage
+        $parsedCommand.Time = $OriginalMessage.Time
+        if ($OriginalMessage.To) { $parsedCommand.To = $OriginalMessage.To }
+        if ($OriginalMessage.From) { $parsedCommand.From = $OriginalMessage.From }
 
         # Parse parameters
         $tokens = $CommandString | Get-StringToken
