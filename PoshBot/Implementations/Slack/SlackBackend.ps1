@@ -312,57 +312,6 @@ class SlackBackend : Backend {
         #$result = $this.Connection.WebSocket.SendAsync($bytes, [System.Net.WebSockets.WebSocketMessageType]::Text, $true, $cts.Token).GetAwaiter().GetResult()
     }
 
-    [void]SendMessage([Card]$Response) {
-        $channelId = $this.ResolveChannelId($Response.To)
-        if ($channelId) {
-            $cardParams = @{
-                #Color = $this._PSSlackColorMap.green
-                Fallback = $Response.Text
-                Text = $Response.Text
-                MarkDownFields = 'text'
-            }
-            if ($Response.Title) { $cardParams.Title = $Response.Title }
-            if ($Response.Summary) { $cardParams.PreText = $Response.Summary }
-            if ($Response.Link) { $cardParams.TitleLink = $Response.Link }
-            if ($Response.ThumbnailUrl) { $cardParams.ThumbURL = $Response.ThumbnailUrl }
-            if ($Response.Fields) {
-                # Convert hashtable to what Slack expects
-                $fields = @()
-                foreach($key in $Response.Fields.Keys){
-                    $fields += @{
-                        title = $key
-                        value = $Response.Fields[$key]
-                        short = $true
-                    }
-                }
-                $cardParams.Fields = $fields
-            }
-            $msgAtt = New-SlackMessageAttachment @cardParams
-
-            # Set severity of response
-            switch ($Response.Severity) {
-                'Success' {
-                    $msgAtt.color = $this._PSSlackColorMap.green
-                }
-                'Warning' {
-                    $msgAtt.color = $this._PSSlackColorMap.orange
-                }
-                'Error' {
-                    $msgAtt.color = $this._PSSlackColorMap.red
-                }
-                'None' {
-                    # no color
-                }
-            }
-
-            $msg = $msgAtt | New-SlackMessage -Channel $Response.To -AsUser
-            $slackResponse = $msg | Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Verbose:$false
-            Write-Verbose "[SlackBackend:SendMessage] Result: $($slackResponse | Format-List * | Out-String)"
-        } else {
-            Write-Error -Message "[SlackBackend:SendMessage] Unable to resolve channel [$($Response.To))]"
-        }
-    }
-
     [void]SendMessage([Response]$Response) {
         if ($Response.Data.Count -gt 0) {
             # Process our custom responses

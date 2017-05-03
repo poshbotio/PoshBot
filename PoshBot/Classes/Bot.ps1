@@ -350,10 +350,6 @@ class Bot {
         $this.Backend.SendMessage($Response)
     }
 
-    [void]SendMessage([Card]$Response) {
-        $this.Backend.SendMessage($Response)
-    }
-
     # Get any parameters with the
     [hashtable]GetConfigProvidedParameters([PluginCommand]$PluginCmd) {
 

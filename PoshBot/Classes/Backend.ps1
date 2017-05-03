@@ -29,15 +29,15 @@ class Backend {
         return $e
     }
 
-    # Change presence
+    # Send a ping on the chat network
+    [void]Ping() {
+        # Only implement this method to send a message back
+        # to the chat network to keep the connection open
+    }
 
-    #[void]CallbackPresence([Presence]$Presence) {}
-
-    #[void]CallbackRoomJoined([Room]$Room) {}
-
-    #[void]CallbackRoomLeft([Room]$Room) {}
-
-    #[void]CallbackRoomTopic([Room]$Room) {}
+    [Person]GetUser([string]$UserId) {
+        return $null
+    }
 
     # Connect to the chat network
     [void]Connect() {
