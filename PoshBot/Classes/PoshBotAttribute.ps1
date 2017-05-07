@@ -15,7 +15,8 @@ namespace PoshBot {
 
     public class BotCommand : System.Attribute {
 
-        private string[] _commandName;
+        private string _commandName;
+        private string[] _aliases;
         private string[] _permissions;
         private bool _hideFromHelp;
         private string _regex;
@@ -25,18 +26,16 @@ namespace PoshBot {
         private bool _command = true;
         private bool _keepHistory = true;
 
-        // public string[] CommandName { get; set; }
-        // public bool HideFromHelp { get; set; }
-        // public string Regex { get; set; }
-        // public string MessageType { get; set; }
-        // public string MessageSubtype { get; set; }
-        // public string[] Permissions { get; set; }
-
         public BotCommand() {}
 
-        public virtual string[] CommandName {
+        public virtual string CommandName {
             get { return _commandName; }
             set { _commandName = value; }
+        }
+
+        public virtual string[] Aliases {
+            get { return _aliases; }
+            set { _aliases = value; }
         }
 
         public virtual string[] Permissions {

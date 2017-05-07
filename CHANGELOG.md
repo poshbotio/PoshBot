@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [0.2.3] Unreleased
+### Added
+- Ability to override command name via the [PoshBot.BotCommand] attribute.
+- Ability to set aliases for a command via the [PoshBot.BotCommand] attribute.
+
 ### Fixed
 - Respect changes to [Admin] role that are saved to storage.
 

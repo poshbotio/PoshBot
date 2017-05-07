@@ -428,17 +428,19 @@ class PluginManager {
                     # Set the command name / trigger to the module function name or to
                     # what is defined in the metadata
                     if ($metadata.CommandName) {
+                        $cmd.Name = $metadata.CommandName
+                    }
+                    $cmd.Triggers += [Trigger]::new('Command', $cmd.Name)
 
-                        # Add any alternate command names as aliases to the command
-                        $metadata.CommandName | Foreach-Object {
+                    # Add any alternate command names as aliases to the command
+                    if ($metadata.Aliases) {
+                        $metadata.Aliases | Foreach-Object {
                             $cmd.Aliases += $_
                             $cmd.Triggers += [Trigger]::new('Command', $_)
                         }
-                    } else {
-                        $cmd.Triggers += [Trigger]::new('Command', $command.Name)
                     }
 
-                    # Add any permissions definede within the plugin to the command
+                    # Add any permissions defined within the plugin to the command
                     if ($metadata.Permissions) {
                         foreach ($item in $metadata.Permissions) {
                             $fqPermission = "$($plugin.Name):$($item)"
@@ -494,7 +496,7 @@ class PluginManager {
                 } else {
                     # No metadata defined so set the command name/trigger to the module function name
                     $cmd.Name = $command.Name
-                    $cmd.Triggers += [Trigger]::new('Command', $command.Name)
+                    $cmd.Triggers += [Trigger]::new('Command', $cmd.Name)
                 }
 
                 $cmd.Description = $cmdHelp.Synopsis.Trim()
