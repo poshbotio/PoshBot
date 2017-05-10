@@ -14,9 +14,9 @@ class ParsedCommand {
 }
 
 class CommandParser {
-    [ParsedCommand] static Parse([string]$CommandString, [Message]$OriginalMessage) {
+    [ParsedCommand] static Parse([Message]$Message) {
 
-        $CommandString = $CommandString.Trim()
+        $CommandString = $Message.Text.Trim()
 
         # The command is the first word of the message
         $command = $CommandString.Split(' ')[0]
@@ -24,7 +24,7 @@ class CommandParser {
         # The command COULD be in the form of <command> or <plugin:command>
         # Figure out which one
         $plugin = [string]::Empty
-        if ($OriginalMessage.Type -eq [MessageType]::Message -and $OriginalMessage.SubType -eq [MessageSubtype]::None ) {
+        if ($Message.Type -eq [MessageType]::Message -and $Message.SubType -eq [MessageSubtype]::None ) {
             $plugin = $command.Split(':')[0]
         }
         $command = $command.Split(':')[1]
@@ -33,24 +33,64 @@ class CommandParser {
             $plugin = $null
         }
 
+        # Create the ParsedCommand instance
         $parsedCommand = [ParsedCommand]::new()
         $parsedCommand.CommandString = $CommandString
         $parsedCommand.Plugin = $plugin
         $parsedCommand.Command = $command
-        $parsedCommand.OriginalMessage = $OriginalMessage
-        $parsedCommand.Time = $OriginalMessage.Time
-        if ($OriginalMessage.To) { $parsedCommand.To = $OriginalMessage.To }
-        if ($OriginalMessage.From) { $parsedCommand.From = $OriginalMessage.From }
+        $parsedCommand.OriginalMessage = $Message
+        $parsedCommand.Time = $Message.Time
+        if ($Message.To) { $parsedCommand.To = $Message.To }
+        if ($Message.From) { $parsedCommand.From = $Message.From }
 
-        # Parse parameters
-        $tokens = $CommandString | Get-StringToken
+        # Parse the message text using AST into named and positional parameters
         try {
-            $r = ConvertFrom-ParameterToken -Tokens $Tokens
-            $parsedCommand.Tokens = $r.Tokens
-            $parsedCommand.NamedParameters = $r.NamedParameters
-            $parsedCommand.PositionalParameters = $r.PositionalParameters
+            $positionalParams = @()
+            $namedParams = @{}
+
+            # Replace '--<ParamName>' with '-<ParamName' so AST works
+            $astCmdStr = $CommandString -replace '(--([a-zA-Z]))', '-$2'
+            $ast = [System.Management.Automation.Language.Parser]::ParseInput($astCmdStr, [ref]$null, [ref]$null)
+            $commandAST = $ast.FindAll({$args[0] -as [System.Management.Automation.Language.CommandAst]},$false)
+
+            for ($x = 1; $x -lt $commandAST.CommandElements.Count; $x++) {
+
+                $element = $commandAST.CommandElements[$x]
+
+                if ($element -is [System.Management.Automation.Language.CommandParameterAst]) {
+
+                    $paramName = $element.ParameterName
+                    $paramValues = @()
+                    $y = 1
+
+                    # If the element after this one is another CommandParameterAst or this
+                    # is the last element then assume this parameter is a [switch]
+                    if ((-not $commandAST.CommandElements[$x+1]) -or ($commandAST.CommandElements[$x+1] -is [System.Management.Automation.Language.CommandParameterAst])) {
+                        $paramValues = $true
+                    } else {
+                        # Inspect the elements immediately after this CommandAst as they are values
+                        # for a named parameter and pull out the values (array, string, bool, etc)
+                        do {
+                            $paramValues += $commandAST.CommandElements[$x+$y].SafeGetValue()
+                            $y++
+                        } until ((-not $commandAST.CommandElements[$x+$y]) -or $commandAST.CommandElements[$x+$y] -is [System.Management.Automation.Language.CommandParameterAst])
+                    }
+
+                    if ($paramValues.Count -eq 1) {
+                        $paramValues = $paramValues[0]
+                    }
+                    $namedParams.Add($paramName, $paramValues)
+                    $x += $y-1
+                } else {
+                    # This element is a positional parameter value so just get the value
+                    $positionalParams += $element.SafeGetValue()
+                }
+            }
+
+            $parsedCommand.NamedParameters = $namedParams
+            $parsedCommand.PositionalParameters = $positionalParams
         } catch {
-            Write-Error "Error parsing command [$CommandString]: $_"
+            Write-Error -Message "Error parsing command [$CommandString]: $_"
         }
 
         return $parsedCommand

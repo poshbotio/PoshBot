@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Ability to override command name via the [PoshBot.BotCommand] attribute.
 - Ability to set aliases for a command via the [PoshBot.BotCommand] attribute.
+- Ability to use [array] and [switch] parameter values for commands.
 
 ### Fixed
 - Respect changes to [Admin] role that are saved to storage.

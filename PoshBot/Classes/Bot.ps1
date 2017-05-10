@@ -222,8 +222,7 @@ class Bot {
             $Message = $this.TrimPrefix($Message)
         }
 
-        $commandString = $Message.Text
-        $parsedCommand = [CommandParser]::Parse($commandString, $Message)
+        $parsedCommand = [CommandParser]::Parse($Message)
         $this._Logger.Debug([LogMessage]::new('[Bot:HandleMessage] Parsed bot command', $parsedCommand))
         $response = [Response]::new()
         $response.MessageFrom = $Message.From
@@ -290,7 +289,7 @@ class Bot {
             }
         } else {
             if ($isBotCommand) {
-                $msg = "No command found matching [$commandString]"
+                $msg = "No command found matching [$($Message.Text)]"
                 $this._Logger.Info([LogMessage]::new([LogSeverity]::Warning, $msg, $parsedCommand))
                 # Only respond with command not found message if configuration allows it.
                 if (-not $this.Configuration.MuteUnknownCommand) {
