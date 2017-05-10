@@ -241,7 +241,7 @@ function Install-Plugin {
         !install-plugin (<pluginname> | --name <pluginname>) [--version 1.2.3]
     #>
     [PoshBot.BotCommand(
-        CommandName = 'ip',
+        Aliases = 'ip',
         Permissions = 'manage-plugins'
     )]
     [cmdletbinding()]
