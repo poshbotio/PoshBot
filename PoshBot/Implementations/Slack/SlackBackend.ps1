@@ -313,17 +313,16 @@ class SlackBackend : Backend {
     }
 
     [void]SendMessage([Response]$Response) {
-        if ($Response.Data.Count -gt 0) {
-            # Process our custom responses
-            foreach ($customResponse in $Response.Data) {
+        # Process any custom responses
+        foreach ($customResponse in $Response.Data) {
 
-                [string]$sendTo = $Response.To
-                if ($customResponse.DM -eq $true) {
-                    $sendTo = "@$($this.UserIdToUsername($Response.MessageFrom))"
-                }
+            [string]$sendTo = $Response.To
+            if ($customResponse.DM -eq $true) {
+                $sendTo = "@$($this.UserIdToUsername($Response.MessageFrom))"
+            }
 
-                if ($customResponse.PSObject.TypeNames[0] -eq 'PoshBot.Card.Response') {
-
+            switch ($customResponse.PSObject.TypeNames[0]) {
+                'PoshBot.Card.Response' {
                     $chunks = $this._ChunkString($customResponse.Text)
                     Write-Verbose "Split response into [$($chunks.Count)] chunks"
                     $x = 0
@@ -377,8 +376,17 @@ class SlackBackend : Backend {
                         $msg = $att | New-SlackMessage -Channel $sendTo -AsUser
                         $slackResponse = $msg | Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Verbose:$false
                     }
-                } elseif ($customResponse.PSObject.TypeNames[0] -eq 'PoshBot.Text.Response') {
-                    $slackResponse = Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Channel $sendTo -Text $customResponse.Text -Verbose:$false -AsUser
+                }
+                'PoshBot.Text.Response' {
+                    $chunks = $this._ChunkString($customResponse.Text)
+                    foreach ($chunk in $chunks) {
+                        if ($customResponse.AsCode) {
+                            $t = '```' + $chunk + '```'
+                        } else {
+                            $t = $chunk
+                        }
+                        $slackResponse = Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Channel $sendTo -Text $t -Verbose:$false -AsUser
+                    }
                 }
             }
         }

@@ -9,6 +9,8 @@ function New-PoshBotTextResponse {
         in the channel.
     .PARAMETER Text
         The text response from the command.
+    .PARAMETER AsCode
+        Format the text in a code block if the backend supports it.
     .PARAMETER DM
         Tell PoshBot to redirect the response to a DM channel.
     .EXAMPLE
@@ -38,6 +40,8 @@ function New-PoshBotTextResponse {
         [parameter(Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName)]
         [string[]]$Text,
 
+        [switch]$AsCode,
+
         [switch]$DM
     )
 
@@ -46,6 +50,7 @@ function New-PoshBotTextResponse {
             [pscustomobject][ordered]@{
                 PSTypeName = 'PoshBot.Text.Response'
                 Text = $item
+                AsCode = $PSBoundParameters.ContainsKey('AsCode')
                 DM = $PSBoundParameters.ContainsKey('DM')
             }
         }

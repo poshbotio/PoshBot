@@ -1,6 +1,6 @@
 ---
 external help file: PoshBot-help.xml
-online version: 
+online version:
 schema: 2.0.0
 ---
 
@@ -12,7 +12,7 @@ Tells PoshBot to handle the text response from a command in a special way.
 ## SYNTAX
 
 ```
-New-PoshBotTextResponse [-Text] <String[]> [-DM]
+New-PoshBotTextResponse [-Text] <String[]> [-AsCode] [-DM]
 ```
 
 ## DESCRIPTION
@@ -50,12 +50,27 @@ The text response from the command.
 ```yaml
 Type: String[]
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: True
 Position: 1
 Default value: None
 Accept pipeline input: True (ByPropertyName, ByValue)
+Accept wildcard characters: False
+```
+
+### -AsCode
+Format the text in a code block if the backend supports it.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
@@ -65,7 +80,7 @@ Tell PoshBot to redirect the response to a DM channel.
 ```yaml
 Type: SwitchParameter
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named

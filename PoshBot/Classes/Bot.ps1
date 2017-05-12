@@ -279,13 +279,12 @@ class Bot {
                 }
             } else {
                 foreach ($r in $result.Output) {
-                    if (($r.PSObject.TypeNames[0] -eq 'PoshBot.Text.Response') -or ($r.PSObject.TypeNames[0] -eq 'PoshBot.Card.Response')) {
+                    if ($this._IsCustomResponse($r)) {
                         $response.Data += $r
                     } else {
                         $response.Text += $($r | Format-List * | Out-String)
                     }
                 }
-                #$response.Text = $($result.Output | Format-List * | Out-String)
             }
         } else {
             if ($isBotCommand) {
@@ -387,5 +386,17 @@ class Bot {
         }
 
         return $configProvidedParams
+    }
+
+    # Determine if response from command is custom and the output should be formatted
+    hidden [bool]_IsCustomResponse([object]$Response) {
+        $isCustom =(($Response.PSObject.TypeNames[0] -eq 'PoshBot.Text.Response') -or
+                    ($Response.PSObject.TypeNames[0] -eq 'PoshBot.Card.Response'))
+
+        if ($isCustom) {
+            $this._Logger.Debug([LogMessage]::new('[Bot:_IsCustomResponse] Detected custom response from command'))
+        }
+
+        return $isCustom
     }
 }
