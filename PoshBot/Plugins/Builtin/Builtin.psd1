@@ -72,7 +72,7 @@ Description = 'Builtin PoshBot commands'
 FunctionsToExport = 'About', 'Add-CommandPermission', 'Add-GroupRole', 'Add-GroupUser',
                'Add-RolePermission', 'Disable-Plugin', 'Enable-Plugin', 'Find-Plugin',
                'Get-CommandHistory', 'Get-Group', 'Get-Permission', 'Get-Plugin',
-               'Get-Role', 'help', 'Install-Plugin', 'New-Group', 'New-Permission',
+               'Get-Role', 'Get-CommandHelp', 'Install-Plugin', 'New-Group', 'New-Permission',
                'New-Role', 'Remove-Group', 'Remove-GroupRole', 'Remove-GroupUser',
                'Remove-Plugin', 'Remove-Role', 'Remove-RolePermission', 'Status',
                'Update-GroupDescription', 'Update-RoleDescription'
