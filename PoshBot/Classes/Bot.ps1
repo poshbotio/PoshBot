@@ -390,11 +390,12 @@ class Bot {
 
     # Determine if response from command is custom and the output should be formatted
     hidden [bool]_IsCustomResponse([object]$Response) {
-        $isCustom =(($Response.PSObject.TypeNames[0] -eq 'PoshBot.Text.Response') -or
-                    ($Response.PSObject.TypeNames[0] -eq 'PoshBot.Card.Response'))
+        $isCustom = (($Response.PSObject.TypeNames[0] -eq 'PoshBot.Text.Response') -or
+                     ($Response.PSObject.TypeNames[0] -eq 'PoshBot.Card.Response') -or
+                     ($Response.PSObject.TypeNames[0] -eq 'PoshBot.File.Upload'))
 
         if ($isCustom) {
-            $this._Logger.Debug([LogMessage]::new('[Bot:_IsCustomResponse] Detected custom response from command'))
+            $this._Logger.Debug([LogMessage]::new("[Bot:_IsCustomResponse] Detected custom response [$($Response.PSObject.TypeNames[0])] from command"))
         }
 
         return $isCustom

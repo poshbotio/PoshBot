@@ -75,6 +75,7 @@ FunctionsToExport = @(
     'New-PoshBotAce'
     'New-PoshBotBackend'
     'New-PoshBotConfiguration'
+    'New-PoshBotFileUpload'
     'New-PoshBotInstance'
     'New-PoshBotScheduledTask'
     'New-PoshBotSlackBackend'

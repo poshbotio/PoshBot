@@ -11,7 +11,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Ability to override command name via the [PoshBot.BotCommand] attribute.
 - Ability to set aliases for a command via the [PoshBot.BotCommand] attribute.
 - Ability to use [array] and [switch] parameter values for commands.
+- Code block support to custom text response via New-PoshBotTextResponse.
+- File upload support via new custom response function New-PoshBotFileUpload.
 
+## [0.2.3] Unreleased
 ### Fixed
 - Respect changes to [Admin] role that are saved to storage.
 

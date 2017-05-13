@@ -23,6 +23,9 @@ Locale: en-US
 ### [New-PoshBotConfiguration](New-PoshBotConfiguration.md)
 {{Manually Enter New-PoshBotConfiguration Description Here}}
 
+### [New-PoshBotFileUpload](New-PoshBotFileUpload.md)
+{{Manually Enter New-PoshBotFileUpload Description Here}}
+
 ### [New-PoshBotInstance](New-PoshBotInstance.md)
 {{Manually Enter New-PoshBotInstance Description Here}}
 

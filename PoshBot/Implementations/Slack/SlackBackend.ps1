@@ -317,7 +317,7 @@ class SlackBackend : Backend {
         foreach ($customResponse in $Response.Data) {
 
             [string]$sendTo = $Response.To
-            if ($customResponse.DM -eq $true) {
+            if ($customResponse.DM) {
                 $sendTo = "@$($this.UserIdToUsername($Response.MessageFrom))"
             }
 
@@ -387,6 +387,20 @@ class SlackBackend : Backend {
                         }
                         $slackResponse = Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Channel $sendTo -Text $t -Verbose:$false -AsUser
                     }
+                }
+                'PoshBot.File.Upload' {
+                    $uploadParams = @{
+                        Token = $this.Connection.Config.Credential.GetNetworkCredential().Password
+                        Channel = $sendTo
+                        Path = $customResponse.Path
+                    }
+                    if (-not [string]::IsNullOrEmpty($customResponse.Title)) {
+                        $uploadParams.Title = $customResponse.Title
+                    } else {
+                        $uploadParams.Title = Split-Path -Path $customResponse.Path -Leaf
+                    }
+                    Send-SlackFile @uploadParams -Verbose:$false
+                    Remove-Item -LiteralPath $customResponse.Path -Force
                 }
             }
         }

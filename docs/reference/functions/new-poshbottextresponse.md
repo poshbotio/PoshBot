@@ -1,6 +1,6 @@
 ---
 external help file: PoshBot-help.xml
-online version:
+online version: 
 schema: 2.0.0
 ---
 
@@ -50,7 +50,7 @@ The text response from the command.
 ```yaml
 Type: String[]
 Parameter Sets: (All)
-Aliases:
+Aliases: 
 
 Required: True
 Position: 1
@@ -65,7 +65,7 @@ Format the text in a code block if the backend supports it.
 ```yaml
 Type: SwitchParameter
 Parameter Sets: (All)
-Aliases:
+Aliases: 
 
 Required: False
 Position: Named
@@ -80,7 +80,7 @@ Tell PoshBot to redirect the response to a DM channel.
 ```yaml
 Type: SwitchParameter
 Parameter Sets: (All)
-Aliases:
+Aliases: 
 
 Required: False
 Position: Named
