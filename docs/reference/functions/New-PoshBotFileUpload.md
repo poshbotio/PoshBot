@@ -13,12 +13,12 @@ Tells PoshBot to upload a file to the chat network.
 
 ### Path
 ```
-New-PoshBotFileUpload [-Path <String[]>] [-Title <String>] [-DM]
+New-PoshBotFileUpload -Path <String[]> [-Title <String>] [-DM]
 ```
 
 ### LiteralPath
 ```
-New-PoshBotFileUpload [-LiteralPath <String[]>] [-Title <String>] [-DM]
+New-PoshBotFileUpload -LiteralPath <String[]> [-Title <String>] [-DM]
 ```
 
 ## DESCRIPTION
@@ -83,7 +83,7 @@ Type: String[]
 Parameter Sets: Path
 Aliases: 
 
-Required: False
+Required: True
 Position: Named
 Default value: None
 Accept pipeline input: True (ByPropertyName, ByValue)
@@ -103,7 +103,7 @@ Type: String[]
 Parameter Sets: LiteralPath
 Aliases: 
 
-Required: False
+Required: True
 Position: Named
 Default value: None
 Accept pipeline input: True (ByPropertyName, ByValue)

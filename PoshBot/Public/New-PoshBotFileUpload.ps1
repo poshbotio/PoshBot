@@ -64,6 +64,7 @@ function New-PoshBotFileUpload {
     [cmdletbinding()]
     param(
         [parameter(
+            Mandatory = $true,
             ParameterSetName  = 'Path',
             ValueFromPipeline = $true,
             ValueFromPipelineByPropertyName = $true
@@ -71,6 +72,7 @@ function New-PoshBotFileUpload {
         [string[]]$Path,
 
         [parameter(
+            Mandatory = $true,
             ParameterSetName = 'LiteralPath',
             ValueFromPipeline = $true,
             ValueFromPipelineByPropertyName = $true
