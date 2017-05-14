@@ -72,7 +72,10 @@ class Command {
             $func = $Options.Function
 
             # Context for who/how the command was called
-            $global:PoshBotContext = $options.ParsedCommand
+            $global:PoshBotContext = [pscustomobject]@{
+                ConfigurationDirectory = $options.ConfigurationDirectory
+                ParsedCommand = $options.ParsedCommand
+            }
 
             & $func @named @pos
         }
@@ -84,6 +87,7 @@ class Command {
             ManifestPath = $this.ManifestPath
             Function = $this.FunctionInfo
             ParsedCommand = $ParsedCommand
+            ConfigurationDirectory = $script:ConfigurationDirectory
         }
         if ($this.FunctionInfo) {
             $options.FunctionInfo = $this.FunctionInfo

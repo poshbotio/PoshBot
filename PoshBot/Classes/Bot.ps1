@@ -57,6 +57,11 @@ class Bot {
         $this.Executor = [CommandExecutor]::new($this.RoleManager)
         $this.GenerateCommandPrefixList()
 
+        # Ugly hack alert!
+        # Store the ConfigurationDirectory property in a script level variable
+        # so the command class as access to it.
+        $script:ConfigurationDirectory = $this.Configuration.ConfigurationDirectory
+
         # Add internal plugin directory and user-defined plugin directory to PSModulePath
         if (-not [string]::IsNullOrEmpty($this.Configuration.PluginDirectory)) {
             $internalPluginDir = Join-Path -Path $this._PoshBotDir -ChildPath 'Plugins'
