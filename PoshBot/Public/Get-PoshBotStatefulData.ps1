@@ -26,6 +26,8 @@ function Get-PoshBotStatefulData {
     .LINK
         Set-PoshBotStatefulData
     .LINK
+        Remove-PoshBotStatefulData
+    .LINK
         Start-PoshBot
     #>
     [cmdletbinding()]

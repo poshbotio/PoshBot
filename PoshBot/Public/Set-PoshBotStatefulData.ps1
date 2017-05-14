@@ -30,6 +30,8 @@ function Set-PoshBotStatefulData {
     .LINK
         Get-PoshBotStatefulData
     .LINK
+        Remove-PoshBotStatefulData
+    .LINK
         Start-PoshBot
     #>
     [cmdletbinding()]
@@ -47,7 +49,6 @@ function Set-PoshBotStatefulData {
         [int]$Depth = 2
     )
     process {
-        $ParentPath = $pbc.ConfigurationDirectory
         if($Scope -eq 'Module') {
             $FileName = "$($poshbotcontext.Plugin).state"
         } else {
@@ -65,7 +66,7 @@ function Set-PoshBotStatefulData {
             If($Existing.PSObject.Properties.Name -contains $Name) {
                 Write-Verbose "Overwriting [$Name]`nCurrent value: [$($Existing.$Name | Out-String)])`nNew Value: [$($Value | Out-String)]"
             }
-            $Existing.$Name = $Value
+            Add-Member -InputObject $Existing -MemberType NoteProperty -Name $Name -Value $Value -Force
             $ToWrite = $Existing
         }
 
