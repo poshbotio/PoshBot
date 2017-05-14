@@ -71,7 +71,8 @@ ScriptsToProcess = @('PoshBotAttribute.ps1')
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @(
     'Get-PoshBot'
-    'Get-PoshBotConfiguration'
+    'Get-PoshBotConfiguration',
+    'Get-PoshBotStatefulData',
     'New-PoshBotAce'
     'New-PoshBotBackend'
     'New-PoshBotConfiguration'
@@ -83,6 +84,7 @@ FunctionsToExport = @(
     'New-PoshBotCardResponse'
     'New-PoshBotTextResponse'
     'Save-PoshBotConfiguration'
+    'Set-PoshBotStatefulData'
     'Start-PoshBot'
     'Stop-Poshbot'
 )
