@@ -38,7 +38,6 @@ function Get-PoshBotStatefulData {
         [string]$Scope = 'Module'
     )
     process {
-        $ParentPath = $pbc.ConfigurationDirectory
         if($Scope -eq 'Module') {
             $FileName = "$($poshbotcontext.Plugin).state"
         } else {
