@@ -50,7 +50,7 @@ Once a command is found, authorization to execute the command by the user who se
 This is done via PoshBots' [Command Authorization](command-authorization/overview.md) system.
 Each command can have zero or more [Permissions](command-authorization/permissions.md) assigned.
 **If no permissions are assigned, then anyone on the chat network can execute the command**.
-Collections of related permissions are assigned to a [Role](command-authoriation/roles.md).
+Collections of related permissions are assigned to a [Role](command-authorization/roles.md).
 One or more roles are then assigned to a [Group](command-authorization/groups.md) along with one or more users.
 This links users to what commands they can execute.
 
