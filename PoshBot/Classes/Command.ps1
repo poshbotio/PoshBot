@@ -73,6 +73,10 @@ class Command {
 
             # Context for who/how the command was called
             $global:PoshBotContext = [pscustomobject]@{
+                Plugin = $options.ParsedCommand.Plugin
+                Command = $options.ParsedCommand.Command
+                From = $options.ParsedCommand.From
+                To = $options.ParsedCommand.To
                 ConfigurationDirectory = $options.ConfigurationDirectory
                 ParsedCommand = $options.ParsedCommand
             }
