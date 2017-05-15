@@ -5,11 +5,12 @@ pages:
   - Home: index.md
   - Guides:
     - Quickstart: guides/quickstart.md
+    - Message Processing Flow: guides/message-processing.md
     - Configuration: guides/configuration.md
     - Backends: guides/backends.md
     - Plugins: guides/plugins.md
     - Triggers: guides/triggers.md
-    - ScheduledTask: guides/scheduled-task.md
+    - Scheduled Task: guides/scheduled-task.md
     - Command Authorization:
       - Overview: guides/command-authorization/overview.md
       - Permissions: guides/command-authorization/permissions.md
