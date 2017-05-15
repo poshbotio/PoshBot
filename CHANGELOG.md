@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - Respect changes to [Admin] role that are saved to storage.
 
+### Added
+- New global variable $global:PoshBotContext inserted into PowerShell job so commands have extra context detailing how the command was triggered.
+
 ## [0.2.2] 2017-04-17
 ### Fixed
 - Command tokenization issues on Nano Server.
