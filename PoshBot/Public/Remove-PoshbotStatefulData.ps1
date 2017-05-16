@@ -40,11 +40,11 @@ function Remove-PoshBotStatefulData {
     )
     process {
         if($Scope -eq 'Module') {
-            $FileName = "$($poshbotcontext.Plugin).state"
+            $FileName = "$($PoshBotContext.Plugin).state"
         } else {
             $FileName = "PoshbotGlobal.state"
         }
-        $Path = Join-Path $pbc.ConfigurationDirectory $FileName
+        $Path = Join-Path $PoshBotContext.ConfigurationDirectory $FileName
 
         if(-not (Test-Path $Path)) {
             return
