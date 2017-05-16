@@ -2,14 +2,12 @@
 InModuleScope PoshBot {
     describe 'Remove-PoshBotStatefulData' {
         # Define internal variables
-        $pbc = [pscustomobject]@{
-            ConfigurationDirectory = (Join-Path $env:BHProjectPath Tests)
-        }
         $poshbotcontext = [pscustomobject]@{
             Plugin = 'TestPlugin'
+            ConfigurationDirectory = (Join-Path $env:BHProjectPath Tests)
         }
-        $globalfile = Join-Path $pbc.ConfigurationDirectory "PoshbotGlobal.state"
-        $modulefile = Join-Path $pbc.ConfigurationDirectory "$($poshbotcontext.Plugin).state"
+        $globalfile = Join-Path $poshbotcontext.ConfigurationDirectory "PoshbotGlobal.state"
+        $modulefile = Join-Path $poshbotcontext.ConfigurationDirectory "$($poshbotcontext.Plugin).state"
         [pscustomobject]@{
             a = 'g'
             b = $true

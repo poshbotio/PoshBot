@@ -2,11 +2,9 @@
 InModuleScope PoshBot {
     describe 'Get-PoshBotStatefulData' {
         # Define internal variables
-        $pbc = [pscustomobject]@{
-            ConfigurationDirectory = (Join-Path $env:BHProjectPath Tests)
-        }
         $poshbotcontext = [pscustomobject]@{
             Plugin = 'TestPlugin'
+            ConfigurationDirectory = (Join-Path $env:BHProjectPath Tests)
         }
 
         it 'Returns nothing if no file exists' {
@@ -15,8 +13,8 @@ InModuleScope PoshBot {
         }
 
         # Create stateful files
-        $globalfile = Join-Path $pbc.ConfigurationDirectory "PoshbotGlobal.state"
-        $modulefile = Join-Path $pbc.ConfigurationDirectory "$($poshbotcontext.Plugin).state"
+        $globalfile = Join-Path $poshbotcontext.ConfigurationDirectory "PoshbotGlobal.state"
+        $modulefile = Join-Path $poshbotcontext.ConfigurationDirectory "$($poshbotcontext.Plugin).state"
         [pscustomobject]@{
             a = 'g'
             b = $true
