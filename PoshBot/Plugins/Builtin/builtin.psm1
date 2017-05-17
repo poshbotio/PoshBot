@@ -38,7 +38,7 @@ function Get-CommandHelp {
             Aliases = ($_.Value.Aliases -join ', ')
             Plugin = $plugin
             Description = $_.Value.Description
-            Usage = $_.Value.Usage
+            Usage = ($_.Value.Usage | Format-List | Out-string).Trim()
             Enabled = $_.Value.Enabled.ToString()
             Permissions = $_.Value.AccessFilter.Permissions.Keys | Format-List | Out-string
         }
