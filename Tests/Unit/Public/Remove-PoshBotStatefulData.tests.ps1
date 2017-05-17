@@ -24,7 +24,7 @@ InModuleScope PoshBot {
             $m = Import-Clixml -Path $modulefile
             $m.b | Should Be $True
             @($m.psobject.properties).count | Should Be 1
-            
+
             $g = Import-Clixml -Path $globalfile
             $g.a | Should Be 'g'
             @($g.psobject.properties).count | Should Be 1

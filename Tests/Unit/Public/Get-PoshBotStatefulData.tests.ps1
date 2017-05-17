@@ -27,7 +27,7 @@ InModuleScope PoshBot {
             $m = Get-PoshBotStatefulData -Scope Module
             $m.a | Should Be 'm'
             $m.psobject.properties.count | Should Be 1
-            
+
             $g = Get-PoshBotStatefulData -Scope Global
             $g.a | Should Be 'g'
             $g.b | Should Be $True
