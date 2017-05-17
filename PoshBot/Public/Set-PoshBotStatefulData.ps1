@@ -7,10 +7,10 @@ function Set-PoshBotStatefulData {
         Save stateful data to use in another PoshBot command
 
         Stores data in clixml format, in the PoshBot ConfigurationDirectory.
-        
+
         If <Name> property exists in current stateful data file, it is overwritten
     .PARAMETER Name
-        Property to add to the stateful data file 
+        Property to add to the stateful data file
     .PARAMETER Value
         Value to set for the Name property in the stateful data file
     .PARAMETER Scope
@@ -41,14 +41,19 @@ function Set-PoshBotStatefulData {
 
         [parameter(ValueFromPipeline,
                    Mandatory)]
-        [string]$Value,
+        [object[]]$Value,
 
         [validateset('Global','Module')]
         [string]$Scope = 'Module',
 
         [int]$Depth = 2
     )
-    process {
+
+    end {
+        if ($Value.Count -eq 1) {
+            $Value = $Value[0]
+        }
+
         if($Scope -eq 'Module') {
             $FileName = "$($PoshBotContext.Plugin).state"
         } else {
