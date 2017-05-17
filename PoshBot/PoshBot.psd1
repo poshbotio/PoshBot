@@ -83,6 +83,7 @@ FunctionsToExport = @(
     'New-HelloPlugin'
     'New-PoshBotCardResponse'
     'New-PoshBotTextResponse'
+    'Remove-PoshBotStatefulData'
     'Save-PoshBotConfiguration'
     'Set-PoshBotStatefulData'
     'Start-PoshBot'
