@@ -127,9 +127,21 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
+## [0.3.0] 2017-05-16
+### Added
+- PR31: Functions to get/set/remove stateful data within plugin command (via @RamblingCookieMonster)
+- Ability to override command name via the [PoshBot.BotCommand] attribute.
+- Ability to set aliases for a command via the [PoshBot.BotCommand] attribute.
+- Ability to use [array] and [switch] parameter values for commands.
+- Code block support to custom text response via New-PoshBotTextResponse.
+- File upload support via new custom response function New-PoshBotFileUpload.
+
 ## [0.2.3] Unreleased
 ### Fixed
 - Respect changes to [Admin] role that are saved to storage.
+
+### Added
+- New global variable $global:PoshBotContext inserted into PowerShell job so commands have extra context detailing how the command was triggered.
 
 ## [0.2.2] 2017-04-17
 ### Fixed
