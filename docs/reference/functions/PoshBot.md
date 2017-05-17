@@ -17,6 +17,9 @@ Locale: en-US
 ### [Get-PoshBotConfiguration](Get-PoshBotConfiguration.md)
 {{Manually Enter Get-PoshBotConfiguration Description Here}}
 
+### [Get-PoshBotStatefulData](Get-PoshBotStatefulData.md)
+{{Manually Enter Get-PoshBotStatefulData Description Here}}
+
 ### [New-PoshBotCardResponse](New-PoshBotCardResponse.md)
 {{Manually Enter New-PoshBotCardResponse Description Here}}
 
@@ -38,8 +41,14 @@ Locale: en-US
 ### [New-PoshBotTextResponse](New-PoshBotTextResponse.md)
 {{Manually Enter New-PoshBotTextResponse Description Here}}
 
+### [Remove-PoshBotStatefulData](Remove-PoshBotStatefulData.md)
+{{Manually Enter Remove-PoshBotStatefulData Description Here}}
+
 ### [Save-PoshBotConfiguration](Save-PoshBotConfiguration.md)
 {{Manually Enter Save-PoshBotConfiguration Description Here}}
+
+### [Set-PoshBotStatefulData](Set-PoshBotStatefulData.md)
+{{Manually Enter Set-PoshBotStatefulData Description Here}}
 
 ### [Start-PoshBot](Start-PoshBot.md)
 {{Manually Enter Start-PoshBot Description Here}}
