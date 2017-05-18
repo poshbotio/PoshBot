@@ -16,10 +16,13 @@ class ParsedCommand {
 class CommandParser {
     [ParsedCommand] static Parse([Message]$Message) {
 
-        $CommandString = $Message.Text.Trim()
+        $commandString = [string]::Empty
+        if (-not [string]::IsNullOrEmpty($Message.Text)) {
+            $commandString = $Message.Text.Trim()
+        }
 
         # The command is the first word of the message
-        $command = $CommandString.Split(' ')[0]
+        $command = $commandString.Split(' ')[0]
 
         # The command COULD be in the form of <command> or <plugin:command>
         # Figure out which one
@@ -35,7 +38,7 @@ class CommandParser {
 
         # Create the ParsedCommand instance
         $parsedCommand = [ParsedCommand]::new()
-        $parsedCommand.CommandString = $CommandString
+        $parsedCommand.CommandString = $commandString
         $parsedCommand.Plugin = $plugin
         $parsedCommand.Command = $command
         $parsedCommand.OriginalMessage = $Message
@@ -48,42 +51,44 @@ class CommandParser {
             $positionalParams = @()
             $namedParams = @{}
 
-            # Replace '--<ParamName>' with '-<ParamName' so AST works
-            $astCmdStr = $CommandString -replace '(--([a-zA-Z]))', '-$2'
-            $ast = [System.Management.Automation.Language.Parser]::ParseInput($astCmdStr, [ref]$null, [ref]$null)
-            $commandAST = $ast.FindAll({$args[0] -as [System.Management.Automation.Language.CommandAst]},$false)
+            if (-not [string]::IsNullOrEmpty($commandString)) {
+                # Replace '--<ParamName>' with '-<ParamName' so AST works
+                $astCmdStr = $commandString -replace '(--([a-zA-Z]))', '-$2'
+                $ast = [System.Management.Automation.Language.Parser]::ParseInput($astCmdStr, [ref]$null, [ref]$null)
+                $commandAST = $ast.FindAll({$args[0] -as [System.Management.Automation.Language.CommandAst]},$false)
 
-            for ($x = 1; $x -lt $commandAST.CommandElements.Count; $x++) {
+                for ($x = 1; $x -lt $commandAST.CommandElements.Count; $x++) {
 
-                $element = $commandAST.CommandElements[$x]
+                    $element = $commandAST.CommandElements[$x]
 
-                if ($element -is [System.Management.Automation.Language.CommandParameterAst]) {
+                    if ($element -is [System.Management.Automation.Language.CommandParameterAst]) {
 
-                    $paramName = $element.ParameterName
-                    $paramValues = @()
-                    $y = 1
+                        $paramName = $element.ParameterName
+                        $paramValues = @()
+                        $y = 1
 
-                    # If the element after this one is another CommandParameterAst or this
-                    # is the last element then assume this parameter is a [switch]
-                    if ((-not $commandAST.CommandElements[$x+1]) -or ($commandAST.CommandElements[$x+1] -is [System.Management.Automation.Language.CommandParameterAst])) {
-                        $paramValues = $true
+                        # If the element after this one is another CommandParameterAst or this
+                        # is the last element then assume this parameter is a [switch]
+                        if ((-not $commandAST.CommandElements[$x+1]) -or ($commandAST.CommandElements[$x+1] -is [System.Management.Automation.Language.CommandParameterAst])) {
+                            $paramValues = $true
+                        } else {
+                            # Inspect the elements immediately after this CommandAst as they are values
+                            # for a named parameter and pull out the values (array, string, bool, etc)
+                            do {
+                                $paramValues += $commandAST.CommandElements[$x+$y].SafeGetValue()
+                                $y++
+                            } until ((-not $commandAST.CommandElements[$x+$y]) -or $commandAST.CommandElements[$x+$y] -is [System.Management.Automation.Language.CommandParameterAst])
+                        }
+
+                        if ($paramValues.Count -eq 1) {
+                            $paramValues = $paramValues[0]
+                        }
+                        $namedParams.Add($paramName, $paramValues)
+                        $x += $y-1
                     } else {
-                        # Inspect the elements immediately after this CommandAst as they are values
-                        # for a named parameter and pull out the values (array, string, bool, etc)
-                        do {
-                            $paramValues += $commandAST.CommandElements[$x+$y].SafeGetValue()
-                            $y++
-                        } until ((-not $commandAST.CommandElements[$x+$y]) -or $commandAST.CommandElements[$x+$y] -is [System.Management.Automation.Language.CommandParameterAst])
+                        # This element is a positional parameter value so just get the value
+                        $positionalParams += $element.SafeGetValue()
                     }
-
-                    if ($paramValues.Count -eq 1) {
-                        $paramValues = $paramValues[0]
-                    }
-                    $namedParams.Add($paramName, $paramValues)
-                    $x += $y-1
-                } else {
-                    # This element is a positional parameter value so just get the value
-                    $positionalParams += $element.SafeGetValue()
                 }
             }
 

@@ -12,7 +12,7 @@
 RootModule = 'PoshBot.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.3.0'
+ModuleVersion = '0.3.1'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -127,6 +127,10 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
+## [0.3.1] 2017-05-17
+### Fixed
+- When parsing the command from the message returned from the chat network, deal with null or empty text strings correctly.
+
 ## [0.3.0] 2017-05-16
 ### Added
 - PR31: Functions to get/set/remove stateful data within plugin command (via @RamblingCookieMonster)
