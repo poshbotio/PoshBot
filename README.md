@@ -15,6 +15,8 @@ PoshBot currently supports connecting to Slack to provide you with awesome ChatO
 
 > Detailed documentation can be found at [ReadTheDocs](http://poshbot.readthedocs.io/en/latest/)
 
+> See [Building PoshBot](./building.md) for documentation on how to build PoshBot from source.
+
 ## Quickstart
 
 To get started now, get a SLACK-API-TOKEN for your bot:
