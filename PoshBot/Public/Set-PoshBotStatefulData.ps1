@@ -34,7 +34,7 @@ function Set-PoshBotStatefulData {
     .LINK
         Start-PoshBot
     #>
-    [cmdletbinding()]
+    [cmdletbinding(SupportsShouldProcess)]
     param(
         [parameter(Mandatory)]
         [string]$Name,
@@ -75,8 +75,10 @@ function Set-PoshBotStatefulData {
             $ToWrite = $Existing
         }
 
-        Export-Clixml -Path $Path -InputObject $ToWrite -Depth $Depth -Force
-        Write-Verbose -Message "Stateful data saved to [$Path]"
+        if ($PSCmdlet.ShouldProcess($Name, 'Set stateful data')) {
+            Export-Clixml -Path $Path -InputObject $ToWrite -Depth $Depth -Force
+            Write-Verbose -Message "Stateful data [$Name] saved to [$Path]"
+        }
     }
 }
 

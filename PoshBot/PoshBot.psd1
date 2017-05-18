@@ -130,6 +130,7 @@ PrivateData = @{
 ## [0.3.1] 2017-05-17
 ### Fixed
 - When parsing the command from the message returned from the chat network, deal with null or empty text strings correctly.
+- Resolve PSScriptAnalyzer warnings
 
 ## [0.3.0] 2017-05-16
 ### Added

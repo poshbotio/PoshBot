@@ -6,7 +6,7 @@ function Remove-PoshBotStatefulData {
     .DESCRIPTION
         Remove existing stateful data
     .PARAMETER Name
-        Property to remove from the stateful data file 
+        Property to remove from the stateful data file
     .PARAMETER Scope
         Sets the scope of stateful data to remove:
             Module: Remove stateful data from the current module's data
@@ -28,7 +28,7 @@ function Remove-PoshBotStatefulData {
     .LINK
         Start-PoshBot
     #>
-    [cmdletbinding()]
+    [cmdletbinding(SupportsShouldProcess)]
     param(
         [parameter(Mandatory)]
         [string[]]$Name,
@@ -46,14 +46,17 @@ function Remove-PoshBotStatefulData {
         }
         $Path = Join-Path $PoshBotContext.ConfigurationDirectory $FileName
 
+
         if(-not (Test-Path $Path)) {
             return
         } else {
             $ToWrite = Import-Clixml -Path $Path | Select-Object * -ExcludeProperty $Name
         }
 
-        Export-Clixml -Path $Path -InputObject $ToWrite -Depth $Depth -Force
-        Write-Verbose -Message "Stateful data saved to [$Path]"
+        if ($PSCmdlet.ShouldProcess($Name, 'Remove stateful data')) {
+            Export-Clixml -Path $Path -InputObject $ToWrite -Depth $Depth -Force
+            Write-Verbose -Message "Stateful data [$Name] removed from [$Path]"
+        }
     }
 }
 

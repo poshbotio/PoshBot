@@ -26,6 +26,8 @@ class CommandRequirementsNotMet : CommandException {
 }
 
 # Represent a command that can be executed
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidGlobalVars', '', Scope='Function', Target='*')]
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '', Scope='Function', Target='*')]
 class Command {
 
     # Unique (to the plugin) name of the command
