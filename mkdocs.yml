@@ -51,10 +51,15 @@ pages:
     - Modules Functions:
       - Get-PoshBot: reference/functions/get-poshbot.md
       - Get-PoshBotConfiguration: reference/functions/get-poshbotconfiguration.md
+      - Get-PoshBotStatefulData: reference/functions/Get-PoshBotStatefulData.md
       - New-PoshBotCardResponse: reference/functions/new-poshbotcardresponse.md
       - New-PoshBotConfiguration: reference/functions/new-poshbotconfiguration.md
+      - New-PoshBotFileUpload: reference/functions/New-PoshBotFileUpload.md
       - New-PoshBotInstance: reference/functions/new-poshbotinstance.md
+      - New-PoshBotScheduledTask: reference/functions/new-poshbotscheduledtask.md
+      - New-PoshBotSlackBackend: reference/functions/new-poshbotslackbackend.md
       - New-PoshBotTextResponse: reference/functions/new-poshbottextresponse.md
+      - Remove-PoshBotStatefulData: reference/functions/Remove-PoshBotStatefulData.md
       - Save-PoshBotConfiguration: reference/functions/save-poshbotconfiguration.md
       - Start-PoshBot: reference/functions/start-poshbot.md
       - Stop-PoshBot: reference/functions/stop-poshbot.md
