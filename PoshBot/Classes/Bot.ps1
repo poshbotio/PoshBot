@@ -176,17 +176,16 @@ class Bot {
         $this.Backend.Disconnect()
     }
 
-    # Receive an event from the backend chat network
-    [Message]ReceiveMessage() {
-        $msg = $this.Backend.ReceiveMessage()
-        # The backend MAY return a NULL message. Ignore it
-        if ($msg) {
+    # Receive messages from the backend chat network
+    [void]ReceiveMessage() {
+        foreach ($msg in $this.Backend.ReceiveMessage()) {
             $this._Logger.Debug([LogMessage]::new('[Bot:ReceiveMessage] Received bot message from chat network. Adding to message queue.', $msg))
             $this.MessageQueue.Enqueue($msg)
         }
-        return $msg
     }
 
+    # Determine if message text is addressing the bot and should be
+    # treated as a bot command
     [bool]IsBotCommand([Message]$Message) {
         $firstWord = ($Message.Text -split ' ')[0]
         foreach ($prefix in $this._PossibleCommandPrefixes ) {
@@ -198,7 +197,7 @@ class Bot {
         return $false
     }
 
-    # Pull message off queue and pass to message handler
+    # Pull message(s) off queue and pass to handler
     [void]ProcessMessageQueue() {
         if ($this.MessageQueue.Count -gt 0) {
             while ($this.MessageQueue.Count -ne 0) {
