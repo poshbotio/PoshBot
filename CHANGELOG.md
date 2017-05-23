@@ -6,6 +6,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.4.0] Unreleased
+### Added
+- Asynchronous command execution
+
 ## [0.3.1] 2017-05-17
 ### Fixed
 - When parsing the command from the message returned from the chat network, deal with null or empty text strings correctly.

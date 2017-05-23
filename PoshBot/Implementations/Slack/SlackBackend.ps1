@@ -366,6 +366,7 @@ class SlackBackend : Backend {
                         $msg = $att | New-SlackMessage -Channel $sendTo -AsUser
                         $slackResponse = $msg | Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Verbose:$false
                     }
+                    break
                 }
                 'PoshBot.Text.Response' {
                     $chunks = $this._ChunkString($customResponse.Text)
@@ -377,6 +378,7 @@ class SlackBackend : Backend {
                         }
                         $slackResponse = Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Channel $sendTo -Text $t -Verbose:$false -AsUser
                     }
+                    break
                 }
                 'PoshBot.File.Upload' {
                     $uploadParams = @{
@@ -391,6 +393,7 @@ class SlackBackend : Backend {
                     }
                     Send-SlackFile @uploadParams -Verbose:$false
                     Remove-Item -LiteralPath $customResponse.Path -Force
+                    break
                 }
             }
         }

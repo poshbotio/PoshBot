@@ -13,128 +13,184 @@ class CommandExecutor {
 
     # Plugin commands get executed as PowerShell jobs
     # This is to keep track of those
-    hidden [hashtable]$_JobTracker = @{}
+    hidden [hashtable]$_jobTracker = @{}
+
+    hidden [hashtable]$_completedJobTracker = @{}
 
     CommandExecutor([RoleManager]$RoleManager) {
         $this.RoleManager = $RoleManager
     }
 
-    # Invoke a command
-    # Should this live in the Plugin or in the main bot class?
-    [CommandResult]ExecuteCommand([PluginCommand]$PluginCmd, [ParsedCommand]$ParsedCommand, [String]$UserId) {
+    # Execute a command
+    [void]ExecuteCommand([PluginCommand]$PluginCmd, [ParsedCommand]$ParsedCommand, [Message]$Message) {
 
-        $command = $pluginCmd.Command
-
-        # Our result
-        $r = [CommandResult]::New()
+        $cmdExecContext = [CommandExecutionContext]::new()
+        $cmdExecContext.Started = (Get-Date).ToUniversalTime()
+        $cmdExecContext.Result = [CommandResult]::New()
+        $cmdExecContext.Command = $pluginCmd.Command
+        $cmdExecContext.FullyQualifiedCommandName = $pluginCmd.ToString()
+        $cmdExecContext.ParsedCommand = $ParsedCommand
+        $cmdExecContext.Message = $Message
 
         # Verify command is not disabled
-        if (-not $Command.Enabled) {
-            $err = [CommandDisabled]::New("Command [$($Command.Name)] is disabled")
-            $r.Success = $false
-            $r.Errors += $err
+        if (-not $cmdExecContext.Command.Enabled) {
+            $err = [CommandDisabled]::New("Command [$($cmdExecContext.Command.Name)] is disabled")
+            $cmdExecContext.Complete = $true
+            $cmdExecContext.Ended = (Get-Date).ToUniversalTime()
+            $cmdExecContext.Result.Success = $false
+            $cmdExecContext.Result.Errors += $err
             Write-Error -Exception $err
-            return $r
+            #return $cmdExecContext
+            return
         }
 
         # Verify that all mandatory parameters have been provided for "command" type bot commands
         # This doesn't apply to commands triggered from regex matches, timers, or events
-        if ([TriggerType]::Command -in $command.Triggers.Type ) {
-            if (-not $this.ValidateMandatoryParameters($ParsedCommand, $command)) {
-                $msg = "Mandatory parameters for [$($Command.Name)] not provided.`nUsage:`n"
-                foreach ($usage in $Command.Usage) {
+        if ([TriggerType]::Command -in $cmdExecContext.Command.Triggers.Type ) {
+            if (-not $this.ValidateMandatoryParameters($ParsedCommand, $cmdExecContext.Command)) {
+                $msg = "Mandatory parameters for [$($cmdExecContext.Command.Name)] not provided.`nUsage:`n"
+                foreach ($usage in $cmdExecContext.Command.Usage) {
                     $msg += "    $usage`n"
                 }
                 $err = [CommandRequirementsNotMet]::New($msg)
-                $r.Success = $false
-                $r.Errors += $err
+                $cmdExecContext.Complete = $true
+                $cmdExecContext.Ended = (Get-Date).ToUniversalTime()
+                $cmdExecContext.Result.Success = $false
+                $cmdExecContext.Result.Errors += $err
                 Write-Error -Exception $err
-                return $r
+                return
             }
         }
 
-        # If command is [command] type verify that the caller is authorized to execute command
-        if ([TriggerType]::Command -in $command.Triggers.Type ) {
-            $authorized = $command.IsAuthorized($UserId, $this.RoleManager)
+        # If command is [command] type verify that the caller is authorized to execute it
+        if ([TriggerType]::Command -in $cmdExecContext.Command.Triggers.Type ) {
+            $authorized = $cmdExecContext.Command.IsAuthorized($Message.From, $this.RoleManager)
         } else {
             $authorized = $true
         }
 
         if ($authorized) {
-            $jobDuration = Measure-Command -Expression {
-                if ($existingCommand.AsJob) {
-                    $job = $command.Invoke($ParsedCommand, $true)
-
-                    # TODO
-                    # Tracking the job will be used later so we can continue on
-                    # without having to wait for the job to complete
-                    #$this.TrackJob($job)
-
-                    $job | Wait-Job
-
-                    # Capture all the streams
-                    $r.Streams.Error = $job.ChildJobs[0].Error.ReadAll()
-                    $r.Streams.Information = $job.ChildJobs[0].Information.ReadAll()
-                    $r.Streams.Verbose = $job.ChildJobs[0].Verbose.ReadAll()
-                    $r.Streams.Warning = $job.ChildJobs[0].Warning.ReadAll()
-                    $r.Output = $job.ChildJobs[0].Output.ReadAll()
-
-                    Write-Verbose -Message "Command results: `n$($r | ConvertTo-Json)"
-
-                    # Determine if job had any terminating errors
-                    if ($job.State -eq 'Failed' -or $r.Streams.Error.Count -gt 0) {
-                        $r.Success = $false
+            if ($cmdExecContext.Command.AsJob) {
+                # Kick off job and add to job tracker
+                $cmdExecContext.IsJob = $true
+                $cmdExecContext.Job = $cmdExecContext.Command.Invoke($ParsedCommand, $true)
+                $cmdExecContext.Complete = $false
+            } else {
+                # Run command in current session and get results
+                # This should only be 'builtin' commands
+                try {
+                    $cmdExecContext.IsJob = $false
+                    $hash = $cmdExecContext.Command.Invoke($ParsedCommand, $false)
+                    $cmdExecContext.Complete = $true
+                    $cmdExecContext.Ended = (Get-Date).ToUniversalTime()
+                    $cmdExecContext.Result.Errors = $hash.Error
+                    $cmdExecContext.Result.Streams.Error = $hash.Error
+                    $cmdExecContext.Result.Streams.Information = $hash.Information
+                    $cmdExecContext.Result.Streams.Warning = $hash.Warning
+                    $cmdExecContext.Result.Output = $hash.Output
+                    if ($cmdExecContext.Result.Errors.Count -gt 0) {
+                        $cmdExecContext.Result.Success = $false
                     } else {
-                        $r.Success = $true
+                        $cmdExecContext.Result.Success = $true
                     }
-                } else {
-                    try {
-                        $hash = $command.Invoke($ParsedCommand, $false)
-                        $r.Errors = $hash.Error
-                        $r.Streams.Error = $hash.Error
-                        $r.Streams.Information = $hash.Information
-                        $r.Streams.Warning = $hash.Warning
-                        $r.Output = $hash.Output
-                        if ($r.Errors.Count -gt 0) {
-                            $r.Success = $false
-                        } else {
-                            $r.Success = $true
-                        }
-                    } catch {
-                        $r.Success = $false
-                        $r.Errors = $_.Exception.Message
-                        $r.Streams.Error = $_.Exception.Message
-                    }
+                } catch {
+                    $cmdExecContext.Complete = $true
+                    $cmdExecContext.Result.Success = $false
+                    $cmdExecContext.Result.Errors = $_.Exception.Message
+                    $cmdExecContext.Result.Streams.Error = $_.Exception.Message
                 }
             }
-            $r.Duration = $jobDuration
-
-            # Add command result to history
-            if ($command.KeepHistory) {
-                $this.AddToHistory($PluginCmd.ToString(), $UserId, $r, $ParsedCommand)
-            }
         } else {
-            $r.Success = $false
-            $r.Authorized = $false
-            $r.Errors += [CommandNotAuthorized]::New("Command [$($Command.Name)] was not authorized for user [$($UserId)]")
+            $msg = "Command [$($cmdExecContext.Command.Name)] was not authorized for user [$($Message.From)]"
+            $cmdExecContext.Result.Errors += [CommandNotAuthorized]::New($msg)
+            $cmdExecContext.Result.Success = $false
+            $cmdExecContext.Result.Authorized = $false
         }
 
-        # Track number of commands executed
-        if ($r.Success) {
-            $this.ExecutedCount++
-        }
-        return $r
+        $this.TrackJob($cmdExecContext)
     }
 
-    [void]TrackJob($job) {
-        if (-not $this._JobTracker.ContainsKey($job.Name)) {
-            $this._JobTracker.Add($job.Name, $job)
+    # Add the command execution context to the job tracker
+    # So the status and results of it can be checked later
+    [void]TrackJob([CommandExecutionContext]$CommandContext) {
+        if (-not $this._jobTracker.ContainsKey($CommandContext.Id)) {
+            Write-Verbose -Message "[CommandExecutor:TrackJob] - Adding job [$($CommandContext.Id)] to tracker"
+            $this._jobTracker.Add($CommandContext.Id, $CommandContext)
         }
+    }
+
+    # Receive any completed jobs
+    [CommandExecutionContext[]]ReceiveJob() {
+
+        $results = New-Object System.Collections.ArrayList
+
+        if ($this._jobTracker.Count -ge 1) {
+
+            $completedJobs = $this._jobTracker.GetEnumerator() |
+                Where-Object {$_.Value.Id -notin $this._completedJobTracker.Keys } |
+                Where-Object {($_.Value.Complete -eq $true) -or
+                              ($_.Value.IsJob -and (($_.Value.Job.State -eq 'Completed') -or ($_.Value.Job.State -eq 'Failed')))} |
+                Select-Object -ExpandProperty Value
+
+            foreach ($cmdExecContext in $completedJobs) {
+                # If the command was executed in a PS job, get the output
+                # Builtin commands are NOT executed as jobs so their output
+                # was already recorded in the [Result] property in the ExecuteCommand() method
+                if ($cmdExecContext.IsJob) {
+                    if ($cmdExecContext.Job.State -eq 'Completed') {
+
+                        Write-Verbose -Message "Job [$($cmdExecContext.Id)] is complete"
+                        $cmdExecContext.Complete = $true
+                        $cmdExecContext.Ended = (Get-Date).ToUniversalTime()
+
+                        $cmdExecContext.Job | Wait-Job
+
+                        # Capture all the streams
+                        $cmdExecContext.Result.Streams.Error = $cmdExecContext.Job.ChildJobs[0].Error.ReadAll()
+                        $cmdExecContext.Result.Streams.Information = $cmdExecContext.Job.ChildJobs[0].Information.ReadAll()
+                        $cmdExecContext.Result.Streams.Verbose = $cmdExecContext.Job.ChildJobs[0].Verbose.ReadAll()
+                        $cmdExecContext.Result.Streams.Warning = $cmdExecContext.Job.ChildJobs[0].Warning.ReadAll()
+                        #$cmdExecContext.Result.Output = $cmdExecContext.Job.ChildJobs[0].Output
+                        $cmdExecContext.Result.Output = $cmdExecContext.Job | Receive-Job -Keep
+
+                        # Determine if job had any terminating errors
+                        if ($cmdExecContext.Result.Streams.Error.Count -gt 0) {
+                            $cmdExecContext.Result.Success = $false
+                        } else {
+                            $cmdExecContext.Result.Success = $true
+                        }
+
+                        # Clean up the job
+                        #Remove-Job -Job $cmdExecContext.Job
+
+                        Write-Verbose ($cmdExecContext.Result | ConvertTo-Json)
+
+                    } elseIf ($cmdExecContext.Job.State -eq 'Failed') {
+                        $cmdExecContext.Complete = $true
+                        $cmdExecContext.Result.Success = $false
+                    }
+                }
+
+                Write-Verbose -Message "Removing job [$($cmdExecContext.Id)] from tracker"
+                $this._completedJobTracker.Add($cmdExecContext.Id, $cmdExecContext)
+                $this._jobTracker.Remove($cmdExecContext.Id)
+
+                # Track number of commands executed
+                if ($cmdExecContext.Result.Success) {
+                    $this.ExecutedCount++
+                }
+
+                $cmdExecContext.Result.Duration = ($cmdExecContext.Ended - $cmdExecContext.Started)
+
+                $results.Add($cmdExecContext) > $null
+            }
+        }
+
+        return $results
     }
 
     # Add command result to history
     [void]AddToHistory([string]$CommandName, [string]$UserId, [CommandResult]$Result, [ParsedCommand]$ParsedCommand) {
-        #$this.History += [CommandHistory]::New($CommandName, $UserId, $Result, $ParsedCommand)
         if ($this.History.Count -ge $this.HistoryToKeep) {
             $this.History.RemoveAt(0) > $null
         }
