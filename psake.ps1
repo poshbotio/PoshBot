@@ -113,7 +113,7 @@ task Compile -depends Clean {
 
     # Append items to psm1
     Write-Verbose -Message 'Creating psm1...'
-    $psm1 = New-Item -Path (Join-Path -Path $outputModVerDir -ChildPath "$($ENV:BHProjectName).psm1") -ItemType File
+    $psm1 = Copy-Item -Path (Join-Path -Path $sut -ChildPath 'PoshBot.psm1') -Destination (Join-Path -Path $outputModVerDir -ChildPath "$($ENV:BHProjectName).psm1") -PassThru
 
     # This is dumb but oh well :)
     # We need to write out the classes in a particular order
@@ -142,6 +142,7 @@ task Compile -depends Clean {
         'CommandHistory'
         'Plugin'
         'PluginCommand'
+        'CommandExecutionContext'
         'CommandExecutor'
         'ConfigProvidedParameter'
         'PluginManager'

@@ -8,9 +8,6 @@ class SlackBackend : Backend {
 
     [int]$MaxMessageLength = 4000
 
-    # Buffer to receive data from websocket
-    hidden [Byte[]]$Buffer = (New-Object System.Byte[] 4096)
-
     # Import some color defs.
     hidden [hashtable]$_PSSlackColorMap = @{
         aliceblue = "#F0F8FF"
@@ -172,20 +169,12 @@ class SlackBackend : Backend {
     }
 
     # Receive a message from the websocket
-    [Message]ReceiveMessage() {
-        [Message]$msg = $null
+    [Message[]]ReceiveMessage() {
+        $messages = New-Object -TypeName System.Collections.ArrayList
         try {
-            $ct = New-Object System.Threading.CancellationToken
-            $taskResult = $null
-            do {
-                $taskResult = $this.Connection.WebSocket.ReceiveAsync($this.buffer, $ct)
-                while (-not $taskResult.IsCompleted) {
-                    Start-Sleep -Milliseconds 100
-                }
-            } until (
-                $taskResult.Result.Count -lt 4096
-            )
-            $jsonResult = [System.Text.Encoding]::UTF8.GetString($this.buffer, 0, $taskResult.Result.Count)
+
+            # Read the output stream from the receive job and get any messages since our last read
+            $jsonResult = $this.Connection.ReadReceiveJob()
 
             if ($null -ne $jsonResult -and $jsonResult -ne [string]::Empty) {
                 Write-Debug -Message "[SlackBackend:ReceiveMessage] Received `n$jsonResult"
@@ -193,8 +182,9 @@ class SlackBackend : Backend {
                 # Strip out Slack's URI formatting
                 $jsonResult = $this._SanitizeURIs($jsonResult)
 
-                $slackMessage = $jsonResult | ConvertFrom-Json
-                if ($slackMessage) {
+                $slackMessages = @($jsonResult | ConvertFrom-Json)
+                foreach ($slackMessage in $slackMessages) {
+
                     # We only care about certain message types from Slack
                     if ($slackMessage.Type -in $this.MessageTypes) {
                         $msg = [Message]::new()
@@ -277,41 +267,42 @@ class SlackBackend : Backend {
                             }
                         }
 
+                        # ** Important safety tip, don't cross the streams **
+                        # Only return messages that didn't come from the bot
+                        # else we'd cause a feedback loop with the bot processing
+                        # it's own responses
                         if (-not $this.MsgFromBot($msg.From)) {
-                            return $msg
-                        } else {
-                            # Don't process messages that came from the bot
-                            # That could cause a feedback loop
-                            return $null
+                            $messages.Add($msg) > $null
                         }
-
                     }
                 }
             }
         } catch {
             Write-Error $_
         }
-        return $msg
+
+        return $messages
     }
 
     # Send a Slack ping
     [void]Ping() {
-        $msg = @{
-            id = 1
-            type = 'ping'
-            time = [System.Math]::Truncate((Get-Date -Date (Get-Date) -UFormat %s))
-        }
-        $json = $msg | ConvertTo-Json
-        $bytes = ([System.Text.Encoding]::UTF8).GetBytes($json)
-        Write-Debug -Message '[SlackBackend:Ping]: One ping only Vasili'
-        $cts = New-Object System.Threading.CancellationTokenSource -ArgumentList 5000
+        # $msg = @{
+        #     id = 1
+        #     type = 'ping'
+        #     time = [System.Math]::Truncate((Get-Date -Date (Get-Date) -UFormat %s))
+        # }
+        # $json = $msg | ConvertTo-Json
+        # $bytes = ([System.Text.Encoding]::UTF8).GetBytes($json)
+        # Write-Debug -Message '[SlackBackend:Ping]: One ping only Vasili'
+        # $cts = New-Object System.Threading.CancellationTokenSource -ArgumentList 5000
 
-        $task = $this.Connection.WebSocket.SendAsync($bytes, [System.Net.WebSockets.WebSocketMessageType]::Text, $true, $cts.Token)
-        do { Start-Sleep -Milliseconds 100 }
-        until ($task.IsCompleted)
+        # $task = $this.Connection.WebSocket.SendAsync($bytes, [System.Net.WebSockets.WebSocketMessageType]::Text, $true, $cts.Token)
+        # do { Start-Sleep -Milliseconds 100 }
+        # until ($task.IsCompleted)
         #$result = $this.Connection.WebSocket.SendAsync($bytes, [System.Net.WebSockets.WebSocketMessageType]::Text, $true, $cts.Token).GetAwaiter().GetResult()
     }
 
+    # Send a message back to Slack
     [void]SendMessage([Response]$Response) {
         # Process any custom responses
         foreach ($customResponse in $Response.Data) {
@@ -321,8 +312,8 @@ class SlackBackend : Backend {
                 $sendTo = "@$($this.UserIdToUsername($Response.MessageFrom))"
             }
 
-            switch ($customResponse.PSObject.TypeNames[0]) {
-                'PoshBot.Card.Response' {
+            switch -Regex ($customResponse.PSObject.TypeNames[0]) {
+                '(.*?)PoshBot\.Card\.Response' {
                     $chunks = $this._ChunkString($customResponse.Text)
                     Write-Verbose "Split response into [$($chunks.Count)] chunks"
                     $x = 0
@@ -376,8 +367,9 @@ class SlackBackend : Backend {
                         $msg = $att | New-SlackMessage -Channel $sendTo -AsUser
                         $slackResponse = $msg | Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Verbose:$false
                     }
+                    break
                 }
-                'PoshBot.Text.Response' {
+                '(.*?)PoshBot\.Text\.Response' {
                     $chunks = $this._ChunkString($customResponse.Text)
                     foreach ($chunk in $chunks) {
                         if ($customResponse.AsCode) {
@@ -387,8 +379,9 @@ class SlackBackend : Backend {
                         }
                         $slackResponse = Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Channel $sendTo -Text $t -Verbose:$false -AsUser
                     }
+                    break
                 }
-                'PoshBot.File.Upload' {
+                '(.*?)PoshBot\.File\.Upload' {
                     $uploadParams = @{
                         Token = $this.Connection.Config.Credential.GetNetworkCredential().Password
                         Channel = $sendTo
@@ -401,6 +394,7 @@ class SlackBackend : Backend {
                     }
                     Send-SlackFile @uploadParams -Verbose:$false
                     Remove-Item -LiteralPath $customResponse.Path -Force
+                    break
                 }
             }
         }
@@ -412,6 +406,7 @@ class SlackBackend : Backend {
         }
     }
 
+    # Resolve a channel name to an Id
     [string]ResolveChannelId([string]$ChannelName) {
         if ($ChannelName -match '^#') {
             $ChannelName = $ChannelName.TrimStart('#')
@@ -423,6 +418,7 @@ class SlackBackend : Backend {
         return $channelId
     }
 
+    # Populate the list of users the Slack team
     [void]LoadUsers() {
         $allUsers = Get-Slackuser -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Verbose:$false
         $allUsers | ForEach-Object {
@@ -456,6 +452,7 @@ class SlackBackend : Backend {
         }
     }
 
+    # Populate the list of channels in the Slack team
     [void]LoadRooms() {
         $allChannels = Get-SlackChannel -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -ExcludeArchived -Verbose:$false
 
@@ -484,14 +481,17 @@ class SlackBackend : Backend {
         }
     }
 
+    # Get the bot identity Id
     [string]GetBotIdentity() {
         return $this.Connection.LoginData.self.id
     }
 
+    # Determine if incoming message was from the bot
     [bool]MsgFromBot([string]$From) {
         return $this.BotId -eq $From
     }
 
+    # Get a user by their Id
     [SlackPerson]GetUser([string]$UserId) {
         $user = $this.Users[$UserId]
         if ($user) {
@@ -502,6 +502,7 @@ class SlackBackend : Backend {
         }
     }
 
+    # Get a user Id by their name
     [string]UsernameToUserId([string]$Username) {
         $Username = $Username.TrimStart('@')
         $user = (Get-SlackUser -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Name $Username -Verbose:$false -ErrorAction SilentlyContinue)
@@ -516,6 +517,7 @@ class SlackBackend : Backend {
         }
     }
 
+    # Get a user name by their Id
     [string]UserIdToUsername([string]$UserId) {
         if ($this.Users.ContainsKey($UserId)) {
             return $this.Users[$UserId].Nickname
@@ -525,18 +527,37 @@ class SlackBackend : Backend {
         }
     }
 
+    # Remove extra characters that Slack decorates urls with
     hidden [string] _SanitizeURIs([string]$Text) {
         $sanitizedText = $Text -replace '<([^\|>]+)\|([^\|>]+)>', '$2'
         $sanitizedText = $sanitizedText -replace '<(http([^>]+))>', '$1'
         return $sanitizedText
     }
 
+    # Break apart a string by number of characters
     hidden [System.Collections.ArrayList] _ChunkString([string]$Text) {
         return [regex]::Split($Text, "(?<=\G.{$($this.MaxMessageLength)})", [System.Text.RegularExpressions.RegexOptions]::Singleline)
     }
 }
 
 function New-PoshBotSlackBackend {
+    <#
+    .SYNOPSIS
+        Create a new instance of a Slack backend
+    .DESCRIPTION
+        Create a new instance of a Slack backend
+    .PARAMETER Configuration
+        The hashtable containing backend-specific properties on how to create the Slack backend instance.
+    .EXAMPLE
+        PS C:\> $backendConfig = @{Name = 'SlackBackend'; Token = '<SLACK-API-TOKEN>'}
+        PS C:\> $backend = New-PoshBotSlackBackend -Configuration $backendConfig
+
+        Create a Slack backend using the specified API token
+    .INPUTS
+        Hashtable
+    .OUTPUTS
+        SlackBackend
+    #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Scope='Function', Target='*')]
     [cmdletbinding()]
     param(
