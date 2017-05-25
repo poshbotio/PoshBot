@@ -40,7 +40,7 @@ class CommandExecutor {
             $cmdExecContext.Result.Success = $false
             $cmdExecContext.Result.Errors += $err
             Write-Error -Exception $err
-            #return $cmdExecContext
+            $this.TrackJob($cmdExecContext)
             return
         }
 
@@ -58,6 +58,7 @@ class CommandExecutor {
                 $cmdExecContext.Result.Success = $false
                 $cmdExecContext.Result.Errors += $err
                 Write-Error -Exception $err
+                $this.TrackJob($cmdExecContext)
                 return
             }
         }
