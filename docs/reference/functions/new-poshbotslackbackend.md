@@ -7,7 +7,7 @@ schema: 2.0.0
 # New-PoshBotSlackBackend
 
 ## SYNOPSIS
-{{Fill in the Synopsis}}
+Create a new instance of a Slack backend
 
 ## SYNTAX
 
@@ -16,21 +16,23 @@ New-PoshBotSlackBackend [-Configuration] <Hashtable[]>
 ```
 
 ## DESCRIPTION
-{{Fill in the Description}}
+Create a new instance of a Slack backend
 
 ## EXAMPLES
 
-### Example 1
+### -------------------------- EXAMPLE 1 --------------------------
 ```
-PS C:\> {{ Add example code here }}
+$backendConfig = @{Name = 'SlackBackend'; Token = '<SLACK-API-TOKEN>'}
 ```
 
-{{ Add example description here }}
+PS C:\\\> $backend = New-PoshBotSlackBackend -Configuration $backendConfig
+
+Create a Slack backend using the specified API token
 
 ## PARAMETERS
 
 ### -Configuration
-{{Fill Configuration Description}}
+The hashtable containing backend-specific properties on how to create the Slack backend instance.
 
 ```yaml
 Type: Hashtable[]
@@ -38,7 +40,7 @@ Parameter Sets: (All)
 Aliases: BackendConfiguration
 
 Required: True
-Position: 0
+Position: 1
 Default value: None
 Accept pipeline input: True (ByPropertyName, ByValue)
 Accept wildcard characters: False
@@ -46,12 +48,11 @@ Accept wildcard characters: False
 
 ## INPUTS
 
-### System.Collections.Hashtable[]
-
+### Hashtable
 
 ## OUTPUTS
 
-### System.Object
+### SlackBackend
 
 ## NOTES
 
