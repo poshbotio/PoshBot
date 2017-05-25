@@ -1,5 +1,5 @@
 
-# This generic Backend class provides the base scaffolding to represent a Chat network
+# This generic Backend class provides the base scaffolding to represent a chat network
 class Backend {
 
     [string]$Name
@@ -18,15 +18,15 @@ class Backend {
     Backend() {}
 
     # Send a message
-    # Must be extended by the specific Backend implementation
-    [void]SendMessage([Response]$Response) {}
-
+    [void]SendMessage([Response]$Response) {
+        # Must be extended by the specific Backend implementation
+        throw 'Implement me!'
+    }
 
     # Receive a message
-    # Must be extended by the specific Backend implementation
-    [Event]ReceiveMessage() {
-        $e = [Message]::New()
-        return $e
+    [Message[]]ReceiveMessage() {
+        # Must be extended by the specific Backend implementation
+        throw 'Implement me!'
     }
 
     # Send a ping on the chat network
@@ -35,8 +35,10 @@ class Backend {
         # to the chat network to keep the connection open
     }
 
+    # Get a user by their Id
     [Person]GetUser([string]$UserId) {
-        return $null
+        # Must be extended by the specific Backend implementation
+        throw 'Implement me!'
     }
 
     # Connect to the chat network
@@ -49,19 +51,39 @@ class Backend {
         $this.Connection.Disconnect()
     }
 
-    [void]LoadUsers() {}
+    # Populate the list of users on the chat network
+    [void]LoadUsers() {
+        # Must be extended by the specific Backend implementation
+        throw 'Implement me!'
+    }
 
-    [void]LoadRooms() {}
+    # Populate the list of channel or rooms on the chat network
+    [void]LoadRooms() {
+        # Must be extended by the specific Backend implementation
+        throw 'Implement me!'
+    }
 
-    [void]GetBotIdentity() {}
+    # Get the bot identity Id
+    [string]GetBotIdentity() {
+        # Must be extended by the specific Backend implementation
+        throw 'Implement me!'
+    }
+
+    # Get a user by their Id
+    [Person]GetUser([string]$UserId) {
+        # Must be extended by the specific Backend implementation
+        throw 'Implement me!'
+    }
 
     # Resolve a user name to user id
-    [void]UsernameToUserId([string]$Username) {
+    [string]UsernameToUserId([string]$Username) {
         # Must be extended by the specific Backend implementation
+        throw 'Implement me!'
     }
 
     # Resolve a user ID to a username/nickname
-    [void]UserIdToUsername([string]$UserId) {
+    [string]UserIdToUsername([string]$UserId) {
         # Must be extended by the specific Backend implementation
+        throw 'Implement me!'
     }
 }

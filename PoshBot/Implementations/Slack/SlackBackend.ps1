@@ -161,6 +161,7 @@ class SlackBackend : Backend {
         $this.Connection = $conn
     }
 
+    # Connect to Slack
     [void]Connect() {
         $this.Connection.Connect()
         $this.BotId = $this.GetBotIdentity()
