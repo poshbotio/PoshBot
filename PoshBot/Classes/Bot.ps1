@@ -320,7 +320,11 @@ class Bot {
                         if ($this._IsCustomResponse($r)) {
                             $response.Data += $r
                         } else {
-                            $response.Text += $($r | Format-List * | Out-String)
+                            # Remove auto-generated properties that show up from deserialized objects
+                            $response.Text += ($r |
+                                Select-Object -Property * -ExcludeProperty 'PSComputerName', 'PSShowComputerName', 'PSSourceJobInstanceId', 'RunspaceId' |
+                                Format-List -Property * |
+                                Out-String)
                         }
                     }
                 }
