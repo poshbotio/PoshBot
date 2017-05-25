@@ -15,8 +15,6 @@ class CommandExecutor {
     # This is to keep track of those
     hidden [hashtable]$_jobTracker = @{}
 
-    hidden [hashtable]$_completedJobTracker = @{}
-
     CommandExecutor([RoleManager]$RoleManager) {
         $this.RoleManager = $RoleManager
     }
@@ -120,15 +118,12 @@ class CommandExecutor {
         }
     }
 
-    # Receive any completed jobs
+    # Receive any completed jobs from the job tracker
     [CommandExecutionContext[]]ReceiveJob() {
-
         $results = New-Object System.Collections.ArrayList
 
         if ($this._jobTracker.Count -ge 1) {
-
             $completedJobs = $this._jobTracker.GetEnumerator() |
-                Where-Object {$_.Value.Id -notin $this._completedJobTracker.Keys } |
                 Where-Object {($_.Value.Complete -eq $true) -or
                               ($_.Value.IsJob -and (($_.Value.Job.State -eq 'Completed') -or ($_.Value.Job.State -eq 'Failed')))} |
                 Select-Object -ExpandProperty Value
@@ -140,19 +135,17 @@ class CommandExecutor {
                 if ($cmdExecContext.IsJob) {
                     if ($cmdExecContext.Job.State -eq 'Completed') {
 
-                        Write-Verbose -Message "Job [$($cmdExecContext.Id)] is complete"
+                        Write-Verbose -Message "[CommandExecutor:ReceiveJob] Job [$($cmdExecContext.Id)] is complete"
                         $cmdExecContext.Complete = $true
                         $cmdExecContext.Ended = (Get-Date).ToUniversalTime()
 
-                        $cmdExecContext.Job | Wait-Job
-
                         # Capture all the streams
-                        $cmdExecContext.Result.Streams.Error = $cmdExecContext.Job.ChildJobs[0].Error.ReadAll()
+                        $cmdExecContext.Result.Errors = $cmdExecContext.Job.ChildJobs[0].Error.ReadAll()
+                        $cmdExecContext.Result.Streams.Error = $cmdExecContext.Result.Errors
                         $cmdExecContext.Result.Streams.Information = $cmdExecContext.Job.ChildJobs[0].Information.ReadAll()
                         $cmdExecContext.Result.Streams.Verbose = $cmdExecContext.Job.ChildJobs[0].Verbose.ReadAll()
                         $cmdExecContext.Result.Streams.Warning = $cmdExecContext.Job.ChildJobs[0].Warning.ReadAll()
-                        #$cmdExecContext.Result.Output = $cmdExecContext.Job.ChildJobs[0].Output
-                        $cmdExecContext.Result.Output = $cmdExecContext.Job | Receive-Job -Keep
+                        $cmdExecContext.Result.Output = $cmdExecContext.Job.ChildJobs[0].Output.ReadAll()
 
                         # Determine if job had any terminating errors
                         if ($cmdExecContext.Result.Streams.Error.Count -gt 0) {
@@ -161,19 +154,17 @@ class CommandExecutor {
                             $cmdExecContext.Result.Success = $true
                         }
 
+                        Write-Debug -Message "[CommandExecutor:ReceiveJob] Job results:`n$($cmdExecContext.Result | ConvertTo-Json)"
+
                         # Clean up the job
-                        #Remove-Job -Job $cmdExecContext.Job
-
-                        Write-Verbose ($cmdExecContext.Result | ConvertTo-Json)
-
+                        Remove-Job -Job $cmdExecContext.Job
                     } elseIf ($cmdExecContext.Job.State -eq 'Failed') {
                         $cmdExecContext.Complete = $true
                         $cmdExecContext.Result.Success = $false
                     }
                 }
 
-                Write-Verbose -Message "Removing job [$($cmdExecContext.Id)] from tracker"
-                $this._completedJobTracker.Add($cmdExecContext.Id, $cmdExecContext)
+                Write-Verbose -Message "[CommandExecutor:ReceiveJob] Removing job [$($cmdExecContext.Id)] from tracker"
                 $this._jobTracker.Remove($cmdExecContext.Id)
 
                 # Track number of commands executed
@@ -209,10 +200,9 @@ class CommandExecutor {
             if ($mandatoryParameters.Count -gt 0) {
                 # Remove each provided mandatory parameter from the list
                 # so we can find any that will have to be coverd by positional parameters
-
-                Write-Verbose -Message "Provided named parameters: $($ParsedCommand.NamedParameters.Keys | Format-List | Out-String)"
+                Write-Verbose -Message "[CommandExecutor:ValidateMandatoryParameters] Provided named parameters: $($ParsedCommand.NamedParameters.Keys | Format-List | Out-String)"
                 foreach ($providedNamedParameter in $ParsedCommand.NamedParameters.Keys ) {
-                    Write-Verbose -Message "Named parameter [$providedNamedParameter] provided"
+                    Write-Verbose -Message "[CommandExecutor:ValidateMandatoryParameters] Named parameter [$providedNamedParameter] provided"
                     $mandatoryParameters = @($mandatoryParameters | Where-Object {$_ -ne $providedNamedParameter})
                 }
                 if ($mandatoryParameters.Count -gt 0) {
@@ -228,7 +218,7 @@ class CommandExecutor {
                 $validated = $true
             }
 
-            Write-Verbose -Message "[CommandExecutor:ValidateMandatoryParameters] Valid parameters for parameterset [$($parameterSet.Name)] [$($validated.ToString())]"
+            Write-Verbose -Message "[CommandExecutor:ValidateMandatoryParameters] Valid parameters for parameterset [$($parameterSet.Name)] - [$($validated.ToString())]"
             if ($validated) {
                 break
             }
