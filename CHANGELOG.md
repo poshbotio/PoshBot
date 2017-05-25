@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Asynchronous command execution
 
+### Fixed
+- Bug preventing plugin commands from being executed in PS jobs. Commands were previously being executed in the same session as the bot.
+
 ## [0.3.1] 2017-05-17
 ### Fixed
 - When parsing the command from the message returned from the chat network, deal with null or empty text strings correctly.
