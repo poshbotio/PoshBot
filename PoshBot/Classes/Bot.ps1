@@ -317,7 +317,7 @@ class Bot {
             } else {
                 foreach ($r in $cmdExecContext.Result.Output) {
                     if ($null -ne $r) {
-                        if (($r.PSObject.TypeNames[0] -eq 'PoshBot.Text.Response') -or ($r.PSObject.TypeNames[0] -eq 'PoshBot.Card.Response')) {
+                        if ($this._IsCustomResponse($r)) {
                             $response.Data += $r
                         } else {
                             $response.Text += $($r | Format-List * | Out-String)
@@ -413,7 +413,10 @@ class Bot {
     hidden [bool]_IsCustomResponse([object]$Response) {
         $isCustom = (($Response.PSObject.TypeNames[0] -eq 'PoshBot.Text.Response') -or
                      ($Response.PSObject.TypeNames[0] -eq 'PoshBot.Card.Response') -or
-                     ($Response.PSObject.TypeNames[0] -eq 'PoshBot.File.Upload'))
+                     ($Response.PSObject.TypeNames[0] -eq 'PoshBot.File.Upload') -or
+                     ($Response.PSObject.TypeNames[0] -eq 'Deserialized.PoshBot.Text.Response') -or
+                     ($Response.PSObject.TypeNames[0] -eq 'Deserialized.PoshBot.Card.Response') -or
+                     ($Response.PSObject.TypeNames[0] -eq 'Deserialized.PoshBot.File.Upload'))
 
         if ($isCustom) {
             $this._Logger.Debug([LogMessage]::new("[Bot:_IsCustomResponse] Detected custom response [$($Response.PSObject.TypeNames[0])] from command"))
