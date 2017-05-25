@@ -312,8 +312,8 @@ class SlackBackend : Backend {
                 $sendTo = "@$($this.UserIdToUsername($Response.MessageFrom))"
             }
 
-            switch ($customResponse.PSObject.TypeNames[0]) {
-                'PoshBot.Card.Response' {
+            switch -Regex ($customResponse.PSObject.TypeNames[0]) {
+                '(.*?)PoshBot\.Card\.Response' {
                     $chunks = $this._ChunkString($customResponse.Text)
                     Write-Verbose "Split response into [$($chunks.Count)] chunks"
                     $x = 0
@@ -369,7 +369,7 @@ class SlackBackend : Backend {
                     }
                     break
                 }
-                'PoshBot.Text.Response' {
+                '(.*?)PoshBot\.Text\.Response' {
                     $chunks = $this._ChunkString($customResponse.Text)
                     foreach ($chunk in $chunks) {
                         if ($customResponse.AsCode) {
@@ -381,7 +381,7 @@ class SlackBackend : Backend {
                     }
                     break
                 }
-                'PoshBot.File.Upload' {
+                '(.*?)PoshBot\.File\.Upload' {
                     $uploadParams = @{
                         Token = $this.Connection.Config.Credential.GetNetworkCredential().Password
                         Channel = $sendTo
