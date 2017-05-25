@@ -530,6 +530,23 @@ class SlackBackend : Backend {
 }
 
 function New-PoshBotSlackBackend {
+    <#
+    .SYNOPSIS
+        Create a new instance of a Slack backend
+    .DESCRIPTION
+        Create a new instance of a Slack backend
+    .PARAMETER Configuration
+        The hashtable containing backend-specific properties on how to create the Slack backend instance.
+    .EXAMPLE
+        PS C:\> $backendConfig = @{Name = 'SlackBackend'; Token = '<SLACK-API-TOKEN>'}
+        PS C:\> $backend = New-PoshBotSlackBackend -Configuration $backendConfig
+
+        Create a Slack backend using the specified API token
+    .INPUTS
+        Hashtable
+    .OUTPUTS
+        SlackBackend
+    #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Scope='Function', Target='*')]
     [cmdletbinding()]
     param(
