@@ -302,6 +302,7 @@ class SlackBackend : Backend {
         #$result = $this.Connection.WebSocket.SendAsync($bytes, [System.Net.WebSockets.WebSocketMessageType]::Text, $true, $cts.Token).GetAwaiter().GetResult()
     }
 
+    # Send a message back to Slack
     [void]SendMessage([Response]$Response) {
         # Process any custom responses
         foreach ($customResponse in $Response.Data) {
@@ -405,6 +406,7 @@ class SlackBackend : Backend {
         }
     }
 
+    # Resolve a channel name to an Id
     [string]ResolveChannelId([string]$ChannelName) {
         if ($ChannelName -match '^#') {
             $ChannelName = $ChannelName.TrimStart('#')
@@ -416,6 +418,7 @@ class SlackBackend : Backend {
         return $channelId
     }
 
+    # Populate the list of users the Slack team
     [void]LoadUsers() {
         $allUsers = Get-Slackuser -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Verbose:$false
         $allUsers | ForEach-Object {
@@ -449,6 +452,7 @@ class SlackBackend : Backend {
         }
     }
 
+    # Populate the list of channels in the Slack team
     [void]LoadRooms() {
         $allChannels = Get-SlackChannel -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -ExcludeArchived -Verbose:$false
 
@@ -477,14 +481,17 @@ class SlackBackend : Backend {
         }
     }
 
+    # Get the bot identity Id
     [string]GetBotIdentity() {
         return $this.Connection.LoginData.self.id
     }
 
+    # Determine if incoming message was from the bot
     [bool]MsgFromBot([string]$From) {
         return $this.BotId -eq $From
     }
 
+    # Get a user by their Id
     [SlackPerson]GetUser([string]$UserId) {
         $user = $this.Users[$UserId]
         if ($user) {
@@ -495,6 +502,7 @@ class SlackBackend : Backend {
         }
     }
 
+    # Get a user Id by their name
     [string]UsernameToUserId([string]$Username) {
         $Username = $Username.TrimStart('@')
         $user = (Get-SlackUser -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Name $Username -Verbose:$false -ErrorAction SilentlyContinue)
@@ -509,6 +517,7 @@ class SlackBackend : Backend {
         }
     }
 
+    # Get a user name by their Id
     [string]UserIdToUsername([string]$UserId) {
         if ($this.Users.ContainsKey($UserId)) {
             return $this.Users[$UserId].Nickname
@@ -518,12 +527,14 @@ class SlackBackend : Backend {
         }
     }
 
+    # Remove extra characters that Slack decorates urls with
     hidden [string] _SanitizeURIs([string]$Text) {
         $sanitizedText = $Text -replace '<([^\|>]+)\|([^\|>]+)>', '$2'
         $sanitizedText = $sanitizedText -replace '<(http([^>]+))>', '$1'
         return $sanitizedText
     }
 
+    # Break apart a string by number of characters
     hidden [System.Collections.ArrayList] _ChunkString([string]$Text) {
         return [regex]::Split($Text, "(?<=\G.{$($this.MaxMessageLength)})", [System.Text.RegularExpressions.RegexOptions]::Singleline)
     }
