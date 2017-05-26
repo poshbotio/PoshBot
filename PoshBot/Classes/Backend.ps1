@@ -69,12 +69,6 @@ class Backend {
         throw 'Implement me!'
     }
 
-    # Get a user by their Id
-    [Person]GetUser([string]$UserId) {
-        # Must be extended by the specific Backend implementation
-        throw 'Implement me!'
-    }
-
     # Resolve a user name to user id
     [string]UsernameToUserId([string]$Username) {
         # Must be extended by the specific Backend implementation
