@@ -101,9 +101,12 @@ class CommandExecutor {
             }
         } else {
             $msg = "Command [$($cmdExecContext.Command.Name)] was not authorized for user [$($Message.From)]"
+            $cmdExecContext.Complete = $true
             $cmdExecContext.Result.Errors += [CommandNotAuthorized]::New($msg)
             $cmdExecContext.Result.Success = $false
             $cmdExecContext.Result.Authorized = $false
+            $this.TrackJob($cmdExecContext)
+            return
         }
 
         $this.TrackJob($cmdExecContext)
