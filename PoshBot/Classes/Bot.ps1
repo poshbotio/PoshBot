@@ -278,6 +278,7 @@ class Bot {
         }
     }
 
+    # Get completed jobs, determine success/error, then return response to backend
     [void]ProcessCompletedJobs() {
         $completedJobs = $this.Executor.ReceiveJob()
 
@@ -315,16 +316,21 @@ class Bot {
                     }
                 }
             } else {
-                foreach ($r in $cmdExecContext.Result.Output) {
-                    if ($null -ne $r) {
-                        if ($this._IsCustomResponse($r)) {
-                            $response.Data += $r
+                foreach ($resultOutput in $cmdExecContext.Result.Output) {
+                    if ($null -ne $resultOutput) {
+                        if ($this._IsCustomResponse($resultOutput)) {
+                            $response.Data += $resultOutput
                         } else {
-                            # Remove auto-generated properties that show up from deserialized objects
-                            $response.Text += ($r |
-                                Select-Object -Property * -ExcludeProperty 'PSComputerName', 'PSShowComputerName', 'PSSourceJobInstanceId', 'RunspaceId' |
-                                Format-List -Property * |
-                                Out-String)
+                            # If the response is a simple type, just display it as a string
+                            # otherwise we need remove auto-generated properties that show up
+                            # from deserialized objects
+                            if ($this._IsPrimitiveType($resultOutput)) {
+                                $response.Text += $resultOutput.ToString().Trim()
+                            } else {
+                                $deserializedProps = 'PSComputerName', 'PSShowComputerName', 'PSSourceJobInstanceId', 'RunspaceId'
+                                $resultText = $resultOutput | Select-Object -Property * -ExcludeProperty $deserializedProps
+                                $response.Text += ($resultText | Format-List -Property * | Out-String).Trim()
+                            }
                         }
                     }
                 }
@@ -357,13 +363,16 @@ class Bot {
         return $Message
     }
 
+    # Create complete list of command prefixes so we can quickly
+    # evaluate messages from the chat network and determine if
+    # they are bot commands
     [void]GenerateCommandPrefixList() {
         $this._PossibleCommandPrefixes.Add($this.Configuration.CommandPrefix)
         foreach ($alternatePrefix in $this.Configuration.AlternateCommandPrefixes) {
-            $this._PossibleCommandPrefixes.Add($alternatePrefix)
+            $this._PossibleCommandPrefixes.Add($alternatePrefix) > $null
             foreach ($seperator in ($this.Configuration.AlternateCommandPrefixSeperators)) {
                 $prefixPlusSeperator = "$alternatePrefix$seperator"
-                $this._PossibleCommandPrefixes.Add($prefixPlusSeperator)
+                $this._PossibleCommandPrefixes.Add($prefixPlusSeperator) > $null
             }
         }
     }
@@ -427,5 +436,14 @@ class Bot {
         }
 
         return $isCustom
+    }
+
+    # Test if an object is a primitive data type
+    hidden [bool] _IsPrimitiveType([object]$Item) {
+        $primitives = @('Byte', 'SByte', 'Int16', 'Int32', 'Int64', 'UInt16', 'UInt32', 'UInt64',
+                        'Decimal', 'Single', 'Double', 'TimeSpan', 'DateTime', 'ProgressRecord',
+                        'Char', 'String', 'XmlDocument', 'SecureString', 'Boolean', 'Guid', 'Uri', 'Version'
+        )
+        return ($Item.GetType().Name -in $primitives)
     }
 }
