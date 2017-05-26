@@ -41,7 +41,7 @@ function Resolve-Module {
             $versionToImport = ''
 
             Write-Verbose -Message "Resolving Module [$($moduleName)]"
-            if ($Module = Get-Module -Name $moduleName -ListAvailable) {
+            if ($Module = Get-Module -Name $moduleName -ListAvailable -Verbose:$false) {
                 # Determine latest version on PSGallery and warn us if we're out of date
                 $latestLocalVersion = ($Module | Measure-Object -Property Version -Maximum).Maximum
                 $latestGalleryVersion = (Find-Module -Name $moduleName -Repository PSGallery |
