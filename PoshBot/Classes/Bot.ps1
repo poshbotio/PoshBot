@@ -54,7 +54,7 @@ class Bot {
         $this._Logger = [Logger]::new($this.Configuration.LogDirectory, $this.Configuration.LogLevel)
         $this.RoleManager = [RoleManager]::new($this.Backend, $this.Storage, $this._Logger)
         $this.PluginManager = [PluginManager]::new($this.RoleManager, $this.Storage, $this._Logger, $this._PoshBotDir)
-        $this.Executor = [CommandExecutor]::new($this.RoleManager)
+        $this.Executor = [CommandExecutor]::new($this.RoleManager, $this)
         $this.GenerateCommandPrefixList()
 
         # Ugly hack alert!

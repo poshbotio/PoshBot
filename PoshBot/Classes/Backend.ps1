@@ -23,6 +23,26 @@ class Backend {
         throw 'Implement me!'
     }
 
+    # Add a reaction to an existing chat message
+    [void]AddReaction([Message]$Message, [ReactionType]$Type, [string]$Reaction) {
+        # Must be extended by the specific Backend implementation
+        throw 'Implement me!'
+    }
+
+    [void]AddReaction([Message]$Message, [ReactionType]$Type) {
+        $this.AddReaction($Message, $Type, [string]::Empty)
+    }
+
+    # Add a reaction to an existing chat message
+    [void]RemoveReaction([Message]$Message, [ReactionType]$Type, [string]$Reaction) {
+        # Must be extended by the specific Backend implementation
+        throw 'Implement me!'
+    }
+
+    [void]RemoveReaction([Message]$Message, [ReactionType]$Type) {
+        $this.RemoveReaction($Message, $Type, [string]::Empty)
+    }
+
     # Receive a message
     [Message[]]ReceiveMessage() {
         # Must be extended by the specific Backend implementation

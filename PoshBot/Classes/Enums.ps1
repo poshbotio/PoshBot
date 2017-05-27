@@ -22,3 +22,10 @@ enum LogLevel {
     Verbose = 2
     Debug = 4
 }
+
+enum ReactionType {
+    Success
+    Failure
+    Processing
+    Custom
+}

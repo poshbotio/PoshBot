@@ -407,6 +407,44 @@ class SlackBackend : Backend {
         }
     }
 
+    # Add a reaction to an existing chat message
+    [void]AddReaction([Message]$Message, [ReactionType]$Type, [string]$Reaction) {
+        if ($Type -eq [ReactionType]::Custom) {
+            $emoji = $Reaction
+        } else {
+            $emoji = $this._ResolveEmoji($Type)
+        }
+
+        $body = @{
+            name = $emoji
+            channel = $Message.To
+            timestamp = $Message.RawMessage.ts
+        }
+        $resp = Send-SlackApi -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Method 'reactions.add' -Body $body
+        if (-not $resp.ok) {
+            Write-Error $resp
+        }
+    }
+
+    # Remove a reaction from an existing chat message
+    [void]RemoveReaction([Message]$Message, [ReactionType]$Type, [string]$Reaction) {
+        if ($Type -eq [ReactionType]::Custom) {
+            $emoji = $Reaction
+        } else {
+            $emoji = $this._ResolveEmoji($Type)
+        }
+
+        $body = @{
+            name = $emoji
+            channel = $Message.To
+            timestamp = $Message.RawMessage.ts
+        }
+        $resp = Send-SlackApi -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Method 'reactions.remove' -Body $body
+        if (-not $resp.ok) {
+            Write-Error $resp
+        }
+    }
+
     # Resolve a channel name to an Id
     [string]ResolveChannelId([string]$ChannelName) {
         if ($ChannelName -match '^#') {
@@ -538,6 +576,17 @@ class SlackBackend : Backend {
     # Break apart a string by number of characters
     hidden [System.Collections.ArrayList] _ChunkString([string]$Text) {
         return [regex]::Split($Text, "(?<=\G.{$($this.MaxMessageLength)})", [System.Text.RegularExpressions.RegexOptions]::Singleline)
+    }
+
+    # Resolve a reaction type to an emoji
+    hidden [string]_ResolveEmoji([ReactionType]$Type) {
+        $emoji = [string]::Empty
+        Switch ($Type) {
+            'Success'    { return 'white_check_mark' }
+            'Failure'    { return 'exclamation' }
+            'Processing' { return 'gear' }
+        }
+        return $emoji
     }
 }
 

@@ -4,6 +4,8 @@ class CommandExecutor {
 
     [RoleManager]$RoleManager
 
+    hidden [Bot]$_bot
+
     [int]$HistoryToKeep = 100
 
     [int]$ExecutedCount = 0
@@ -15,8 +17,9 @@ class CommandExecutor {
     # This is to keep track of those
     hidden [hashtable]$_jobTracker = @{}
 
-    CommandExecutor([RoleManager]$RoleManager) {
+    CommandExecutor([RoleManager]$RoleManager, [Bot]$Bot) {
         $this.RoleManager = $RoleManager
+        $this._bot = $Bot
     }
 
     # Execute a command
@@ -69,6 +72,10 @@ class CommandExecutor {
         }
 
         if ($authorized) {
+
+            # Add reaction telling the user that the command is being executed
+            $this._bot.Backend.AddReaction($Message, [ReactionType]::Processing)
+
             if ($cmdExecContext.Command.AsJob) {
                 # Kick off job and add to job tracker
                 $cmdExecContext.IsJob = $true
@@ -153,8 +160,10 @@ class CommandExecutor {
                         # Determine if job had any terminating errors
                         if ($cmdExecContext.Result.Streams.Error.Count -gt 0) {
                             $cmdExecContext.Result.Success = $false
+                            $this._bot.Backend.AddReaction($cmdExecContext.Message, [ReactionType]::Failure)
                         } else {
                             $cmdExecContext.Result.Success = $true
+                            $this._bot.Backend.AddReaction($cmdExecContext.Message, [ReactionType]::Success)
                         }
 
                         Write-Debug -Message "[CommandExecutor:ReceiveJob] Job results:`n$($cmdExecContext.Result | ConvertTo-Json)"
@@ -169,6 +178,9 @@ class CommandExecutor {
 
                 Write-Verbose -Message "[CommandExecutor:ReceiveJob] Removing job [$($cmdExecContext.Id)] from tracker"
                 $this._jobTracker.Remove($cmdExecContext.Id)
+
+                # Remove the reaction specifying the command is in process
+                $this._bot.Backend.RemoveReaction($cmdExecContext.Message, [ReactionType]::Processing)
 
                 # Track number of commands executed
                 if ($cmdExecContext.Result.Success) {
