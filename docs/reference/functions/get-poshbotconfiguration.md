@@ -41,6 +41,7 @@ AlternateCommandPrefixes         : {bender, hal}
 AlternateCommandPrefixSeperators : {:, ,, ;}
 SendCommandResponseToPrivate     : {}
 MuteUnknownCommand               : False
+AddCommandReactions              : True
 
 Gets the bot configuration located at \[C:\Users\joeuser\.poshbot\Cherry2000.psd1\].
 

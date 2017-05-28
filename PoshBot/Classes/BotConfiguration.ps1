@@ -30,4 +30,6 @@ class BotConfiguration {
     [string[]]$SendCommandResponseToPrivate = @()
 
     [bool]$MuteUnknownCommand = $false
+
+    [bool]$AddCommandReactions = $true
 }

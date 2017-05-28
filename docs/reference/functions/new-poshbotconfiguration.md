@@ -17,7 +17,7 @@ New-PoshBotConfiguration [[-Name] <String>] [[-ConfigurationDirectory] <String>]
  [[-LogLevel] <LogLevel>] [[-BackendConfiguration] <Hashtable>] [[-PluginConfiguration] <Hashtable>]
  [[-BotAdmins] <String[]>] [[-CommandPrefix] <Char>] [[-AlternateCommandPrefixes] <String[]>]
  [[-AlternateCommandPrefixSeperators] <Char[]>] [[-SendCommandResponseToPrivate] <String[]>]
- [[-MuteUnknownCommand] <Boolean>]
+ [[-MuteUnknownCommand] <Boolean>] [[-AddCommandReactions] <Boolean>]
 ```
 
 ## DESCRIPTION
@@ -45,6 +45,7 @@ AlternateCommandPrefixes         : {Cherry, Sam}
 AlternateCommandPrefixSeperators : {:, ,, ;}
 SendCommandResponseToPrivate     : {}
 MuteUnknownCommand               : False
+AddCommandReactions              : True
 
 Create a new PoshBot configuration with default values except for the bot name and alternate command prefixes that it will listen for.
 
@@ -77,6 +78,7 @@ AlternateCommandPrefixes         : {poshbot}
 AlternateCommandPrefixSeperators : {:, ,, ;}
 SendCommandResponseToPrivate     : {}
 MuteUnknownCommand               : False
+AddCommandReactions              : True
 
 PS C:\\\> $myBotConfig | Start-PoshBot -AsJob
 
@@ -367,6 +369,21 @@ Aliases:
 Required: False
 Position: 15
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -AddCommandReactions
+Add reactions to a chat message indicating the command is being executed, has succeeded, or failed.
+
+```yaml
+Type: Boolean
+Parameter Sets: (All)
+Aliases: 
+
+Required: False
+Position: 16
+Default value: True
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

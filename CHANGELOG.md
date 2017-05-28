@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [0.4.0] Unreleased
 ### Added
 - Asynchronous command execution
+- Message reactions to indicate a command is executing, succeeded, or failed.
 
 ### Fixed
 - Bug preventing plugin commands from being executed in PS jobs. Commands were previously being executed in the same session as the bot.

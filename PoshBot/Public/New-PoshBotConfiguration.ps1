@@ -85,6 +85,8 @@ function New-PoshBotConfiguration {
         )
     .PARAMETER MuteUnknownCommand
         Instead of PoshBot returning a warning message when it is unable to find a command, use this to parameter to tell PoshBot to return nothing.
+    .PARAMETER AddCommandReactions
+        Add reactions to a chat message indicating the command is being executed, has succeeded, or failed.
     .EXAMPLE
         PS C:\> New-PoshBotConfiguration -Name Cherry2000 -AlternateCommandPrefixes @('Cherry', 'Sam')
 
@@ -103,6 +105,7 @@ function New-PoshBotConfiguration {
         AlternateCommandPrefixSeperators : {:, ,, ;}
         SendCommandResponseToPrivate     : {}
         MuteUnknownCommand               : False
+        AddCommandReactions              : True
 
         Create a new PoshBot configuration with default values except for the bot name and alternate command prefixes that it will listen for.
     .EXAMPLE
@@ -131,6 +134,7 @@ function New-PoshBotConfiguration {
         AlternateCommandPrefixSeperators : {:, ,, ;}
         SendCommandResponseToPrivate     : {}
         MuteUnknownCommand               : False
+        AddCommandReactions              : True
 
         PS C:\> $myBotConfig | Start-PoshBot -AsJob
 
@@ -164,7 +168,8 @@ function New-PoshBotConfiguration {
         [string[]]$AlternateCommandPrefixes = @('poshbot'),
         [char[]]$AlternateCommandPrefixSeperators = @(':', ',', ';'),
         [string[]]$SendCommandResponseToPrivate = @(),
-        [bool]$MuteUnknownCommand = $false
+        [bool]$MuteUnknownCommand = $false,
+        [bool]$AddCommandReactions = $true
     )
 
     Write-Verbose -Message 'Creating new PoshBot configuration'
@@ -184,6 +189,7 @@ function New-PoshBotConfiguration {
     $config.PluginDirectory = $PluginDirectory
     $config.PluginRepository = $PluginRepository
     $config.SendCommandResponseToPrivate = $SendCommandResponseToPrivate
+    $config.AddCommandReactions = $AddCommandReactions
 
     $config
 }
