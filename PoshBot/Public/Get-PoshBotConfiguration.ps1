@@ -42,9 +42,13 @@ function Get-PoshBotConfiguration {
     .LINK
         Start-PoshBot
     #>
-    [cmdletbinding()]
+    [cmdletbinding(DefaultParameterSetName = 'path')]
     param(
-        [parameter(ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [parameter(
+            ParameterSetName  = 'Path',
+            ValueFromPipeline,
+            ValueFromPipelineByPropertyName
+        )]
         [ValidateScript({
             if (Test-Path -Path $_) {
                 if ( (Get-Item -Path $_).Extension -eq '.psd1') {
@@ -56,11 +60,37 @@ function Get-PoshBotConfiguration {
                 Throw 'Path is not valid'
             }
         })]
-        [string[]]$Path = (Join-Path -Path (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot') -ChildPath 'PoshBot.psd1')
+        [string[]]$Path = (Join-Path -Path (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot') -ChildPath 'PoshBot.psd1'),
+
+        [parameter(
+            Mandatory = $true,
+            ParameterSetName = 'LiteralPath',
+            ValueFromPipeline = $true,
+            ValueFromPipelineByPropertyName = $true
+        )]
+        [ValidateScript({
+            if (Test-Path -Path $_) {
+                if ( (Get-Item -Path $_).Extension -eq '.psd1') {
+                    $true
+                } else {
+                    Throw 'Path must be to a valid .psd1 file'
+                }
+            } else {
+                Throw 'Path is not valid'
+            }
+        })]
+        [string[]]$LiteralPath = (Join-Path -Path (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot') -ChildPath 'PoshBot.psd1')
     )
 
     process {
-        foreach ($item in $Path) {
+        # Resolve path(s)
+        if ($PSCmdlet.ParameterSetName -eq "Path") {
+            $paths = Resolve-Path -Path $Path | Select-Object -ExpandProperty Path
+        } elseif ($PSCmdlet.ParameterSetName -eq "LiteralPath") {
+            $paths = Resolve-Path -LiteralPath $LiteralPath | Select-Object -ExpandProperty Path
+        }
+
+        foreach ($item in $paths) {
             if (Test-Path $item) {
                 Write-Verbose -Message "Loading bot configuration from [$item]"
                 $hash = Import-PowerShellDataFile -Path $item
