@@ -62,7 +62,7 @@ function New-PoshBotFileUpload {
         New-PoshBotTextResponse
     #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Scope='Function', Target='*')]
-    [cmdletbinding()]
+    [cmdletbinding(DefaultParameterSetName = 'path')]
     param(
         [parameter(
             Mandatory = $true,
