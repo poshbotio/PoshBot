@@ -65,19 +65,24 @@ function New-PoshBotFileUpload {
     [cmdletbinding(DefaultParameterSetName = 'path')]
     param(
         [parameter(
-            Mandatory = $true,
+            Mandatory,
             ParameterSetName  = 'Path',
-            ValueFromPipeline = $true,
-            ValueFromPipelineByPropertyName = $true
+            Position = 0,
+            ValueFromPipeline,
+            ValueFromPipelineByPropertyName
         )]
+        [ValidateNotNullOrEmpty()]
+        [SupportsWildcards()]
         [string[]]$Path,
 
         [parameter(
-            Mandatory = $true,
+            Mandatory,
             ParameterSetName = 'LiteralPath',
-            ValueFromPipeline = $true,
-            ValueFromPipelineByPropertyName = $true
+            Position = 0,
+            ValueFromPipelineByPropertyName
         )]
+        [ValidateNotNullOrEmpty()]
+        [Alias('PSPath')]
         [string[]]$LiteralPath,
 
         [string]$Title = [string]::Empty,

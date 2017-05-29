@@ -11,6 +11,11 @@ Tells PoshBot to upload a file to the chat network.
 
 ## SYNTAX
 
+### path (Default)
+```
+New-PoshBotFileUpload [-Title <String>] [-DM]
+```
+
 ### Path
 ```
 New-PoshBotFileUpload -Path <String[]> [-Title <String>] [-DM]

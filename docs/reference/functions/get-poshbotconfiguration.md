@@ -11,8 +11,19 @@ Gets a PoshBot configuration from a file.
 
 ## SYNTAX
 
+### path (Default)
 ```
-Get-PoshBotConfiguration [[-Path] <String[]>]
+Get-PoshBotConfiguration
+```
+
+### Path
+```
+Get-PoshBotConfiguration [-Path] <String[]>
+```
+
+### LiteralPath
+```
+Get-PoshBotConfiguration [-LiteralPath] <String[]>
 ```
 
 ## DESCRIPTION
@@ -59,13 +70,33 @@ One or more paths to a PoshBot configuration file.
 
 ```yaml
 Type: String[]
-Parameter Sets: (All)
+Parameter Sets: Path
 Aliases: 
 
-Required: False
+Required: True
 Position: 1
-Default value: (Join-Path -Path (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot') -ChildPath 'PoshBot.psd1')
+Default value: None
 Accept pipeline input: True (ByPropertyName, ByValue)
+Accept wildcard characters: True
+```
+
+### -LiteralPath
+Specifies the path(s) to the current location of the file(s).
+Unlike the Path parameter, the value of LiteralPath is used exactly as it is typed.
+No characters are interpreted as wildcards.
+If the path includes escape characters, enclose it in single quotation marks.
+Single quotation
+marks tell PowerShell not to interpret any characters as escape sequences.
+
+```yaml
+Type: String[]
+Parameter Sets: LiteralPath
+Aliases: PSPath
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
 

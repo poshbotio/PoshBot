@@ -8,6 +8,10 @@ function Get-PoshBotConfiguration {
         This functions will load that file and return a [BotConfiguration] object.
     .PARAMETER Path
         One or more paths to a PoshBot configuration file.
+    .PARAMETER LiteralPath
+        Specifies the path(s) to the current location of the file(s). Unlike the Path parameter, the value of LiteralPath is used exactly as it is typed.
+        No characters are interpreted as wildcards. If the path includes escape characters, enclose it in single quotation marks. Single quotation
+        marks tell PowerShell not to interpret any characters as escape sequences.
     .EXAMPLE
         PS C:\> Get-PoshBotConfiguration -Path C:\Users\joeuser\.poshbot\Cherry2000.psd1
 
@@ -45,41 +49,25 @@ function Get-PoshBotConfiguration {
     [cmdletbinding(DefaultParameterSetName = 'path')]
     param(
         [parameter(
+            Mandatory,
             ParameterSetName  = 'Path',
+            Position = 0,
             ValueFromPipeline,
             ValueFromPipelineByPropertyName
         )]
-        [ValidateScript({
-            if (Test-Path -Path $_) {
-                if ( (Get-Item -Path $_).Extension -eq '.psd1') {
-                    $true
-                } else {
-                    Throw 'Path must be to a valid .psd1 file'
-                }
-            } else {
-                Throw 'Path is not valid'
-            }
-        })]
-        [string[]]$Path = (Join-Path -Path (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot') -ChildPath 'PoshBot.psd1'),
+        [ValidateNotNullOrEmpty()]
+        [SupportsWildcards()]
+        [string[]]$Path,
 
         [parameter(
-            Mandatory = $true,
+            Mandatory,
             ParameterSetName = 'LiteralPath',
-            ValueFromPipeline = $true,
-            ValueFromPipelineByPropertyName = $true
+            Position = 0,
+            ValueFromPipelineByPropertyName
         )]
-        [ValidateScript({
-            if (Test-Path -Path $_) {
-                if ( (Get-Item -Path $_).Extension -eq '.psd1') {
-                    $true
-                } else {
-                    Throw 'Path must be to a valid .psd1 file'
-                }
-            } else {
-                Throw 'Path is not valid'
-            }
-        })]
-        [string[]]$LiteralPath = (Join-Path -Path (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot') -ChildPath 'PoshBot.psd1')
+        [ValidateNotNullOrEmpty()]
+        [Alias('PSPath')]
+        [string[]]$LiteralPath
     )
 
     process {
@@ -92,16 +80,19 @@ function Get-PoshBotConfiguration {
 
         foreach ($item in $paths) {
             if (Test-Path $item) {
-                Write-Verbose -Message "Loading bot configuration from [$item]"
-                $hash = Import-PowerShellDataFile -Path $item
-                $config = [BotConfiguration]::new()
-                $hash.Keys | Foreach-Object {
-                    if ($config | Get-Member -MemberType Property -Name $_) {
-                        $config.($_) = $hash[$_]
+                if ( (Get-Item -Path $item).Extension -eq '.psd1') {
+                    Write-Verbose -Message "Loading bot configuration from [$item]"
+                    $hash = Import-PowerShellDataFile -Path $item
+                    $config = [BotConfiguration]::new()
+                    $hash.Keys | Foreach-Object {
+                        if ($config | Get-Member -MemberType Property -Name $_) {
+                            $config.($_) = $hash[$_]
+                        }
                     }
+                    $config
+                } else {
+                    Throw 'Path must be to a valid .psd1 file'
                 }
-
-                $config
             } else {
                 Write-Error -Message "Path [$item] is not valid."
             }
