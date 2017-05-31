@@ -11,19 +11,14 @@ Tells PoshBot to upload a file to the chat network.
 
 ## SYNTAX
 
-### path (Default)
+### Path (Default)
 ```
-New-PoshBotFileUpload [-Title <String>] [-DM]
-```
-
-### Path
-```
-New-PoshBotFileUpload -Path <String[]> [-Title <String>] [-DM]
+New-PoshBotFileUpload [-Path] <String[]> [-Title <String>] [-DM]
 ```
 
 ### LiteralPath
 ```
-New-PoshBotFileUpload -LiteralPath <String[]> [-Title <String>] [-DM]
+New-PoshBotFileUpload [-LiteralPath] <String[]> [-Title <String>] [-DM]
 ```
 
 ## DESCRIPTION
@@ -89,10 +84,10 @@ Parameter Sets: Path
 Aliases: 
 
 Required: True
-Position: Named
+Position: 1
 Default value: None
 Accept pipeline input: True (ByPropertyName, ByValue)
-Accept wildcard characters: False
+Accept wildcard characters: True
 ```
 
 ### -LiteralPath
@@ -106,12 +101,12 @@ marks tell PowerShell not to interpret any characters as escape sequences.
 ```yaml
 Type: String[]
 Parameter Sets: LiteralPath
-Aliases: 
+Aliases: PSPath
 
 Required: True
-Position: Named
+Position: 1
 Default value: None
-Accept pipeline input: True (ByPropertyName, ByValue)
+Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
 

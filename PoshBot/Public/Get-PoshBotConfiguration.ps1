@@ -46,7 +46,7 @@ function Get-PoshBotConfiguration {
     .LINK
         Start-PoshBot
     #>
-    [cmdletbinding(DefaultParameterSetName = 'path')]
+    [cmdletbinding(DefaultParameterSetName = 'Path')]
     param(
         [parameter(
             Mandatory,
@@ -72,9 +72,9 @@ function Get-PoshBotConfiguration {
 
     process {
         # Resolve path(s)
-        if ($PSCmdlet.ParameterSetName -eq "Path") {
+        if ($PSCmdlet.ParameterSetName -eq 'Path') {
             $paths = Resolve-Path -Path $Path | Select-Object -ExpandProperty Path
-        } elseif ($PSCmdlet.ParameterSetName -eq "LiteralPath") {
+        } elseif ($PSCmdlet.ParameterSetName -eq 'LiteralPath') {
             $paths = Resolve-Path -LiteralPath $LiteralPath | Select-Object -ExpandProperty Path
         }
 

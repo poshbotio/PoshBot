@@ -11,12 +11,7 @@ Gets a PoshBot configuration from a file.
 
 ## SYNTAX
 
-### path (Default)
-```
-Get-PoshBotConfiguration
-```
-
-### Path
+### Path (Default)
 ```
 Get-PoshBotConfiguration [-Path] <String[]>
 ```
