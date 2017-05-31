@@ -166,16 +166,6 @@ class CommandExecutor {
                             $cmdExecContext.Result.Success = $true
                         }
 
-                        # Send a success or fail reaction
-                        if ($this._bot.Configuration.AddCommandReactions) {
-                            if ($cmdExecContext.Result.Success) {
-                                $reaction = [ReactionType]::Success
-                            } else {
-                                $reaction = [ReactionType]::Failure
-                            }
-                            $this._bot.Backend.AddReaction($cmdExecContext.Message, $reaction)
-                        }
-
                         Write-Debug -Message "[CommandExecutor:ReceiveJob] Job results:`n$($cmdExecContext.Result | ConvertTo-Json)"
 
                         # Clean up the job
@@ -184,6 +174,16 @@ class CommandExecutor {
                         $cmdExecContext.Complete = $true
                         $cmdExecContext.Result.Success = $false
                     }
+                }
+
+                # Send a success or fail reaction
+                if ($this._bot.Configuration.AddCommandReactions) {
+                    if ($cmdExecContext.Result.Success) {
+                        $reaction = [ReactionType]::Success
+                    } else {
+                        $reaction = [ReactionType]::Failure
+                    }
+                    $this._bot.Backend.AddReaction($cmdExecContext.Message, $reaction)
                 }
 
                 # Add to history
