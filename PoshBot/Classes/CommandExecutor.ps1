@@ -186,6 +186,11 @@ class CommandExecutor {
                     }
                 }
 
+                # Add to history
+                if ($cmdExecContext.Command.KeepHistory) {
+                    $this.AddToHistory($cmdExecContext)
+                }
+
                 Write-Verbose -Message "[CommandExecutor:ReceiveJob] Removing job [$($cmdExecContext.Id)] from tracker"
                 $this._jobTracker.Remove($cmdExecContext.Id)
 
@@ -209,11 +214,11 @@ class CommandExecutor {
     }
 
     # Add command result to history
-    [void]AddToHistory([string]$CommandName, [string]$UserId, [CommandResult]$Result, [ParsedCommand]$ParsedCommand) {
+    [void]AddToHistory([CommandExecutionContext]$CmdExecContext) {
         if ($this.History.Count -ge $this.HistoryToKeep) {
             $this.History.RemoveAt(0) > $null
         }
-        $this.History.Add([CommandHistory]::New($CommandName, $UserId, $Result, $ParsedCommand))
+        $this.History.Add($CmdExecContext)
     }
 
     # Validate that all mandatory parameters have been provided

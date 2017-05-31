@@ -1038,7 +1038,10 @@ function Get-CommandHistory {
     .EXAMPLE
         !get-commandhistory (--name <commandname>) | --id <commandid>)
     #>
-    [PoshBot.BotCommand(Permissions = 'manage-plugins')]
+    [PoshBot.BotCommand(
+        Aliases = ('history'),
+        Permissions = 'manage-plugins'
+    )]
     [cmdletbinding(DefaultParameterSetName = 'all')]
     param(
         [parameter(Mandatory)]
@@ -1061,21 +1064,20 @@ function Get-CommandHistory {
         }
         @{
             Label = 'Command'
-            Expression = { $_.CommandId }
+            Expression = { $_.Command.Name }
         }
         @{
             Label = 'Caller'
-            Expression = { $Bot.Backend.UserIdToUsername($_.CallerId) }
+            Expression = { $Bot.Backend.UserIdToUsername($_.Message.From) }
         }
         @{
             Label = 'Success'
             Expression = { $_.Result.Success }
         }
         @{
-            Label = 'Time'
-            Expression = { $_.Time.ToString('u')}
+            Label = 'Started'
+            Expression = { $_.Ended.ToString('u')}
         }
-
     )
 
     $longProps = $shortProps + @(
@@ -1089,7 +1091,7 @@ function Get-CommandHistory {
         }
     )
 
-    $allHistory = $Bot.Executor.History | Sort-Object -Property Time -Descending
+    $allHistory = $Bot.Executor.History | Sort-Object -Property Started -Descending
 
     switch ($PSCmdlet.ParameterSetName) {
         'all' {
@@ -1098,7 +1100,7 @@ function Get-CommandHistory {
         }
         'name' {
             $search = $Name
-            $history = $allHistory | Where-Object {$_.CommandId -eq $Name} | Select-Object -First $Count
+            $history = $allHistory | Where-Object {$_.Command.Name -eq $Name} | Select-Object -First $Count
         }
         'id' {
             $search = $Id
