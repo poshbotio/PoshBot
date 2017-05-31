@@ -13,7 +13,17 @@ Creates a new instance of PoshBot
 
 ### path (Default)
 ```
-New-PoshBotInstance [-Path <String[]>] -Backend <Backend>
+New-PoshBotInstance -Backend <Backend>
+```
+
+### Path
+```
+New-PoshBotInstance [-Path] <String[]> -Backend <Backend>
+```
+
+### LiteralPath
+```
+New-PoshBotInstance [-LiteralPath] <String[]> -Backend <Backend>
 ```
 
 ### config
@@ -79,13 +89,33 @@ The path to a PowerShell data (.psd1) file to create a new instance from.
 
 ```yaml
 Type: String[]
-Parameter Sets: path
+Parameter Sets: Path
 Aliases: 
 
-Required: False
-Position: Named
-Default value: (Join-Path -Path (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot') -ChildPath 'PoshBot.psd1')
+Required: True
+Position: 1
+Default value: None
 Accept pipeline input: True (ByPropertyName, ByValue)
+Accept wildcard characters: True
+```
+
+### -LiteralPath
+Specifies the path(s) to the current location of the file(s).
+Unlike the Path parameter, the value of LiteralPath is used exactly as it is typed.
+No characters are interpreted as wildcards.
+If the path includes escape characters, enclose it in single quotation marks.
+Single quotation
+marks tell PowerShell not to interpret any characters as escape sequences.
+
+```yaml
+Type: String[]
+Parameter Sets: LiteralPath
+Aliases: PSPath
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
 

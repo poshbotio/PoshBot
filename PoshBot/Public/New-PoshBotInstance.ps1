@@ -9,6 +9,10 @@ function New-PoshBotInstance {
         The bot configuration object to create a new instance from.
     .PARAMETER Path
         The path to a PowerShell data (.psd1) file to create a new instance from.
+    .PARAMETER LiteralPath
+        Specifies the path(s) to the current location of the file(s). Unlike the Path parameter, the value of LiteralPath is used exactly as it is typed.
+        No characters are interpreted as wildcards. If the path includes escape characters, enclose it in single quotation marks. Single quotation
+        marks tell PowerShell not to interpret any characters as escape sequences.
     .PARAMETER Backend
         The backend object that hosts logic for receiving and sending messages to a chat network.
     .EXAMPLE
@@ -62,21 +66,33 @@ function New-PoshBotInstance {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Scope='Function', Target='*')]
     [cmdletbinding(DefaultParameterSetName = 'path')]
     param(
-        [parameter(ParameterSetName = 'path', ValueFromPipeline, ValueFromPipelineByPropertyName)]
-        [ValidateScript({
-            if (Test-Path -Path $_) {
-                if ( (Get-Item -Path $_).Extension -eq '.psd1') {
-                    $true
-                } else {
-                    Throw 'Path must be to a valid .psd1 file'
-                }
-            } else {
-                Throw 'Path is not valid'
-            }
-        })]
-        [string[]]$Path = (Join-Path -Path (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot') -ChildPath 'PoshBot.psd1'),
+        [parameter(
+            Mandatory,
+            ParameterSetName  = 'Path',
+            Position = 0,
+            ValueFromPipeline,
+            ValueFromPipelineByPropertyName
+        )]
+        [ValidateNotNullOrEmpty()]
+        [SupportsWildcards()]
+        [string[]]$Path,
 
-        [parameter(Mandatory, ParameterSetName = 'config', ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [parameter(
+            Mandatory,
+            ParameterSetName = 'LiteralPath',
+            Position = 0,
+            ValueFromPipelineByPropertyName
+        )]
+        [ValidateNotNullOrEmpty()]
+        [Alias('PSPath')]
+        [string[]]$LiteralPath,
+
+        [parameter(
+            Mandatory,
+            ParameterSetName = 'config',
+            ValueFromPipeline,
+            ValueFromPipelineByPropertyName
+        )]
         [BotConfiguration[]]$Configuration,
 
         [parameter(Mandatory)]
@@ -88,10 +104,25 @@ function New-PoshBotInstance {
     }
 
     process {
-        if ($PSCmdlet.ParameterSetName -eq 'path') {
+        if ($PSCmdlet.ParameterSetName -eq 'path' -or $PSCmdlet.ParameterSetName -eq 'LiteralPath') {
+            # Resolve path(s)
+            if ($PSCmdlet.ParameterSetName -eq 'Path') {
+                $paths = Resolve-Path -Path $Path | Select-Object -ExpandProperty Path
+            } elseif ($PSCmdlet.ParameterSetName -eq 'LiteralPath') {
+                $paths = Resolve-Path -LiteralPath $LiteralPath | Select-Object -ExpandProperty Path
+            }
+
             $Configuration = @()
-            foreach ($item in $Path) {
-                $Configuration += Get-PoshBotConfiguration -Path $item
+            foreach ($item in $paths) {
+                if (Test-Path $item) {
+                    if ( (Get-Item -Path $item).Extension -eq '.psd1') {
+                        $Configuration += Get-PoshBotConfiguration -Path $item
+                    } else {
+                        Throw 'Path must be to a valid .psd1 file'
+                    }
+                } else {
+                    Write-Error -Message "Path [$item] is not valid."
+                }
             }
         }
 
