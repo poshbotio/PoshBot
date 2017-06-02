@@ -39,6 +39,7 @@ class RoleManager {
                 'manage-plugins'
                 'manage-groups'
                 'manage-permissions'
+                'manage-schedules'
             ) | foreach-object {
                 $p = [Permission]::new($_, 'Builtin')
                 $adminRole.AddPermission($p)
