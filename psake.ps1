@@ -144,6 +144,8 @@ task Compile -depends Clean {
         'PluginCommand'
         'CommandExecutionContext'
         'CommandExecutor'
+        'ScheduledMessage'
+        'Scheduler'
         'ConfigProvidedParameter'
         'PluginManager'
         'ConnectionConfig'
