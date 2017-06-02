@@ -66,7 +66,7 @@ function Get-CommandHelp {
 
     if ($result) {
         if ($result.Count -ge 1) {
-            $respParams.Text = ($result | Select-Object -ExpandProperty FullCommandName | Out-String)
+            $respParams.Text = ($result | Select-Object -ExpandProperty FullCommandName, Aliases | Out-String)
         } else {
             if ($Detailed) {
                 $manString = ($Bot.PluginManager.Commands[$result.FullCommandName] | Get-Help -Detailed | Out-String)
@@ -1271,5 +1271,144 @@ function Add-CommandPermission {
         }
     } else {
         New-PoshBotCardResponse -Type Warning -Text "Command [$Name] not found."
+    }
+}
+
+function Get-ScheduledCommand {
+    <#
+    .SYNOPSIS
+        Get all scheduled commands
+    #>
+    [PoshBot.BotCommand(
+        Aliases = 'listschedules',
+        Permissions = 'manage-schedules'
+    )]
+    [cmdletbinding()]
+    param(
+        [parameter(Mandatory)]
+        $Bot
+    )
+
+    $commands = @($Bot.Scheduler.ListSchedules())
+
+    if ($commands.Count -gt 0) {
+        $msg = $commands | Format-Table -Property Command, Interval, Id, Enabled -AutoSize | Out-String
+        New-PoshBotTextResponse -Text $msg -AsCode
+    } else {
+        New-PoshBotTextResponse -Text 'There are no commands scheduled'
+    }
+}
+
+function New-ScheduledCommand {
+    [PoshBot.BotCommand(
+        Aliases = 'schedulecommand',
+        Permissions = 'manage-schedules'
+    )]
+    [cmdletbinding()]
+    param(
+        [parameter(Mandatory)]
+        $Bot,
+
+        [parameter(Mandatory, Position = 0)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Command,
+
+        [parameter(Mandatory, Position = 1)]
+        [ValidateNotNull()]
+        [int]$Value,
+
+        [parameter(Mandatory, Position = 2)]
+        [ValidateSet('days', 'hours', 'minutes', 'seconds')]
+        [ValidateNotNullOrEmpty()]
+        [string]$Interval
+    )
+
+    $Command = $Command.TrimStart('!')
+    $msg = [ScheduledMessage]::new($Interval, $value, [Message]$Command)
+    try {
+        $Bot.Scheduler.ScheduleMessage($msg)
+        New-PoshBotCardResponse -Type Normal -Text "Command [$Command] scheduled at interval [$Value$($Interval.ToLower())]." -ThumbnailUrl $thumb.success
+    } catch {
+        New-PoshBotCardResponse -Type Error -Text $_.ToString() -ThumbnailUrl $thumb.error
+    }
+}
+
+function Set-ScheduledCommand {
+    [PoshBot.BotCommand(
+        Aliases = 'setschedule',
+        Permissions = 'manage-schedules'
+    )]
+    [cmdletbinding()]
+    param()
+}
+
+function Remove-ScheduledCommand {
+    [PoshBot.BotCommand(
+        Aliases = 'removeschedule',
+        Permissions = 'manage-schedules'
+    )]
+    [cmdletbinding()]
+    param(
+        $Bot,
+
+        [parameter(Mandatory, Position = 0)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Id
+    )
+
+    try {
+        $Bot.Scheduler.RemoveScheduledMessage($Id)
+        $msg = "Schedule Id [$Id] removed"
+        New-PoshBotCardResponse -Type Normal -Text $msg -ThumbnailUrl $thumb.success
+    } catch {
+        New-PoshBotCardResponse -Type Error -Text $_.ToString() -ThumbnailUrl $thumb.error
+    }
+}
+
+function Enable-ScheduledCommand {
+    [PoshBot.BotCommand(
+        Aliases = 'enableschedule',
+        Permissions = 'manage-schedules'
+    )]
+    [cmdletbinding()]
+    param(
+        $Bot,
+
+        [parameter(Mandatory, Position = 0)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Id
+    )
+
+    try {
+        $scheduledMessage = $Bot.Scheduler.EnableSchedule($Id)
+        $msg =  "Schedule for command [$($msg.Message.Text)] enabled`n"
+        $msg += ($scheduledMessage | Format-List | Out-String).Trim()
+        New-PoshBotCardResponse -Type Normal -Text $msg -ThumbnailUrl $thumb.success
+    } catch {
+        New-PoshBotCardResponse -Type Error -Text $_.ToString() -ThumbnailUrl $thumb.error
+    }
+}
+
+function Disable-ScheduledCommand {
+    [PoshBot.BotCommand(
+        Aliases = 'disableschedule',
+        Permissions = 'manage-schedules'
+    )]
+    [cmdletbinding()]
+    param(
+        $Bot,
+
+        [parameter(Mandatory, Position = 0)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Id
+    )
+
+    try {
+        $scheduledMessage = $Bot.Scheduler.EnableSchedule($Id)
+        $msg =  "Schedule for command [$($msg.Message.Text)] disabled`n"
+        $msg += ($scheduledMessage | Format-List | Out-String).Trim()
+        New-PoshBotCardResponse -Type Normal -Text $msg -ThumbnailUrl $thumb.success
+    } catch {
+        New-PoshBotCardResponse -Type Error -Text $_.ToString() -ThumbnailUrl $thumb.error
     }
 }
