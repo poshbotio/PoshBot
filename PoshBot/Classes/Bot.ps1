@@ -17,6 +17,8 @@ class Bot {
 
     [CommandExecutor]$Executor
 
+    [Scheduler]$Scheduler
+
     # Queue of messages from the chat network to process
     [System.Collections.Queue]$MessageQueue = (New-Object System.Collections.Queue)
 
@@ -55,6 +57,7 @@ class Bot {
         $this.RoleManager = [RoleManager]::new($this.Backend, $this.Storage, $this._Logger)
         $this.PluginManager = [PluginManager]::new($this.RoleManager, $this.Storage, $this._Logger, $this._PoshBotDir)
         $this.Executor = [CommandExecutor]::new($this.RoleManager, $this)
+        $this.Scheduler = [Scheduler]::new()
         $this.GenerateCommandPrefixList()
 
         # Ugly hack alert!
@@ -130,6 +133,10 @@ class Bot {
                 # Receive message and add to queue
                 $this.ReceiveMessage()
 
+                # Get 0 or more scheduled jobs that need to be executed
+                # and add to message queue
+                $this.ProcessScheduledMessages()
+
                 # Determine if message is for bot and handle as necessary
                 $this.ProcessMessageQueue()
 
@@ -183,6 +190,14 @@ class Bot {
     [void]ReceiveMessage() {
         foreach ($msg in $this.Backend.ReceiveMessage()) {
             $this._Logger.Debug([LogMessage]::new('[Bot:ReceiveMessage] Received bot message from chat network. Adding to message queue.', $msg))
+            $this.MessageQueue.Enqueue($msg)
+        }
+    }
+
+    # Receive any messages from the scheduler that had their timer elapse and should be executed
+    [void]ProcessScheduledMessages() {
+        foreach ($msg in $this.Scheduler.GetMessages()) {
+            $this._Logger.Debug([LogMessage]::new('[Bot:ProcessScheduledMessages] Received scheduled message from scheduler. Adding to message queue.', $msg))
             $this.MessageQueue.Enqueue($msg)
         }
     }
