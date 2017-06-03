@@ -21,12 +21,20 @@ class ScheduledMessage {
     [System.Diagnostics.Stopwatch]$Stopwatch
 
     ScheduledMessage([TimeInterval]$Interval, [int]$TimeValue, [Message]$Message, [bool]$Enabled) {
+        $this.Init($Interval, $TimeValue, $Message, $Enabled)
+    }
+
+    ScheduledMessage([TimeInterval]$Interval, [int]$TimeValue, [Message]$Message) {
+        $this.Init($Interval, $TimeValue, $Message, $true)
+    }
+
+    [void]Init([TimeInterval]$Interval, [int]$TimeValue, [Message]$Message, [bool]$Enabled) {
         $this.Id = (New-Guid).ToString() -Replace '-', ''
         $this.TimeInterval = $Interval
         $this.TimeValue = $TimeValue
         $this.Message = $Message
         $this.Enabled = $Enabled
-        $this.Timer = New-Object -TypeName [System.Diagnostics.Stopwatch]
+        $this.Stopwatch = New-Object -TypeName System.Diagnostics.Stopwatch
 
         switch ($this.TimeInterval) {
             'Days' {
@@ -46,10 +54,6 @@ class ScheduledMessage {
                 break
             }
         }
-    }
-
-    ScheduledMessage([TimeInterval]$Interval, [int]$TimeValue, [Message]$Message) {
-        $this.ScheduledMessage($Interval, $TimeValue, $Message, $true)
     }
 
     [bool]HasElapsed() {
@@ -81,5 +85,6 @@ class ScheduledMessage {
 
     [void]ResetTimer() {
         $this.Stopwatch.Reset()
+        $this.Stopwatch.Start()
     }
 }
