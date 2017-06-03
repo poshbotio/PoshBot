@@ -3,8 +3,10 @@ class Scheduler {
 
     [hashtable]$Schedules = @{}
 
-    [void]ScheduledMessage([ScheduledMessage]$ScheduledMessage) {
+    [void]ScheduleMessage([ScheduledMessage]$ScheduledMessage) {
         if (-not $this.Schedules.ContainsKey($ScheduledMessage.Id)) {
+            Write-Verbose -Message "[Scheduler:ScheduleMessage] Scheduled message [$($_.Value.Id)]"
+            $ScheduledMessage.StartTimer()
             $this.Schedules.Add($ScheduledMessage.Id, $ScheduledMessage)
         } else {
             throw "Id [$($ScheduledMessage.Id)] is already scheduled"
@@ -13,48 +15,25 @@ class Scheduler {
 
     [void]RemoveScheduledMessage([string]$Id) {
         if ($this.Schedules.ContainsKey($id)) {
+            Write-Verbose -Message "[Scheduler:RemoveScheduledMessage] Scheduled message [$($_.Value.Id)] removed"
             $this.Schedules.Remove($id)
         } else {
             throw "Unknown schedule Id [$Id]"
         }
     }
 
-    [ScheduledMessage[]]ListSchedules() {
-        $result = New-Object -TypeName System.Collections.ArrayList
-        $this.Schedules.GetEnumerator() |
+    [PSCustomObject[]]ListSchedules() {
+        $result = $this.Schedules.GetEnumerator() |
             Select-Object -ExpandProperty Value |
             Sort-Object -Property TimeValue -Descending |
             Foreach-Object {
-                switch ($_.TimeInterval) {
-                    'Days' {
-                        $interval = "$($_.TimeValue / 86400000)d"
-                        break
-                    }
-                    'Hours' {
-                        $interval = "$($_.TimeValue / 3600000)h"
-                        break
-                    }
-                    'Minutes' {
-                        $interval = "$($_.TimeValue / 60000)m"
-                        break
-                    }
-                    'Seconds' {
-                        $interval = "$($_.TimeValue / 1000)s"
-                        break
-                    }
-                    Default {
-                        $interval = 'unknown'
-                        break
-                    }
-                }
-
-                $s = [pscustomobject]@{
+                [pscustomobject]@{
                     Id = $_.Id
                     Command = $_.Message.Text
-                    Interval = $interval
+                    Interval = "Every $($_.TimeValue) $($_.TimeInterval)"
+                    TimesExecuted = $_.TimesExecuted
                     Enabled = $_.Enabled
                 }
-                $result.Add($s) > $null
             }
 
         return $result
@@ -63,8 +42,11 @@ class Scheduler {
     [Message[]]GetMessages() {
         $messages = $this.Schedules.GetEnumerator() | Foreach-Object {
             if ($_.Value.HasElapsed()) {
+                Write-Verbose -Message "[Scheduler:GetMessages] Timer reached on scheduled command [$($_.Value.Id)]"
                 $_.Value.ResetTimer()
-                $_.Value.Message
+                $newMsg = $_.Value.Message.Clone()
+                $newMsg.Time = Get-Date
+                $newMsg
             }
         }
         return $messages
@@ -72,6 +54,7 @@ class Scheduler {
 
     [ScheduledMessage]EnableSchedule([string]$Id) {
         if ($msg = $this.Schedules[$Id]) {
+            Write-Verbose -Message "[Scheduler:EnableSchedule] Enabled scheduled command [$($_.Value.Id)] enabled"
             $msg.Enable()
             return $msg
         } else {
@@ -81,6 +64,7 @@ class Scheduler {
 
     [ScheduledMessage]DisableSchedule([string]$Id) {
         if ($msg = $this.Schedules[$Id]) {
+            Write-Verbose -Message "[Scheduler:DisableSchedule] Disabled scheduled command [$($_.Value.Id)] enabled"
             $msg.Disable()
             return $msg
         } else {
