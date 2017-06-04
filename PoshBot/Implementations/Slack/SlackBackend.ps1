@@ -421,7 +421,7 @@ class SlackBackend : Backend {
                 channel = $Message.To
                 timestamp = $Message.RawMessage.ts
             }
-            $resp = Send-SlackApi -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Method 'reactions.add' -Body $body
+            $resp = Send-SlackApi -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Method 'reactions.add' -Body $body -Verbose:$false
             if (-not $resp.ok) {
                 Write-Error $resp
             }
@@ -442,7 +442,7 @@ class SlackBackend : Backend {
                 channel = $Message.To
                 timestamp = $Message.RawMessage.ts
             }
-            $resp = Send-SlackApi -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Method 'reactions.remove' -Body $body
+            $resp = Send-SlackApi -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Method 'reactions.remove' -Body $body -Verbose:$false
             if (-not $resp.ok) {
                 Write-Error $resp
             }
