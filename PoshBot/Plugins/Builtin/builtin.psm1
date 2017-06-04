@@ -1347,7 +1347,31 @@ function Set-ScheduledCommand {
         Permissions = 'manage-schedules'
     )]
     [cmdletbinding()]
-    param()
+    param(
+        [parameter(Mandatory)]
+        $Bot,
+
+        [parameter(Mandatory, Position = 0)]
+        [string]$Id,
+
+        [parameter(Mandatory, Position = 1)]
+        [ValidateNotNull()]
+        [int]$Value,
+
+        [parameter(Mandatory, Position = 2)]
+        [ValidateSet('days', 'hours', 'minutes', 'seconds')]
+        [ValidateNotNullOrEmpty()]
+        [string]$Interval
+    )
+
+    if ($scheduledMessage = $Bot.Scheduler.GetSchedule($Id)) {
+        $scheduledMessage.TimeInterval = $Interval
+        $scheduledMessage.TimeValue = $Value
+        $scheduledMessage = $bot.Scheduler.SetSchedule($scheduledMessage)
+        New-PoshBotCardResponse -Type Normal -Text "Schedule for command [$($scheduledMessage.Message.Text)] changed to every [$Value $($Interval.ToLower())]." -ThumbnailUrl $thumb.success
+    } else {
+        New-PoshBotCardResponse -Type Warning -Text "Scheduled command [$Id] not found." -ThumbnailUrl $thumb.warning
+    }
 }
 
 function Remove-ScheduledCommand {
