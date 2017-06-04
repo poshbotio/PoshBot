@@ -4,7 +4,7 @@
 # chat network like a normal message
 class ScheduledMessage {
 
-    [string]$Id
+    [string]$Id = (New-Guid).ToString() -Replace '-', ''
 
     [TimeInterval]$TimeInterval
 
@@ -29,7 +29,6 @@ class ScheduledMessage {
     }
 
     [void]Init([TimeInterval]$Interval, [int]$TimeValue, [Message]$Message, [bool]$Enabled) {
-        $this.Id = (New-Guid).ToString() -Replace '-', ''
         $this.TimeInterval = $Interval
         $this.TimeValue = $TimeValue
         $this.Message = $Message
