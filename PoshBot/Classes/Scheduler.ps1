@@ -39,7 +39,7 @@ class Scheduler {
         return $result
     }
 
-    [Message[]]GetMessages() {
+    [Message[]]GetTriggeredMessages() {
         $messages = $this.Schedules.GetEnumerator() | Foreach-Object {
             if ($_.Value.HasElapsed()) {
                 Write-Verbose -Message "[Scheduler:GetMessages] Timer reached on scheduled command [$($_.Value.Id)]"

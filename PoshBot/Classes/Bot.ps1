@@ -196,7 +196,7 @@ class Bot {
 
     # Receive any messages from the scheduler that had their timer elapse and should be executed
     [void]ProcessScheduledMessages() {
-        foreach ($msg in $this.Scheduler.GetMessages()) {
+        foreach ($msg in $this.Scheduler.GetTriggeredMessages()) {
             $this._Logger.Debug([LogMessage]::new('[Bot:ProcessScheduledMessages] Received scheduled message from scheduler. Adding to message queue.', $msg))
             $this.MessageQueue.Enqueue($msg)
         }
