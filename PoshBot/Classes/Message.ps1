@@ -35,7 +35,7 @@ class Message {
     [Message]Clone () {
         $newMsg = [Message]::New()
         foreach ($prop in ($this | Get-Member -MemberType Property)) {
-            if ('Clone' -in ($this.$($prop.Name) | Get-Member -MemberType Method).Name) {
+            if ('Clone' -in ($this.$($prop.Name) | Get-Member -MemberType Method -ErrorAction Ignore).Name) {
                 $newMsg.$($prop.Name) = $this.$($prop.Name).Clone()
             } else {
                 $newMsg.$($prop.Name) = $this.$($prop.Name)
