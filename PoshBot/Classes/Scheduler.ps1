@@ -58,6 +58,16 @@ class Scheduler {
             return $null
         }
     }
+
+    [ScheduledMessage]SetSchedule([ScheduledMessage]$ScheduledMessage) {
+        $existingMessage = $this.GetSchedule($ScheduledMessage.Id)
+        $existingMessage.Init($ScheduledMessage.TimeInterval, $ScheduledMessage.TimeValue, $ScheduledMessage.Message, $ScheduledMessage.Enabled)
+        if ($existingMessage.Enabled) {
+            $existingMessage.ResetTimer()
+        }
+        return $existingMessage
+    }
+
     [ScheduledMessage]EnableSchedule([string]$Id) {
         if ($msg = $this.GetSchedule($Id)) {
             Write-Verbose -Message "[Scheduler:EnableSchedule] Enabled scheduled command [$($_.Value.Id)] enabled"
