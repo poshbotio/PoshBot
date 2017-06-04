@@ -20,19 +20,10 @@ class Scheduler {
         }
     }
 
-    [PSCustomObject[]]ListSchedules() {
+    [ScheduledMessage[]]ListSchedules() {
         $result = $this.Schedules.GetEnumerator() |
             Select-Object -ExpandProperty Value |
-            Sort-Object -Property TimeValue -Descending |
-            Foreach-Object {
-                [pscustomobject]@{
-                    Id = $_.Id
-                    Command = $_.Message.Text
-                    Interval = "Every $($_.TimeValue) $($_.TimeInterval)"
-                    TimesExecuted = $_.TimesExecuted
-                    Enabled = $_.Enabled
-                }
-            }
+            Sort-Object -Property TimeValue -Descending
 
         return $result
     }
