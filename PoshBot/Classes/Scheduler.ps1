@@ -9,7 +9,7 @@ class Scheduler {
             $ScheduledMessage.StartTimer()
             $this.Schedules.Add($ScheduledMessage.Id, $ScheduledMessage)
         } else {
-            throw "Id [$($ScheduledMessage.Id)] is already scheduled"
+            Write-Error "Id [$($ScheduledMessage.Id)] is already scheduled"
         }
     }
 
