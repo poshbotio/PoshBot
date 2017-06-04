@@ -86,4 +86,22 @@ class ScheduledMessage {
         $this.Stopwatch.Reset()
         $this.Stopwatch.Start()
     }
+
+    [hashtable]ToHash() {
+        return @{
+            Id = $this.Id
+            TimeInterval = $this.TimeInterval.ToString()
+            TimeValue = $this.TimeValue
+            Message = @{
+                Id = $this.Message.Id
+                Type = $this.Message.Type.ToString()
+                Subtype = $this.Message.Subtype.ToString()
+                Text = $this.Message.Text
+                To = $this.Message.To
+                From = $this.Message.From
+            }
+            Enabled = $this.Enabled
+            IntervalMS = $this.IntervalMS
+        }
+    }
 }
