@@ -14,11 +14,9 @@ class Scheduler {
     }
 
     [void]RemoveScheduledMessage([string]$Id) {
-        if ($this.Schedules.ContainsKey($id)) {
+        if ($this.GetSchedule($Id)) {
             Write-Verbose -Message "[Scheduler:RemoveScheduledMessage] Scheduled message [$($_.Value.Id)] removed"
             $this.Schedules.Remove($id)
-        } else {
-            throw "Unknown schedule Id [$Id]"
         }
     }
 
@@ -52,23 +50,31 @@ class Scheduler {
         return $messages
     }
 
+    [ScheduledMessage]GetSchedule([string]$Id) {
+        if ($msg = $this.Schedules[$id]) {
+            return $msg
+        } else {
+            Write-Error -Message "Unknown schedule Id [$Id]"
+            return $null
+        }
+    }
     [ScheduledMessage]EnableSchedule([string]$Id) {
-        if ($msg = $this.Schedules[$Id]) {
+        if ($msg = $this.GetSchedule($Id)) {
             Write-Verbose -Message "[Scheduler:EnableSchedule] Enabled scheduled command [$($_.Value.Id)] enabled"
             $msg.Enable()
             return $msg
         } else {
-            throw "Unknown schedule Id [$Id]"
+            return $null
         }
     }
 
     [ScheduledMessage]DisableSchedule([string]$Id) {
-        if ($msg = $this.Schedules[$Id]) {
+        if ($msg = $this.GetSchedule($Id)) {
             Write-Verbose -Message "[Scheduler:DisableSchedule] Disabled scheduled command [$($_.Value.Id)] enabled"
             $msg.Disable()
             return $msg
         } else {
-            throw "Unknown schedule Id [$Id]"
+            return $null
         }
     }
 }
