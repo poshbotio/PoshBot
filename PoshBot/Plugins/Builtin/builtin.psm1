@@ -1364,12 +1364,12 @@ function Remove-ScheduledCommand {
         [string]$Id
     )
 
-    try {
+    if ($Bot.Scheduler.GetSchedule($Id)) {
         $Bot.Scheduler.RemoveScheduledMessage($Id)
         $msg = "Schedule Id [$Id] removed"
         New-PoshBotCardResponse -Type Normal -Text $msg -ThumbnailUrl $thumb.success
-    } catch {
-        New-PoshBotCardResponse -Type Error -Text $_.ToString() -ThumbnailUrl $thumb.error
+    } else {
+        New-PoshBotCardResponse -Type Warning -Text "Scheduled command [$Id] not found." -ThumbnailUrl $thumb.warning
     }
 }
 
@@ -1387,7 +1387,7 @@ function Enable-ScheduledCommand {
         [string]$Id
     )
 
-    try {
+    if ($Bot.Scheduler.GetSchedule($Id)) {
         $scheduledMessage = $Bot.Scheduler.EnableSchedule($Id)
         $fields = @(
             'Id'
@@ -1400,8 +1400,8 @@ function Enable-ScheduledCommand {
         $msg = "Schedule for command [$($scheduledMessage.Message.Text)] enabled`n"
         $msg += ($scheduledMessage | Select-Object -Property $fields | Format-List | Out-String).Trim()
         New-PoshBotCardResponse -Type Normal -Text $msg -ThumbnailUrl $thumb.success
-    } catch {
-        New-PoshBotCardResponse -Type Error -Text $_.ToString() -ThumbnailUrl $thumb.error
+    } else {
+        New-PoshBotCardResponse -Type Warning -Text "Scheduled command [$Id] not found." -ThumbnailUrl $thumb.warning
     }
 }
 
@@ -1419,7 +1419,7 @@ function Disable-ScheduledCommand {
         [string]$Id
     )
 
-    try {
+    if ($Bot.Scheduler.GetSchedule($Id)) {
         $scheduledMessage = $Bot.Scheduler.DisableSchedule($Id)
         $fields = @(
             'Id'
@@ -1432,7 +1432,7 @@ function Disable-ScheduledCommand {
         $msg =  "Schedule for command [$($scheduledMessage.Message.Text)] disabled`n"
         $msg += ($scheduledMessage | Select-Object -Property $fields | Format-List | Out-String).Trim()
         New-PoshBotCardResponse -Type Normal -Text $msg -ThumbnailUrl $thumb.success
-    } catch {
-        New-PoshBotCardResponse -Type Error -Text $_.ToString() -ThumbnailUrl $thumb.error
+    } else {
+        New-PoshBotCardResponse -Type Warning -Text "Scheduled command [$Id] not found." -ThumbnailUrl $thumb.warning
     }
 }
