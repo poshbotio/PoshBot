@@ -1280,7 +1280,7 @@ function Get-ScheduledCommand {
         Get all scheduled commands
     #>
     [PoshBot.BotCommand(
-        Aliases = 'listschedules',
+        Aliases = 'getschedule',
         Permissions = 'manage-schedules'
     )]
     [cmdletbinding()]
@@ -1301,7 +1301,7 @@ function Get-ScheduledCommand {
 
 function New-ScheduledCommand {
     [PoshBot.BotCommand(
-        Aliases = 'schedulecommand',
+        Aliases = 'newschedule',
         Permissions = 'manage-schedules'
     )]
     [cmdletbinding()]
