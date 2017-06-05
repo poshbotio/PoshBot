@@ -55,7 +55,7 @@ class Scheduler {
 
     [void]ScheduleMessage([ScheduledMessage]$ScheduledMessage, [bool]$Save) {
         if (-not $this.Schedules.ContainsKey($ScheduledMessage.Id)) {
-            $this._Logger.Info([LogMessage]::new("[Scheduler:ScheduleMessage] Scheduled message [$($_.Value.Id)]", $ScheduledMessage))
+            $this._Logger.Info([LogMessage]::new("[Scheduler:ScheduleMessage] Scheduled message [$($ScheduledMessage.Id)]", $ScheduledMessage))
             if ($ScheduledMessage.Enabled) {
                 $ScheduledMessage.StartTimer()
             }
@@ -73,7 +73,7 @@ class Scheduler {
     [void]RemoveScheduledMessage([string]$Id) {
         if ($this.GetSchedule($Id)) {
             $this.Schedules.Remove($id)
-            $this._Logger.Info([LogMessage]::new("[Scheduler:RemoveScheduledMessage] Scheduled message [$($_.Value.Id)] removed"))
+            $this._Logger.Info([LogMessage]::new("[Scheduler:RemoveScheduledMessage] Scheduled message [$($_.Id)] removed"))
             $this.SaveState()
         }
     }
@@ -124,7 +124,7 @@ class Scheduler {
 
     [ScheduledMessage]EnableSchedule([string]$Id) {
         if ($msg = $this.GetSchedule($Id)) {
-            $this._Logger.Info([LogMessage]::new("[Scheduler:EnableSchedule] Enabled scheduled command [$($_.Value.Id)] enabled"))
+            $this._Logger.Info([LogMessage]::new("[Scheduler:EnableSchedule] Enabled scheduled command [$($_.Id)] enabled"))
             $msg.Enable()
             $this.SaveState()
             return $msg
@@ -135,7 +135,7 @@ class Scheduler {
 
     [ScheduledMessage]DisableSchedule([string]$Id) {
         if ($msg = $this.GetSchedule($Id)) {
-            $this._Logger.Info([LogMessage]::new("[Scheduler:DisableSchedule] Disabled scheduled command [$($_.Value.Id)] enabled"))
+            $this._Logger.Info([LogMessage]::new("[Scheduler:DisableSchedule] Disabled scheduled command [$($_.Id)] enabled"))
             $msg.Disable()
             $this.SaveState()
             return $msg
