@@ -7,6 +7,8 @@ class RoleManager {
     hidden [object]$_Backend
     hidden [StorageProvider]$_Storage
     hidden [Logger]$_Logger
+    hidden [string[]]$_AdminPermissions = @('manage-roles', 'show-help' ,'view', 'view-role', 'view-group',
+                                           'manage-plugins', 'manage-groups', 'manage-permissions', 'manage-schedules')
 
     RoleManager([object]$Backend, [StorageProvider]$Storage, [Logger]$Logger) {
         $this._Backend = $Backend
@@ -29,18 +31,8 @@ class RoleManager {
             $adminrole = [Role]::New('Admin', 'Bot administrator role')
 
             # TODO
-            # Get the builtin permissions from the module manifest rather than hard coding them here
-            @(
-                'manage-roles'
-                'show-help'
-                'view'
-                'view-role'
-                'view-group'
-                'manage-plugins'
-                'manage-groups'
-                'manage-permissions'
-                'manage-schedules'
-            ) | foreach-object {
+            # Get the builtin permissions from the module manifest rather than hard coding them in the class
+            $this._AdminPermissions | foreach-object {
                 $p = [Permission]::new($_, 'Builtin')
                 $adminRole.AddPermission($p)
             }
@@ -51,10 +43,20 @@ class RoleManager {
             $adminGroup.AddRole($adminRole)
             $this.Groups.Add($adminGroup.Name, $adminGroup)
             $this.SaveState()
+        } else {
+            # Make sure all the admin permissions are added to the 'Admin' role
+            # This is so if we need to add any permissions in future versions, they will automatically
+            # be added to the role
+            $adminRole = $this.Roles['Admin']
+            foreach ($perm in $this._AdminPermissions) {
+                if (-not $adminRole.Permissions.ContainsKey($perm)) {
+                    $p = [Permission]::new($perm, 'Builtin')
+                    $adminRole.AddPermission($p)
+                }
+            }
         }
     }
 
-    # TODO
     # Save state to storage
     [void]SaveState() {
         $this._Logger.Verbose([LogMessage]::new("[RoleManager:SaveState] Saving role manager state to storage"))
@@ -78,7 +80,6 @@ class RoleManager {
         $this._Storage.SaveConfig('groups', $groupsToSave)
     }
 
-    # TODO
     # Load state from storage
     [void]LoadState() {
         $this._Logger.Verbose([LogMessage]::new("[RoleManager:LoadState] Loading role manager state from storage"))
