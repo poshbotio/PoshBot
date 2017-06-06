@@ -12,7 +12,7 @@
 RootModule = 'PoshBot.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.4.0'
+ModuleVersion = '0.4.1'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -127,13 +127,19 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## [0.4.0] Unreleased
+## [0.4.1] 2017-06-06
+### Fixed
+- Bug when displaying command help with !help command
+
+## [0.4.0] 2017-06-05
 ### Added
 - Asynchronous command execution
 - Message reactions to indicate a command is executing, succeeded, or failed.
+- Scheduled command functionality. Commands can now be scheduled for execution every N days/hours/minutes/seconds.
 
 ### Fixed
 - Bug preventing plugin commands from being executed in PS jobs. Commands were previously being executed in the same session as the bot.
+- Replaced error with warning when one of the bot configuration file is not found.
 
 ## [0.3.1] 2017-05-17
 ### Fixed

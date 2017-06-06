@@ -6,7 +6,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.4.0] Unreleased
+## [0.4.1] 2017-06-06
+### Fixed
+- Bug when displaying command help with !help command
+
+## [0.4.0] 2017-06-05
 ### Added
 - Asynchronous command execution
 - Message reactions to indicate a command is executing, succeeded, or failed.

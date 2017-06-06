@@ -66,7 +66,11 @@ function Get-CommandHelp {
 
     if ($result) {
         if ($result.Count -ge 1) {
-            $respParams.Text = ($result | Select-Object -ExpandProperty FullCommandName, Aliases | Out-String)
+            $fields = @(
+                'FullCommandName'
+                @{l='Aliases';e={$_.Aliases -join ', '}}
+            )
+            $respParams.Text = ($result | Select-Object -Property $fields | Out-String)
         } else {
             if ($Detailed) {
                 $manString = ($Bot.PluginManager.Commands[$result.FullCommandName] | Get-Help -Detailed | Out-String)
