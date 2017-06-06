@@ -17,6 +17,10 @@ PoshBot currently supports connecting to Slack to provide you with awesome ChatO
 
 > See [Building PoshBot](./building.md) for documentation on how to build PoshBot from source.
 
+## [YouTube] PoshBot Demo at the Portland User Group on 2017-05-31
+
+[![Alt text](https://img.youtube.com/vi/36fkyKYq43c/0.jpg)](https://www.youtube.com/watch?v=36fkyKYq43cV)
+
 ## Quickstart
 
 To get started now, get a SLACK-API-TOKEN for your bot:
