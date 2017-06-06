@@ -31,6 +31,18 @@ class Message {
     [datetime]$Time             # The date/time (UTC) the message was received
     [hashtable]$Options         # Any other bits of information about a message. This will be backend specific
     [pscustomobject]$RawMessage # The raw message as received by the backend. This can be usefull for the backend
+
+    [Message]Clone () {
+        $newMsg = [Message]::New()
+        foreach ($prop in ($this | Get-Member -MemberType Property)) {
+            if ('Clone' -in ($this.$($prop.Name) | Get-Member -MemberType Method -ErrorAction Ignore).Name) {
+                $newMsg.$($prop.Name) = $this.$($prop.Name).Clone()
+            } else {
+                $newMsg.$($prop.Name) = $this.$($prop.Name)
+            }
+        }
+        return $newMsg
+    }
 }
 
 class UserEnterMessage : Message {}

@@ -409,39 +409,43 @@ class SlackBackend : Backend {
 
     # Add a reaction to an existing chat message
     [void]AddReaction([Message]$Message, [ReactionType]$Type, [string]$Reaction) {
-        if ($Type -eq [ReactionType]::Custom) {
-            $emoji = $Reaction
-        } else {
-            $emoji = $this._ResolveEmoji($Type)
-        }
+        if ($Message.RawMessage.ts) {
+            if ($Type -eq [ReactionType]::Custom) {
+                $emoji = $Reaction
+            } else {
+                $emoji = $this._ResolveEmoji($Type)
+            }
 
-        $body = @{
-            name = $emoji
-            channel = $Message.To
-            timestamp = $Message.RawMessage.ts
-        }
-        $resp = Send-SlackApi -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Method 'reactions.add' -Body $body
-        if (-not $resp.ok) {
-            Write-Error $resp
+            $body = @{
+                name = $emoji
+                channel = $Message.To
+                timestamp = $Message.RawMessage.ts
+            }
+            $resp = Send-SlackApi -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Method 'reactions.add' -Body $body -Verbose:$false
+            if (-not $resp.ok) {
+                Write-Error $resp
+            }
         }
     }
 
     # Remove a reaction from an existing chat message
     [void]RemoveReaction([Message]$Message, [ReactionType]$Type, [string]$Reaction) {
-        if ($Type -eq [ReactionType]::Custom) {
-            $emoji = $Reaction
-        } else {
-            $emoji = $this._ResolveEmoji($Type)
-        }
+        if ($Message.RawMessage.ts) {
+            if ($Type -eq [ReactionType]::Custom) {
+                $emoji = $Reaction
+            } else {
+                $emoji = $this._ResolveEmoji($Type)
+            }
 
-        $body = @{
-            name = $emoji
-            channel = $Message.To
-            timestamp = $Message.RawMessage.ts
-        }
-        $resp = Send-SlackApi -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Method 'reactions.remove' -Body $body
-        if (-not $resp.ok) {
-            Write-Error $resp
+            $body = @{
+                name = $emoji
+                channel = $Message.To
+                timestamp = $Message.RawMessage.ts
+            }
+            $resp = Send-SlackApi -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Method 'reactions.remove' -Body $body -Verbose:$false
+            if (-not $resp.ok) {
+                Write-Error $resp
+            }
         }
     }
 

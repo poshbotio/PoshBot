@@ -66,7 +66,7 @@ function Get-CommandHelp {
 
     if ($result) {
         if ($result.Count -ge 1) {
-            $respParams.Text = ($result | Select-Object -ExpandProperty FullCommandName | Out-String)
+            $respParams.Text = ($result | Select-Object -ExpandProperty FullCommandName, Aliases | Out-String)
         } else {
             if ($Detailed) {
                 $manString = ($Bot.PluginManager.Commands[$result.FullCommandName] | Get-Help -Detailed | Out-String)
@@ -1271,5 +1271,239 @@ function Add-CommandPermission {
         }
     } else {
         New-PoshBotCardResponse -Type Warning -Text "Command [$Name] not found."
+    }
+}
+
+function Get-ScheduledCommand {
+    <#
+    .SYNOPSIS
+        Get all scheduled commands
+    #>
+    [PoshBot.BotCommand(
+        Aliases = 'getschedule',
+        Permissions = 'manage-schedules'
+    )]
+    [cmdletbinding()]
+    param(
+        [parameter(Mandatory)]
+        $Bot,
+
+        [string]$Id
+    )
+
+    $fields = @(
+        'Id',
+        @{l='Command';e={$_.Message.Text}}
+        @{l='Interval';e={"Every $($_.TimeValue) $($_.TimeInterval)"}}
+        'TimesExecuted'
+        @{l='StartAfter';e={$_.StartAfter.ToString('u')}}
+        'Enabled'
+    )
+
+    if ($Id) {
+        if ($schedule = $Bot.Scheduler.GetSchedule($Id)) {
+            $msg = ($schedule | Select-Object -Property $fields | Format-List | Out-String).Trim()
+            New-PoshBotTextResponse -Text $msg -AsCode
+        } else {
+            New-PoshBotCardResponse -Type Warning -Text "Scheduled command [$Id] not found." -ThumbnailUrl $thumb.warning
+        }
+    } else {
+        $schedules = $Bot.Scheduler.ListSchedules()
+        if ($schedules.Count -gt 0) {
+            $msg = ($schedules | Select-Object -Property $fields | Format-Table -AutoSize | Out-String).Trim()
+            New-PoshBotTextResponse -Text $msg -AsCode
+        } else {
+            New-PoshBotTextResponse -Text 'There are no commands scheduled'
+        }
+    }
+}
+
+function New-ScheduledCommand {
+    [PoshBot.BotCommand(
+        Aliases = 'newschedule',
+        Permissions = 'manage-schedules'
+    )]
+    [cmdletbinding()]
+    param(
+        [parameter(Mandatory)]
+        $Bot,
+
+        [parameter(Mandatory, Position = 0)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Command,
+
+        [parameter(Mandatory, Position = 1)]
+        [ValidateNotNull()]
+        [int]$Value,
+
+        [parameter(Mandatory, Position = 2)]
+        [ValidateSet('days', 'hours', 'minutes', 'seconds')]
+        [ValidateNotNullOrEmpty()]
+        [string]$Interval,
+
+        [ValidateScript({
+            if ($_ -as [datetime]) {
+                return $true
+            } else {
+                throw '''StartAfter'' must be a datetime.'
+            }
+        })]
+        [string]$StartAfter
+    )
+
+    if (-not $Command.StartsWith($Bot.Configuration.CommandPrefix)) {
+        $Command = $Command.Insert(0, $Bot.Configuration.CommandPrefix)
+    }
+
+    $botMsg = [Message]::new()
+    $botMsg.Text = $Command
+    $botMsg.From = $global:PoshBotContext.From
+    $botMsg.To = $global:PoshBotContext.To
+
+    if ($PSBoundParameters.ContainsKey('StartAfter')) {
+        $schedMsg = [ScheduledMessage]::new($Interval, $value, $botMsg, [datetime]$StartAfter)
+    } else {
+        $schedMsg = [ScheduledMessage]::new($Interval, $value, $botMsg)
+    }
+
+    try {
+        $Bot.Scheduler.ScheduleMessage($schedMsg)
+        New-PoshBotCardResponse -Type Normal -Text "Command [$Command] scheduled at interval [$Value $($Interval.ToLower())]." -ThumbnailUrl $thumb.success
+    } catch {
+        New-PoshBotCardResponse -Type Error -Text $_.ToString() -ThumbnailUrl $thumb.error
+    }
+}
+
+function Set-ScheduledCommand {
+    [PoshBot.BotCommand(
+        Aliases = 'setschedule',
+        Permissions = 'manage-schedules'
+    )]
+    [cmdletbinding()]
+    param(
+        [parameter(Mandatory)]
+        $Bot,
+
+        [parameter(Mandatory, Position = 0)]
+        [string]$Id,
+
+        [parameter(Mandatory, Position = 1)]
+        [ValidateNotNull()]
+        [int]$Value,
+
+        [parameter(Mandatory, Position = 2)]
+        [ValidateSet('days', 'hours', 'minutes', 'seconds')]
+        [ValidateNotNullOrEmpty()]
+        [string]$Interval,
+
+        [ValidateScript({
+            if ($_ -as [datetime]) {
+                return $true
+            } else {
+                throw '''StartAfter'' must be a datetime.'
+            }
+        })]
+        [string]$StartAfter
+    )
+
+    if ($scheduledMessage = $Bot.Scheduler.GetSchedule($Id)) {
+        $scheduledMessage.TimeInterval = $Interval
+        $scheduledMessage.TimeValue = $Value
+        if ($PSBoundParameters.ContainsKey('StartAfter')) {
+            $scheduledMessage.StartAfter = [datetime]$StartAfter
+        }
+        $scheduledMessage = $bot.Scheduler.SetSchedule($scheduledMessage)
+        New-PoshBotCardResponse -Type Normal -Text "Schedule for command [$($scheduledMessage.Message.Text)] changed to every [$Value $($Interval.ToLower())]." -ThumbnailUrl $thumb.success
+    } else {
+        New-PoshBotCardResponse -Type Warning -Text "Scheduled command [$Id] not found." -ThumbnailUrl $thumb.warning
+    }
+}
+
+function Remove-ScheduledCommand {
+    [PoshBot.BotCommand(
+        Aliases = 'removeschedule',
+        Permissions = 'manage-schedules'
+    )]
+    [cmdletbinding()]
+    param(
+        $Bot,
+
+        [parameter(Mandatory, Position = 0)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Id
+    )
+
+    if ($Bot.Scheduler.GetSchedule($Id)) {
+        $Bot.Scheduler.RemoveScheduledMessage($Id)
+        $msg = "Schedule Id [$Id] removed"
+        New-PoshBotCardResponse -Type Normal -Text $msg -ThumbnailUrl $thumb.success
+    } else {
+        New-PoshBotCardResponse -Type Warning -Text "Scheduled command [$Id] not found." -ThumbnailUrl $thumb.warning
+    }
+}
+
+function Enable-ScheduledCommand {
+    [PoshBot.BotCommand(
+        Aliases = 'enableschedule',
+        Permissions = 'manage-schedules'
+    )]
+    [cmdletbinding()]
+    param(
+        $Bot,
+
+        [parameter(Mandatory, Position = 0)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Id
+    )
+
+    if ($Bot.Scheduler.GetSchedule($Id)) {
+        $scheduledMessage = $Bot.Scheduler.EnableSchedule($Id)
+        $fields = @(
+            'Id'
+            @{l='Command'; e = {$_.Message.Text}}
+            @{l='Interval'; e = {$_.TimeInterval}}
+            @{l='Value'; e = {$_.TimeValue}}
+            'TimesExecuted'
+            @{l='StartAfter';e={_.StartAfter.ToString('s')}}
+            'Enabled'
+        )
+        $msg = "Schedule for command [$($scheduledMessage.Message.Text)] enabled`n"
+        $msg += ($scheduledMessage | Select-Object -Property $fields | Format-List | Out-String).Trim()
+        New-PoshBotCardResponse -Type Normal -Text $msg -ThumbnailUrl $thumb.success
+    } else {
+        New-PoshBotCardResponse -Type Warning -Text "Scheduled command [$Id] not found." -ThumbnailUrl $thumb.warning
+    }
+}
+
+function Disable-ScheduledCommand {
+    [PoshBot.BotCommand(
+        Aliases = 'disableschedule',
+        Permissions = 'manage-schedules'
+    )]
+    [cmdletbinding()]
+    param(
+        $Bot,
+
+        [parameter(Mandatory, Position = 0)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Id
+    )
+
+    if ($Bot.Scheduler.GetSchedule($Id)) {
+        $scheduledMessage = $Bot.Scheduler.DisableSchedule($Id)
+        $fields = @(
+            'Id'
+            @{l='Command'; e = {$_.Message.Text}}
+            @{l='Interval'; e = {$_.TimeInterval}}
+            @{l='Value'; e = {$_.TimeValue}}
+            'TimesExecuted'
+            @{l='StartAfter';e={_.StartAfter.ToString('s')}}
+            'Enabled'
+        )
+        $msg =  "Schedule for command [$($scheduledMessage.Message.Text)] disabled`n"
+        $msg += ($scheduledMessage | Select-Object -Property $fields | Format-List | Out-String).Trim()
+        New-PoshBotCardResponse -Type Normal -Text $msg -ThumbnailUrl $thumb.success
+    } else {
+        New-PoshBotCardResponse -Type Warning -Text "Scheduled command [$Id] not found." -ThumbnailUrl $thumb.warning
     }
 }

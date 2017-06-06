@@ -29,3 +29,11 @@ enum ReactionType {
     Processing
     Custom
 }
+
+# Unit of time for scheduled commands
+enum TimeInterval {
+    Days
+    Hours
+    Minutes
+    Seconds
+}

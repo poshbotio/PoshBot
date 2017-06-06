@@ -10,9 +10,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Asynchronous command execution
 - Message reactions to indicate a command is executing, succeeded, or failed.
+- Scheduled command functionality. Commands can now be scheduled for execution every N days/hours/minutes/seconds.
 
 ### Fixed
 - Bug preventing plugin commands from being executed in PS jobs. Commands were previously being executed in the same session as the bot.
+- Replaced error with warning when one of the bot configuration file is not found.
 
 ## [0.3.1] 2017-05-17
 ### Fixed

@@ -12,7 +12,7 @@
 RootModule = 'Builtin.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.3.0'
+ModuleVersion = '0.4.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -75,7 +75,9 @@ FunctionsToExport = 'About', 'Add-CommandPermission', 'Add-GroupRole', 'Add-Grou
                'Get-Role', 'Get-CommandHelp', 'Install-Plugin', 'New-Group', 'New-Permission',
                'New-Role', 'Remove-Group', 'Remove-GroupRole', 'Remove-GroupUser',
                'Remove-Plugin', 'Remove-Role', 'Remove-RolePermission', 'Status',
-               'Update-GroupDescription', 'Update-RoleDescription'
+               'Update-GroupDescription', 'Update-RoleDescription', 'Get-ScheduledCommand',
+               'New-ScheduledCommand', 'Set-ScheduledCommand', 'Remove-ScheduledCommand',
+               'Enable-ScheduledCommand', 'Disable-ScheduledCommand'
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
 CmdletsToExport = @()
@@ -131,6 +133,10 @@ PrivateData = @{
         @{
             Name = 'manage-plugins'
             Description = 'Can install/enable/disable plugins'
+        }
+        @{
+            Name = 'manage-schedules'
+            Description = 'Can manage scheduled commands'
         }
     )
 
