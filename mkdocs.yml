@@ -10,6 +10,7 @@ pages:
     - Backends: guides/backends.md
     - Plugins: guides/plugins.md
     - Triggers: guides/triggers.md
+    - Scheduled Commands: guides/scheduled-commands.md
     - Scheduled Task: guides/scheduled-task.md
     - Command Authorization:
       - Overview: guides/command-authorization/overview.md
