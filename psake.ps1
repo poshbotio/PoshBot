@@ -57,6 +57,13 @@ task Pester -Depends Build {
     if(-not $ENV:BHProjectPath) {
         Set-BuildEnvironment -Path $PSScriptRoot\..
     }
+
+    $env:PSModulePath
+    $origModulePath = $env:PSModulePath
+    if ( $env:PSModulePath.split(';') -notcontains $outputDir ) {
+        $env:PSModulePath += ";$outputDir"
+    }
+
     Remove-Module $ENV:BHProjectName -ErrorAction SilentlyContinue -Verbose:$false
     Import-Module -Name $outputModDir -Force -Verbose:$false
     $testResultsXml = Join-Path -Path $outputDir -ChildPath 'testResults.xml'
@@ -66,6 +73,7 @@ task Pester -Depends Build {
         Write-Error -Message 'One or more Pester tests failed. Build cannot continue!'
     }
     Pop-Location
+    $env:PSModulePath = $origModulePath
 } -description 'Run Pester tests'
 
 task CreateMarkdownHelp -Depends Compile {
