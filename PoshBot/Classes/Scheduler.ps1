@@ -31,7 +31,11 @@ class Scheduler {
                 $msg.From = $sched.Message.From
                 $msg.Type = $sched.Message.Type
                 $msg.Subtype = $sched.Message.Subtype
-                $newSchedule = [ScheduledMessage]::new($sched.TimeInterval, $sched.TimeValue, $msg, $sched.Enabled)
+                if (-not [string]::IsNullOrEmpty($sched.StartAfter)) {
+                    $newSchedule = [ScheduledMessage]::new($sched.TimeInterval, $sched.TimeValue, $msg, $sched.Enabled, $sched.StartAfter.ToUniversalTime())
+                } else {
+                    $newSchedule = [ScheduledMessage]::new($sched.TimeInterval, $sched.TimeValue, $msg, $sched.Enabled, (Get-Date).ToUniversalTime())
+                }
                 $newSchedule.Id = $sched.Id
                 $this.ScheduleMessage($newSchedule, $false)
             }
@@ -112,7 +116,7 @@ class Scheduler {
 
     [ScheduledMessage]SetSchedule([ScheduledMessage]$ScheduledMessage) {
         $existingMessage = $this.GetSchedule($ScheduledMessage.Id)
-        $existingMessage.Init($ScheduledMessage.TimeInterval, $ScheduledMessage.TimeValue, $ScheduledMessage.Message, $ScheduledMessage.Enabled)
+        $existingMessage.Init($ScheduledMessage.TimeInterval, $ScheduledMessage.TimeValue, $ScheduledMessage.Message, $ScheduledMessage.Enabled, $ScheduledMessage.StartAfter)
         $this._Logger.Info([LogMessage]::new("[Scheduler:SetSchedule] Scheduled message [$($ScheduledMessage.Id)] modified", $existingMessage))
         if ($existingMessage.Enabled) {
             $existingMessage.ResetTimer()

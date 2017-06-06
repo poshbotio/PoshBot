@@ -1296,6 +1296,7 @@ function Get-ScheduledCommand {
         @{l='Command';e={$_.Message.Text}}
         @{l='Interval';e={"Every $($_.TimeValue) $($_.TimeInterval)"}}
         'TimesExecuted'
+        @{l='StartAfter';e={$_.StartAfter.ToString('u')}}
         'Enabled'
     )
 
@@ -1338,7 +1339,16 @@ function New-ScheduledCommand {
         [parameter(Mandatory, Position = 2)]
         [ValidateSet('days', 'hours', 'minutes', 'seconds')]
         [ValidateNotNullOrEmpty()]
-        [string]$Interval
+        [string]$Interval,
+
+        [ValidateScript({
+            if ($_ -as [datetime]) {
+                return $true
+            } else {
+                throw '''StartAfter'' must be a datetime.'
+            }
+        })]
+        [string]$StartAfter
     )
 
     if (-not $Command.StartsWith($Bot.Configuration.CommandPrefix)) {
@@ -1349,7 +1359,12 @@ function New-ScheduledCommand {
     $botMsg.Text = $Command
     $botMsg.From = $global:PoshBotContext.From
     $botMsg.To = $global:PoshBotContext.To
-    $schedMsg = [ScheduledMessage]::new($Interval, $value, $botMsg)
+
+    if ($PSBoundParameters.ContainsKey('StartAfter')) {
+        $schedMsg = [ScheduledMessage]::new($Interval, $value, $botMsg, [datetime]$StartAfter)
+    } else {
+        $schedMsg = [ScheduledMessage]::new($Interval, $value, $botMsg)
+    }
 
     try {
         $Bot.Scheduler.ScheduleMessage($schedMsg)
@@ -1379,12 +1394,24 @@ function Set-ScheduledCommand {
         [parameter(Mandatory, Position = 2)]
         [ValidateSet('days', 'hours', 'minutes', 'seconds')]
         [ValidateNotNullOrEmpty()]
-        [string]$Interval
+        [string]$Interval,
+
+        [ValidateScript({
+            if ($_ -as [datetime]) {
+                return $true
+            } else {
+                throw '''StartAfter'' must be a datetime.'
+            }
+        })]
+        [string]$StartAfter
     )
 
     if ($scheduledMessage = $Bot.Scheduler.GetSchedule($Id)) {
         $scheduledMessage.TimeInterval = $Interval
         $scheduledMessage.TimeValue = $Value
+        if ($PSBoundParameters.ContainsKey('StartAfter')) {
+            $scheduledMessage.StartAfter = [datetime]$StartAfter
+        }
         $scheduledMessage = $bot.Scheduler.SetSchedule($scheduledMessage)
         New-PoshBotCardResponse -Type Normal -Text "Schedule for command [$($scheduledMessage.Message.Text)] changed to every [$Value $($Interval.ToLower())]." -ThumbnailUrl $thumb.success
     } else {
@@ -1437,6 +1464,7 @@ function Enable-ScheduledCommand {
             @{l='Interval'; e = {$_.TimeInterval}}
             @{l='Value'; e = {$_.TimeValue}}
             'TimesExecuted'
+            @{l='StartAfter';e={_.StartAfter.ToString('s')}}
             'Enabled'
         )
         $msg = "Schedule for command [$($scheduledMessage.Message.Text)] enabled`n"
@@ -1469,6 +1497,7 @@ function Disable-ScheduledCommand {
             @{l='Interval'; e = {$_.TimeInterval}}
             @{l='Value'; e = {$_.TimeValue}}
             'TimesExecuted'
+            @{l='StartAfter';e={_.StartAfter.ToString('s')}}
             'Enabled'
         )
         $msg =  "Schedule for command [$($scheduledMessage.Message.Text)] disabled`n"

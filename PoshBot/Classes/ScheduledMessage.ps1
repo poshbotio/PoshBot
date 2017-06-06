@@ -20,19 +20,30 @@ class ScheduledMessage {
 
     [System.Diagnostics.Stopwatch]$Stopwatch
 
+    [DateTime]$StartAfter = (Get-Date).ToUniversalTime()
+
+    ScheduledMessage([TimeInterval]$Interval, [int]$TimeValue, [Message]$Message, [bool]$Enabled, [DateTime]$StartAfter) {
+        $this.Init($Interval, $TimeValue, $Message, $Enabled, $StartAfter)
+    }
+
     ScheduledMessage([TimeInterval]$Interval, [int]$TimeValue, [Message]$Message, [bool]$Enabled) {
-        $this.Init($Interval, $TimeValue, $Message, $Enabled)
+        $this.Init($Interval, $TimeValue, $Message, $Enabled, (Get-Date).ToUniversalTime())
+    }
+
+    ScheduledMessage([TimeInterval]$Interval, [int]$TimeValue, [Message]$Message, [DateTime]$StartAfter) {
+        $this.Init($Interval, $TimeValue, $Message, $true, $StartAfter)
     }
 
     ScheduledMessage([TimeInterval]$Interval, [int]$TimeValue, [Message]$Message) {
-        $this.Init($Interval, $TimeValue, $Message, $true)
+        $this.Init($Interval, $TimeValue, $Message, $true, (Get-Date).ToUniversalTime())
     }
 
-    [void]Init([TimeInterval]$Interval, [int]$TimeValue, [Message]$Message, [bool]$Enabled) {
+    [void]Init([TimeInterval]$Interval, [int]$TimeValue, [Message]$Message, [bool]$Enabled, [DateTime]$StartAfter) {
         $this.TimeInterval = $Interval
         $this.TimeValue = $TimeValue
         $this.Message = $Message
         $this.Enabled = $Enabled
+        $this.StartAfter = $StartAfter.ToUniversalTime()
         $this.Stopwatch = New-Object -TypeName System.Diagnostics.Stopwatch
 
         switch ($this.TimeInterval) {
@@ -57,8 +68,13 @@ class ScheduledMessage {
 
     [bool]HasElapsed() {
         if ($this.Stopwatch.ElapsedMilliseconds -gt $this.IntervalMS) {
-            $this.TimesExecuted += 1
-            return $true
+            $now = (Get-Date).ToUniversalTime()
+            if ($now -ge $this.StartAfter) {
+                $this.TimesExecuted += 1
+                return $true
+            } else{
+                return $false
+            }
         } else {
             return $false
         }
@@ -92,6 +108,7 @@ class ScheduledMessage {
             Id = $this.Id
             TimeInterval = $this.TimeInterval.ToString()
             TimeValue = $this.TimeValue
+            StartAfter = $This.StartAfter.ToUniversalTime()
             Message = @{
                 Id = $this.Message.Id
                 Type = $this.Message.Type.ToString()
