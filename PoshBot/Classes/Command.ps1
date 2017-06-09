@@ -37,6 +37,8 @@ class Command {
 
     [string]$Description
 
+    [TriggerType]$TriggerType = [TriggerType]::Command
+
     [Trigger[]]$Triggers = @()
 
     [string[]]$Usage
@@ -88,13 +90,22 @@ class Command {
 
         [string]$sb = [string]::Empty
         $options = @{
-            NamedParameters = $ParsedCommand.NamedParameters
-            PositionalParameters = $ParsedCommand.PositionalParameters
             ManifestPath = $this.ManifestPath
             Function = $this.FunctionInfo
             ParsedCommand = $ParsedCommand
             ConfigurationDirectory = $script:ConfigurationDirectory
         }
+        if ([TriggerType]::Command -in $this.Triggers.Type) {
+            $options.NamedParameters = $ParsedCommand.NamedParameters
+            $options.PositionalParameters = $ParsedCommand.PositionalParameters
+        } elseIf ([TriggerType]::Regex -in $this.Triggers.Type) {
+            $regex = [regex]$this.Triggers[0].Trigger
+            $options.NamedParameters = @{
+                Arguments = $regex.Match($ParsedCommand.CommandString).Groups | Select-Object -ExpandProperty Value
+            }
+            $options.PositionalParameters = @()
+        }
+
         if ($this.FunctionInfo) {
             $options.FunctionInfo = $this.FunctionInfo
         }

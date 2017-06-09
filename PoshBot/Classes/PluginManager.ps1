@@ -425,12 +425,10 @@ class PluginManager {
                 # Set command properties based on metadata from module
                 if ($metadata) {
 
-                    # Set the command name / trigger to the module function name or to
-                    # what is defined in the metadata
+                    # Set the command name to what is defined in the metadata
                     if ($metadata.CommandName) {
                         $cmd.Name = $metadata.CommandName
                     }
-                    $cmd.Triggers += [Trigger]::new('Command', $cmd.Name)
 
                     # Add any alternate command names as aliases to the command
                     if ($metadata.Aliases) {
@@ -472,9 +470,13 @@ class PluginManager {
                     # Set the trigger type to something other than 'Command'
                     if ($metadata.TriggerType) {
                         switch ($metadata.TriggerType) {
+                            'Command' {
+                                $cmd.TriggerType = [TriggerType]::Command
+                                $cmd.Triggers += [Trigger]::new([TriggerType]::Command, $cmd.Name)
+                            }
                             'Event' {
-                                $t = [Trigger]::new('Event', $command.Name)
-                                $t.Type = [TriggerType]::Event
+                                $cmd.TriggerType = [TriggerType]::Event
+                                $t = [Trigger]::new([TriggerType]::Event, $command.Name)
 
                                 # The message type/subtype the command is intended to respond to
                                 if ($metadata.MessageType) {
@@ -486,8 +488,8 @@ class PluginManager {
                                 $cmd.Triggers += $t
                             }
                             'Regex' {
+                                $cmd.TriggerType = [TriggerType]::Regex
                                 $t = [Trigger]::new([TriggerType]::Regex, $command.Name)
-                                $t.Type = [TriggerType]::Regex
                                 $t.Trigger = $metadata.Regex
                                 $cmd.Triggers += $t
                             }
@@ -504,11 +506,6 @@ class PluginManager {
                 $cmd.FunctionInfo = $command
 
                 $cmd.Usage = ($cmdHelp.syntax | Out-String).Trim()
-                # if ($cmdHelp.examples) {
-                #     foreach ($example in $cmdHelp.Examples.Example) {
-                #         $cmd.Usage += $example.code.Trim()
-                #     }
-                # }
                 $cmd.ModuleCommand = "$ModuleName\$($command.Name)"
                 $cmd.AsJob = $AsJob
 
