@@ -6,6 +6,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.5.0] Unreleased
+### Added
+- Any regex group matches are now passed in the [Arguments] parameter to the function/command.
+
+### Changed
+- Command usage help is now displayed differently according to the command's trigger type.
+  For [Command] trigger types, the command/function's parameters are show, for [Regex] trigger
+  types, the trigger regex expression is shown.
+
 ## [0.4.1] 2017-06-06
 ### Fixed
 - Bug when displaying command help with !help command

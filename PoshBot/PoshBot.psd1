@@ -12,7 +12,7 @@
 RootModule = 'PoshBot.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.4.1'
+ModuleVersion = '0.5.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -127,6 +127,15 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
+## [0.5.0] Unreleased
+### Added
+- Any regex group matches are now passed in the [Arguments] parameter to the function/command.
+
+### Changed
+- Command usage help is now displayed differently according to the command's trigger type.
+  For [Command] trigger types, the command/function's parameters are show, for [Regex] trigger
+  types, the trigger regex expression is shown.
+
 ## [0.4.1] 2017-06-06
 ### Fixed
 - Bug when displaying command help with !help command
