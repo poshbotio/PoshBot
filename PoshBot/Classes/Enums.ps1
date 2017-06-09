@@ -14,7 +14,6 @@ enum TriggerType {
     Command
     Event
     Regex
-    Timer
 }
 
 enum LogLevel {
