@@ -505,7 +505,19 @@ class PluginManager {
                 $cmd.ManifestPath = $manifestPath
                 $cmd.FunctionInfo = $command
 
-                $cmd.Usage = ($cmdHelp.syntax | Out-String).Trim()
+                # Set the command usage differently for [Command] and [Regex] trigger types
+                if ($cmd.TriggerType -eq [TriggerType]::Command) {
+                    # Reformat function syntax to show how the bot expects it to be entered
+                    $helpSyntax = ($cmdHelp.syntax | Out-String).Trim()
+                    $helpSyntax = $helpSyntax -replace '( -([a-zA-Z]))', ' --$2'
+                    $helpSyntax = $helpSyntax -replace '(\[-([a-zA-Z]))', '[--$2'
+                    $helpSyntax = $helpSyntax -replace '\[\<CommonParameters\>\]', ''
+                    $helpSyntax = $helpSyntax -replace '--Bot \<Object\> ', ''
+                    $cmd.Usage = $helpSyntax.ToLower().Trim()
+                } elseIf ($cmd.TriggerType -eq [TriggerType]::Regex) {
+                    $cmd.Usage = @($cmd.Triggers | Select-Object -Expand Trigger) -join "`n"
+                }
+
                 $cmd.ModuleCommand = "$ModuleName\$($command.Name)"
                 $cmd.AsJob = $AsJob
 
