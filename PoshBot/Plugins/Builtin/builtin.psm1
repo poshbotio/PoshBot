@@ -26,22 +26,28 @@ function Get-CommandHelp {
         [parameter(Position = 0)]
         [string]$Filter,
 
-        [switch]$Detailed
+        [switch]$Detailed,
+
+        [ValidateSet('*', 'Command', 'Event', 'Regex')]
+        [string]$Type = '*'
     )
 
-    $allCommands = $Bot.PluginManager.Commands.GetEnumerator() | Foreach-Object {
-        $plugin = $_.Name.Split(':')[0]
-        $command = $_.Value.Name
-        [pscustomobject]@{
-            FullCommandName = "$plugin`:$command"
-            Command = $command
-            Aliases = ($_.Value.Aliases -join ', ')
-            Plugin = $plugin
-            Description = $_.Value.Description
-            Usage = ($_.Value.Usage | Format-List | Out-string).Trim()
-            Enabled = $_.Value.Enabled.ToString()
-            Permissions = $_.Value.AccessFilter.Permissions.Keys | Format-List | Out-string
-        }
+    $allCommands = $Bot.PluginManager.Commands.GetEnumerator() |
+        Where-Object {$_.Value.TriggerType -like $Type} |
+        Foreach-Object {
+            $plugin = $_.Name.Split(':')[0]
+            $command = $_.Value.Name
+            [pscustomobject]@{
+                FullCommandName = "$plugin`:$command"
+                Command = $command
+                Type = $_.Value.TriggerType.ToString()
+                Aliases = ($_.Value.Aliases -join ', ')
+                Plugin = $plugin
+                Description = $_.Value.Description
+                Usage = ($_.Value.Usage | Format-List | Out-string).Trim()
+                Enabled = $_.Value.Enabled.ToString()
+                Permissions = ($_.Value.AccessFilter.Permissions.Keys | Format-List | Out-string).Trim()
+            }
     }
 
     $respParams = @{
@@ -69,6 +75,7 @@ function Get-CommandHelp {
             $fields = @(
                 'FullCommandName'
                 @{l='Aliases';e={$_.Aliases -join ', '}}
+                @{l='Type';e={$_.Type}}
             )
             $respParams.Text = ($result | Select-Object -Property $fields | Out-String)
         } else {
