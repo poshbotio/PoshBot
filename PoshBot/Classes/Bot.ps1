@@ -217,12 +217,10 @@ class Bot {
 
     # Pull message(s) off queue and pass to handler
     [void]ProcessMessageQueue() {
-        if ($this.MessageQueue.Count -gt 0) {
-            while ($this.MessageQueue.Count -ne 0) {
-                $msg = $this.MessageQueue.Dequeue()
-                $this._Logger.Debug([LogMessage]::new('[Bot:ProcessMessageQueue] Dequeued message', $msg))
-                $this.HandleMessage($msg)
-            }
+        while ($this.MessageQueue.Count -ne 0) {
+            $msg = $this.MessageQueue.Dequeue()
+            $this._Logger.Debug([LogMessage]::new('[Bot:ProcessMessageQueue] Dequeued message', $msg))
+            $this.HandleMessage($msg)
         }
     }
 
