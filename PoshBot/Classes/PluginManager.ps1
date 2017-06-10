@@ -526,6 +526,7 @@ class PluginManager {
                     $helpSyntax = $helpSyntax -replace '(\[-([a-zA-Z]))', '[--$2'
                     $helpSyntax = $helpSyntax -replace '\[\<CommonParameters\>\]', ''
                     $helpSyntax = $helpSyntax -replace '--Bot \<Object\> ', ''
+                    $helpSyntax = $helpSyntax -replace '\[--Bot\] \<Object\> ', '['
 
                     # Replace the function name in the help syntax with
                     # what PoshBot will call the command
