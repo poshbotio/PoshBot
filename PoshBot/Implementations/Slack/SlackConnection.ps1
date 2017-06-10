@@ -98,9 +98,9 @@ class SlackConnection : Connection {
     }
 
     # Stop the receive job
-    [void]Disconnect([System.Net.WebSockets.WebSocketCloseStatus]$Reason = [System.Net.WebSockets.WebSocketCloseStatus]::NormalClosure) {
+    [void]Disconnect() {
         Write-Verbose -Message '[SlackConnection:Disconnect] Closing websocket'
-        $this.ReceiveJob | Stop-Job -Confirm:$false
+        $this.ReceiveJob | Stop-Job -Confirm:$false -PassThru | Remove-Job -Force
         $this.Connected = $false
         $this.Status = [ConnectionStatus]::Disconnected
     }
