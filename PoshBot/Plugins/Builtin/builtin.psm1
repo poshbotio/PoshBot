@@ -62,7 +62,8 @@ function Get-CommandHelp {
             ($_.Command -like "*$Filter*") -or
             ($_.Plugin -like "*$Filter*") -or
             ($_.Description -like "*$Filter*") -or
-            ($_.Usage -like "*$Filter*")
+            ($_.Usage -like "*$Filter*") -or
+            ($_.Aliases -like "*$Filter*")
         })
     } else {
         $respParams.Title = 'All commands'
@@ -1330,6 +1331,10 @@ function Get-ScheduledCommand {
 }
 
 function New-ScheduledCommand {
+    <#
+    .SYNOPSIS
+        Create a new scheduled command
+    #>
     [PoshBot.BotCommand(
         Aliases = 'newschedule',
         Permissions = 'manage-schedules'
@@ -1386,6 +1391,10 @@ function New-ScheduledCommand {
 }
 
 function Set-ScheduledCommand {
+    <#
+    .SYNOPSIS
+        Modify a scheduled command
+    #>
     [PoshBot.BotCommand(
         Aliases = 'setschedule',
         Permissions = 'manage-schedules'
@@ -1431,12 +1440,17 @@ function Set-ScheduledCommand {
 }
 
 function Remove-ScheduledCommand {
+    <#
+    .SYNOPSIS
+        Remove a scheduled command
+    #>
     [PoshBot.BotCommand(
         Aliases = 'removeschedule',
         Permissions = 'manage-schedules'
     )]
     [cmdletbinding()]
     param(
+        [parameter(Mandatory)]
         $Bot,
 
         [parameter(Mandatory, Position = 0)]
@@ -1454,12 +1468,17 @@ function Remove-ScheduledCommand {
 }
 
 function Enable-ScheduledCommand {
+    <#
+    .SYNOPSIS
+        Enable a scheduled command
+    #>
     [PoshBot.BotCommand(
         Aliases = 'enableschedule',
         Permissions = 'manage-schedules'
     )]
     [cmdletbinding()]
     param(
+        [parameter(Mandatory)]
         $Bot,
 
         [parameter(Mandatory, Position = 0)]
@@ -1487,12 +1506,17 @@ function Enable-ScheduledCommand {
 }
 
 function Disable-ScheduledCommand {
+    <#
+    .SYNOPSIS
+        Disable a scheduled command
+    #>
     [PoshBot.BotCommand(
         Aliases = 'disableschedule',
         Permissions = 'manage-schedules'
     )]
     [cmdletbinding()]
     param(
+        [parameter(Mandatory)]
         $Bot,
 
         [parameter(Mandatory, Position = 0)]
