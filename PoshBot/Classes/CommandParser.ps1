@@ -3,6 +3,7 @@ class ParsedCommand {
     [string]$CommandString
     [string]$Plugin = $null
     [string]$Command = $null
+    [string]$Version = $null
     [string[]]$Tokens = @()
     [hashtable]$NamedParameters = @{}
     [System.Collections.ArrayList]$PositionalParameters = (New-Object System.Collections.ArrayList)
@@ -23,18 +24,33 @@ class CommandParser {
 
         # The command is the first word of the message
         $command = $commandString.Split(' ')[0]
+        $arrCmdStr = $command.Split(':')
+
+        # Check if a specific version of the command was specified
+        $version = $null
+        if ($arrCmdStr[1] -as [Version]) {
+            $version = $arrCmdStr[1]
+        } elseif ($arrCmdStr[2] -as [Version]) {
+            $version = $arrCmdStr[2]
+        }
 
         # The command COULD be in the form of <command> or <plugin:command>
         # Figure out which one
         $plugin = [string]::Empty
         if ($Message.Type -eq [MessageType]::Message -and $Message.SubType -eq [MessageSubtype]::None ) {
-            $plugin = $command.Split(':')[0]
+            $plugin = $arrCmdStr[0]
         }
-        $command = $command.Split(':')[1]
-        if (-not $command) {
-            $command = $plugin
+        if ($arrCmdStr[1] -as [Version]) {
+            $command = $arrCmdStr[0]
             $plugin = $null
+        } else {
+            $command = $arrCmdStr[1]
+            if (-not $command) {
+                $command = $plugin
+                $plugin = $null
+            }
         }
+
 
         # Create the ParsedCommand instance
         $parsedCommand = [ParsedCommand]::new()
@@ -43,8 +59,9 @@ class CommandParser {
         $parsedCommand.Command = $command
         $parsedCommand.OriginalMessage = $Message
         $parsedCommand.Time = $Message.Time
-        if ($Message.To) { $parsedCommand.To = $Message.To }
-        if ($Message.From) { $parsedCommand.From = $Message.From }
+        if ($version)      { $parsedCommand.Version = $version }
+        if ($Message.To)   { $parsedCommand.To      = $Message.To }
+        if ($Message.From) { $parsedCommand.From    = $Message.From }
 
         # Parse the message text using AST into named and positional parameters
         try {

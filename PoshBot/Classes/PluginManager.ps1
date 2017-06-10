@@ -288,18 +288,25 @@ class PluginManager {
             $plugin = $this.Plugins[$ParsedCommand.Plugin]
             if ($plugin) {
 
-                # Just look in the latest version of the plugin.
-                # This should be improved later to allow specifying a specific version to execute
-                $latestVersionKey = $plugin.Keys | Sort-Object -Descending | Select-Object -First 1
-                $pluginVersion = $plugin[$latestVersionKey]
+                if ($ParsedCommand.Version) {
+                    # User specified a specific version of the plugin so get that one
+                    $pluginVersion = $plugin[$ParsedCommand.Version]
+                } else {
+                    # Just look in the latest version of the plugin.
+                    $latestVersionKey = $plugin.Keys | Sort-Object -Descending | Select-Object -First 1
+                    $pluginVersion = $plugin[$latestVersionKey]
+                }
 
-                foreach ($commandKey in $pluginVersion.Commands.Keys) {
-                    $command = $pluginVersion.Commands[$commandKey]
-                    if ($command.TriggerMatch($ParsedCommand, $CommandSearch)) {
-                        $this.Logger.Info([LogMessage]::new("[PluginManager:MatchCommand] Matched parsed command [$($ParsedCommand.Plugin)`:$($ParsedCommand.Command)] to plugin command [$($plugin.Name)`:$commandKey]"))
-                        return [PluginCommand]::new($pluginVersion, $command)
+                if ($pluginVersion) {
+                    foreach ($commandKey in $pluginVersion.Commands.Keys) {
+                        $command = $pluginVersion.Commands[$commandKey]
+                        if ($command.TriggerMatch($ParsedCommand, $CommandSearch)) {
+                            $this.Logger.Info([LogMessage]::new("[PluginManager:MatchCommand] Matched parsed command [$($ParsedCommand.Plugin)`:$($ParsedCommand.Command)] to plugin command [$($plugin.Name)`:$commandKey]"))
+                            return [PluginCommand]::new($pluginVersion, $command)
+                        }
                     }
                 }
+
                 $this.Logger.Info([LogMessage]::new([LogSeverity]::Warning, "[PluginManager:MatchCommand] Unable to match parsed command [$($ParsedCommand.Plugin)`:$($ParsedCommand.Command)] to a command in plugin [$($plugin.Name)]"))
             } else {
                 $this.Logger.Info([LogMessage]::new([LogSeverity]::Warning, "[PluginManager:MatchCommand] Unable to match parsed command [$($ParsedCommand.Plugin)`:$($ParsedCommand.Command)] to a plugin command"))
@@ -310,17 +317,27 @@ class PluginManager {
             # Check all regular plugins/commands now
             foreach ($pluginKey in $this.Plugins.Keys) {
                 $plugin = $this.Plugins[$pluginKey]
-
-                # Just look in the latest version of the plugin.
-                # This should be improved later to allow specifying a specific version to execute
-                foreach ($pluginVersionKey in $plugin.Keys | Sort-Object -Descending | Select-Object -First 1) {
-                    $pluginVersion = $plugin[$pluginVersionKey]
-
+                $pluginVersion = $null
+                if ($ParsedCommand.Version) {
+                    # User specified a specific version of the plugin so get that one
+                    $pluginVersion = $plugin[$ParsedCommand.Version]
                     foreach ($commandKey in $pluginVersion.Commands.Keys) {
                         $command = $pluginVersion.Commands[$commandKey]
                         if ($command.TriggerMatch($ParsedCommand, $CommandSearch)) {
                             $this.Logger.Info([LogMessage]::new("[PluginManager:MatchCommand] Matched parsed command [$($ParsedCommand.Plugin)`:$($ParsedCommand.Command)] to plugin command [$pluginKey`:$commandKey]"))
                             return [PluginCommand]::new($pluginVersion, $command)
+                        }
+                    }
+                } else {
+                    # Just look in the latest version of the plugin.
+                    foreach ($pluginVersionKey in $plugin.Keys | Sort-Object -Descending | Select-Object -First 1) {
+                        $pluginVersion = $plugin[$pluginVersionKey]
+                        foreach ($commandKey in $pluginVersion.Commands.Keys) {
+                            $command = $pluginVersion.Commands[$commandKey]
+                            if ($command.TriggerMatch($ParsedCommand, $CommandSearch)) {
+                                $this.Logger.Info([LogMessage]::new("[PluginManager:MatchCommand] Matched parsed command [$($ParsedCommand.Plugin)`:$($ParsedCommand.Command)] to plugin command [$pluginKey`:$commandKey]"))
+                                return [PluginCommand]::new($pluginVersion, $command)
+                            }
                         }
                     }
                 }
@@ -342,7 +359,7 @@ class PluginManager {
                 if ($pluginVersion.Enabled) {
                     foreach ($commandKey in $pluginVersion.Commands.Keys) {
                         $command =  $pluginVersion.Commands[$commandKey]
-                        $fullyQualifiedCommandName = "$pluginKey`:$CommandKey"
+                        $fullyQualifiedCommandName = "$pluginKey`:$CommandKey`:$pluginVersionKey"
                         $allCommands.Add($fullyQualifiedCommandName)
                         if (-not $this.Commands.ContainsKey($fullyQualifiedCommandName)) {
                             $this.Logger.Verbose([LogMessage]::new("[PluginManager:LoadCommands] Loading command [$fullyQualifiedCommandName]"))

@@ -35,14 +35,17 @@ function Get-CommandHelp {
     $allCommands = $Bot.PluginManager.Commands.GetEnumerator() |
         Where-Object {$_.Value.TriggerType -like $Type} |
         Foreach-Object {
-            $plugin = $_.Name.Split(':')[0]
-            $command = $_.Value.Name
+            $arrPlgCmdVer = $_.Name.Split(':')
+            $plugin = $arrPlgCmdVer[0]
+            $command = $arrPlgCmdVer[1]
+            $version = $arrPlgCmdVer[2]
             [pscustomobject]@{
                 FullCommandName = "$plugin`:$command"
                 Command = $command
                 Type = $_.Value.TriggerType.ToString()
                 Aliases = ($_.Value.Aliases -join ', ')
                 Plugin = $plugin
+                Version = $version
                 Description = $_.Value.Description
                 Usage = ($_.Value.Usage | Format-List | Out-string).Trim()
                 Enabled = $_.Value.Enabled.ToString()
@@ -61,6 +64,7 @@ function Get-CommandHelp {
             ($_.FullCommandName -like "*$Filter*") -or
             ($_.Command -like "*$Filter*") -or
             ($_.Plugin -like "*$Filter*") -or
+            ($_.Version -like "*$Filter*") -or
             ($_.Description -like "*$Filter*") -or
             ($_.Usage -like "*$Filter*") -or
             ($_.Aliases -like "*$Filter*")
@@ -77,11 +81,13 @@ function Get-CommandHelp {
                 'FullCommandName'
                 @{l='Aliases';e={$_.Aliases -join ', '}}
                 @{l='Type';e={$_.Type}}
+                'Version'
             )
             $respParams.Text = ($result | Select-Object -Property $fields | Out-String)
         } else {
             if ($Detailed) {
-                $manString = ($Bot.PluginManager.Commands[$result.FullCommandName] | Get-Help -Detailed | Out-String)
+                $fullVersionName = "$($result.FullCommandName)`:$($result.Version)"
+                $manString = ($Bot.PluginManager.Commands[$fullVersionName] | Get-Help -Detailed | Out-String)
                 $result | Add-Member -MemberType NoteProperty -Name Manual -Value "`n$manString"
             }
             $respParams.Text = ($result | Format-List | Out-String -Width 150).Trim()
