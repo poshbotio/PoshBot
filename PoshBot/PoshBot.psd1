@@ -131,6 +131,9 @@ PrivateData = @{
 ### Added
 - Any regex group matches are now passed in the [Arguments] parameter to the function/command.
 
+### Fixed
+- Help syntax now reflects the command name (as known in PoshBot) instead of PowerShell function name.
+
 ### Changed
 - Command usage help is now displayed differently according to the command's trigger type.
   For [Command] trigger types, the command/function's parameters are show, for [Regex] trigger

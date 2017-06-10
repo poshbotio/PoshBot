@@ -422,6 +422,9 @@ class PluginManager {
                 $cmd = [Command]::new()
                 $cmd.Name = $command.Name
 
+                # Triggers that will be added to the command
+                $triggers = @()
+
                 # Set command properties based on metadata from module
                 if ($metadata) {
 
@@ -434,7 +437,7 @@ class PluginManager {
                     if ($metadata.Aliases) {
                         $metadata.Aliases | Foreach-Object {
                             $cmd.Aliases += $_
-                            $cmd.Triggers += [Trigger]::new('Command', $_)
+                            $triggers += [Trigger]::new([TriggerType]::Command, $_)
                         }
                     }
 
@@ -473,6 +476,14 @@ class PluginManager {
                             'Command' {
                                 $cmd.TriggerType = [TriggerType]::Command
                                 $cmd.Triggers += [Trigger]::new([TriggerType]::Command, $cmd.Name)
+
+                                # Add any alternate command names as aliases to the command
+                                if ($metadata.Aliases) {
+                                    $metadata.Aliases | Foreach-Object {
+                                        $cmd.Aliases += $_
+                                        $triggers += [Trigger]::new([TriggerType]::Command, $_)
+                                    }
+                                }
                             }
                             'Event' {
                                 $cmd.TriggerType = [TriggerType]::Event
@@ -485,20 +496,22 @@ class PluginManager {
                                 if ($metadata.MessageSubtype) {
                                     $t.MessageSubtype = $metadata.MessageSubtype
                                 }
-                                $cmd.Triggers += $t
+                                $triggers += $t
                             }
                             'Regex' {
                                 $cmd.TriggerType = [TriggerType]::Regex
                                 $t = [Trigger]::new([TriggerType]::Regex, $command.Name)
                                 $t.Trigger = $metadata.Regex
-                                $cmd.Triggers += $t
+                                $triggers += $t
                             }
                         }
+                    } else {
+                        $triggers += [Trigger]::new([TriggerType]::Command, $cmd.Name)
                     }
                 } else {
-                    # No metadata defined so set the command name/trigger to the module function name
+                    # No metadata defined so set the command name to the module function name
                     $cmd.Name = $command.Name
-                    $cmd.Triggers += [Trigger]::new('Command', $cmd.Name)
+                    $triggers += [Trigger]::new([TriggerType]::Command, $cmd.Name)
                 }
 
                 $cmd.Description = $cmdHelp.Synopsis.Trim()
@@ -508,15 +521,24 @@ class PluginManager {
                 # Set the command usage differently for [Command] and [Regex] trigger types
                 if ($cmd.TriggerType -eq [TriggerType]::Command) {
                     # Reformat function syntax to show how the bot expects it to be entered
-                    $helpSyntax = ($cmdHelp.syntax | Out-String).Trim()
+                    $helpSyntax = ($cmdHelp.syntax | Out-String).Trim() -split "`n" | Where-Object {$_ -ne "`r"}
                     $helpSyntax = $helpSyntax -replace '( -([a-zA-Z]))', ' --$2'
                     $helpSyntax = $helpSyntax -replace '(\[-([a-zA-Z]))', '[--$2'
                     $helpSyntax = $helpSyntax -replace '\[\<CommonParameters\>\]', ''
                     $helpSyntax = $helpSyntax -replace '--Bot \<Object\> ', ''
+
+                    # Replace the function name in the help syntax with
+                    # what PoshBot will call the command
+                    $helpSyntax = foreach ($item in $helpSyntax) {
+                        $item -replace $command.Name, $cmd.Name
+                    }
                     $cmd.Usage = $helpSyntax.ToLower().Trim()
                 } elseIf ($cmd.TriggerType -eq [TriggerType]::Regex) {
                     $cmd.Usage = @($cmd.Triggers | Select-Object -Expand Trigger) -join "`n"
                 }
+
+                # Add triggers based on command type and metadata
+                $cmd.Triggers += $triggers
 
                 $cmd.ModuleCommand = "$ModuleName\$($command.Name)"
                 $cmd.AsJob = $AsJob
