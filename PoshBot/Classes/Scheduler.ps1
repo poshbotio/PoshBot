@@ -31,10 +31,14 @@ class Scheduler {
                 $msg.From = $sched.Message.From
                 $msg.Type = $sched.Message.Type
                 $msg.Subtype = $sched.Message.Subtype
-                if (-not [string]::IsNullOrEmpty($sched.StartAfter)) {
-                    $newSchedule = [ScheduledMessage]::new($sched.TimeInterval, $sched.TimeValue, $msg, $sched.Enabled, $sched.StartAfter.ToUniversalTime())
+                if ($sched.Once) {
+                    $newSchedule = [ScheduledMessage]::new($msg, $sched.StartAfter.ToUniversalTime())
                 } else {
-                    $newSchedule = [ScheduledMessage]::new($sched.TimeInterval, $sched.TimeValue, $msg, $sched.Enabled, (Get-Date).ToUniversalTime())
+                    if (-not [string]::IsNullOrEmpty($sched.StartAfter)) {
+                        $newSchedule = [ScheduledMessage]::new($sched.TimeInterval, $sched.TimeValue, $msg, $sched.Enabled, $sched.StartAfter.ToUniversalTime())
+                    } else {
+                        $newSchedule = [ScheduledMessage]::new($sched.TimeInterval, $sched.TimeValue, $msg, $sched.Enabled, (Get-Date).ToUniversalTime())
+                    }
                 }
                 $newSchedule.Id = $sched.Id
                 $this.ScheduleMessage($newSchedule, $false)
@@ -91,15 +95,30 @@ class Scheduler {
     }
 
     [Message[]]GetTriggeredMessages() {
+        $remove = @()
         $messages = $this.Schedules.GetEnumerator() | Foreach-Object {
             if ($_.Value.HasElapsed()) {
                 $this._Logger.Info([LogMessage]::new("[Scheduler:GetTriggeredMessages] Timer reached on scheduled command [$($_.Value.Id)]"))
-                $_.Value.ResetTimer()
+
+                # Check if one time command
+                if ($_.Value.Once) {
+                    $_.Value.StopTimer()
+                    $remove += $_.Value.Id
+                } else {
+                    $_.Value.ResetTimer()
+                }
+
                 $newMsg = $_.Value.Message.Clone()
                 $newMsg.Time = Get-Date
                 $newMsg
             }
         }
+
+        # Remove any one time commands that have triggered
+        foreach ($id in $remove) {
+            $this.RemoveScheduledMessage($id)
+        }
+
         return $messages
     }
 

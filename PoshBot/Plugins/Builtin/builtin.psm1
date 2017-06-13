@@ -1345,24 +1345,28 @@ function New-ScheduledCommand {
         Aliases = 'newschedule',
         Permissions = 'manage-schedules'
     )]
-    [cmdletbinding()]
+    [cmdletbinding(DefaultParameterSetName = 'repeat')]
     param(
-        [parameter(Mandatory)]
+        [parameter(Mandatory, ParameterSetName = 'repeat')]
+        [parameter(Mandatory, ParameterSetName = 'once')]
         $Bot,
 
-        [parameter(Mandatory, Position = 0)]
+        [parameter(Mandatory, Position = 0, ParameterSetName = 'repeat')]
+        [parameter(Mandatory, Position = 0, ParameterSetName = 'once')]
         [ValidateNotNullOrEmpty()]
         [string]$Command,
 
-        [parameter(Mandatory, Position = 1)]
+        [parameter(Mandatory, Position = 1, ParameterSetName = 'repeat')]
         [ValidateNotNull()]
         [int]$Value,
 
-        [parameter(Mandatory, Position = 2)]
+        [parameter(Mandatory, Position = 2, ParameterSetName = 'repeat')]
         [ValidateSet('days', 'hours', 'minutes', 'seconds')]
         [ValidateNotNullOrEmpty()]
         [string]$Interval,
 
+        [parameter(ParameterSetName = 'repeat')]
+        [parameter(Mandatory, ParameterSetName = 'once')]
         [ValidateScript({
             if ($_ -as [datetime]) {
                 return $true
@@ -1370,7 +1374,10 @@ function New-ScheduledCommand {
                 throw '''StartAfter'' must be a datetime.'
             }
         })]
-        [string]$StartAfter
+        [string]$StartAfter,
+
+        [parameter(Mandatory, ParameterSetName = 'once')]
+        [switch]$Once
     )
 
     if (-not $Command.StartsWith($Bot.Configuration.CommandPrefix)) {
@@ -1382,15 +1389,26 @@ function New-ScheduledCommand {
     $botMsg.From = $global:PoshBotContext.From
     $botMsg.To = $global:PoshBotContext.To
 
-    if ($PSBoundParameters.ContainsKey('StartAfter')) {
-        $schedMsg = [ScheduledMessage]::new($Interval, $value, $botMsg, [datetime]$StartAfter)
-    } else {
-        $schedMsg = [ScheduledMessage]::new($Interval, $value, $botMsg)
+    if ($PSCmdlet.ParameterSetName -eq 'repeat') {
+        # This command will be executed on a schedule with an optional time to start the interval
+        if ($PSBoundParameters.ContainsKey('StartAfter')) {
+            $schedMsg = [ScheduledMessage]::new($Interval, $value, $botMsg, [datetime]$StartAfter)
+        } else {
+            $schedMsg = [ScheduledMessage]::new($Interval, $value, $botMsg)
+        }
+    } elseIf ($PSCmdlet.ParameterSetName -eq 'once') {
+        # This command will be executed once then removed from the scheduler
+        $schedMsg = [ScheduledMessage]::new($botMsg, [datetime]$StartAfter)
     }
 
     try {
         $Bot.Scheduler.ScheduleMessage($schedMsg)
-        New-PoshBotCardResponse -Type Normal -Text "Command [$Command] scheduled at interval [$Value $($Interval.ToLower())]." -ThumbnailUrl $thumb.success
+
+        if ($PSCmdlet.ParameterSetName -eq 'repeat') {
+            New-PoshBotCardResponse -Type Normal -Text "Command [$Command] scheduled at interval [$Value $($Interval.ToLower())]." -ThumbnailUrl $thumb.success
+        } elseIf ($PSCmdlet.ParameterSetName -eq 'once') {
+            New-PoshBotCardResponse -Type Normal -Text "Command [$Command] scheduled for one time at [$([datetime]$StartAfter)]." -ThumbnailUrl $thumb.success
+        }
     } catch {
         New-PoshBotCardResponse -Type Error -Text $_.ToString() -ThumbnailUrl $thumb.error
     }
