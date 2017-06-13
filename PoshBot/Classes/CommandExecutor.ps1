@@ -222,10 +222,8 @@ class CommandExecutor {
 
     # Validate that all mandatory parameters have been provided
     [bool]ValidateMandatoryParameters([ParsedCommand]$ParsedCommand, [Command]$Command) {
-        $functionInfo = $Command.FunctionInfo
-
         $validated = $false
-        foreach ($parameterSet in $functionInfo.ParameterSets) {
+        foreach ($parameterSet in $Command.FunctionInfo.ParameterSets) {
             Write-Verbose -Message "[CommandExecutor:ValidateMandatoryParameters] Validating parameters for parameter set [$($parameterSet.Name)]"
             $mandatoryParameters = @($parameterSet.Parameters | Where-Object {$_.IsMandatory -eq $true}).Name
             if ($mandatoryParameters.Count -gt 0) {
