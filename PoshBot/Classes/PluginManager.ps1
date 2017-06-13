@@ -552,7 +552,7 @@ class PluginManager {
                     }
                     $cmd.Usage = $helpSyntax.ToLower().Trim()
                 } elseIf ($cmd.TriggerType -eq [TriggerType]::Regex) {
-                    $cmd.Usage = @($cmd.Triggers | Select-Object -Expand Trigger) -join "`n"
+                    $cmd.Usage = @($triggers | Select-Object -Expand Trigger) -join "`n"
                 }
 
                 # Add triggers based on command type and metadata
