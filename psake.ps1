@@ -77,11 +77,19 @@ task Pester -Depends Build {
 } -description 'Run Pester tests'
 
 task CreateMarkdownHelp -Depends Compile {
+    # PoshBot functions
     Import-Module -Name $outputModDir -Verbose:$false -Global
     $mdHelpPath = Join-Path -Path $projectRoot -ChildPath 'docs/reference/functions'
     $mdFiles = New-MarkdownHelp -Module $env:BHProjectName -OutputFolder $mdHelpPath -WithModulePage -Force
-    "    Markdown help created at [$mdHelpPath]"
+    "    PoshBot markdown help created at [$mdHelpPath]"
     Remove-Module -Name $env:BHProjectName -Verbose:$false
+
+    # Builtin commands
+    Import-Module -Name $outputModVerDir/Plugins/Builtin -Verbose:$false -Global
+    $mdHelpPath = Join-Path -Path $projectRoot -ChildPath 'docs/reference/commands'
+    $mdFiles = New-MarkdownHelp -Module 'Builtin' -OutputFolder $mdHelpPath -WithModulePage -Force
+    "    Builtin plugin markdown help created at [$mdHelpPath]"
+    Remove-Module -Name 'Builtin' -Verbose:$false
 } -description 'Create initial markdown help files'
 
 task UpdateMarkdownHelp -Depends Compile {
