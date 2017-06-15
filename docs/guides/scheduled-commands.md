@@ -41,7 +41,7 @@ Users must have the `builtin:manage-schedules` permission in order to run these 
 ### Create a new scheduled command to test website health every 5 minutes
 
 ```
-!newschedule --command 'test-site --url myapp.mydomain.tld` --value 5 --interval minutes
+!newschedule --command 'test-site --url myapp.mydomain.tld' --value 5 --interval minutes
 ```
 
 ### Create a new scheduled command to display the message of the day at 9:00am every day
