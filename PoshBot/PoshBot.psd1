@@ -132,6 +132,9 @@ PrivateData = @{
 - Any regex group matches are now passed in the [Arguments] parameter to the function/command.
 - Ability to specify a version of a loaded plugin command to execute.
   Use `plugin:command:version` or `command:version` syntax to execute the command from a specific version of the plugin.
+- Support for one time scheduled commands. Commands can now be scheduled to execute once after the specified start date/time.
+- Improved the help usage text for commands.
+- The [!help] command now matches against command aliases as well.
 
 ### Fixed
 - Help syntax now reflects the command name (as known in PoshBot) instead of PowerShell function name.
