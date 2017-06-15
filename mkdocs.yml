@@ -27,9 +27,9 @@ pages:
     - Builtin Commands:
       - General:
         - About: reference/commands/about.md
-        - Help: reference/commands/help.md
+        - Help: reference/commands/Get-CommandHelp.md
         - Status: reference/commands/status.md
-        - Get-Plugin: reference/commands/get-plugin.md
+        - Get-CommandHistory: reference/commands/Get-CommandHistory.md
       - Security:
         - Groups:
           - Add-GroupRole: reference/commands/add-grouprole.md
@@ -38,14 +38,26 @@ pages:
           - New-Group: reference/commands/new-group.md
           - Remove-GroupRole: reference/commands/remove-grouprole.md
           - Remove-GroupUser: reference/commands/remove-groupuser.md
+          - Update-GroupDescription: reference/commands/Update-GroupDescription.md
         - Permissions:
+          - Add-CommandPermission: reference/commands/Add-CommandPermission.md
           - Get-Permission: reference/commands/get-permission.md
         - Roles:
           - Add-RolePermission: reference/commands/add-rolepermission.md
           - Get-Role: reference/commands/get-role.md
           - New-Role: reference/commands/new-role.md
           - Remove-RolePermission: reference/commands/remove-rolepermission.md
+          - Update-RoleDescription: reference/commands/Update-RoleDescription.md
+      - Scheduled Commands:
+        - Get-ScheduledCommand: reference/commands/Get-ScheduledCommand.md
+        - New-ScheduledCommand: reference/commands/New-ScheduledCommand.md
+        - Set-ScheduledCommand: reference/commands/Set-ScheduledCommand.md
+        - Enable-ScheduledCommand: reference/commands/Enable-ScheduledCommand.md
+        - Disable-ScheduledCommand: reference/commands/Disable-ScheduledCommand.md
+        - Remove-ScheduledCommand: reference/commands/Remove-ScheduledCommand.md
       - Plugin Management:
+        - Get-Plugin: reference/commands/get-plugin.md
+        - Find-Plugin: reference/commands/Find-Plugin.md
         - Enable-Plugin: reference/commands/enable-plugin.md
         - Disable-Plugin: reference/commands/disable-plugin.md
         - Install-Plugin: reference/commands/install-plugin.md
