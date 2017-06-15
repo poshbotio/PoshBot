@@ -11,9 +11,25 @@ $thumb = @{
 function Get-CommandHelp {
     <#
     .SYNOPSIS
-        Show details about bot commands
+        Show details and help information about bot commands.
+    .PARAMETER Filter
+        The text to filter available commands and plugins on.
+    .PARAMETER Detailed
+        Show more detailed help information for the command.
+    .PARAMETER Type
+        Only return commands of specified type.
     .EXAMPLE
-        !help [<commandname> | --filter <commandname>]
+        !help --filter new-group
+
+        Get help on the 'New-Group' command.
+    .EXAMPLE
+        !help new-group --detailed
+
+        Get detailed help on the 'New-group' command
+    .EXAMPLE
+        !help --type regex
+
+        List all commands with the [regex] trigger type.
     #>
     [PoshBot.BotCommand(
         Aliases = ('man', 'help')
@@ -102,9 +118,11 @@ function Get-CommandHelp {
 function Status {
     <#
     .SYNOPSIS
-        Get Bot status
+        Get bot status information such as the version, uptime, and number of plugin/commands installed.
     .EXAMPLE
         !status
+
+        Show the current status of the bot instance.
     #>
     [PoshBot.BotCommand(Permissions = 'view')]
     [cmdletbinding()]
@@ -135,12 +153,16 @@ function Status {
 function Get-Role {
     <#
     .SYNOPSIS
-        Show details about bot roles
+        Show details about bot roles.
+    .PARAMETER Name
+        The name of the role to get.
     .EXAMPLE
-        !get-role [<rolename> | --name <rollname>]
+        !get-role admin
+
+        Get the [admin] role.
     #>
     [PoshBot.BotCommand(
-        Aliases = 'gr',
+        Aliases = ('gr', 'getrole'),
         Permissions = 'view-role'
     )]
     [cmdletbinding()]
@@ -157,7 +179,6 @@ function Get-Role {
         if (-not $r) {
             New-PoshBotCardResponse -Type Warning -Text "Role [$Name] not found :(" -Title 'Rut row' -ThumbnailUrl $thumb.rutrow
         } else {
-            $permissions = $r.Permissions.Keys
             $msg = [string]::Empty
             $msg += "`nDescription: $($r.Description)"
             $msg += "`nPermissions:`n$($r.Permissions.Keys | Format-List | Out-String)"
@@ -178,10 +199,23 @@ function Get-Role {
 function Get-Plugin {
     <#
     .SYNOPSIS
-        Get the details of a specific plugin or list all plugins
+        Get the details of a specific plugin or list all plugins.
+    .PARAMETER Name
+        The name of the plugin to get.
+    .PARAMETER Version
+        The version of the plugin to get.
     .EXAMPLE
-        !get-plugin <pluginname> | --name <pluginname> [--version 1.2.3]
+        !get-plugin builtin
+
+        Get the details of the [builtin] plugin.
+    .EXAMPLE
+        !get-plugin --name builtin --version 0.5.0
+
+        Get the details of version [0.5.0] of the [builtin] plugin.
     #>
+    [PoshBot.BotCommand(
+        Aliases = ('gp', 'getplugin')
+    )]
     [cmdletbinding()]
     param(
         [parameter(Mandatory)]
@@ -273,12 +307,25 @@ function Get-Plugin {
 function Install-Plugin {
     <#
     .SYNOPSIS
-        Install a new plugin
+        Install a new plugin.
+    .PARAMETER Name
+        The name of the PoshBot plugin (PowerShell module) to install.
+        The plugin must already exist in $env:PSModulePath or be present
+        in on of the configured plugin repositories (PowerShell repositories).
+        If not already installed, PoshBot will install the module from the repository.
+    .PARAMETER Version
+        The specific version of the plugin to install.
     .EXAMPLE
-        !install-plugin (<pluginname> | --name <pluginname>) [--version 1.2.3]
+        !install-plugin nameit
+
+        Install the [NameIt] plugin.
+    .EXAMPLE
+        !install-plugin --name PoshBot.XKCD --version 1.0.0
+
+        Install version [1.0.0] of the [PoshBot.XKCD] plugin.
     #>
     [PoshBot.BotCommand(
-        Aliases = 'ip',
+        Aliases = ('ip', 'installplugin'),
         Permissions = 'manage-plugins'
     )]
     [cmdletbinding()]
@@ -366,11 +413,24 @@ function Install-Plugin {
 function Enable-Plugin {
     <#
     .SYNOPSIS
-        Enable a currently loaded plugin
+        Enable a currently loaded plugin.
+    .PARAMETER Name
+        The name of the plugin to enable.
+    .PARAMETER Version
+        The specific version of the plugin to enable.
     .EXAMPLE
-        !enable-plugin [<pluginname> | --name <pluginname>] [--version 1.2.3]
+        !enable-plugin nameit
+
+        Enable the [NameIt] plugin.
+    .EXAMPLE
+        !enable-plugin --name PoshBot.XKCD --version 1.0.0
+
+        Enable version [1.0.0] of the [PoshBot.XKCD] module.
     #>
-    [PoshBot.BotCommand(Permissions = 'manage-plugins')]
+    [PoshBot.BotCommand(
+        Aliases = 'enableplugin',
+        Permissions = 'manage-plugins'
+    )]
     [cmdletbinding()]
     param(
         [parameter(Mandatory)]
@@ -424,11 +484,24 @@ function Enable-Plugin {
 function Disable-Plugin {
     <#
     .SYNOPSIS
-        Disable a currently loaded plugin
+        Disable a currently loaded plugin.
+    .PARAMETER Name
+        The name of the plugin to disable.
+    .PARAMETER Version
+        The specific version of the plugin to disable.
     .EXAMPLE
-        !disable-plugin [<pluginname> | --name <pluginname>] [--version 1.2.3]
+        !disable-plugin nameit
+
+        Disable the [NameIt] plugin.
+    .EXAMPLE
+        !disable-plugin --name PoshBot.XKCD --version 1.0.0
+
+        Disable version [1.0.0] of the [PoshBot.XKCD] module.
     #>
-    [PoshBot.BotCommand(Permissions = 'manage-plugins')]
+    [PoshBot.BotCommand(
+        Aliases = ('dp', 'disableplugin'),
+        Permissions = 'manage-plugins'
+    )]
     [cmdletbinding()]
     param(
         [parameter(Mandatory)]
@@ -477,11 +550,24 @@ function Disable-Plugin {
 function Remove-Plugin {
     <#
     .SYNOPSIS
-        Removes a currently loaded plugin
+        Removes a currently loaded plugin.
+    .PARAMETER Name
+        The name of the plugin to remove.
+    .PARAMETER Version
+        The specific version of the plugin to remove.
     .EXAMPLE
-        !remove-plugin [<pluginname> | --name <pluginname>] [--version 1.2.3]
+        !remove-plugin nameit
+
+        Remove the [NameIt] plugin.
+    .EXAMPLE
+        !remove-plugin --name PoshBot.XKCD --version 1.0.0
+
+        Remove version [1.0.0] of the [PoshBot.XKCD] module.
     #>
-    [PoshBot.BotCommand(Permissions = 'manage-plugins')]
+    [PoshBot.BotCommand(
+        Aliases = ('rp', 'removeplugin'),
+        Permissions = 'manage-plugins'
+    )]
     [cmdletbinding()]
     param(
         [parameter(Mandatory)]
@@ -531,11 +617,22 @@ function Remove-Plugin {
 function Get-Group {
     <#
     .SYNOPSIS
-        Show details about bot groups
+        Show details about bot groups.
+    .PARAMETER Name
+        The name of the group to get.
     .EXAMPLE
-        !get-group [<groupname> | --name <groupname>]
+        !get-group
+
+        Get a list of all groups.
+    .EXAMPLE
+        !get-group --name admin
+
+        Get details about the [Admin] group.
     #>
-    [PoshBot.BotCommand(Permissions = 'view-group')]
+    [PoshBot.BotCommand(
+        Aliases = ('gg', 'getgroup'),
+        Permissions = 'view-group'
+    )]
     [cmdletbinding()]
     param(
         [parameter(Mandatory)]
@@ -579,11 +676,22 @@ function Get-Group {
 function Get-Permission {
     <#
     .SYNOPSIS
-        Show details about bot permissions
+        Show details about bot permissions.
+    .PARAMETER Name
+        The name of the permission to get.
     .EXAMPLE
-        !get-permission [<permissionname> | --name <permissionname>]
+        !get-permission
+
+        Get a list of all permissions.
+    .EXAMPLE
+        !get-permission --name builtin:manage-groups
+
+        Get details about the [builtin:manage-groups] permission.
     #>
-    [PoshBot.BotCommand(Permissions = 'view')]
+    [PoshBot.BotCommand(
+        Aliases = ('gp', 'getpermission'),
+        Permissions = 'view'
+    )]
     [cmdletbinding()]
     param(
         [parameter(Mandatory)]
@@ -619,11 +727,20 @@ function Get-Permission {
 function New-Group {
     <#
     .SYNOPSIS
-        Create a new group
+        Create a new group.
+    .PARAMETER Name
+        The name of the group to create.
+    .PARAMETER Description
+        A short description for the group.
     .EXAMPLE
-        !new-group (<groupname> | --name <groupname>) (<groupdescription> | --description <groupdescription>)
+        !new-group servicedesk 'Service desk users'
+
+        Create a new group called [sevicedesk].
     #>
-    [PoshBot.BotCommand(Permissions = 'manage-groups')]
+    [PoshBot.BotCommand(
+        Aliases = ('ng', 'newgroup'),
+        Permissions = 'manage-groups'
+    )]
     [cmdletbinding()]
     param(
         [parameter(Mandatory)]
@@ -652,11 +769,18 @@ function New-Group {
 function Remove-Group {
     <#
     .SYNOPSIS
-        Remove a group
+        Remove a group.
+    .PARAMETER Name
+        The name of the group to remove.
     .EXAMPLE
-        !remove-group (<groupname> | --name <groupname>)
+        !remove-group servicedesk
+
+        Remove the [servicedesk] group.
     #>
-    [PoshBot.BotCommand(Permissions = 'manage-groups')]
+    [PoshBot.BotCommand(
+        Aliases = ('rg', 'removegroup'),
+        Permissions = 'manage-groups'
+    )]
     [cmdletbinding()]
     param(
         [parameter(Mandatory)]
@@ -681,11 +805,17 @@ function Remove-Group {
 function Update-GroupDescription {
     <#
     .SYNOPSIS
-        Update a group description
+        Update the description for a group.
+    .PARAMETER Name
+        The name of the group to update.
+    .PARAMETER Description
+        The new description for the group.
     .EXAMPLE
-        !update-groupdescription (<groupname> | --name <groupname>) (<new description> | --description <new description>)
+        !update-groupdescription servicedesk 'All Service Desk users'
     #>
-    [PoshBot.BotCommand(Permissions = 'manage-groups')]
+    [PoshBot.BotCommand(
+        Permissions = 'manage-groups'
+    )]
     [cmdletbinding()]
     param(
         [parameter(Mandatory)]
@@ -713,11 +843,18 @@ function Update-GroupDescription {
 function New-Role {
     <#
     .SYNOPSIS
-        Create a new role
+        Create a new role.
+    .PARAMETER Name
+        The name of the new role to create.
+    .PARAMETER Description
+        The description for the new role.
     .EXAMPLE
-        !new-role (<rolename> | --name <rolename>) (<roledescription>) | --description <roledescription>)
+        !rew-role 'itsm-modify' 'Can modify items in ITSM tool'
     #>
-    [PoshBot.BotCommand(Permissions = 'manage-roles')]
+    [PoshBot.BotCommand(
+        Aliases = ('nr', 'newrole'),
+        Permissions = 'manage-roles'
+    )]
     [cmdletbinding()]
     param(
         [parameter(Mandatory)]
@@ -746,11 +883,16 @@ function New-Role {
 function Remove-Role {
     <#
     .SYNOPSIS
-        Remove a role
+        Remove a role.
+    .PARAMETER Name
+        The name of the role to remove.
     .EXAMPLE
-        !remove-role (<rolename> | --name <rolename>)
+        !remove-role itsm-modify
     #>
-    [PoshBot.BotCommand(Permissions = 'manage-roles')]
+    [PoshBot.BotCommand(
+        Aliases = ('rr', 'remove-role'),
+        Permissions = 'manage-roles'
+    )]
     [cmdletbinding()]
     param(
         [parameter(Mandatory)]
@@ -776,10 +918,16 @@ function Update-RoleDescription {
     <#
     .SYNOPSIS
         Update a role description
+    .PARAMETER Name
+        The name of the role to update.
+    .PARAMETER Description
+        The new description for the role.
     .EXAMPLE
-        !update-roledescription (<rolename> | --name <rolename>) (<new description> | --description <new description>)
+        !update-roledescription --name itsm-modify --description 'Can modify items in ITSM tool'
     #>
-    [PoshBot.BotCommand(Permissions = 'manage-roles')]
+    [PoshBot.BotCommand(
+        Permissions = 'manage-roles'
+    )]
     [cmdletbinding()]
     param(
         [parameter(Mandatory)]
@@ -807,11 +955,19 @@ function Update-RoleDescription {
 function Add-RolePermission {
     <#
     .SYNOPSIS
-        Add a permission to a role
+        Add a permission to a role.
+    .PARAMETER Role
+        The name of the role to add a permission to.
+    .PARAMETER Permission
+        The name of the permission to add to the role.
     .EXAMPLE
-        !add-rolepermission (<rolename> | --role <rolename>) (<permissionname> | --permission <permissionname>)
+        !add-rolepermission --role 'itsm-modify' --permission 'itsm:create-ticket'
+
+        Add the [itsm:create-ticket] permission to the [itsm-modify] role.
     #>
-    [PoshBot.BotCommand(Permissions = 'manage-roles')]
+    [PoshBot.BotCommand(
+        Permissions = 'manage-roles'
+    )]
     [cmdletbinding()]
     param(
         [parameter(Mandatory)]
@@ -820,7 +976,7 @@ function Add-RolePermission {
         [parameter(Mandatory, Position = 0)]
         [string]$Role,
 
-        [parameter(Position = 1)]
+        [parameter(Mandatory, Position = 1)]
         [string]$Permission
     )
 
@@ -843,11 +999,19 @@ function Add-RolePermission {
 function Remove-RolePermission {
     <#
     .SYNOPSIS
-        Remove a permission from a role
+        Remove a permission from a role.
+    .PARAMETER Role
+        The name of the role to remove a permission from.
+    .PARAMETER Permission
+        The name of the permission to remove from the role.
     .EXAMPLE
-        !remove-rolepermission (<rolename> | --role <rolename>) (<permissioname> | --permission <permissioname>)
+        !remove-rolepermission --role 'itsm-modify' --permission 'itsm:create-ticket'
+
+        Remove the [itsm:create-ticket] permission from the [itsm-modify] role.
     #>
-    [PoshBot.BotCommand(Permissions = 'manage-roles')]
+    [PoshBot.BotCommand(
+        Permissions = 'manage-roles'
+    )]
     [cmdletbinding()]
     param(
         [parameter(Mandatory)]
@@ -856,7 +1020,7 @@ function Remove-RolePermission {
         [parameter(Mandatory, Position = 0)]
         [string]$Role,
 
-        [parameter(Position = 1)]
+        [parameter(Mandatory, Position = 1)]
         [string]$Permission
     )
 
@@ -879,9 +1043,13 @@ function Remove-RolePermission {
 function Add-GroupUser {
     <#
     .SYNOPSIS
-        Add a user to a group
+        Add a user to a group.
+    .PARAMETER Group
+        The name of the group to add a user to.
+    .PARAMETER User
+        The name of the user to add to a group.
     .EXAMPLE
-        !add-groupuser (<groupname> | --group <groupname>) (<username> | --user <username>)
+        !add-groupuser --group admins --user johndoe
     #>
     [PoshBot.BotCommand(Permissions = 'manage-groups')]
     [cmdletbinding()]
@@ -892,7 +1060,7 @@ function Add-GroupUser {
         [parameter(Mandatory, Position = 0)]
         [string]$Group,
 
-        [parameter(Position = 1)]
+        [parameter(Mandatory, Position = 1)]
         [string]$User
     )
 
@@ -916,11 +1084,17 @@ function Add-GroupUser {
 function Remove-GroupUser {
     <#
     .SYNOPSIS
-        Remove a user to a group
+        Remove a user from a group.
+    .PARAMETER Group
+        The name of the group to remove a user from.
+    .PARAMETER User
+        The name of the user to remove from a group.
     .EXAMPLE
-        !remove-groupuser (<groupname> | --group <groupname>) (<username> | --user <username>)
+        !remove-groupuser --group admins --user johndoe
     #>
-    [PoshBot.BotCommand(Permissions = 'manage-groups')]
+    [PoshBot.BotCommand(
+        Permissions = 'manage-groups'
+    )]
     [cmdletbinding()]
     param(
         [parameter(Mandatory)]
@@ -929,7 +1103,7 @@ function Remove-GroupUser {
         [parameter(Mandatory, Position = 0)]
         [string]$Group,
 
-        [parameter(Position = 1)]
+        [parameter(Mandatory, Position = 1)]
         [string]$User
     )
 
@@ -952,11 +1126,17 @@ function Remove-GroupUser {
 function Add-GroupRole {
     <#
     .SYNOPSIS
-        Add a role to a group
+        Add a role to a group.
+    .PARAMETER Group
+        The name of the group to add a role to.
+    .PARAMETER Role
+        The name of the role to add to a group.
     .EXAMPLE
-        !add-grouprole (<groupname> | --group <groupname>) (<rolename> | --role <rolename>)
+        !remove-grouprole --group servicedesk --role itsm-modify
     #>
-    [PoshBot.BotCommand(Permissions = 'manage-groups')]
+    [PoshBot.BotCommand(
+        Permissions = 'manage-groups'
+    )]
     [cmdletbinding()]
     param(
         [parameter(Mandatory)]
@@ -965,7 +1145,7 @@ function Add-GroupRole {
         [parameter(Mandatory, Position = 0)]
         [string]$Group,
 
-        [parameter(Position = 1)]
+        [parameter(Mandatory, Position = 1)]
         [string]$Role
     )
 
@@ -988,11 +1168,17 @@ function Add-GroupRole {
 function Remove-GroupRole {
     <#
     .SYNOPSIS
-        Remove a role from a group
+        Remove a role from a group.
+    .PARAMETER Group
+        The name of the group to remove a role from.
+    .PARAMETER Role
+        The name of the role to remove from a group.
     .EXAMPLE
-        !remove-grouprole (<groupname> | --group <groupname>) (<rolename> | --role <rolename>)
+        !remove-grouprole --group servicedesk --role itsm-modify
     #>
-    [PoshBot.BotCommand(Permissions = 'manage-groups')]
+    [PoshBot.BotCommand(
+        Permissions = 'manage-groups'
+    )]
     [cmdletbinding()]
     param(
         [parameter(Mandatory)]
@@ -1001,7 +1187,7 @@ function Remove-GroupRole {
         [parameter(Mandatory, Position = 0)]
         [string]$Group,
 
-        [parameter(Position = 1)]
+        [parameter(Mandatory, Position = 1)]
         [string]$Role
     )
 
@@ -1024,11 +1210,13 @@ function Remove-GroupRole {
 function About {
     <#
     .SYNOPSIS
-        Display details about PoshBot
+        Display details about PoshBot.
     .EXAMPLE
         !about
     #>
-    [PoshBot.BotCommand(Permissions = 'view')]
+    [PoshBot.BotCommand(
+        Permissions = 'view'
+    )]
     [cmdletbinding()]
     param(
         [parameter(Mandatory)]
@@ -1053,8 +1241,24 @@ function Get-CommandHistory {
     <#
     .SYNOPSIS
         Get the recent execution history of a command
+    .PARAMETER Name
+        The command name to get history for.
+    .PARAMETER Id
+        Theh Id of the command execution to get details for.
+    .PARAMETER Count
+        The number of most recent history items to retrieve.
     .EXAMPLE
-        !get-commandhistory (--name <commandname>) | --id <commandid>)
+        !get-commandhistory
+
+        Get all recent command history.
+    .EXAMPLE
+        !get-commandhistory --name 'status' --count 2
+
+        Get the last 2 execution history entries for the [status] command.
+    .EXAMPLE
+        !get-commandhistory --id 5d337f17-bdc7-4f51-af0f-2629ac8224ce
+
+        Get details about command exeuction Id [5d337f17-bdc7-4f51-af0f-2629ac8224ce].
     #>
     [PoshBot.BotCommand(
         Aliases = ('history'),
@@ -1071,7 +1275,9 @@ function Get-CommandHistory {
         [parameter(Position = 0, ParameterSetName = 'id')]
         [string]$Id,
 
-        [parameter(Position = 1)]
+        [parameter(Position = 0, ParameterSetName = 'all')]
+        [parameter(Position = 1, ParameterSetName = 'name')]
+        [parameter(Position = 1, ParameterSetName = 'id')]
         [int]$Count = 20
     )
 
@@ -1111,6 +1317,9 @@ function Get-CommandHistory {
 
     $allHistory = $Bot.Executor.History | Sort-Object -Property Started -Descending
 
+    # Array start from zero. Humans usually don't
+    $Count = $Count - 1
+
     switch ($PSCmdlet.ParameterSetName) {
         'all' {
             $search = '*'
@@ -1118,11 +1327,11 @@ function Get-CommandHistory {
         }
         'name' {
             $search = $Name
-            $history = $allHistory | Where-Object {$_.Command.Name -eq $Name} | Select-Object -First $Count
+            $history = @($allHistory | Where-Object {$_.Command.Name -eq $Name})[0..$Count]
         }
         'id' {
             $search = $Id
-            $history = $allHistory | Where-Object {$_.Id -eq $Id}
+            $history = @($allHistory | Where-Object {$_.Id -eq $Id})[0..$Count]
         }
     }
 
@@ -1140,9 +1349,23 @@ function Get-CommandHistory {
 function Find-Plugin {
     <#
     .SYNOPSIS
-        Find available PoshBot plugins
+        Find available PoshBot plugins. Only plugins (PowerShell modules) with the 'PoshBot' tag are returned.
+    .PARAMETER NAME
+        The name of the plugin (PowerShell module) to find. The module in the repository MUST have a 'PoshBot' tag.
+    .PARAMETER Repository
+        The name of the PowerShell repository to search in.
     .EXAMPLE
-        !find-plugin <pluginname> | --name <pluginname> [<myrepo> | --repository <myrepo>]
+        !find-plugin
+
+        Find all plugins with the 'PoshBot' tag.
+    .EXAMPLE
+        !find-plugin --name 'xkcd'
+
+        Find all plugins matching '*xkcd*'
+    .EXAMPLE
+        !find-plugin --name 'itsm' --repository 'internalps'
+
+        Find all plugins matching '*itsm*' in the 'internalps' repository.
     #>
     [PoshBot.BotCommand(Permissions = 'manage-plugins')]
     [cmdletbinding()]
@@ -1204,9 +1427,17 @@ function Find-Plugin {
 function New-Permission {
     <#
     .SYNOPSIS
-        Creates a new adhoc permission associated with a plugin
+        Creates a new adhoc permission associated with a plugin.
+    .PARAMETER Name
+        The name of the new permission to create.
+    .PARAMETER Plugin
+        The name of the plugin in which to associate the permission to.
+    .PARAMETER Description
+        The description for the new permission.
     .EXAMPLE
-        !new-permission (<permissionname> | --name <permissionname>) (<pluginname> | --plugin <pluginname>) [<description> | --description <description>)]
+        !new-permission --name read --plugin myplugin --description 'Execute all read commands'
+
+        Create the [read] permission in the [myplugin] plugin.
     #>
     [PoshBot.BotCommand(Permissions = 'manage-permissions')]
     [cmdletbinding()]
@@ -1258,9 +1489,15 @@ function New-Permission {
 function Add-CommandPermission {
     <#
     .SYNOPSIS
-        Adds a permission to a command
+        Adds a permission to a command.
+    .PARAMETER Command
+        The fully qualified command name [pluginname:commandname] to add the permission to.
+    .PARAMETER Permission
+        The fully qualified permission name [pluginname:permissionname] to add to the command.
     .EXAMPLE
-        !add-commandpermission (<pluginname:commandname> | --name <pluginname:commandname>) (<plugin:permissionname> | --permission <pluginname:permissionname>)
+        !add-commandpermission --command myplugin:mycommand --permission myplugin:read
+
+        Add the permission [myplugin:read] to the [myplugin:mycommand] command.
     #>
     [PoshBot.BotCommand(Permissions = 'manage-permissions')]
     [cmdletbinding()]
@@ -1270,35 +1507,45 @@ function Add-CommandPermission {
 
         [parameter(Mandatory, Position = 0)]
         [ValidatePattern('^.+:.+')]
-        [string]$Name,
+        [Alias('Name')]
+        [string]$Command,
 
         [parameter(Mandatory, Position = 1)]
         [ValidatePattern('^.+:.+')]
         [string]$Permission
     )
 
-    if ($command = $Bot.PluginManager.Commands[$Name]) {
+    if ($c = $Bot.PluginManager.Commands[$Command]) {
         if ($p = $Bot.RoleManager.Permissions[$Permission]) {
 
-            $command.AddPermission($p)
+            $c.AddPermission($p)
             $Bot.PluginManager.SaveState()
 
-            New-PoshBotCardResponse -Type Normal -Text "Permission [$Permission] added to command [$Name]." -ThumbnailUrl $thumb.success
+            New-PoshBotCardResponse -Type Normal -Text "Permission [$Permission] added to command [$Command]." -ThumbnailUrl $thumb.success
         } else {
             New-PoshBotCardResponse -Type Warning -Text "Permission [$Permission] not found."
         }
     } else {
-        New-PoshBotCardResponse -Type Warning -Text "Command [$Name] not found."
+        New-PoshBotCardResponse -Type Warning -Text "Command [$Command] not found."
     }
 }
 
 function Get-ScheduledCommand {
     <#
     .SYNOPSIS
-        Get all scheduled commands
+        Get all scheduled commands.
+    .PARAMETER Id
+        The Id of the scheduled command to retrieve.
+    .EXAMPLE
+        !get-scheduledcommand
+
+        List all scheduled commands
+    .EXAMPLE !get-scheduledcommand --id e26b82cf473647e780041cee00a941de
+
+        Get the scheduled command with Id [e26b82cf473647e780041cee00a941de]
     #>
     [PoshBot.BotCommand(
-        Aliases = 'getschedule',
+        Aliases = ('getschedule', 'get-schedule'),
         Permissions = 'manage-schedules'
     )]
     [cmdletbinding()]
@@ -1339,10 +1586,34 @@ function Get-ScheduledCommand {
 function New-ScheduledCommand {
     <#
     .SYNOPSIS
-        Create a new scheduled command
+        Create a new scheduled command.
+    .PARAMETER Command
+        The command string to schedule. This will be in the form of '!foo --bar baz' just like you would
+        type interactively.
+    .PARAMETER Value
+        Execute the command after the specified number of intervals (e.g., 2 hours).
+    .PARAMETER Interval
+        The interval in which to schedule the command. The valid values are 'days', 'hours', 'minutes', and 'seconds'.
+    .PARAMETER StartAfter
+        Start the scheduled command exeuction after this date/time.
+    .PARAMETER Once
+        Execute the scheduled command once and then remove the schedule.
+        This parameter is not valid with the Interval and Value parameters.
+    .EXAMPLE
+        !new-scheduledcommand --command 'status' --interval hours --value 4
+
+        Execute the [status] command every 4 hours.
+    .EXAMPLE
+        !new-scheduledcommand --command !myplugin:motd' --interval days --value 1 --startafter '8:00am'
+
+        Execute the command [myplugin:motd] every day starting at 8:00am.
+    .EXAMPLE
+        !new-scheduledcommand --command "!myplugin:restart-server --computername frodo --startafter '2016/07/04 6:00pm'" --once
+
+        Execute the command [restart-server] on computername [frodo] at 6:00pm on 2016/07/04.
     #>
     [PoshBot.BotCommand(
-        Aliases = 'newschedule',
+        Aliases = ('newschedule', 'new-schedule'),
         Permissions = 'manage-schedules'
     )]
     [cmdletbinding(DefaultParameterSetName = 'repeat')]
@@ -1417,10 +1688,28 @@ function New-ScheduledCommand {
 function Set-ScheduledCommand {
     <#
     .SYNOPSIS
-        Modify a scheduled command
+        Modify a scheduled command.
+    .PARAMETER Id
+        The Id of the scheduled command to edit.
+    .PARAMETER Value
+        Execute the command after the specified number of intervals (e.g., 2 hours).
+    .PARAMETER Inteval
+        The interval in which to schedule the command. The valid values are 'days', 'hours', 'minutes', and 'seconds'.
+    .PARAMETER StartAfter
+        Start the scheduled command exeuction after this date/time.
+    .EXAMPLE
+        !set-scheduledcommand --id e26b82cf473647e780041cee00a941de --value 2 --interval days
+
+        Edit the existing scheduled command with Id [e26b82cf473647e780041cee00a941de] and set the
+        repetition interval to every 2 days.
+    .EXAMPLE
+        !set-scheduledcommand --id ccef0790b94542a685e78b4ec50c8c1e --value 1 --interval hours --startafter '10:00pm'
+
+        Edit the existing scheduled command with Id [ccef0790b94542a685e78b4ec50c8c1e] and set the
+        repition interval to every hours starting at 10:00pm.
     #>
     [PoshBot.BotCommand(
-        Aliases = 'setschedule',
+        Aliases = ('setschedule', 'set-schedule'),
         Permissions = 'manage-schedules'
     )]
     [cmdletbinding()]
@@ -1466,10 +1755,16 @@ function Set-ScheduledCommand {
 function Remove-ScheduledCommand {
     <#
     .SYNOPSIS
-        Remove a scheduled command
+        Remove a scheduled command.
+    .PARAMETER Id
+        The Id of the scheduled command to remove.
+    .EXAMPLE
+        !remove-scheduledcommand --id 1fb032bdec82423ba763227c83ca2c89
+
+        Remove the scheduled command with id [1fb032bdec82423ba763227c83ca2c89].
     #>
     [PoshBot.BotCommand(
-        Aliases = 'removeschedule',
+        Aliases = 'removeschedule', ('remove-schedule'),
         Permissions = 'manage-schedules'
     )]
     [cmdletbinding()]
@@ -1494,10 +1789,16 @@ function Remove-ScheduledCommand {
 function Enable-ScheduledCommand {
     <#
     .SYNOPSIS
-        Enable a scheduled command
+        Enable a scheduled command.
+    .PARAMETER Id
+        The Id of the scheduled command to enable.
+    .EXAMPLE
+        !enable-scheduledcommand --id a993c0880b184de098f46d8bbc81436b
+
+        Enable the scheduled command with id [a993c0880b184de098f46d8bbc81436b].
     #>
     [PoshBot.BotCommand(
-        Aliases = 'enableschedule',
+        Aliases = ('enableschedule', 'enable-schedule'),
         Permissions = 'manage-schedules'
     )]
     [cmdletbinding()]
@@ -1532,7 +1833,13 @@ function Enable-ScheduledCommand {
 function Disable-ScheduledCommand {
     <#
     .SYNOPSIS
-        Disable a scheduled command
+        Disable a scheduled command.
+    .PARAMETER Id
+        The Id of the scheduled command to disable.
+    .EXAMPLE
+        !disable-scheduledcommand --id 2979f9961a0c4dea9fa6ea073a281e35
+
+        Disable the scheduled command with id [2979f9961a0c4dea9fa6ea073a281e35].
     #>
     [PoshBot.BotCommand(
         Aliases = 'disableschedule',
