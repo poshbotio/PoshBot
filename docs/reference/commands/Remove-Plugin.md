@@ -4,15 +4,15 @@ online version:
 schema: 2.0.0
 ---
 
-# Get-Group
+# Remove-Plugin
 
 ## SYNOPSIS
-Show details about bot groups.
+Removes a currently loaded plugin.
 
 ## SYNTAX
 
 ```
-Get-Group -Bot <Object> [[-Name] <String>]
+Remove-Plugin -Bot <Object> [-Name] <String> [[-Version] <String>]
 ```
 
 ## DESCRIPTION
@@ -22,17 +22,17 @@ Get-Group -Bot <Object> [[-Name] <String>]
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```
-!get-group
+!remove-plugin nameit
 ```
 
-Get a list of all groups.
+Remove the \[NameIt\] plugin.
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```
-!get-group --name admin
+!remove-plugin --name PoshBot.XKCD --version 1.0.0
 ```
 
-Get details about the \[Admin\] group.
+Remove version \[1.0.0\] of the \[PoshBot.XKCD\] module.
 
 ## PARAMETERS
 
@@ -52,7 +52,22 @@ Accept wildcard characters: False
 ```
 
 ### -Name
-The name of the group to get.
+The name of the plugin to remove.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases: 
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Version
+The specific version of the plugin to remove.
 
 ```yaml
 Type: String
@@ -60,7 +75,7 @@ Parameter Sets: (All)
 Aliases: 
 
 Required: False
-Position: 1
+Position: 2
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

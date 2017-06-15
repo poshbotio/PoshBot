@@ -1,13 +1,52 @@
+---
+external help file: Builtin-help.xml
+online version: 
+schema: 2.0.0
+---
 
-# Builtin:About
+# About
 
-## Synopsis
+## SYNOPSIS
+Display details about PoshBot.
 
-Display details about PoshBot
+## SYNTAX
 
-## Description
+```
+About [-Bot] <Object>
+```
 
-Display details about the current instance of PoshBot such as the version and GitHub Url.
+## DESCRIPTION
+{{Fill in the Description}}
 
-## Example
+## EXAMPLES
+
+### -------------------------- EXAMPLE 1 --------------------------
+```
 !about
+```
+
+## PARAMETERS
+
+### -Bot
+{{Fill Bot Description}}
+
+```yaml
+Type: Object
+Parameter Sets: (All)
+Aliases: 
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+## RELATED LINKS
+

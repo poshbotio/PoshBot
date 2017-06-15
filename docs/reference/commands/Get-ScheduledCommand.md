@@ -4,15 +4,15 @@ online version:
 schema: 2.0.0
 ---
 
-# Get-Group
+# Get-ScheduledCommand
 
 ## SYNOPSIS
-Show details about bot groups.
+{{Fill in the Synopsis}}
 
 ## SYNTAX
 
 ```
-Get-Group -Bot <Object> [[-Name] <String>]
+Get-ScheduledCommand [-Bot] <Object> [[-Id] <String>]
 ```
 
 ## DESCRIPTION
@@ -20,19 +20,12 @@ Get-Group -Bot <Object> [[-Name] <String>]
 
 ## EXAMPLES
 
-### -------------------------- EXAMPLE 1 --------------------------
+### Example 1
 ```
-!get-group
-```
-
-Get a list of all groups.
-
-### -------------------------- EXAMPLE 2 --------------------------
-```
-!get-group --name admin
+PS C:\> {{ Add example code here }}
 ```
 
-Get details about the \[Admin\] group.
+{{ Add example description here }}
 
 ## PARAMETERS
 
@@ -45,14 +38,14 @@ Parameter Sets: (All)
 Aliases: 
 
 Required: True
-Position: Named
+Position: 0
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Name
-The name of the group to get.
+### -Id
+{{Fill Id Description}}
 
 ```yaml
 Type: String
@@ -68,7 +61,12 @@ Accept wildcard characters: False
 
 ## INPUTS
 
+### None
+
+
 ## OUTPUTS
+
+### System.Object
 
 ## NOTES
 

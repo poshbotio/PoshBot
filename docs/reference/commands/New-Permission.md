@@ -4,15 +4,15 @@ online version:
 schema: 2.0.0
 ---
 
-# Add-GroupUser
+# New-Permission
 
 ## SYNOPSIS
-Add a user to a group.
+Creates a new adhoc permission associated with a plugin.
 
 ## SYNTAX
 
 ```
-Add-GroupUser -Bot <Object> [-Group] <String> [-User] <String>
+New-Permission -Bot <Object> [-Name] <String> [-Plugin] <String> [[-Description] <String>]
 ```
 
 ## DESCRIPTION
@@ -22,8 +22,10 @@ Add-GroupUser -Bot <Object> [-Group] <String> [-User] <String>
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```
-!add-groupuser --group admins --user johndoe
+!new-permission --name read --plugin myplugin --description 'Execute all read commands'
 ```
+
+Create the \[read\] permission in the \[myplugin\] plugin.
 
 ## PARAMETERS
 
@@ -42,8 +44,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Group
-The name of the group to add a user to.
+### -Name
+The name of the new permission to create.
 
 ```yaml
 Type: String
@@ -57,8 +59,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -User
-The name of the user to add to a group.
+### -Plugin
+The name of the plugin in which to associate the permission to.
 
 ```yaml
 Type: String
@@ -67,6 +69,21 @@ Aliases:
 
 Required: True
 Position: 2
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Description
+The description for the new permission.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases: 
+
+Required: False
+Position: 3
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

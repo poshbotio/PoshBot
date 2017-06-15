@@ -4,15 +4,15 @@ online version:
 schema: 2.0.0
 ---
 
-# Get-Group
+# Enable-ScheduledCommand
 
 ## SYNOPSIS
-Show details about bot groups.
+Enable a scheduled command.
 
 ## SYNTAX
 
 ```
-Get-Group -Bot <Object> [[-Name] <String>]
+Enable-ScheduledCommand -Bot <Object> [-Id] <String>
 ```
 
 ## DESCRIPTION
@@ -22,17 +22,10 @@ Get-Group -Bot <Object> [[-Name] <String>]
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```
-!get-group
+!enable-scheduledcommand --id a993c0880b184de098f46d8bbc81436b
 ```
 
-Get a list of all groups.
-
-### -------------------------- EXAMPLE 2 --------------------------
-```
-!get-group --name admin
-```
-
-Get details about the \[Admin\] group.
+Enable the scheduled command with id \[a993c0880b184de098f46d8bbc81436b\].
 
 ## PARAMETERS
 
@@ -51,15 +44,15 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Name
-The name of the group to get.
+### -Id
+The Id of the scheduled command to enable.
 
 ```yaml
 Type: String
 Parameter Sets: (All)
 Aliases: 
 
-Required: False
+Required: True
 Position: 1
 Default value: None
 Accept pipeline input: False

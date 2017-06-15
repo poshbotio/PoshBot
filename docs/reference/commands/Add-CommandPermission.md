@@ -4,15 +4,15 @@ online version:
 schema: 2.0.0
 ---
 
-# Add-GroupUser
+# Add-CommandPermission
 
 ## SYNOPSIS
-Add a user to a group.
+Adds a permission to a command.
 
 ## SYNTAX
 
 ```
-Add-GroupUser -Bot <Object> [-Group] <String> [-User] <String>
+Add-CommandPermission -Bot <Object> [-Command] <String> [-Permission] <String>
 ```
 
 ## DESCRIPTION
@@ -22,8 +22,10 @@ Add-GroupUser -Bot <Object> [-Group] <String> [-User] <String>
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```
-!add-groupuser --group admins --user johndoe
+!add-commandpermission --command myplugin:mycommand --permission myplugin:read
 ```
+
+Add the permission \[myplugin:read\] to the \[myplugin:mycommand\] command.
 
 ## PARAMETERS
 
@@ -42,13 +44,13 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Group
-The name of the group to add a user to.
+### -Command
+The fully qualified command name \[pluginname:commandname\] to add the permission to.
 
 ```yaml
 Type: String
 Parameter Sets: (All)
-Aliases: 
+Aliases: Name
 
 Required: True
 Position: 1
@@ -57,8 +59,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -User
-The name of the user to add to a group.
+### -Permission
+The fully qualified permission name \[pluginname:permissionname\] to add to the command.
 
 ```yaml
 Type: String

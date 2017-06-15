@@ -4,15 +4,15 @@ online version:
 schema: 2.0.0
 ---
 
-# Get-Group
+# Remove-Role
 
 ## SYNOPSIS
-Show details about bot groups.
+Remove a role.
 
 ## SYNTAX
 
 ```
-Get-Group -Bot <Object> [[-Name] <String>]
+Remove-Role -Bot <Object> [-Name] <String>
 ```
 
 ## DESCRIPTION
@@ -22,17 +22,8 @@ Get-Group -Bot <Object> [[-Name] <String>]
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```
-!get-group
+!remove-role itsm-modify
 ```
-
-Get a list of all groups.
-
-### -------------------------- EXAMPLE 2 --------------------------
-```
-!get-group --name admin
-```
-
-Get details about the \[Admin\] group.
 
 ## PARAMETERS
 
@@ -52,14 +43,14 @@ Accept wildcard characters: False
 ```
 
 ### -Name
-The name of the group to get.
+The name of the role to remove.
 
 ```yaml
 Type: String
 Parameter Sets: (All)
 Aliases: 
 
-Required: False
+Required: True
 Position: 1
 Default value: None
 Accept pipeline input: False

@@ -4,15 +4,15 @@ online version:
 schema: 2.0.0
 ---
 
-# Install-Plugin
+# Get-CommandHelp
 
 ## SYNOPSIS
-Install a new plugin.
+Show details and help information about bot commands.
 
 ## SYNTAX
 
 ```
-Install-Plugin -Bot <Object> [-Name] <String> [[-Version] <String>]
+Get-CommandHelp -Bot <Object> [[-Filter] <String>] [-Detailed] [-Type <String>]
 ```
 
 ## DESCRIPTION
@@ -22,17 +22,24 @@ Install-Plugin -Bot <Object> [-Name] <String> [[-Version] <String>]
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```
-!install-plugin nameit
+!help --filter new-group
 ```
 
-Install the \[NameIt\] plugin.
+Get help on the 'New-Group' command.
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```
-!install-plugin --name PoshBot.XKCD --version 1.0.0
+!help new-group --detailed
 ```
 
-Install version \[1.0.0\] of the \[PoshBot.XKCD\] plugin.
+Get detailed help on the 'New-group' command
+
+### -------------------------- EXAMPLE 3 --------------------------
+```
+!help --type regex
+```
+
+List all commands with the \[regex\] trigger type.
 
 ## PARAMETERS
 
@@ -51,26 +58,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Name
-The name of the PoshBot plugin (PowerShell module) to install.
-The plugin must already exist in $env:PSModulePath or be present
-in on of the configured plugin repositories (PowerShell repositories).
-If not already installed, PoshBot will install the module from the repository.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases: 
-
-Required: True
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Version
-The specific version of the plugin to install.
+### -Filter
+The text to filter available commands and plugins on.
 
 ```yaml
 Type: String
@@ -78,8 +67,38 @@ Parameter Sets: (All)
 Aliases: 
 
 Required: False
-Position: 2
+Position: 1
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Detailed
+Show more detailed help information for the command.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases: 
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Type
+Only return commands of specified type.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases: 
+
+Required: False
+Position: Named
+Default value: *
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

@@ -4,15 +4,15 @@ online version:
 schema: 2.0.0
 ---
 
-# Get-Group
+# Remove-ScheduledCommand
 
 ## SYNOPSIS
-Show details about bot groups.
+Remove a scheduled command.
 
 ## SYNTAX
 
 ```
-Get-Group -Bot <Object> [[-Name] <String>]
+Remove-ScheduledCommand -Bot <Object> [-Id] <String>
 ```
 
 ## DESCRIPTION
@@ -22,17 +22,10 @@ Get-Group -Bot <Object> [[-Name] <String>]
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```
-!get-group
+!remove-scheduledcommand --id 1fb032bdec82423ba763227c83ca2c89
 ```
 
-Get a list of all groups.
-
-### -------------------------- EXAMPLE 2 --------------------------
-```
-!get-group --name admin
-```
-
-Get details about the \[Admin\] group.
+Remove the scheduled command with id \[1fb032bdec82423ba763227c83ca2c89\].
 
 ## PARAMETERS
 
@@ -51,15 +44,15 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Name
-The name of the group to get.
+### -Id
+The Id of the scheduled command to remove.
 
 ```yaml
 Type: String
 Parameter Sets: (All)
 Aliases: 
 
-Required: False
+Required: True
 Position: 1
 Default value: None
 Accept pipeline input: False

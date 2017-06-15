@@ -4,15 +4,16 @@ online version:
 schema: 2.0.0
 ---
 
-# Install-Plugin
+# Find-Plugin
 
 ## SYNOPSIS
-Install a new plugin.
+Find available PoshBot plugins.
+Only plugins (PowerShell modules) with the 'PoshBot' tag are returned.
 
 ## SYNTAX
 
 ```
-Install-Plugin -Bot <Object> [-Name] <String> [[-Version] <String>]
+Find-Plugin -Bot <Object> [[-Name] <String>] [[-Repository] <String>]
 ```
 
 ## DESCRIPTION
@@ -22,17 +23,24 @@ Install-Plugin -Bot <Object> [-Name] <String> [[-Version] <String>]
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```
-!install-plugin nameit
+!find-plugin
 ```
 
-Install the \[NameIt\] plugin.
+Find all plugins with the 'PoshBot' tag.
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```
-!install-plugin --name PoshBot.XKCD --version 1.0.0
+!find-plugin --name 'xkcd'
 ```
 
-Install version \[1.0.0\] of the \[PoshBot.XKCD\] plugin.
+Find all plugins matching '*xkcd*'
+
+### -------------------------- EXAMPLE 3 --------------------------
+```
+!find-plugin --name 'itsm' --repository 'internalps'
+```
+
+Find all plugins matching '*itsm*' in the 'internalps' repository.
 
 ## PARAMETERS
 
@@ -52,25 +60,23 @@ Accept wildcard characters: False
 ```
 
 ### -Name
-The name of the PoshBot plugin (PowerShell module) to install.
-The plugin must already exist in $env:PSModulePath or be present
-in on of the configured plugin repositories (PowerShell repositories).
-If not already installed, PoshBot will install the module from the repository.
+The name of the plugin (PowerShell module) to find.
+The module in the repository MUST have a 'PoshBot' tag.
 
 ```yaml
 Type: String
 Parameter Sets: (All)
 Aliases: 
 
-Required: True
+Required: False
 Position: 1
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Version
-The specific version of the plugin to install.
+### -Repository
+The name of the PowerShell repository to search in.
 
 ```yaml
 Type: String
@@ -79,7 +85,7 @@ Aliases:
 
 Required: False
 Position: 2
-Default value: None
+Default value: PSGallery
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

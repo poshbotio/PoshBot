@@ -4,15 +4,15 @@ online version:
 schema: 2.0.0
 ---
 
-# Get-Group
+# Disable-ScheduledCommand
 
 ## SYNOPSIS
-Show details about bot groups.
+Disable a scheduled command.
 
 ## SYNTAX
 
 ```
-Get-Group -Bot <Object> [[-Name] <String>]
+Disable-ScheduledCommand -Bot <Object> [-Id] <String>
 ```
 
 ## DESCRIPTION
@@ -22,17 +22,10 @@ Get-Group -Bot <Object> [[-Name] <String>]
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```
-!get-group
+!disable-scheduledcommand --id 2979f9961a0c4dea9fa6ea073a281e35
 ```
 
-Get a list of all groups.
-
-### -------------------------- EXAMPLE 2 --------------------------
-```
-!get-group --name admin
-```
-
-Get details about the \[Admin\] group.
+Disable the scheduled command with id \[2979f9961a0c4dea9fa6ea073a281e35\].
 
 ## PARAMETERS
 
@@ -51,15 +44,15 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Name
-The name of the group to get.
+### -Id
+The Id of the scheduled command to disable.
 
 ```yaml
 Type: String
 Parameter Sets: (All)
 Aliases: 
 
-Required: False
+Required: True
 Position: 1
 Default value: None
 Accept pipeline input: False

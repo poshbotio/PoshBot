@@ -4,15 +4,15 @@ online version:
 schema: 2.0.0
 ---
 
-# Get-Group
+# Update-RoleDescription
 
 ## SYNOPSIS
-Show details about bot groups.
+Update a role description
 
 ## SYNTAX
 
 ```
-Get-Group -Bot <Object> [[-Name] <String>]
+Update-RoleDescription -Bot <Object> [-Name] <String> [-Description] <String>
 ```
 
 ## DESCRIPTION
@@ -22,17 +22,8 @@ Get-Group -Bot <Object> [[-Name] <String>]
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```
-!get-group
+!update-roledescription --name itsm-modify --description 'Can modify items in ITSM tool'
 ```
-
-Get a list of all groups.
-
-### -------------------------- EXAMPLE 2 --------------------------
-```
-!get-group --name admin
-```
-
-Get details about the \[Admin\] group.
 
 ## PARAMETERS
 
@@ -52,15 +43,30 @@ Accept wildcard characters: False
 ```
 
 ### -Name
-The name of the group to get.
+The name of the role to update.
 
 ```yaml
 Type: String
 Parameter Sets: (All)
 Aliases: 
 
-Required: False
+Required: True
 Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Description
+The new description for the role.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases: 
+
+Required: True
+Position: 2
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
