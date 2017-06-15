@@ -1764,7 +1764,7 @@ function Remove-ScheduledCommand {
         Remove the scheduled command with id [1fb032bdec82423ba763227c83ca2c89].
     #>
     [PoshBot.BotCommand(
-        Aliases = 'removeschedule', ('remove-schedule'),
+        Aliases = ('removeschedule', 'remove-schedule'),
         Permissions = 'manage-schedules'
     )]
     [cmdletbinding()]
