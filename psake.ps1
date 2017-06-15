@@ -93,7 +93,7 @@ task UpdateMarkdownHelp -Depends Compile {
 } -description 'Update markdown help files'
 
 task CreateExternalHelp -Depends CreateMarkdownHelp {
-    New-ExternalHelp "$projectRoot\docs\reference\functions" -OutputPath "$sut\en-US"
+    New-ExternalHelp "$projectRoot\docs\reference\functions" -OutputPath "$outputModVerDir\en-US"
 } -description 'Create module help from markdown files'
 
 Task RegenerateHelp -Depends UpdateMarkdownHelp, CreateExternalHelp
