@@ -127,7 +127,7 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## [0.5.0] Unreleased
+## [0.5.0] 2017-06-14
 ### Added
 - Any regex group matches are now passed in the [Arguments] parameter to the function/command.
 - Ability to specify a version of a loaded plugin command to execute.
@@ -223,6 +223,7 @@ PrivateData = @{
 ## [0.0.1] - 2016-12-18
 ### Added
 - Initial commit
+
 '@
     } # End of PSData hashtable
 

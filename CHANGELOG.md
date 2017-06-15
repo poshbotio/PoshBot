@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.5.0] Unreleased
+## [0.5.0] 2017-06-14
 ### Added
 - Any regex group matches are now passed in the [Arguments] parameter to the function/command.
 - Ability to specify a version of a loaded plugin command to execute.
