@@ -33,7 +33,7 @@ Copyright = '(c) 2017 Brandon Olin. All rights reserved.'
 Description = 'Builtin PoshBot commands'
 
 # Minimum version of the Windows PowerShell engine required by this module
-# PowerShellVersion = ''
+PowerShellVersion = '5.0.0'
 
 # Name of the Windows PowerShell host required by this module
 # PowerShellHostName = ''
@@ -51,7 +51,7 @@ Description = 'Builtin PoshBot commands'
 # ProcessorArchitecture = ''
 
 # Modules that must be imported into the global environment prior to importing this module
-# RequiredModules = @()
+RequiredModules = @('PoshBot')
 
 # Assemblies that must be loaded prior to importing this module
 # RequiredAssemblies = @()
