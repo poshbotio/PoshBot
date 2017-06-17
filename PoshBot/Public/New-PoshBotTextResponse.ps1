@@ -49,7 +49,7 @@ function New-PoshBotTextResponse {
         foreach ($item in $text) {
             [pscustomobject][ordered]@{
                 PSTypeName = 'PoshBot.Text.Response'
-                Text = $item
+                Text = $item.Trim()
                 AsCode = $PSBoundParameters.ContainsKey('AsCode')
                 DM = $PSBoundParameters.ContainsKey('DM')
             }

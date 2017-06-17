@@ -132,7 +132,7 @@ function New-PoshBotCardResponse {
 
     $response = [ordered]@{
         PSTypeName = 'PoshBot.Card.Response'
-        Text = $Text
+        Text = $Text.Trim()
         Private = $PSBoundParameters.ContainsKey('Private')
         DM = $PSBoundParameters.ContainsKey('DM')
     }
