@@ -77,7 +77,7 @@ FunctionsToExport = 'About', 'Add-CommandPermission', 'Add-GroupRole', 'Add-Grou
                'Remove-Plugin', 'Remove-Role', 'Remove-RolePermission', 'Status',
                'Update-GroupDescription', 'Update-RoleDescription', 'Get-ScheduledCommand',
                'New-ScheduledCommand', 'Set-ScheduledCommand', 'Remove-ScheduledCommand',
-               'Enable-ScheduledCommand', 'Disable-ScheduledCommand'
+               'Enable-ScheduledCommand', 'Disable-ScheduledCommand', 'Update-Plugin'
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
 CmdletsToExport = @()

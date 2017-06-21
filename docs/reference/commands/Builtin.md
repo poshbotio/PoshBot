@@ -104,6 +104,9 @@ Locale: en-US
 ### [Update-GroupDescription](Update-GroupDescription.md)
 {{Manually Enter Update-GroupDescription Description Here}}
 
+### [Update-Plugin](Update-Plugin.md)
+{{Manually Enter Update-Plugin Description Here}}
+
 ### [Update-RoleDescription](Update-RoleDescription.md)
 {{Manually Enter Update-RoleDescription Description Here}}
 

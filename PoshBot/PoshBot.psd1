@@ -12,7 +12,7 @@
 RootModule = 'PoshBot.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.5.0'
+ModuleVersion = '0.6.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -127,6 +127,10 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
+## [0.6.0] Unreleased
+### Added
+- New builtin command 'Update-Plugin' which updates an existing plugin to a newer version and optionally removes all previous versions.
+
 ## [0.5.0] 2017-06-14
 ### Added
 - Any regex group matches are now passed in the [Arguments] parameter to the function/command.
@@ -223,7 +227,6 @@ PrivateData = @{
 ## [0.0.1] - 2016-12-18
 ### Added
 - Initial commit
-
 '@
     } # End of PSData hashtable
 
