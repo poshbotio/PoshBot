@@ -101,6 +101,9 @@ Locale: en-US
 ### [Set-ScheduledCommand](Set-ScheduledCommand.md)
 {{Manually Enter Set-ScheduledCommand Description Here}}
 
+### [Status](Status.md)
+{{Manually Enter Status Description Here}}
+
 ### [Update-GroupDescription](Update-GroupDescription.md)
 {{Manually Enter Update-GroupDescription Description Here}}
 

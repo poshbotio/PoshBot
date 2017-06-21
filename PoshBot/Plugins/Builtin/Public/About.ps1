@@ -15,7 +15,7 @@ function About {
         $Bot
     )
 
-    $path = "$PSScriptRoot/../../PoshBot.psd1"
+    $path = "$PSScriptRoot/../../../PoshBot.psd1"
     $manifest = Import-PowerShellDataFile -Path $path
     $ver = $manifest.ModuleVersion
 
