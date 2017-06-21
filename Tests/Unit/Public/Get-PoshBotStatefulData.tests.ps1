@@ -1,6 +1,12 @@
 ﻿
 InModuleScope PoshBot {
     describe 'Get-PoshBotStatefulData' {
+        BeforeAll {
+            $PSDefaultParameterValues = @{
+                'Get-PoshBotStatefulData:Verbose' = $false
+            }
+        }
+
         # Define internal variables
         $poshbotcontext = [pscustomobject]@{
             Plugin = 'TestPlugin'

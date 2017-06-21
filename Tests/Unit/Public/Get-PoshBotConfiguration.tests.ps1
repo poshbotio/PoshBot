@@ -1,6 +1,12 @@
 
 describe 'Get-PoshBotConfiguration' {
 
+    BeforeAll {
+        $PSDefaultParameterValues = @{
+            'Get-PoshBotConfiguration:Verbose' = $false
+        }
+    }
+
     it 'Gets a configuration from path' {
         $psd1 = Get-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath '..\..\Artifacts\Cherry2000.psd1')
         $config = Get-PoshBotConfiguration -Path $psd1

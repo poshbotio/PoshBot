@@ -1,6 +1,11 @@
 ﻿
 InModuleScope PoshBot {
     describe 'Remove-PoshBotStatefulData' {
+        BeforeAll {
+            $PSDefaultParameterValues = @{
+                'Remove-PoshBotStatefulData:Verbose' = $false
+            }
+        }
         # Define internal variables
         $poshbotcontext = [pscustomobject]@{
             Plugin = 'TestPlugin'

@@ -14,7 +14,7 @@ Describe 'Module manifest' {
 
         It 'has a valid manifest' {
             {
-                $script:manifest = Test-ModuleManifest -Path $outputManifestPath -ErrorAction Stop -WarningAction SilentlyContinue
+                $script:manifest = Test-ModuleManifest -Path $outputManifestPath -Verbose:$false -ErrorAction Stop -WarningAction SilentlyContinue
             } | Should Not Throw
         }
 

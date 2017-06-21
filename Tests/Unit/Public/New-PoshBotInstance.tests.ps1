@@ -2,6 +2,10 @@
 Describe 'New-PoshBotInstance' {
 
     BeforeAll {
+        $VerbosePreference = 'SilentlyContinue'
+        $PSDefaultParameterValues = @{
+            'New-PoshBotInstance:Verbose' = $false
+        }
         $script:backend = New-PoshBotSlackBackend -Configuration @{Token = (New-Guid).ToString(); Name = 'Test-Backend'}
     }
 

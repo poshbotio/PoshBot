@@ -20,8 +20,8 @@ function Resolve-Module {
     )
 
     begin {
-        Get-PackageProvider -Name Nuget -ForceBootstrap | Out-Null
-        Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+        Get-PackageProvider -Name Nuget -ForceBootstrap -Verbose:$false | Out-Null
+        Set-PSRepository -Name PSGallery -InstallationPolicy Trusted -Verbose:$false
 
         $PSDefaultParameterValues = @{
             '*-Module:Verbose' = $false
