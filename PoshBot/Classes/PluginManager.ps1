@@ -429,7 +429,7 @@ class PluginManager {
 
                 # Get the command help so we can pull information from it
                 # to construct the bot command
-                $cmdHelp = Get-Help -Name "$ModuleName\$($command.Name)"
+                $cmdHelp = Get-Help -Name "$ModuleName\$($command.Name)" -ErrorAction SilentlyContinue
 
                 # Get any command metadata that may be attached to the command
                 # via the PoshBot.BotCommand extended attribute
@@ -531,26 +531,32 @@ class PluginManager {
                     $triggers += [Trigger]::new([TriggerType]::Command, $cmd.Name)
                 }
 
-                $cmd.Description = $cmdHelp.Synopsis.Trim()
+                if ($cmdHelp) {
+                    $cmd.Description = $cmdHelp.Synopsis.Trim()
+                }
                 $cmd.ManifestPath = $manifestPath
                 $cmd.FunctionInfo = $command
 
                 # Set the command usage differently for [Command] and [Regex] trigger types
                 if ($cmd.TriggerType -eq [TriggerType]::Command) {
                     # Reformat function syntax to show how the bot expects it to be entered
-                    $helpSyntax = ($cmdHelp.syntax | Out-String).Trim() -split "`n" | Where-Object {$_ -ne "`r"}
-                    $helpSyntax = $helpSyntax -replace '( -([a-zA-Z]))', ' --$2'
-                    $helpSyntax = $helpSyntax -replace '(\[-([a-zA-Z]))', '[--$2'
-                    $helpSyntax = $helpSyntax -replace '\[\<CommonParameters\>\]', ''
-                    $helpSyntax = $helpSyntax -replace '--Bot \<Object\> ', ''
-                    $helpSyntax = $helpSyntax -replace '\[--Bot\] \<Object\> ', '['
+                    if ($cmdHelp) {
+                        $helpSyntax = ($cmdHelp.syntax | Out-String).Trim() -split "`n" | Where-Object {$_ -ne "`r"}
+                        $helpSyntax = $helpSyntax -replace '( -([a-zA-Z]))', ' --$2'
+                        $helpSyntax = $helpSyntax -replace '(\[-([a-zA-Z]))', '[--$2'
+                        $helpSyntax = $helpSyntax -replace '\[\<CommonParameters\>\]', ''
+                        $helpSyntax = $helpSyntax -replace '--Bot \<Object\> ', ''
+                        $helpSyntax = $helpSyntax -replace '\[--Bot\] \<Object\> ', '['
 
-                    # Replace the function name in the help syntax with
-                    # what PoshBot will call the command
-                    $helpSyntax = foreach ($item in $helpSyntax) {
-                        $item -replace $command.Name, $cmd.Name
+                        # Replace the function name in the help syntax with
+                        # what PoshBot will call the command
+                        $helpSyntax = foreach ($item in $helpSyntax) {
+                            $item -replace $command.Name, $cmd.Name
+                        }
+                        $cmd.Usage = $helpSyntax.ToLower().Trim()
+                    } else {
+                        $cmd.Usage = 'ERROR: Unable to parse command help'
                     }
-                    $cmd.Usage = $helpSyntax.ToLower().Trim()
                 } elseIf ($cmd.TriggerType -eq [TriggerType]::Regex) {
                     $cmd.Usage = @($triggers | Select-Object -Expand Trigger) -join "`n"
                 }

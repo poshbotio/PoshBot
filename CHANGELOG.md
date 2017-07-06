@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - New builtin command 'Update-Plugin' which updates an existing plugin to a newer version and optionally removes all previous versions.
 
+### Fixed
+- Better error handling logic when parsing command help.
+
 ## [0.5.0] 2017-06-14
 ### Added
 - Any regex group matches are now passed in the [Arguments] parameter to the function/command.
