@@ -130,13 +130,17 @@ function Start-PoshBot {
             } else {
                 $bot.Start()
             }
-        } catch {}
+        } catch {
+            throw $_
+        }
         finally {
             if (-not $AsJob) {
                 # We're here because CTRL+C was entered.
                 # Make sure to disconnect the bot from the backend chat network
-                Write-Verbose -Message 'Stopping PoshBot'
-                $bot.Disconnect()
+                if ($bot) {
+                    Write-Verbose -Message 'Stopping PoshBot'
+                    $bot.Disconnect()
+                }
             }
         }
     }
