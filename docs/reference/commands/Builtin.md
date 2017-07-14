@@ -47,6 +47,9 @@ Locale: en-US
 ### [Get-CommandHistory](Get-CommandHistory.md)
 {{Manually Enter Get-CommandHistory Description Here}}
 
+### [Get-CommandStatus](Get-CommandStatus.md)
+{{Manually Enter Get-CommandStatus Description Here}}
+
 ### [Get-Group](Get-Group.md)
 {{Manually Enter Get-Group Description Here}}
 

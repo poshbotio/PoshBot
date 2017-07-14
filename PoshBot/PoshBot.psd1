@@ -127,6 +127,10 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
+## [0.6.1] Unreleased
+### Added
+- New command [Get-CommandStatus] to show running commands
+
 ## [0.6.0] Unreleased
 ### Added
 - New builtin command 'Update-Plugin' which updates an existing plugin to a newer version and optionally removes all previous versions.
