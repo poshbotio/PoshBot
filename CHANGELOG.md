@@ -6,19 +6,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.6.1] Unreleased
-### Added
-- New command [Get-CommandStatus] to show running commands
-
-### Fixed
-- Use [Configuration] module when reading in bot configuration with [Get-PoshBotConfiguration] so PSCredentials can be deserialized correctly.
-
 ## [0.6.0] Unreleased
 ### Added
 - New builtin command 'Update-Plugin' which updates an existing plugin to a newer version and optionally removes all previous versions.
+- New command [Get-CommandStatus] to show running commands.
 
 ### Fixed
 - Better error handling logic when parsing command help.
+- Use [Configuration] module when reading in bot configuration with [Get-PoshBotConfiguration] so PSCredentials can be deserialized correctly.
 
 ## [0.5.0] 2017-06-14
 ### Added
