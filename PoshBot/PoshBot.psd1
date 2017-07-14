@@ -12,7 +12,7 @@
 RootModule = 'PoshBot.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.6.0'
+ModuleVersion = '0.6.1'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -130,6 +130,9 @@ PrivateData = @{
 ## [0.6.1] Unreleased
 ### Added
 - New command [Get-CommandStatus] to show running commands
+
+### Fixed
+- Use [Configuration] module when reading in bot configuration with [Get-PoshBotConfiguration] so PSCredentials can be deserialized correctly.
 
 ## [0.6.0] Unreleased
 ### Added

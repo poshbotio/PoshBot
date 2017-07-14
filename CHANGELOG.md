@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - New command [Get-CommandStatus] to show running commands
 
+### Fixed
+- Use [Configuration] module when reading in bot configuration with [Get-PoshBotConfiguration] so PSCredentials can be deserialized correctly.
+
 ## [0.6.0] Unreleased
 ### Added
 - New builtin command 'Update-Plugin' which updates an existing plugin to a newer version and optionally removes all previous versions.

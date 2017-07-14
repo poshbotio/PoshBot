@@ -82,7 +82,7 @@ function Get-PoshBotConfiguration {
             if (Test-Path $item) {
                 if ( (Get-Item -Path $item).Extension -eq '.psd1') {
                     Write-Verbose -Message "Loading bot configuration from [$item]"
-                    $hash = Import-PowerShellDataFile -Path $item
+                    $hash = Get-Content -Path $item -Raw | ConvertFrom-Metadata
                     $config = [BotConfiguration]::new()
                     $hash.Keys | Foreach-Object {
                         if ($config | Get-Member -MemberType Property -Name $_) {
