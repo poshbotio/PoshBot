@@ -451,21 +451,12 @@ class RoleManager {
         return $userPermissions
     }
 
-    # Resolve a user to their Id
-    # This may be passed either a user name or Id
-    [string]ResolveUserToId([string]$Username) {
-        $id = $this._Backend.UsernameToUserId($Username)
-        if ($id) {
-            return $id
-        } else {
-            $name = $this._Backend.UserIdToUsername($Username)
-            if ($name) {
-                # We already have a valid user ID since we were able to resolve it to a username.
-                # Just return what was passed in
-                $id = $name
-            }
-        }
-        $this._Logger.Verbose([LogMessage]::new("[RoleManager:ResolveUserToId] Resolved [$Username] to [$id]"))
-        return $id
+    # Resolve a username to their Id
+    [string]ResolveUserIdToUserName([string]$Id) {
+        return $this._Backend.UserIdToUsername($Id)
+    }
+
+    [string]ResolveUsernameToId([string]$Username) {
+        return $this._Backend.UsernameToUserId($Username)
     }
 }

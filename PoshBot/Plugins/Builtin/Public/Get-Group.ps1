@@ -34,7 +34,7 @@ function Get-Group {
         } else {
             $membership = [pscustomobject]@{
                 Users = $g.Users.Keys | foreach-object {
-                    $Bot.RoleManager.ResolveUserToId($_)
+                    $Bot.RoleManager.ResolveUserIdToUserName($_)
                 }
                 Roles = $g.Roles.Keys
             }
@@ -49,7 +49,7 @@ function Get-Group {
                 Name = $key
                 Description = $Bot.RoleManager.Groups[$key].Description
                 Users = $Bot.RoleManager.Groups[$key].Users.Keys | foreach-object {
-                    $Bot.RoleManager.ResolveUserToId($_)
+                    $Bot.RoleManager.ResolveUserIdToUserName($_)
                 }
                 Roles = $Bot.RoleManager.Groups[$key].Roles.Keys
             }

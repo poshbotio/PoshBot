@@ -25,7 +25,7 @@ function Add-GroupUser {
 
     if ($g = $Bot.RoleManager.GetGroup($Group)) {
         # Resolve username to user id
-        if ($userId = $Bot.RoleManager.ResolveUserToId($User)) {
+        if ($userId = $Bot.RoleManager.ResolveUsernameToId($User)) {
             try {
                 $bot.RoleManager.AddUserToGroup($userId, $Group)
                 New-PoshBotCardResponse -Type Normal -Text "User [$User] added to group [$Group]." -ThumbnailUrl $thumb.success

@@ -26,7 +26,7 @@ function Remove-GroupUser {
     )
 
     if ($g = $Bot.RoleManager.GetGroup($Group)) {
-        if ($userId = $Bot.RoleManager.ResolveUserToId($User)) {
+        if ($userId = $Bot.RoleManager.ResolveUsernameToId($User)) {
             try {
                 $bot.RoleManager.RemoveUserFromGroup($userId, $Group)
                 New-PoshBotCardResponse -Type Normal -Text "User [$User] removed from group [$Group]." -ThumbnailUrl $thumb.success

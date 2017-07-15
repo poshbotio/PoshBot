@@ -168,7 +168,7 @@ class Bot {
         # That that we're connected, resolve any bot administrators defined in
         # configuration to their IDs and add to the [admin] role
         foreach ($admin in $this.Configuration.BotAdmins) {
-            if ($adminId = $this.RoleManager.ResolveUserToId($admin)) {
+            if ($adminId = $this.RoleManager.ResolveUsernameToId($admin)) {
                 try {
                     $this.RoleManager.AddUserToGroup($adminId, 'Admin')
                 } catch {
@@ -353,7 +353,7 @@ class Bot {
             # is marked to devert responses
             if ($this.Configuration.SendCommandResponseToPrivate -contains $cmdExecContext.FullyQualifiedCommandName) {
                 $this._Logger.Info([LogMessage]::new("[Bot:HandleMessage] Deverting response from command [$($cmdExecContext.FullyQualifiedCommandName)] to private channel"))
-                $response.To = "@$($this.RoleManager.ResolveUserToId($cmdExecContext.Message.From))"
+                $response.To = "@$($this.RoleManager.ResolveUserIdToUserName($cmdExecContext.Message.From))"
             }
 
             $this.SendMessage($response)

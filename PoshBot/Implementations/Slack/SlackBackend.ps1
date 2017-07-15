@@ -484,12 +484,15 @@ class SlackBackend : Backend {
             $user.TimeZone = $_.TimeZone
             $user.Presence = $_.Presence
             $user.Deleted = $_.Deleted
-            Write-Verbose -Message "[SlackBackend:LoadUsers] Adding user: $($_.ID):$($_.Name)"
-            $this.Users[$_.ID] =  $user
+            if (-not $this.Users.ContainsKey($_.ID)) {
+                Write-Verbose -Message "[SlackBackend:LoadUsers] Adding user [$($_.ID):$($_.Name)]"
+                $this.Users[$_.ID] =  $user
+            }
         }
 
         foreach ($key in $this.Users.Keys) {
             if ($key -notin $allUsers.ID) {
+                Write-Verbose -Message "[SlackBackend:LoadUsers] Removing outdated user [$key]"
                 $this.Users.Remove($key)
             }
         }
@@ -548,15 +551,19 @@ class SlackBackend : Backend {
     # Get a user Id by their name
     [string]UsernameToUserId([string]$Username) {
         $Username = $Username.TrimStart('@')
-        $user = (Get-SlackUser -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Name $Username -Verbose:$false -ErrorAction SilentlyContinue)
+        $user = $this.Users.Values | Where-Object {$_.Nickname -eq $Username}
         if ($user) {
-            # Reload our user cache if we don't know about this user
-            if (-not $this.Users.ContainsKey($user.Id)) {
-                $this.LoadUsers()
-            }
             return $user.Id
         } else {
-            return $null
+            # User each doesn't exist or is not in the local cache
+            # Refresh it and try again
+            $this.LoadUsers()
+            $user = $this.Users.Values | Where-Object {$_.Nickname -eq $Username}
+            if (-not $user) {
+                return $null
+            } else {
+                return $user.Id
+            }
         }
     }
 
