@@ -67,15 +67,23 @@ function Get-CommandHelp {
     $result = @()
     if ($PSBoundParameters.ContainsKey('Filter')) {
         $respParams.Title = "Commands matching [$Filter]"
-        $result = @($allCommands | Where-Object {
-            ($_.FullCommandName -like "*$Filter*") -or
-            ($_.Command -like "*$Filter*") -or
-            ($_.Plugin -like "*$Filter*") -or
-            ($_.Version -like "*$Filter*") -or
-            ($_.Description -like "*$Filter*") -or
-            ($_.Usage -like "*$Filter*") -or
-            ($_.Aliases -like "*$Filter*")
-        })
+        $exact = @($allCommands.where({
+            $_.FullCommandName -like $Filter -or
+            $_.Command -like $Filter -or
+            $_.Aliases -like $Filter}))
+        if($exact.count -eq 1) {
+            $result = $Exact
+        } else {
+            $result = @($allCommands | Where-Object {
+                ($_.FullCommandName -like "*$Filter*") -or
+                ($_.Command -like "*$Filter*") -or
+                ($_.Plugin -like "*$Filter*") -or
+                ($_.Version -like "*$Filter*") -or
+                ($_.Description -like "*$Filter*") -or
+                ($_.Usage -like "*$Filter*") -or
+                ($_.Aliases -like "*$Filter*")
+            })
+        }
     } else {
         $respParams.Title = 'All commands'
         $result = $allCommands
