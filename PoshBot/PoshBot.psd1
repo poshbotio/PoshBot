@@ -136,6 +136,7 @@ PrivateData = @{
 - Better error handling logic when parsing command help.
 - Use [Configuration] module when reading in bot configuration with [Get-PoshBotConfiguration] so PSCredentials can be deserialized correctly.
 - Improved user name/id resolution to avoid Slack API rate limits.
+- Fixed regression when using the [PoshBot.BotFrom()] custom attribute with an empty parameter.
 
 ## [0.5.0] 2017-06-14
 ### Added
