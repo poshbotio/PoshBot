@@ -83,6 +83,8 @@ namespace PoshBot {
 
         private string _name;
 
+        public FromConfig() {}
+
         public FromConfig(string Name) {
             this.Name = Name;
         }
