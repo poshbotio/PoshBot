@@ -58,10 +58,9 @@ task Pester -Depends Build {
         Set-BuildEnvironment -Path $PSScriptRoot\..
     }
 
-    $env:PSModulePath
     $origModulePath = $env:PSModulePath
     if ( $env:PSModulePath.split(';') -notcontains $outputDir ) {
-        $env:PSModulePath += ";$outputDir"
+        $env:PSModulePath = "$outputDir;$origModulePath"
     }
 
     Remove-Module $ENV:BHProjectName -ErrorAction SilentlyContinue -Verbose:$false
