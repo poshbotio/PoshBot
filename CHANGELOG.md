@@ -16,8 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Use [Configuration] module when reading in bot configuration with [Get-PoshBotConfiguration] so PSCredentials can be deserialized correctly.
 - Improved user name/id resolution to avoid Slack API rate limits.
 - Fixed regression when using the [PoshBot.BotFrom()] custom attribute with an empty parameter.
-- PR46 - Adjust help filter in [Get-CommandHelp] command to match exact first and display results if exactly one command was matched. Continue with
-  existing behaviour if more than one command is returned. (via @RamblingCookieMonster)
+- PR46 - Adjust help filter in [Get-CommandHelp] command to match exact first and display results if exactly one command was matched.
+  Continue with existing behavior if more than one command is returned. (via @RamblingCookieMonster)
 
 ## [0.5.0] 2017-06-14
 ### Added
@@ -74,7 +74,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [0.2.2] 2017-04-17
 ### Fixed
 - Command tokenization issues on Nano Server.
-- #24: Nano Server compatability
+- #24: Nano Server compatibility
 
 ## [0.2.1] 2017-04-14
 ### Fixed
@@ -105,9 +105,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Support for multiple plugin versions
 
 ### Changed
-- Standadized builtin bot command parameter names
-- Move demo commands (WolframAlpha, Giphy) into seperate plugin repos
-- Move network plugin into seperate repo
+- Standardized builtin bot command parameter names
+- Move demo commands (WolframAlpha, Giphy) into separate plugin repos
+- Move network plugin into separate repo
 
 ### Fixed
 - Fix StopUpstreamCommandsException exception from being thrown in Install-Plugin command
