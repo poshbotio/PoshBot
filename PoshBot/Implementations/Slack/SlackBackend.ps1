@@ -163,6 +163,8 @@ class SlackBackend : Backend {
 
     # Connect to Slack
     [void]Connect() {
+        $this.LogInfo('Connecting to backend')
+        $this.LogInfo('Listening for the following message types. All others will be ignored', $this.MessageTypes)
         $this.Connection.Connect()
         $this.BotId = $this.GetBotIdentity()
         $this.LoadUsers()
@@ -173,12 +175,12 @@ class SlackBackend : Backend {
     [Message[]]ReceiveMessage() {
         $messages = New-Object -TypeName System.Collections.ArrayList
         try {
-
             # Read the output stream from the receive job and get any messages since our last read
             $jsonResult = $this.Connection.ReadReceiveJob()
 
             if ($null -ne $jsonResult -and $jsonResult -ne [string]::Empty) {
-                Write-Debug -Message "[SlackBackend:ReceiveMessage] Received `n$jsonResult"
+                #Write-Debug -Message "[SlackBackend:ReceiveMessage] Received `n$jsonResult"
+                $this.LogDebug('Received message', $jsonResult)
 
                 # Strip out Slack's URI formatting
                 $jsonResult = $this._SanitizeURIs($jsonResult)
@@ -241,8 +243,10 @@ class SlackBackend : Backend {
                                 }
                             }
                         }
+                        $this.LogDebug("Message type is [$($msg.Type)`:$($msg.Subtype)]")
 
                         $msg.RawMessage = $slackMessage
+                        $this.LogDebug('Raw message', $slackMessage)
                         if ($slackMessage.text)    { $msg.Text = $slackMessage.text }
                         if ($slackMessage.channel) { $msg.To   = $slackMessage.channel }
                         if ($slackMessage.user)    { $msg.From = $slackMessage.user }
@@ -275,6 +279,8 @@ class SlackBackend : Backend {
                         if (-not $this.MsgFromBot($msg.From)) {
                             $messages.Add($msg) > $null
                         }
+                    } else {
+                        $this.LogDebug("Message type is [$($slackMessage.Type)]. Ignoring")
                     }
                 }
             }
@@ -306,6 +312,7 @@ class SlackBackend : Backend {
     # Send a message back to Slack
     [void]SendMessage([Response]$Response) {
         # Process any custom responses
+        $this.LogDebug("[$($Response.Data.Count)] custom responses")
         foreach ($customResponse in $Response.Data) {
 
             [string]$sendTo = $Response.To
@@ -315,8 +322,8 @@ class SlackBackend : Backend {
 
             switch -Regex ($customResponse.PSObject.TypeNames[0]) {
                 '(.*?)PoshBot\.Card\.Response' {
+                    $this.LogDebug('Custom response is [PoshBot.Card.Response]')
                     $chunks = $this._ChunkString($customResponse.Text)
-                    Write-Verbose "Split response into [$($chunks.Count)] chunks"
                     $x = 0
                     foreach ($chunk in $chunks) {
                         $attParams = @{
@@ -325,7 +332,7 @@ class SlackBackend : Backend {
                         }
                         $fbText = 'no data'
                         if (-not [string]::IsNullOrEmpty($chunk.Text)) {
-                            Write-Verbose "response size: $($chunk.Text.Length)"
+                            $this.LogDebug("Response size [$($chunk.Text.Length)]")
                             $fbText = $chunk.Text
                         }
                         $attParams.Fallback = $fbText
@@ -366,11 +373,13 @@ class SlackBackend : Backend {
                         }
                         $att = New-SlackMessageAttachment @attParams
                         $msg = $att | New-SlackMessage -Channel $sendTo -AsUser
+                        $this.LogDebug("Sending card response back to Slack channel [$sendTo]", $att)
                         $slackResponse = $msg | Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Verbose:$false
                     }
                     break
                 }
                 '(.*?)PoshBot\.Text\.Response' {
+                    $this.LogDebug('Custom response is [PoshBot.Text.Response]')
                     $chunks = $this._ChunkString($customResponse.Text)
                     foreach ($chunk in $chunks) {
                         if ($customResponse.AsCode) {
@@ -378,11 +387,13 @@ class SlackBackend : Backend {
                         } else {
                             $t = $chunk
                         }
+                        $this.LogDebug("Sending text response back to Slack channel [$sendTo]", $t)
                         $slackResponse = Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Channel $sendTo -Text $t -Verbose:$false -AsUser
                     }
                     break
                 }
                 '(.*?)PoshBot\.File\.Upload' {
+                    $this.LogDebug('Custom response is [PoshBot.File.Upload]')
                     $uploadParams = @{
                         Token = $this.Connection.Config.Credential.GetNetworkCredential().Password
                         Channel = $sendTo
@@ -393,6 +404,7 @@ class SlackBackend : Backend {
                     } else {
                         $uploadParams.Title = Split-Path -Path $customResponse.Path -Leaf
                     }
+                    $this.LogDebug("Uploading [$($customResponse.Path)] to Slack channel [$sendTo]")
                     Send-SlackFile @uploadParams -Verbose:$false
                     Remove-Item -LiteralPath $customResponse.Path -Force
                     break
@@ -402,6 +414,7 @@ class SlackBackend : Backend {
 
         if ($Response.Text.Count -gt 0) {
             foreach ($t in $Response.Text) {
+                $this.LogDebug("Sending response back to Slack channel [$($Response.To)]", $t)
                 $slackResponse = Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Channel $Response.To -Text $t -Verbose:$false -AsUser
             }
         }
@@ -421,9 +434,10 @@ class SlackBackend : Backend {
                 channel = $Message.To
                 timestamp = $Message.RawMessage.ts
             }
+            $this.LogDebug("Adding reaction [$emoji] to message Id [$($Message.RawMessage.ts)]")
             $resp = Send-SlackApi -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Method 'reactions.add' -Body $body -Verbose:$false
             if (-not $resp.ok) {
-                Write-Error $resp
+                $this.LogInfo([LogSeverity]::Error, 'Error adding reaction to message', $resp)
             }
         }
     }
@@ -442,9 +456,10 @@ class SlackBackend : Backend {
                 channel = $Message.To
                 timestamp = $Message.RawMessage.ts
             }
+            $this.LogDebug("Removing reaction [$emoji] from message Id [$($Message.RawMessage.ts)]")
             $resp = Send-SlackApi -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Method 'reactions.remove' -Body $body -Verbose:$false
             if (-not $resp.ok) {
-                Write-Error $resp
+                $this.LogInfo([LogSeverity]::Error, 'Error removing reaction to message', $resp)
             }
         }
     }
@@ -458,12 +473,15 @@ class SlackBackend : Backend {
         if (-not $ChannelId) {
             $channelId = ($this.Connection.LoginData.channels | Where-Object id -eq $ChannelName).id
         }
+        $this.LogDebug("Resolved channel [$ChannelName] to [$channelId]")
         return $channelId
     }
 
     # Populate the list of users the Slack team
     [void]LoadUsers() {
+        $this.LogDebug('Getting Slack users')
         $allUsers = Get-Slackuser -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Verbose:$false
+        $this.LogDebug("[$($allUsers.Count)] users returned")
         $allUsers | ForEach-Object {
             $user = [SlackPerson]::new()
             $user.Id = $_.ID
@@ -485,14 +503,14 @@ class SlackBackend : Backend {
             $user.Presence = $_.Presence
             $user.Deleted = $_.Deleted
             if (-not $this.Users.ContainsKey($_.ID)) {
-                Write-Verbose -Message "[SlackBackend:LoadUsers] Adding user [$($_.ID):$($_.Name)]"
+                $this.LogDebug("Adding user [$($_.ID):$($_.Name)]")
                 $this.Users[$_.ID] =  $user
             }
         }
 
         foreach ($key in $this.Users.Keys) {
             if ($key -notin $allUsers.ID) {
-                Write-Verbose -Message "[SlackBackend:LoadUsers] Removing outdated user [$key]"
+                $this.LogDebug("Removing outdated user [$key]")
                 $this.Users.Remove($key)
             }
         }
@@ -500,7 +518,9 @@ class SlackBackend : Backend {
 
     # Populate the list of channels in the Slack team
     [void]LoadRooms() {
+        $this.LogDebug('Getting Slack channels')
         $allChannels = Get-SlackChannel -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -ExcludeArchived -Verbose:$false
+        $this.LogDebug("[$($allChannels.Count)] channels returned")
 
         $allChannels | ForEach-Object {
             $channel = [SlackChannel]::new()
@@ -516,12 +536,13 @@ class SlackBackend : Backend {
             foreach ($member in $_.Members) {
                 $channel.Members.Add($member, $null)
             }
-            Write-Verbose -Message "[SlackBackend:LoadRooms] Adding channel: $($_.ID):$($_.Name)"
+            $this.LogDebug("Adding channel: $($_.ID):$($_.Name)")
             $this.Rooms[$_.ID] = $channel
         }
 
         foreach ($key in $this.Rooms.Keys) {
             if ($key -notin $allChannels.ID) {
+                $this.LogDebug("Removing outdated channel [$key]")
                 $this.Rooms.Remove($key)
             }
         }
@@ -529,52 +550,82 @@ class SlackBackend : Backend {
 
     # Get the bot identity Id
     [string]GetBotIdentity() {
-        return $this.Connection.LoginData.self.id
+        $id = $this.Connection.LoginData.self.id
+        $this.LogVerbose("Bot identity is [$id]")
+        return $id
     }
 
     # Determine if incoming message was from the bot
     [bool]MsgFromBot([string]$From) {
-        return $this.BotId -eq $From
+        $frombot = ($this.BotId -eq $From)
+        if ($fromBot) {
+            $this.LogDebug("Message is from bot [From: $From == Bot: $($this.BotId)]. Ignoring")
+        } else {
+            $this.LogDebug("Message is not from bot [From: $From <> Bot: $($this.BotId)]")
+        }
+        return $fromBot
     }
 
     # Get a user by their Id
     [SlackPerson]GetUser([string]$UserId) {
         $user = $this.Users[$UserId]
-        if ($user) {
-            return $user
-        } else {
+        if (-not $user) {
+            $this.LogDebug([LogSeverity]::Warning, "User [$UserId] not found. Refreshing users")
             $this.LoadUsers()
-            return $this.Users[$UserId]
+            $user = $this.Users[$UserId]
         }
+
+        if ($user) {
+            $this.LogDebug("Resolved user [$UserId]", $user)
+        } else {
+            $this.LogDebug([LogSeverity]::Warning, "Could not resolve user [$UserId]")
+        }
+        return $user
     }
 
     # Get a user Id by their name
     [string]UsernameToUserId([string]$Username) {
         $Username = $Username.TrimStart('@')
         $user = $this.Users.Values | Where-Object {$_.Nickname -eq $Username}
+        $id = $null
         if ($user) {
-            return $user.Id
+            $id = $user.Id
         } else {
             # User each doesn't exist or is not in the local cache
             # Refresh it and try again
+            $this.LogDebug([LogSeverity]::Warning, "User [$Username] not found. Refreshing users")
             $this.LoadUsers()
             $user = $this.Users.Values | Where-Object {$_.Nickname -eq $Username}
             if (-not $user) {
-                return $null
+                $id = $null
             } else {
-                return $user.Id
+                $id = $user.Id
             }
         }
+        if ($id) {
+            $this.LogDebug("Resolved [$Username] to [$id]")
+        } else {
+            $this.LogDebug([LogSeverity]::Warning, "Could not resolve user [$Username]")
+        }
+        return $id
     }
 
     # Get a user name by their Id
     [string]UserIdToUsername([string]$UserId) {
+        $name = $null
         if ($this.Users.ContainsKey($UserId)) {
-            return $this.Users[$UserId].Nickname
+            $name = $this.Users[$UserId].Nickname
         } else {
+            $this.LogDebug([LogSeverity]::Warning, "User [$UserId] not found. Refreshing users")
             $this.LoadUsers()
-            return $this.Users[$UserId].Nickname
+            $name = $this.Users[$UserId].Nickname
         }
+        if ($name) {
+            $this.LogDebug("Resolved [$UserId] to [$name]")
+        } else {
+            $this.LogDebug([LogSeverity]::Warning, "Could not resolve user [$UserId]")
+        }
+        return $null
     }
 
     # Remove extra characters that Slack decorates urls with
@@ -586,7 +637,9 @@ class SlackBackend : Backend {
 
     # Break apart a string by number of characters
     hidden [System.Collections.ArrayList] _ChunkString([string]$Text) {
-        return [regex]::Split($Text, "(?<=\G.{$($this.MaxMessageLength)})", [System.Text.RegularExpressions.RegexOptions]::Singleline)
+        $chunks = [regex]::Split($Text, "(?<=\G.{$($this.MaxMessageLength)})", [System.Text.RegularExpressions.RegexOptions]::Singleline)
+        $this.LogDebug("Split response into [$($chunks.Count)] chunks")
+        return $chunks
     }
 
     # Resolve a reaction type to an emoji

@@ -1,24 +1,27 @@
 #requires -Modules Configuration
 
-class StorageProvider {
+class StorageProvider : BaseLogger {
 
     [string]$ConfigPath
 
-    StorageProvider() {
+    StorageProvider([Logger]$Logger) {
+        $this.Logger = $Logger
         $this.ConfigPath = (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot')
     }
 
-    StorageProvider([string]$Dir) {
+    StorageProvider([string]$Dir, [Logger]$Logger) {
+        $this.Logger = $Logger
         $this.ConfigPath = $Dir
     }
 
     [hashtable]GetConfig([string]$ConfigName) {
-        $path = Join-Path -Path $this.ConfigPath -ChildPath "$ConfigName.psd1"
+        $path = Join-Path -Path $this.ConfigPath -ChildPath "$($ConfigName).psd1"
         if (Test-Path -Path $path) {
+            $this.LogDebug("Loading config [$ConfigName] from [$path]")
             $config = Get-Content -Path $path -Raw | ConvertFrom-Metadata
             return $config
         } else {
-            Write-Warning -Message "Configuration [$path] not found"
+            $this.LogInfo([LogSeverity]::Warning, "Configuration file [$path] not found")
             return $null
         }
     }
@@ -29,6 +32,7 @@ class StorageProvider {
         if (-not (Test-Path -Path $path)) {
             New-Item -Path $Path -ItemType File
         }
+        $this.LogDebug("Saving config [$ConfigName] to [$path]")
         $meta | Out-file -FilePath $path -Force -Encoding utf8
     }
 }

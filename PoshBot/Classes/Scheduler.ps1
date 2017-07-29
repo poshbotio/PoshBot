@@ -1,25 +1,23 @@
 
-class Scheduler {
+class Scheduler : BaseLogger {
 
     [hashtable]$Schedules = @{}
 
     hidden [StorageProvider]$_Storage
 
-    hidden [Logger]$_Logger
-
     Scheduler([StorageProvider]$Storage, [Logger]$Logger) {
         $this._Storage = $Storage
-        $this._Logger = $Logger
+        $this.Logger = $Logger
         $this.Initialize()
     }
 
     [void]Initialize() {
-        $this._Logger.Info([LogMessage]::new('[Scheduler:Initialize] Initializing'))
+        $this.LogInfo('Initializing')
         $this.LoadState()
     }
 
     [void]LoadState() {
-        $this._Logger.Verbose([LogMessage]::new('[Scheduler:LoadState] Loading scheduler state from storage'))
+        $this.LogVerbose('Loading scheduler state from storage')
 
         if ($scheduleConfig = $this._Storage.GetConfig('schedules')) {
             foreach($key in $scheduleConfig.Keys) {
@@ -48,7 +46,7 @@ class Scheduler {
     }
 
     [void]SaveState() {
-        $this._Logger.Verbose([LogMessage]::new('[Scheduler:SaveState] Saving scheduler state to storage'))
+        $this.LogVerbose('Saving scheduler state to storage')
 
         $schedulesToSave = @{}
         foreach ($schedule in $this.Schedules.GetEnumerator()) {
@@ -63,15 +61,14 @@ class Scheduler {
 
     [void]ScheduleMessage([ScheduledMessage]$ScheduledMessage, [bool]$Save) {
         if (-not $this.Schedules.ContainsKey($ScheduledMessage.Id)) {
-            $this._Logger.Info([LogMessage]::new("[Scheduler:ScheduleMessage] Scheduled message [$($ScheduledMessage.Id)]", $ScheduledMessage))
+            $this.LogInfo("Scheduled message [$($ScheduledMessage.Id)]", $ScheduledMessage)
             if ($ScheduledMessage.Enabled) {
                 $ScheduledMessage.StartTimer()
             }
             $this.Schedules.Add($ScheduledMessage.Id, $ScheduledMessage)
         } else {
-            $msg = "[Scheduler:ScheduleMessage] Id [$($ScheduledMessage.Id)] is already scheduled"
-            $this._Logger.Info([LogMessage]::new([LogSeverity]::Error, $msg))
-            Write-Error -Message $msg
+            $msg = "Id [$($ScheduledMessage.Id)] is already scheduled"
+            $this.LogInfo([LogSeverity]::Error, $msg)
         }
         if ($Save) {
             $this.SaveState()
@@ -81,7 +78,7 @@ class Scheduler {
     [void]RemoveScheduledMessage([string]$Id) {
         if ($this.GetSchedule($Id)) {
             $this.Schedules.Remove($id)
-            $this._Logger.Info([LogMessage]::new("[Scheduler:RemoveScheduledMessage] Scheduled message [$($_.Id)] removed"))
+            $this.LogInfo("Scheduled message [$($_.Id)] removed")
             $this.SaveState()
         }
     }
@@ -98,7 +95,7 @@ class Scheduler {
         $remove = @()
         $messages = $this.Schedules.GetEnumerator() | Foreach-Object {
             if ($_.Value.HasElapsed()) {
-                $this._Logger.Info([LogMessage]::new("[Scheduler:GetTriggeredMessages] Timer reached on scheduled command [$($_.Value.Id)]"))
+                $this.LogInfo("Timer reached on scheduled command [$($_.Value.Id)]")
 
                 # Check if one time command
                 if ($_.Value.Once) {
@@ -126,9 +123,8 @@ class Scheduler {
         if ($msg = $this.Schedules[$id]) {
             return $msg
         } else {
-            $msg = "[Scheduler:GetSchedule] Unknown schedule Id [$Id]"
-            $this._Logger.Info([LogMessage]::new([LogSeverity]::Error, $msg))
-            Write-Error -Message $msg
+            $msg = "Unknown schedule Id [$Id]"
+            $this.LogInfo([LogSeverity]::Warning, $msg)
             return $null
         }
     }
@@ -136,7 +132,7 @@ class Scheduler {
     [ScheduledMessage]SetSchedule([ScheduledMessage]$ScheduledMessage) {
         $existingMessage = $this.GetSchedule($ScheduledMessage.Id)
         $existingMessage.Init($ScheduledMessage.TimeInterval, $ScheduledMessage.TimeValue, $ScheduledMessage.Message, $ScheduledMessage.Enabled, $ScheduledMessage.StartAfter)
-        $this._Logger.Info([LogMessage]::new("[Scheduler:SetSchedule] Scheduled message [$($ScheduledMessage.Id)] modified", $existingMessage))
+        $this.LogInfo("Scheduled message [$($ScheduledMessage.Id)] modified", $existingMessage)
         if ($existingMessage.Enabled) {
             $existingMessage.ResetTimer()
         }
@@ -147,7 +143,7 @@ class Scheduler {
 
     [ScheduledMessage]EnableSchedule([string]$Id) {
         if ($msg = $this.GetSchedule($Id)) {
-            $this._Logger.Info([LogMessage]::new("[Scheduler:EnableSchedule] Enabled scheduled command [$($_.Id)] enabled"))
+            $this.LogInfo("Enabled scheduled command [$($_.Id)] enabled")
             $msg.Enable()
             $this.SaveState()
             return $msg
@@ -158,7 +154,7 @@ class Scheduler {
 
     [ScheduledMessage]DisableSchedule([string]$Id) {
         if ($msg = $this.GetSchedule($Id)) {
-            $this._Logger.Info([LogMessage]::new("[Scheduler:DisableSchedule] Disabled scheduled command [$($_.Id)] enabled"))
+            $this.LogInfo("Disabled scheduled command [$($_.Id)] enabled")
             $msg.Disable()
             $this.SaveState()
             return $msg

@@ -26,7 +26,7 @@ function New-Role {
         [string]$Description
     )
 
-    $role = [Role]::New($Name)
+    $role = [Role]::New($Name, $Bot.Logger)
     if ($PSBoundParameters.ContainsKey('Description')) {
         $role.Description = $Description
     }

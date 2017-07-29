@@ -1,6 +1,6 @@
 
 # In charge of executing and tracking progress of commands
-class CommandExecutor {
+class CommandExecutor : BaseLogger {
 
     [RoleManager]$RoleManager
 
@@ -17,14 +17,14 @@ class CommandExecutor {
     # This is to keep track of those
     hidden [hashtable]$_jobTracker = @{}
 
-    CommandExecutor([RoleManager]$RoleManager, [Bot]$Bot) {
+    CommandExecutor([RoleManager]$RoleManager, [Logger]$Logger, [Bot]$Bot) {
         $this.RoleManager = $RoleManager
+        $this.Logger = $Logger
         $this._bot = $Bot
     }
 
     # Execute a command
     [void]ExecuteCommand([PluginCommand]$PluginCmd, [ParsedCommand]$ParsedCommand, [Message]$Message) {
-
         $cmdExecContext = [CommandExecutionContext]::new()
         $cmdExecContext.Started = (Get-Date).ToUniversalTime()
         $cmdExecContext.Result = [CommandResult]::New()
@@ -32,6 +32,7 @@ class CommandExecutor {
         $cmdExecContext.FullyQualifiedCommandName = $pluginCmd.ToString()
         $cmdExecContext.ParsedCommand = $ParsedCommand
         $cmdExecContext.Message = $Message
+        $this.LogDebug("Executing command [$($PluginCmd.ToString())]")
 
         # Verify command is not disabled
         if (-not $cmdExecContext.Command.Enabled) {
@@ -40,7 +41,7 @@ class CommandExecutor {
             $cmdExecContext.Ended = (Get-Date).ToUniversalTime()
             $cmdExecContext.Result.Success = $false
             $cmdExecContext.Result.Errors += $err
-            Write-Error -Exception $err
+            $this.LogInfo([LogSeverity]::Error, $err.Message, $err)
             $this.TrackJob($cmdExecContext)
             return
         }
@@ -58,7 +59,7 @@ class CommandExecutor {
                 $cmdExecContext.Ended = (Get-Date).ToUniversalTime()
                 $cmdExecContext.Result.Success = $false
                 $cmdExecContext.Result.Errors += $err
-                Write-Error -Exception $err
+                $this.LogInfo([LogSeverity]::Error, $err.Message, $err)
                 $this.TrackJob($cmdExecContext)
                 return
             }
@@ -78,11 +79,15 @@ class CommandExecutor {
             }
 
             if ($cmdExecContext.Command.AsJob) {
+                $this.LogDebug("Command [$($cmdExecContext.FullyQualifiedCommandName)] will be executed as a job")
+
                 # Kick off job and add to job tracker
                 $cmdExecContext.IsJob = $true
                 $cmdExecContext.Job = $cmdExecContext.Command.Invoke($ParsedCommand, $true)
+                $this.LogDebug("Command [$($cmdExecContext.FullyQualifiedCommandName)] executing in job [$($cmdExecContext.Job.Id)]")
                 $cmdExecContext.Complete = $false
             } else {
+                $this.LogDebug("Command [$($cmdExecContext.FullyQualifiedCommandName)] will be executed in the current PS session")
                 # Run command in current session and get results
                 # This should only be 'builtin' commands
                 try {
@@ -100,19 +105,23 @@ class CommandExecutor {
                     } else {
                         $cmdExecContext.Result.Success = $true
                     }
+                    $this.LogVerbose("Command [$($cmdExecContext.FullyQualifiedCommandName)] completed with results", $cmdExecContext.Result)
                 } catch {
                     $cmdExecContext.Complete = $true
                     $cmdExecContext.Result.Success = $false
                     $cmdExecContext.Result.Errors = $_.Exception.Message
                     $cmdExecContext.Result.Streams.Error = $_.Exception.Message
+                    $this.LogInfo([LogSeverity]::Error, $_.Exception.Message, $_)
                 }
             }
         } else {
             $msg = "Command [$($cmdExecContext.Command.Name)] was not authorized for user [$($Message.From)]"
+            $err = [CommandNotAuthorized]::New($msg)
             $cmdExecContext.Complete = $true
-            $cmdExecContext.Result.Errors += [CommandNotAuthorized]::New($msg)
+            $cmdExecContext.Result.Errors += err
             $cmdExecContext.Result.Success = $false
             $cmdExecContext.Result.Authorized = $false
+            $this.LogInfo([LogSeverity]::Error, $err.Message, $err)
             $this.TrackJob($cmdExecContext)
             return
         }
@@ -124,7 +133,7 @@ class CommandExecutor {
     # So the status and results of it can be checked later
     [void]TrackJob([CommandExecutionContext]$CommandContext) {
         if (-not $this._jobTracker.ContainsKey($CommandContext.Id)) {
-            Write-Verbose -Message "[CommandExecutor:TrackJob] - Adding job [$($CommandContext.Id)] to tracker"
+            $this.LogVerbose("Adding job [$($CommandContext.Id)] to tracker")
             $this._jobTracker.Add($CommandContext.Id, $CommandContext)
         }
     }
@@ -145,8 +154,7 @@ class CommandExecutor {
                 # was already recorded in the [Result] property in the ExecuteCommand() method
                 if ($cmdExecContext.IsJob) {
                     if ($cmdExecContext.Job.State -eq 'Completed') {
-
-                        Write-Verbose -Message "[CommandExecutor:ReceiveJob] Job [$($cmdExecContext.Id)] is complete"
+                        $this.LogVerbose("Job [$($cmdExecContext.Id)] is complete")
                         $cmdExecContext.Complete = $true
                         $cmdExecContext.Ended = (Get-Date).ToUniversalTime()
 
@@ -165,13 +173,14 @@ class CommandExecutor {
                             $cmdExecContext.Result.Success = $true
                         }
 
-                        Write-Debug -Message "[CommandExecutor:ReceiveJob] Job results:`n$($cmdExecContext.Result | ConvertTo-Json)"
+                        $this.LogVerbose("Command [$($cmdExecContext.FullyQualifiedCommandName)] completed with results", $cmdExecContext.Result)
 
                         # Clean up the job
                         Remove-Job -Job $cmdExecContext.Job
                     } elseIf ($cmdExecContext.Job.State -eq 'Failed') {
                         $cmdExecContext.Complete = $true
                         $cmdExecContext.Result.Success = $false
+                        $this.LogVerbose("Command [$($cmdExecContext.FullyQualifiedCommandName)] failed", $cmdExecContext.Result)
                     }
                 }
 
@@ -190,7 +199,7 @@ class CommandExecutor {
                     $this.AddToHistory($cmdExecContext)
                 }
 
-                Write-Verbose -Message "[CommandExecutor:ReceiveJob] Removing job [$($cmdExecContext.Id)] from tracker"
+                $this.LogVerbose("Removing job [$($cmdExecContext.Id)] from tracker")
                 $this._jobTracker.Remove($cmdExecContext.Id)
 
                 # Remove the reaction specifying the command is in process
@@ -217,6 +226,7 @@ class CommandExecutor {
         if ($this.History.Count -ge $this.HistoryToKeep) {
             $this.History.RemoveAt(0) > $null
         }
+        $this.LogDebug("Adding command execution [$($CmdExecContext.Id)] to history")
         $this.History.Add($CmdExecContext)
     }
 
@@ -224,14 +234,14 @@ class CommandExecutor {
     [bool]ValidateMandatoryParameters([ParsedCommand]$ParsedCommand, [Command]$Command) {
         $validated = $false
         foreach ($parameterSet in $Command.FunctionInfo.ParameterSets) {
-            Write-Verbose -Message "[CommandExecutor:ValidateMandatoryParameters] Validating parameters for parameter set [$($parameterSet.Name)]"
+            $this.LogDebug("Validating parameters for parameter set [$($parameterSet.Name)]")
             $mandatoryParameters = @($parameterSet.Parameters | Where-Object {$_.IsMandatory -eq $true}).Name
             if ($mandatoryParameters.Count -gt 0) {
                 # Remove each provided mandatory parameter from the list
                 # so we can find any that will have to be coverd by positional parameters
-                Write-Verbose -Message "[CommandExecutor:ValidateMandatoryParameters] Provided named parameters: $($ParsedCommand.NamedParameters.Keys | Format-List | Out-String)"
+                $this.LogDebug('Provided named parameters', $ParsedCommand.NamedParameters.Keys)
                 foreach ($providedNamedParameter in $ParsedCommand.NamedParameters.Keys ) {
-                    Write-Verbose -Message "[CommandExecutor:ValidateMandatoryParameters] Named parameter [$providedNamedParameter] provided"
+                    $this.LogDebug("Named parameter [$providedNamedParameter] provided")
                     $mandatoryParameters = @($mandatoryParameters | Where-Object {$_ -ne $providedNamedParameter})
                 }
                 if ($mandatoryParameters.Count -gt 0) {
@@ -247,7 +257,7 @@ class CommandExecutor {
                 $validated = $true
             }
 
-            Write-Verbose -Message "[CommandExecutor:ValidateMandatoryParameters] Valid parameters for parameterset [$($parameterSet.Name)] - [$($validated.ToString())]"
+            $this.LogDebug("Valid parameters for parameterset [$($parameterSet.Name)] - [$($validated.ToString())]")
             if ($validated) {
                 break
             }

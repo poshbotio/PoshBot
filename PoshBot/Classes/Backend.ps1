@@ -1,6 +1,6 @@
 
 # This generic Backend class provides the base scaffolding to represent a chat network
-class Backend {
+class Backend : BaseLogger {
 
     [string]$Name
 

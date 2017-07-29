@@ -1,12 +1,11 @@
 
-class PluginManager {
+class PluginManager : BaseLogger {
 
     [hashtable]$Plugins = @{}
     [hashtable]$Commands = @{}
     hidden [string]$_PoshBotModuleDir
     [RoleManager]$RoleManager
     [StorageProvider]$_Storage
-    [Logger]$Logger
 
     PluginManager([RoleManager]$RoleManager, [StorageProvider]$Storage, [Logger]$Logger, [string]$PoshBotModuleDir) {
         $this.RoleManager = $RoleManager
@@ -18,14 +17,14 @@ class PluginManager {
 
     # Initialize the plugin manager
     [void]Initialize() {
-        $this.Logger.Info([LogMessage]::new('[PluginManager:Initialize] Initializing'))
+        $this.LogInfo('Initializing')
         $this.LoadState()
         $this.LoadBuiltinPlugins()
     }
 
     # Get the list of plugins to load and... wait for it... load them
     [void]LoadState() {
-        $this.Logger.Verbose([LogMessage]::new('[PluginManager:LoadState] Loading plugin state from storage'))
+        $this.LogVerbose('Loading plugin state from storage')
 
         $pluginsToLoad = $this._Storage.GetConfig('plugins')
         if ($pluginsToLoad) {
@@ -68,7 +67,7 @@ class PluginManager {
 
     # Save the state of currently loaded plugins to storage
     [void]SaveState() {
-        $this.Logger.Verbose([LogMessage]::new('[PluginManager:SaveState] Saving loaded plugin state to storage'))
+        $this.LogVerbose('Saving loaded plugin state to storage')
 
         # Skip saving builtin plugin as it will always be loaded at initialization
         $pluginsToSave = @{}
@@ -91,14 +90,15 @@ class PluginManager {
             $moduleName = (Get-Item -Path $ManifestPath).BaseName
             $this.CreatePluginFromModuleManifest($moduleName, $ManifestPath, $true, $SaveAfterInstall)
         } else {
-            Write-Error -Message "Module manifest path [$manifestPath] not found"
+            $msg = "Module manifest path [$manifestPath] not found"
+            $this.LogInfo([LogSeverity]::Warning, $msg)
         }
     }
 
     # Add a plugin to the bot
     [void]AddPlugin([Plugin]$Plugin, [bool]$SaveAfterInstall = $false) {
         if (-not $this.Plugins.ContainsKey($Plugin.Name)) {
-            $this.Logger.Info([LogMessage]::new("[PluginManager:AddPlugin] Attaching plugin [$($Plugin.Name)]"))
+            $this.LogInfo("Attaching plugin [$($Plugin.Name)]")
 
             $pluginVersion = @{
                 ($Plugin.Version).ToString() = $Plugin
@@ -107,24 +107,24 @@ class PluginManager {
 
             # Register the plugins permission set with the role manager
             foreach ($permission in $Plugin.Permissions.GetEnumerator()) {
-                $this.Logger.Info([LogMessage]::new("[PluginManager:AddPlugin] Adding permission [$($permission.Value.ToString())] to Role Manager"))
+                $this.LogVerbose("Adding permission [$($permission.Value.ToString())] to Role Manager")
                 $this.RoleManager.AddPermission($permission.Value)
             }
         } else {
-
             if (-not $this.Plugins[$Plugin.Name].ContainsKey($Plugin.Version)) {
                 # Install a new plugin version
-                $this.Logger.Info([LogMessage]::new("[PluginManager:AddPlugin] Attaching version [$($Plugin.Version)] of plugin [$($Plugin.Name)]"))
-
+                $this.LogInfo("Attaching version [$($Plugin.Version)] of plugin [$($Plugin.Name)]")
                 $this.Plugins[$Plugin.Name].Add($Plugin.Version.ToString(), $Plugin)
 
                 # Register the plugins permission set with the role manager
                 foreach ($permission in $Plugin.Permissions.GetEnumerator()) {
-                    $this.Logger.Info([LogMessage]::new("[PluginManager:AddPlugin] Adding permission [$($permission.Value.ToString())] to Role Manager"))
+                    $this.LogVerbose("Adding permission [$($permission.Value.ToString())] to Role Manager")
                     $this.RoleManager.AddPermission($permission.Value)
                 }
             } else {
-                throw [PluginException]::New("Plugin [$($Plugin.Name)] version [$($Plugin.Version)] is already loaded")
+                $msg = "Plugin [$($Plugin.Name)] version [$($Plugin.Version)] is already loaded"
+                $this.LogInfo([LogSeverity]::Warning, $msg)
+                throw [PluginException]::New($msg)
             }
         }
 
@@ -144,17 +144,19 @@ class PluginManager {
                 # Remove the permissions for this plugin from the role manaager
                 # but only if this is the only version of the plugin loaded
                 foreach ($permission in $Plugin.Permissions.GetEnumerator()) {
-                    $this.Logger.Verbose([LogMessage]::new("[PluginManager:RemovePlugin] Removing permission [$($Permission.Value.ToString())]. No longer in use"))
+                    $this.LogVerbose("Removing permission [$($Permission.Value.ToString())]. No longer in use")
                     $this.RoleManager.RemovePermission($Permission.Value)
                 }
-                $this.Logger.Info([LogMessage]::new("[PluginManager:RemovePlugin] Removing plugin [$($Plugin.Name)]"))
+                $this.LogInfo("Removing plugin [$($Plugin.Name)]")
                 $this.Plugins.Remove($Plugin.Name)
             } else {
                 if ($pluginVersions.ContainsKey($Plugin.Version)) {
-                    $this.Logger.Info([LogMessage]::new("[PluginManager:RemovePlugin] Removing plugin [$($Plugin.Name)] version [$($Plugin.Version)]"))
+                    $this.LogInfo("Removing plugin [$($Plugin.Name)] version [$($Plugin.Version)]")
                     $pluginVersions.Remove($Plugin.Version)
                 } else {
-                    throw [PluginNotFoundException]::New("Plugin [$($Plugin.Name)] version [$($Plugin.Version)] is not loaded in bot")
+                    $msg = "Plugin [$($Plugin.Name)] version [$($Plugin.Version)] is not loaded in bot"
+                    $this.LogInfo([LogSeverity]::Warning, $msg)
+                    throw [PluginNotFoundException]::New($msg)
                 }
             }
         }
@@ -170,25 +172,28 @@ class PluginManager {
     [void]RemovePlugin([string]$PluginName, [string]$Version) {
         if ($p = $this.Plugins[$PluginName]) {
             if ($pv = $p[$Version]) {
-
                 if ($p.Keys.Count -eq 1) {
                     # Remove the permissions for this plugin from the role manaager
                     # but only if this is the only version of the plugin loaded
                     foreach ($permission in $pv.Permissions.GetEnumerator()) {
-                        $this.Logger.Verbose([LogMessage]::new("[PluginManager:RemovePlugin] Removing permission [$($Permission.Value.ToString())]. No longer in use"))
+                        $this.LogVerbose("Removing permission [$($Permission.Value.ToString())]. No longer in use")
                         $this.RoleManager.RemovePermission($Permission.Value)
                     }
-                    $this.Logger.Info([LogMessage]::new("[PluginManager:RemovePlugin] Removing plugin [$($pv.Name)]"))
+                    $this.LogInfo("Removing plugin [$($pv.Name)]")
                     $this.Plugins.Remove($pv.Name)
                 } else {
-                    $this.Logger.Info([LogMessage]::new("[PluginManager:RemovePlugin] Removing plugin [$($pv.Name)] version [$Version]"))
+                    $this.LogInfo("Removing plugin [$($pv.Name)] version [$Version]")
                     $p.Remove($pv.Version.ToString())
                 }
             } else {
-                throw [PluginNotFoundException]::New("Plugin [$PluginName] version [$Version] is not loaded in bot")
+                $msg = "Plugin [$PluginName] version [$Version] is not loaded in bot"
+                $this.LogInfo([LogSeverity]::Warning, $msg)
+                throw [PluginNotFoundException]::New($msg)
             }
         } else {
-            throw [PluginNotFoundException]::New("Plugin [$PluginName] is not loaded in bot")
+            $msg = "Plugin [$PluginName] is not loaded in bot"
+            $this.LogInfo([LogSeverity]::Warning, $msg)
+            throw [PluginNotFoundException]::New()
         }
 
         # Reload commands from all currently loading (and active) plugins
@@ -201,17 +206,21 @@ class PluginManager {
     [void]ActivatePlugin([string]$PluginName, [string]$Version) {
         if ($p = $this.Plugins[$PluginName]) {
             if ($pv = $p[$Version]) {
-                $this.Logger.Info([LogMessage]::new("[PluginManager:ActivatePlugin] Activating plugin [$PluginName] version [$Version]"))
+                $this.LogInfo("Activating plugin [$PluginName] version [$Version]")
                 $pv.Activate()
 
                 # Reload commands from all currently loading (and active) plugins
                 $this.LoadCommands()
                 $this.SaveState()
             } else {
-                throw [PluginNotFoundException]::New("Plugin [$PluginName] version [$Version] is not loaded in bot")
+                $msg = "Plugin [$PluginName] version [$Version] is not loaded in bot"
+                $this.LogInfo([LogSeverity]::Warning, $msg)
+                throw [PluginNotFoundException]::New($msg)
             }
         } else {
-            throw [PluginNotFoundException]::New("Plugin [$PluginName] is not loaded in bot")
+            $msg = "Plugin [$PluginName] is not loaded in bot"
+            $this.LogInfo([LogSeverity]::Warning, $msg)
+            throw [PluginNotFoundException]::New()
         }
     }
 
@@ -220,11 +229,13 @@ class PluginManager {
         $p = $this.Plugins[$Plugin.Name]
         if ($p) {
             if ($pv = $p[$Plugin.Version.ToString()]) {
-                $this.Logger.Info([LogMessage]::new("[PluginManager:ActivatePlugin] Activating plugin [$($Plugin.Name)] version [$($Plugin.Version)]"))
+                $this.LogInfo("Activating plugin [$($Plugin.Name)] version [$($Plugin.Version)]")
                 $pv.Activate()
             }
         } else {
-            throw [PluginNotFoundException]::New("Plugin [$($Plugin.Name)] version [$($Plugin.Version)] is not loaded in bot")
+            $msg = "Plugin [$($Plugin.Name)] version [$($Plugin.Version)] is not loaded in bot"
+            $this.LogInfo([LogSeverity]::Warning, $msg)
+            throw [PluginNotFoundException]::New($msg)
         }
 
         # Reload commands from all currently loading (and active) plugins
@@ -238,11 +249,13 @@ class PluginManager {
         $p = $this.Plugins[$Plugin.Name]
         if ($p) {
             if ($pv = $p[$Plugin.Version.ToString()]) {
-                $this.Logger.Info([LogMessage]::new("[PluginManager:DeactivatePlugin] Deactivating plugin [$($Plugin.Name)] version [$($Plugin.Version)]"))
+                $this.LogInfo("Deactivating plugin [$($Plugin.Name)] version [$($Plugin.Version)]")
                 $pv.Deactivate()
             }
         } else {
-            throw [PluginNotFoundException]::New("Plugin [$($Plugin.Name)] version [$($Plugin.Version)] is not loaded in bot")
+            $msg = "Plugin [$($Plugin.Name)] version [$($Plugin.Version)] is not loaded in bot"
+            $this.LogInfo([LogSeverity]::Warning, $msg)
+            throw [PluginNotFoundException]::New($msg)
         }
 
         # # Reload commands from all currently loading (and active) plugins
@@ -255,17 +268,21 @@ class PluginManager {
     [void]DeactivatePlugin([string]$PluginName, [string]$Version) {
         if ($p = $this.Plugins[$PluginName]) {
             if ($pv = $p[$Version]) {
-                $this.Logger.Info([LogMessage]::new("[PluginManager:DeactivatePlugin] Deactivating plugin [$PluginName)] version [$Version]"))
+                $this.LogInfo("Deactivating plugin [$PluginName)] version [$Version]")
                 $pv.Deactivate()
 
                 # Reload commands from all currently loading (and active) plugins
                 $this.LoadCommands()
                 $this.SaveState()
             } else {
-                throw [PluginNotFoundException]::New("Plugin [$PluginName] version [$Version] is not loaded in bot")
+                $msg = "Plugin [$PluginName] version [$Version] is not loaded in bot"
+                $this.LogInfo([LogSeverity]::Warning, $msg)
+                throw [PluginNotFoundException]::New($msg)
             }
         } else {
-            throw [PluginNotFoundException]::New("Plugin [$PluginName] is not loaded in bot")
+            $msg = "Plugin [$PluginName] is not loaded in bot"
+            $this.LogInfo([LogSeverity]::Warning, $msg)
+            throw [PluginNotFoundException]::New($msg)
         }
     }
 
@@ -278,7 +295,7 @@ class PluginManager {
         foreach ($commandKey in $builtinPlugin.Commands.Keys) {
             $command = $builtinPlugin.Commands[$commandKey]
             if ($command.TriggerMatch($ParsedCommand, $CommandSearch)) {
-                $this.Logger.Info([LogMessage]::new("[PluginManagerBot:MatchCommand] Matched parsed command [$($ParsedCommand.Plugin)`:$($ParsedCommand.Command)] to builtin command [Builtin:$commandKey]"))
+                $this.LogInfo("Matched parsed command [$($ParsedCommand.Plugin)`:$($ParsedCommand.Command)] to builtin command [Builtin:$commandKey]")
                 return [PluginCommand]::new($builtinPlugin, $command)
             }
         }
@@ -287,7 +304,6 @@ class PluginManager {
         if (($ParsedCommand.Plugin -ne [string]::Empty) -and ($ParsedCommand.Command -ne [string]::Empty)) {
             $plugin = $this.Plugins[$ParsedCommand.Plugin]
             if ($plugin) {
-
                 if ($ParsedCommand.Version) {
                     # User specified a specific version of the plugin so get that one
                     $pluginVersion = $plugin[$ParsedCommand.Version]
@@ -301,19 +317,18 @@ class PluginManager {
                     foreach ($commandKey in $pluginVersion.Commands.Keys) {
                         $command = $pluginVersion.Commands[$commandKey]
                         if ($command.TriggerMatch($ParsedCommand, $CommandSearch)) {
-                            $this.Logger.Info([LogMessage]::new("[PluginManager:MatchCommand] Matched parsed command [$($ParsedCommand.Plugin)`:$($ParsedCommand.Command)] to plugin command [$($plugin.Name)`:$commandKey]"))
+                            $this.LogInfo("Matched parsed command [$($ParsedCommand.Plugin)`:$($ParsedCommand.Command)] to plugin command [$($plugin.Name)`:$commandKey]")
                             return [PluginCommand]::new($pluginVersion, $command)
                         }
                     }
                 }
 
-                $this.Logger.Info([LogMessage]::new([LogSeverity]::Warning, "[PluginManager:MatchCommand] Unable to match parsed command [$($ParsedCommand.Plugin)`:$($ParsedCommand.Command)] to a command in plugin [$($plugin.Name)]"))
+                $this.LogInfo([LogSeverity]::Warning, "Unable to match parsed command [$($ParsedCommand.Plugin)`:$($ParsedCommand.Command)] to a command in plugin [$($plugin.Name)]")
             } else {
-                $this.Logger.Info([LogMessage]::new([LogSeverity]::Warning, "[PluginManager:MatchCommand] Unable to match parsed command [$($ParsedCommand.Plugin)`:$($ParsedCommand.Command)] to a plugin command"))
+                $this.LogInfo([LogSeverity]::Warning, "Unable to match parsed command [$($ParsedCommand.Plugin)`:$($ParsedCommand.Command)] to a plugin command")
                 return $null
             }
         } else {
-
             # Check all regular plugins/commands now
             foreach ($pluginKey in $this.Plugins.Keys) {
                 $plugin = $this.Plugins[$pluginKey]
@@ -324,7 +339,7 @@ class PluginManager {
                     foreach ($commandKey in $pluginVersion.Commands.Keys) {
                         $command = $pluginVersion.Commands[$commandKey]
                         if ($command.TriggerMatch($ParsedCommand, $CommandSearch)) {
-                            $this.Logger.Info([LogMessage]::new("[PluginManager:MatchCommand] Matched parsed command [$($ParsedCommand.Plugin)`:$($ParsedCommand.Command)] to plugin command [$pluginKey`:$commandKey]"))
+                            $this.LogInfo("Matched parsed command [$($ParsedCommand.Plugin)`:$($ParsedCommand.Command)] to plugin command [$pluginKey`:$commandKey]")
                             return [PluginCommand]::new($pluginVersion, $command)
                         }
                     }
@@ -335,7 +350,7 @@ class PluginManager {
                         foreach ($commandKey in $pluginVersion.Commands.Keys) {
                             $command = $pluginVersion.Commands[$commandKey]
                             if ($command.TriggerMatch($ParsedCommand, $CommandSearch)) {
-                                $this.Logger.Info([LogMessage]::new("[PluginManager:MatchCommand] Matched parsed command [$($ParsedCommand.Plugin)`:$($ParsedCommand.Command)] to plugin command [$pluginKey`:$commandKey]"))
+                                $this.LogInfo("Matched parsed command [$($ParsedCommand.Plugin)`:$($ParsedCommand.Command)] to plugin command [$pluginKey`:$commandKey]")
                                 return [PluginCommand]::new($pluginVersion, $command)
                             }
                         }
@@ -344,7 +359,7 @@ class PluginManager {
             }
         }
 
-        $this.Logger.Info([LogMessage]::new([LogSeverity]::Warning, "[PluginManager:MatchCommand] Unable to match parsed command [$($ParsedCommand.Plugin)`:$($ParsedCommand.Command)] to a plugin command"))
+        $this.LogInfo([LogSeverity]::Warning, "Unable to match parsed command [$($ParsedCommand.Plugin)`:$($ParsedCommand.Command)] to a plugin command")
         return $null
     }
 
@@ -362,7 +377,7 @@ class PluginManager {
                         $fullyQualifiedCommandName = "$pluginKey`:$CommandKey`:$pluginVersionKey"
                         $allCommands.Add($fullyQualifiedCommandName)
                         if (-not $this.Commands.ContainsKey($fullyQualifiedCommandName)) {
-                            $this.Logger.Verbose([LogMessage]::new("[PluginManager:LoadCommands] Loading command [$fullyQualifiedCommandName]"))
+                            $this.LogVerbose("Loading command [$fullyQualifiedCommandName]")
                             $this.Commands.Add($fullyQualifiedCommandName, $command)
                         }
                     }
@@ -378,7 +393,7 @@ class PluginManager {
             }
         }
         $remove | ForEach-Object {
-            $this.Logger.Verbose([LogMessage]::new("[PluginManager:LoadCommands] Removing command [$_]. Plugin has either been removed or is deactivated."))
+            $this.LogVerbose("Removing command [$_]. Plugin has either been removed or is deactivated.")
             $this.Commands.Remove($_)
         }
     }
@@ -387,7 +402,8 @@ class PluginManager {
     [void]CreatePluginFromModuleManifest([string]$ModuleName, [string]$ManifestPath, [bool]$AsJob = $true, [bool]$SaveAfterCreation = $false) {
         $manifest = Import-PowerShellDataFile -Path $ManifestPath -ErrorAction SilentlyContinue
         if ($manifest) {
-            $plugin = [Plugin]::new()
+            $this.LogInfo("Creating new plugin [$ModuleName]")
+            $plugin = [Plugin]::new($this.Logger)
             $plugin.Name = $ModuleName
             $plugin._ManifestPath = $ManifestPath
             if ($manifest.ModuleVersion) {
@@ -409,17 +425,16 @@ class PluginManager {
             if ($pluginConfig -and $pluginConfig.AdhocPermissions.Count -gt 0) {
                 foreach ($permissionName in $pluginConfig.AdhocPermissions) {
                     if ($p = $this.RoleManager.GetPermission($permissionName)) {
-                        $this.Logger.Debug([LogMessage]::new("[PluginManager:CreatePluginFromModuleManifest] Adding adhoc permission [$permissionName] to plugin [$($plugin.Name)]"))
+                        $this.LogDebug("Adding adhoc permission [$permissionName] to plugin [$($plugin.Name)]")
                         $plugin.AddPermission($p)
                     } else {
-                        $this.Logger.Info([LogMessage]::new("[PluginManager:CreatePluginFromModuleManifest] Adhoc permission [$permissionName] not found in Role Manager. Can't attach permission to plugin [$($plugin.Name)]"))
+                        $this.LogInfo([LogSeverity]::Warning, "Adhoc permission [$permissionName] not found in Role Manager. Can't attach permission to plugin [$($plugin.Name)]")
                     }
                 }
             }
 
             # Add the plugin so the roles can be registered with the role manager
             $this.AddPlugin($plugin, $SaveAfterCreation)
-            $this.Logger.Info([LogMessage]::new("[PluginManager:CreatePluginFromModuleManifest] Created new plugin [$($plugin.Name)]"))
 
             # Get exported cmdlets/functions from the module and add them to the plugin
             # Adjust bot command behaviour based on metadata as appropriate
@@ -435,8 +450,9 @@ class PluginManager {
                 # via the PoshBot.BotCommand extended attribute
                 $metadata = $this.GetCommandMetadata($command)
 
-                $this.Logger.Info([LogMessage]::new("[PluginManager:CreatePluginFromModuleManifest] Creating command [$($command.Name)] for new plugin [$($plugin.Name)]"))
+                $this.LogVerbose("Creating command [$($command.Name)] for new plugin [$($plugin.Name)]")
                 $cmd = [Command]::new()
+                $cmd.Logger = $this.Logger
                 $cmd.Name = $command.Name
 
                 # Triggers that will be added to the command
@@ -465,7 +481,7 @@ class PluginManager {
                             if ($p = $plugin.GetPermission($fqPermission)) {
                                 $cmd.AddPermission($p)
                             } else {
-                                Write-Error -Message "Permission [$fqPermission] is not defined in the plugin module manifest. Command will not be added to plugin."
+                                $this.LogInfo([LogSeverity]::Warning, "Permission [$fqPermission] is not defined in the plugin module manifest. Command will not be added to plugin.")
                                 continue
                             }
                         }
@@ -476,10 +492,10 @@ class PluginManager {
                     if ($pluginConfig) {
                         foreach ($permissionName in $pluginConfig.AdhocPermissions) {
                             if ($p = $this.RoleManager.GetPermission($permissionName)) {
-                                $this.Logger.Debug([LogMessage]::new("[PluginManager:CreatePluginFromModuleManifest] Adding adhoc permission [$permissionName] to command [$($plugin.Name):$($cmd.name)]"))
+                                $this.LogDebug("Adding adhoc permission [$permissionName] to command [$($plugin.Name):$($cmd.name)]")
                                 $cmd.AddPermission($p)
                             } else {
-                                $this.Logger.Info([LogMessage]::new("[PluginManager:CreatePluginFromModuleManifest] Adhoc permission [$permissionName] not found in Role Manager. Can't attach permission to command [$($plugin.Name):$($cmd.name)]"))
+                                $this.LogInfo([LogSeverity]::Warning, "Adhoc permission [$permissionName] not found in Role Manager. Can't attach permission to command [$($plugin.Name):$($cmd.name)]")
                             }
                         }
                     }
@@ -555,6 +571,7 @@ class PluginManager {
                         }
                         $cmd.Usage = $helpSyntax.ToLower().Trim()
                     } else {
+                        $this.LogInfo([LogSeverity]::Warning, "Unable to parse help for command [$($command.Name)]")
                         $cmd.Usage = 'ERROR: Unable to parse command help'
                     }
                 } elseIf ($cmd.TriggerType -eq [TriggerType]::Regex) {
@@ -582,7 +599,7 @@ class PluginManager {
             }
         } else {
             $msg = "Unable to load module manifest [$ManifestPath]"
-            $this.Logger.Info([LogMessage]::new([LogSeverity]::Error, $msg))
+            $this.LogInfo([LogSeverity]::Error, $msg)
             Write-Error -Message $msg
         }
     }
@@ -595,6 +612,13 @@ class PluginManager {
                 $_
             }
         }
+
+        if ($botCmdAttr) {
+            $this.LogDebug("Command [$($Command.Name)] has metadata defined")
+        } else {
+            $this.LogDebug("No metadata defined for command [$($Command.Name)]")
+        }
+
         return $botCmdAttr
     }
 
@@ -613,6 +637,13 @@ class PluginManager {
                 $permissions.Add($p)
             }
         }
+
+        if ($permissions.Count -gt 0) {
+            $this.LogDebug("Permissions defined in module manifest", $permissions)
+        } else {
+            $this.LogDebug('No permissions defined in module manifest')
+        }
+
         return $permissions
     }
 
@@ -620,7 +651,7 @@ class PluginManager {
     # These will be marked so that they DON't execute in a PowerShell job
     # as they need access to the bot internals
     [void]LoadBuiltinPlugins() {
-        $this.Logger.Info([LogMessage]::new('[PluginManager:LoadBuiltinPlugins] Loading builtin plugins'))
+        $this.LogInfo('Loading builtin plugins')
         $builtinPlugin = Get-Item -Path "$($this._PoshBotModuleDir)/Plugins/Builtin"
         $moduleName = $builtinPlugin.BaseName
         $manifestPath = Join-Path -Path $builtinPlugin.FullName -ChildPath "$moduleName.psd1"
@@ -628,12 +659,14 @@ class PluginManager {
     }
 
     [hashtable]GetPluginConfig([string]$PluginName, [string]$Version) {
+        $config = @{}
         if ($pluginConfig = $this._Storage.GetConfig('plugins')) {
             if ($thisPluginConfig = $pluginConfig[$PluginName]) {
                 if (-not [string]::IsNullOrEmpty($Version)) {
                     if ($thisPluginConfig.ContainsKey($Version)) {
                         $pluginVersion = $Version
                     } else {
+                        $this.LogDebug([LogSeverity]::Warning, "Plugin [$PluginName`:$Version] not defined in plugins.psd1")
                         return $null
                     }
                 } else {
@@ -643,9 +676,11 @@ class PluginManager {
                 $pv = $thisPluginConfig[$pluginVersion]
                 return $pv
             } else {
+                $this.LogDebug([LogSeverity]::Warning, "Plugin [$PluginName] not defined in plugins.psd1")
                 return $null
             }
         } else {
+            $this.LogDebug([LogSeverity]::Warning, "No plugin configuration defined in storage")
             return $null
         }
     }

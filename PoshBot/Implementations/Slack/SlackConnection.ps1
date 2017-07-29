@@ -16,8 +16,11 @@ class SlackConnection : Connection {
     # Connect to Slack and start receiving messages
     [void]Connect() {
         if ($null -eq $this.ReceiveJob -or $this.ReceiveJob.State -ne 'Running') {
+            $this.LogDebug('Connecting to Slack Real Time API')
             $this.RtmConnect()
             $this.StartReceiveJob()
+        } else {
+            $this.LogDebug([LogSeverity]::Warning, 'Receive job is already running')
         }
     }
 
@@ -29,14 +32,15 @@ class SlackConnection : Connection {
             $r = Invoke-RestMethod -Uri $url -Method Get -Verbose:$false
             $this.LoginData = $r
             if ($r.ok) {
-                Write-Verbose -Message "[SlackConnection:RtmConnect] Successfully authenticated to Slack at [$($r.Url)]"
+                $this.LogInfo('Successfully authenticated to Slack Real Time API')
                 $this.WebSocketUrl = $r.url
                 $this.Domain = $r.team.domain
                 $this.UserName = $r.self.name
             } else {
-                Write-Error '[SlackConnection:RtmConnect] Slack login error'
+                throw $r
             }
         } catch {
+            $this.LogInfo([LogSeverity]::Error, 'Error connecting to Slack Real Time API', [ExceptionFormatter]::Summarize($_))
             throw $_
         }
     }
@@ -82,7 +86,7 @@ class SlackConnection : Connection {
             $this.ReceiveJob = Start-Job -Name ReceiveRtmMessages -ScriptBlock $recv -ArgumentList $this.WebSocketUrl -ErrorAction Stop -Verbose
             $this.Connected = $true
             $this.Status = [ConnectionStatus]::Connected
-            Write-Verbose "[SlackConnection:StartReceiveJob] Started websocket receive job [$($this.ReceiveJob.Id)]"
+            $this.LogInfo("Started websocket receive job [$($this.ReceiveJob.Id)]")
         } catch {
             throw $_
         }
@@ -99,8 +103,11 @@ class SlackConnection : Connection {
 
     # Stop the receive job
     [void]Disconnect() {
-        Write-Verbose -Message '[SlackConnection:Disconnect] Closing websocket'
-        $this.ReceiveJob | Stop-Job -Confirm:$false -PassThru | Remove-Job -Force -ErrorAction SilentlyContinue
+        $this.LogInfo('Closing websocket')
+        if ($this.ReceiveJob) {
+            $this.LogInfo("Stopping receive job [$($this.ReceiveJob.Id)]")
+            $this.ReceiveJob | Stop-Job -Confirm:$false -PassThru | Remove-Job -Force -ErrorAction SilentlyContinue
+        }
         $this.Connected = $false
         $this.Status = [ConnectionStatus]::Disconnected
     }

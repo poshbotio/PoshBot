@@ -28,7 +28,7 @@ class CommandRequirementsNotMet : CommandException {
 # Represent a command that can be executed
 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidGlobalVars', '', Scope='Function', Target='*')]
 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '', Scope='Function', Target='*')]
-class Command {
+class Command : BaseLogger {
 
     # Unique (to the plugin) name of the command
     [string]$Name
@@ -59,6 +59,12 @@ class Command {
     [AccessFilter]$AccessFilter = [AccessFilter]::new()
 
     [bool]$Enabled = $true
+
+    # Cannot have a constructor called "Command". Lame
+    # We need to set the Logger property separately
+    # Command([Logger]$Logger) {
+    #     $this.Logger = $Logger
+    # }
 
     # Execute the command in a PowerShell job and return the running job
     [object]Invoke([ParsedCommand]$ParsedCommand, [bool]$InvokeAsJob = $this.AsJob) {
@@ -106,6 +112,9 @@ class Command {
             $options.PositionalParameters = @()
         }
 
+        $fqCommand = "$($this.FunctionInfo.Module.name)\$($this.FunctionInfo.name)"
+        $this.LogDebug("Executing command [$fqCommand] with job parameters", $options)
+
         if ($this.FunctionInfo) {
             $options.FunctionInfo = $this.FunctionInfo
         }
@@ -145,29 +154,41 @@ class Command {
 
     [bool]IsAuthorized([string]$UserId, [RoleManager]$RoleManager) {
         $perms = $RoleManager.GetUserPermissions($UserId)
+        $isAuth = $false
         foreach ($perm in $perms) {
             $result = $this.AccessFilter.Authorize($perm.Name)
             if ($result.Authorized) {
-                return $true
+                $this.LogDebug("User [$UserId] authorized to execute command [$($this.Name)] via permission [$($perm.Name)]")
+                $isAuth = $true
+                break
             }
         }
 
-        return $false
+        if ($isAuth) {
+            return $true
+        } else {
+            $this.LogDebug("User [$UserId] not authorized to execute command [$($this.name)]")
+            return $false
+        }
     }
 
     [void]Activate() {
         $this.Enabled = $true
+        $this.LogDebug("Command [$($this.Name)] activated")
     }
 
     [void]Deactivate() {
         $this.Enabled = $false
+        $this.LogDebug("Command [$($this.Name)] deactivated")
     }
 
     [void]AddPermission([Permission]$Permission) {
+        $this.LogDebug("Adding permission [$($Permission.Name)] to [$($this.Name)]")
         $this.AccessFilter.AddPermission($Permission)
     }
 
     [void]RemovePermission([Permission]$Permission) {
+        $this.LogDebug("Removing permission [$($Permission.Name)] from [$($this.Name)]")
         $this.AccessFilter.RemovePermission($Permission)
     }
 
@@ -182,6 +203,7 @@ class Command {
                         # Command tiggers only work with normal messages received from chat network
                         if ($ParsedCommand.OriginalMessage.Type -eq [MessageType]::Message) {
                             if ($trigger.Trigger -eq $ParsedCommand.Command) {
+                                $this.LogDebug("Parsed command [$($ParsedCommand.Command)] matched to command trigger [$($trigger.Trigger)] on command [$($this.Name)]")
                                 $match = $true
                                 break
                             }
@@ -191,6 +213,7 @@ class Command {
                 'Event' {
                     if ($trigger.MessageType -eq $ParsedCommand.OriginalMessage.Type) {
                         if ($trigger.MessageSubtype -eq $ParsedCommand.OriginalMessage.Subtype) {
+                            $this.LogDebug("Parsed command event type [$($ParsedCommand.OriginalMessage.Type.Tostring())`:$($ParsedCommand.OriginalMessage.Subtype.ToString())] matched to command trigger [$($trigger.MessageType.ToString())`:$($trigger.MessageSubtype.ToString())] on command [$($this.Name)]")
                             $match = $true
                             break
                         }
@@ -198,6 +221,7 @@ class Command {
                 }
                 'Regex' {
                     if ($ParsedCommand.CommandString -match $trigger.Trigger) {
+                        $this.LogDebug("Parsed command string [$($ParsedCommand.CommandString)] matched to regex trigger [$($trigger.Trigger)] on command [$($this.Name)]")
                         $match = $true
                         break
                     }
