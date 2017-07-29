@@ -137,7 +137,9 @@ task Compile -depends Clean {
     $classDir = (Join-Path -Path $sut -ChildPath 'Classes')
     @(
         'Enums'
+        'LogMessage'
         'Logger'
+        'BaseLogger'
         'ExceptionFormatter'
         'BotCommand'
         'Event'

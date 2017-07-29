@@ -1,75 +1,4 @@
 
-enum LogSeverity {
-    Normal
-    Warning
-    Error
-}
-
-class LogMessage {
-    [datetime]$DateTime = (Get-Date)
-    [string]$Severity = [LogSeverity]::Normal
-    [string]$LogLevel = [LogLevel]::Info
-    [string]$Message
-    [object]$Data
-
-    LogMessage() {
-    }
-
-    LogMessage([string]$Message) {
-        $this.Message = $Message
-    }
-
-    LogMessage([string]$Message, [object]$Data) {
-        $this.Message = $Message
-        $this.Data = $Data
-    }
-
-    LogMessage([LogSeverity]$Severity, [string]$Message) {
-        $this.Severity = $Severity
-        $this.Message = $Message
-    }
-
-    LogMessage([LogSeverity]$Severity, [string]$Message, [object]$Data) {
-        $this.Severity = $Severity
-        $this.Message = $Message
-        $this.Data = $Data
-    }
-
-    # Borrowed from https://github.com/PowerShell/PowerShell/issues/2736
-    hidden [string]Compact([string]$Json) {
-        $indent = 0
-        $compacted = ($Json -Split '\n' | ForEach-Object {
-            if ($_ -match '[\}\]]') {
-                # This line contains  ] or }, decrement the indentation level
-                $indent--
-            }
-            $line = (' ' * $indent * 2) + $_.TrimStart().Replace(':  ', ': ')
-            if ($_ -match '[\{\[]') {
-                # This line contains [ or {, increment the indentation level
-                $indent++
-            }
-            $line
-        }) -Join "`n"
-        return $compacted
-    }
-
-    [string]ToJson() {
-        $json = @{
-            DataTime = $this.DateTime
-            Severity = $this.Severity
-            LogLevel = $this.LogLevel
-            Message = $this.Message
-            Data = $this.Data
-        } | ConvertTo-Json -Depth 100 -Compress
-        return $json
-        #return $this.Compact($json)
-    }
-
-    [string]ToString() {
-        return $this.ToJson()
-    }
-}
-
 class Logger {
 
     # The log directory
@@ -77,7 +6,7 @@ class Logger {
 
     hidden [string]$LogFile
 
-    # Out logging level
+    # Our logging level
     # Any log messages less than or equal to this will be logged
     [LogLevel]$LogLevel
 
@@ -93,6 +22,7 @@ class Logger {
         $this.LogLevel = $LogLevel
         $this.LogFile = Join-Path -Path $this.LogDir -ChildPath 'PoshBot.log'
         $this.CreateLogFile()
+        $this.Log([LogMessage]::new("Log level set to [$($this.LogLevel)]"))
     }
 
     # Create new log file or roll old log
@@ -104,35 +34,43 @@ class Logger {
         New-Item -Path $this.LogFile -ItemType File -Force
     }
 
-    [void]Info([LogMessage]$Message) {
-        $Message.LogLevel = [LogLevel]::Info
-        $this.Log($Message)
-    }
-
-    [void]Verbose([LogMessage]$Message) {
-        $Message.LogLevel = [LogLevel]::Verbose
-        $this.Log($Message)
-    }
-
-    [void]Debug([LogMessage]$Message) {
-        $Message.LogLevel = [LogLevel]::Debug
-        $this.Log($Message)
-    }
-
-    # Write out message in JSON form to log file
+    # Log the message and optionally write to console
     [void]Log([LogMessage]$Message) {
-
-        if ($global:VerbosePreference -eq 'Continue') {
-            Write-Verbose -Message $Message.ToJson()
-        } elseIf ($global:DebugPreference -eq 'Continue') {
-            Write-Debug -Message $Message.ToJson()
+        switch ($Message.Severity.ToString()) {
+            'Normal' {
+                if ($global:VerbosePreference -eq 'Continue') {
+                    Write-Verbose -Message $Message.ToJson()
+                } elseIf ($global:DebugPreference -eq 'Continue') {
+                    Write-Debug -Message $Message.ToJson()
+                }
+                break
+            }
+            'Warning' {
+                if ($global:WarningPreference -eq 'Continue') {
+                    Write-Warning -Message $Message.ToJson()
+                }
+                break
+            }
+            'Error' {
+                if ($global:ErrorActionPreference -eq 'Continue') {
+                    Write-Error -Message $Message.ToJson()
+                }
+                break
+            }
         }
 
-        if ($Message.LogLevel.value__ -le $This.LogLevel.value__) {
+        if ($Message.LogLevel.value__ -le $this.LogLevel.value__) {
             $this.RollLog($this.LogFile, $false)
             $json = $Message.ToJson()
-            $json | Out-File -FilePath $this.LogFile -Append -Encoding utf8
+            $this.WriteLine($json)
         }
+    }
+
+    # Write line to file
+    hidden [void]WriteLine([string]$Message) {
+        $sw = [System.IO.StreamWriter]::new($this.LogFile, [System.Text.Encoding]::UTF8)
+        $sw.WriteLine($Message)
+        $sw.Close()
     }
 
     # Checks to see if file in question is larger than the max size specified for the logger.

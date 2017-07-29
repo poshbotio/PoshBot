@@ -22,6 +22,12 @@ enum LogLevel {
     Debug = 4
 }
 
+enum LogSeverity {
+    Normal
+    Warning
+    Error
+}
+
 enum ReactionType {
     Success
     Failure
