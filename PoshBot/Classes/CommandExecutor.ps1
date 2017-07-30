@@ -87,7 +87,6 @@ class CommandExecutor : BaseLogger {
                 $this.LogDebug("Command [$($cmdExecContext.FullyQualifiedCommandName)] executing in job [$($cmdExecContext.Job.Id)]")
                 $cmdExecContext.Complete = $false
             } else {
-                $this.LogDebug("Command [$($cmdExecContext.FullyQualifiedCommandName)] will be executed in the current PS session")
                 # Run command in current session and get results
                 # This should only be 'builtin' commands
                 try {
@@ -105,7 +104,7 @@ class CommandExecutor : BaseLogger {
                     } else {
                         $cmdExecContext.Result.Success = $true
                     }
-                    $this.LogVerbose("Command [$($cmdExecContext.FullyQualifiedCommandName)] completed with results", $cmdExecContext.Result)
+                    $this.LogVerbose("Command [$($cmdExecContext.FullyQualifiedCommandName)] completed with successful result [$($cmdExecContext.Result.Success)]")
                 } catch {
                     $cmdExecContext.Complete = $true
                     $cmdExecContext.Result.Success = $false
@@ -173,14 +172,14 @@ class CommandExecutor : BaseLogger {
                             $cmdExecContext.Result.Success = $true
                         }
 
-                        $this.LogVerbose("Command [$($cmdExecContext.FullyQualifiedCommandName)] completed with results", $cmdExecContext.Result)
+                        $this.LogVerbose("Command [$($cmdExecContext.FullyQualifiedCommandName)] completed with successful result [$($cmdExecContext.Result.Success)]")
 
                         # Clean up the job
                         Remove-Job -Job $cmdExecContext.Job
                     } elseIf ($cmdExecContext.Job.State -eq 'Failed') {
                         $cmdExecContext.Complete = $true
                         $cmdExecContext.Result.Success = $false
-                        $this.LogVerbose("Command [$($cmdExecContext.FullyQualifiedCommandName)] failed", $cmdExecContext.Result)
+                        $this.LogVerbose("Command [$($cmdExecContext.FullyQualifiedCommandName)] failed")
                     }
                 }
 

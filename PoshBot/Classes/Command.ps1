@@ -113,13 +113,13 @@ class Command : BaseLogger {
         }
 
         $fqCommand = "$($this.FunctionInfo.Module.name)\$($this.FunctionInfo.name)"
-        $this.LogDebug("Executing command [$fqCommand] with job parameters", $options)
 
         if ($this.FunctionInfo) {
             $options.FunctionInfo = $this.FunctionInfo
         }
 
         if ($InvokeAsJob) {
+            $this.LogDebug("Executing command [$fqCommand] as job")
             $fdt = Get-Date -Format FileDateTimeUniversal
             $jobName = "$($this.Name)_$fdt"
             $jobParams = @{
@@ -129,6 +129,7 @@ class Command : BaseLogger {
             }
             return (Start-Job @jobParams)
         } else {
+            $this.LogDebug("Executing command [$fqCommand] in current PS session")
             $errors = $null
             $information = $null
             $warning = $null
