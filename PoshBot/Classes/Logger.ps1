@@ -11,15 +11,17 @@ class Logger {
     [LogLevel]$LogLevel
 
     # The max size for the log files before rolling
-    [int]$MaxSizeMB = 10
+    [int]$MaxSizeMB
 
     # Number of each log file type to keep
-    [int]$FilesToKeep = 5
+    [int]$FilesToKeep
 
     # Create logs files under provided directory
-    Logger([string]$LogDir, [LogLevel]$LogLevel) {
+    Logger([string]$LogDir, [LogLevel]$LogLevel, [int]$MaxLogSizeMB, [int]$MaxLogsToKeep) {
         $this.LogDir = $LogDir
         $this.LogLevel = $LogLevel
+        $this.MaxSizeMB = $MaxLogSizeMB
+        $this.FilesToKeep = $MaxLogsToKeep
         $this.LogFile = Join-Path -Path $this.LogDir -ChildPath 'PoshBot.log'
         $this.CreateLogFile()
         $this.Log([LogMessage]::new("Log level set to [$($this.LogLevel)]"))
@@ -78,13 +80,16 @@ class Logger {
     # our max specifiex in the logger.
     # Specified $Always = $true will roll the log regardless
     hidden [void]RollLog([string]$LogFile, [bool]$Always) {
+
+        $keep = $this.FilesToKeep - 1
+
         if (Test-Path -Path $LogFile) {
             if ((($file = Get-Item -Path $logFile) -and ($file.Length/1mb) -gt $this.MaxSizeMB) -or $Always) {
                 # Remove the last item if it would go over the limit
-                if (Test-Path -Path "$logFile.$($this.FilesToKeep)") {
-                    Remove-Item -Path "$logFile.$($this.FilesToKeep)"
+                if (Test-Path -Path "$logFile.$keep") {
+                    Remove-Item -Path "$logFile.$keep"
                 }
-                foreach ($i in $($this.FilesToKeep)..1) {
+                foreach ($i in $keep..1) {
                     if (Test-path -Path "$logFile.$($i-1)") {
                         Move-Item -Path "$logFile.$($i-1)" -Destination "$logFile.$i"
                     }

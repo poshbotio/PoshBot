@@ -22,6 +22,10 @@ function New-PoshBotConfiguration {
         loaded when PoshBot starts.
     .PARAMETER LogLevel
         The level of logging that PoshBot will do.
+    .PARAMETER MaxLogSizeMB
+        The maximum log file size in megabytes.
+    .PARAMETER MaxLogsToKeep
+        The maximum number of logs to keep. Once this value is reached, logs will start rotating.
     .PARAMETER BackendConfiguration
         A hashtable of configuration options required by the backend chat network implementation.
     .PARAMETER PluginConfiguration
@@ -161,6 +165,8 @@ function New-PoshBotConfiguration {
         [string[]]$PluginRepository = @('PSGallery'),
         [string[]]$ModuleManifestsToLoad = @(),
         [LogLevel]$LogLevel = [LogLevel]::Verbose,
+        [int]$MaxLogSizeMB = 10,
+        [int]$MaxLogsToKeep = 5,
         [hashtable]$BackendConfiguration = @{},
         [hashtable]$PluginConfiguration = @{},
         [string[]]$BotAdmins = @(),
@@ -182,6 +188,8 @@ function New-PoshBotConfiguration {
     $config.CommandPrefix = $CommandPrefix
     $config.LogDirectory = $LogDirectory
     $config.LogLevel = $LogLevel
+    $config.MaxLogSizeMB = $MaxLogSizeMB
+    $config.MaxLogsToKeep = $MaxLogsToKeep
     $config.BackendConfiguration = $BackendConfiguration
     $config.PluginConfiguration = $PluginConfiguration
     $config.ModuleManifestsToLoad = $ModuleManifestsToLoad

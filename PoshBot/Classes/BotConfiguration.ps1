@@ -15,6 +15,10 @@ class BotConfiguration {
 
     [LogLevel]$LogLevel = [LogLevel]::Verbose
 
+    [int]$MaxLogSizeMB = 10
+
+    [int]$MaxLogsToKeep = 5
+
     [hashtable]$BackendConfiguration = @{}
 
     [hashtable]$PluginConfiguration = @{}

@@ -28,7 +28,9 @@ class Bot : BaseLogger {
 
     hidden [System.Collections.Arraylist] $_PossibleCommandPrefixes = (New-Object System.Collections.ArrayList)
 
-    Bot([Backend]$Backend, [string]$PoshBotDir, [BotConfiguration]$Config) : base($Config.LogDirectory, $Config.LogLevel) {
+    Bot([Backend]$Backend, [string]$PoshBotDir, [BotConfiguration]$Config)
+        : base($Config.LogDirectory, $Config.LogLevel, $Config.MaxLogSizeMB, $Config.MaxLogsToKeep) {
+
         $this.Name = $config.Name
         $this.Backend = $Backend
         $this._PoshBotDir = $PoshBotDir
@@ -36,7 +38,9 @@ class Bot : BaseLogger {
         $this.Initialize($Config)
     }
 
-    Bot([string]$Name, [Backend]$Backend, [string]$PoshBotDir, [string]$ConfigPath) : base($Config.LogDirectory, $Config.LogLevel) {
+    Bot([string]$Name, [Backend]$Backend, [string]$PoshBotDir, [string]$ConfigPath)
+        : base($Config.LogDirectory, $Config.LogLevel, $Config.MaxLogSizeMB, $Config.MaxLogsToKeep) {
+
         $this.Name = $Name
         $this.Backend = $Backend
         $this._PoshBotDir = $PoshBotDir

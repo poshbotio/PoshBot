@@ -5,8 +5,8 @@ class BaseLogger {
 
     BaseLogger() {}
 
-    BaseLogger([string]$LogDirectory, [LogLevel]$LogLevel) {
-        $this.Logger = [Logger]::new($LogDirectory, $LogLevel)
+    BaseLogger([string]$LogDirectory, [LogLevel]$LogLevel, [int]$MaxLogSizeMB, [int]$MaxLogsToKeep) {
+        $this.Logger = [Logger]::new($LogDirectory, $LogLevel, $MaxLogSizeMB, $MaxLogsToKeep)
     }
 
     [void]LogInfo([string]$Message) {
