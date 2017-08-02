@@ -184,7 +184,6 @@ class RoleManager : BaseLogger {
         if ($p) {
             return $p
         } else {
-            $msg =
             $this.LogInfo([LogSeverity]::Warning, "Permission [$PermissionName] not found")
             return $null
         }
@@ -195,7 +194,6 @@ class RoleManager : BaseLogger {
         if ($r) {
             return $r
         } else {
-            $msg =
             $this.LogInfo([LogSeverity]::Warning, "Role [$RoleName] not found")
             return $null
         }
