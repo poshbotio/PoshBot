@@ -12,6 +12,17 @@ class ParsedCommand {
     [string]$From = $null
     [string]$To = $null
     [Message]$OriginalMessage
+
+    [pscustomobject]Summarize() {
+        $o = $this | Select-Object -Property * -ExcludeProperty NamedParameters
+        if ($this.Plugin -eq 'Builtin') {
+            $np = $this.NamedParameters.GetEnumerator() | Where-Object {$_.Name -ne 'Bot'}
+            $o | Add-Member -MemberType NoteProperty -Name NamedParameters -Value $np
+        } else {
+            $o | Add-Member -MemberType NoteProperty -Name NamedParameters -Value $this.NamedParameters
+        }
+        return [pscustomobject]$o
+    }
 }
 
 class CommandParser {

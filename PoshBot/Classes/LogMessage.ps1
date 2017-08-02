@@ -59,14 +59,21 @@ class LogMessage {
             Message = $this.Message
             Data = foreach ($item in $this.Data) {
                 # Summarize exceptions so they can be serialized to json correctly
-                if ($item -is [System.Management.Automation.ErrorRecord]) {
-                    $i = [ExceptionFormatter]::Summarize($item)
-                } else {
-                    $i = $item
+
+                # Don't try to serialize jobs
+                if ($item.GetType().BaseType.ToString() -eq 'System.Management.Automation.Job') {
+                    continue
                 }
-                $i | ConvertTo-Json -Depth 100 -Compress
+
+                # Summarize Error records so the json is easier to read and doesn't
+                # contain a ton of unnecessary infomation
+                if ($item -is [System.Management.Automation.ErrorRecord]) {
+                    [ExceptionFormatter]::Summarize($item)
+                } else {
+                    $item
+                }
             }
-        } | ConvertTo-Json -Depth 100 -Compress
+        } | ConvertTo-Json -Depth 10 -Compress
         return $json
     }
 
