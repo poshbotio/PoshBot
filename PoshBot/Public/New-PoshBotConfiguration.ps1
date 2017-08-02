@@ -26,6 +26,12 @@ function New-PoshBotConfiguration {
         The maximum log file size in megabytes.
     .PARAMETER MaxLogsToKeep
         The maximum number of logs to keep. Once this value is reached, logs will start rotating.
+    .PARAMETER LogCommandHistory
+        Enable command history to be logged to a separate file for convenience. The default it $true
+    .PARAMETER CommandHistoryMaxLogSizeMB
+        The maximum log file size for the command history
+    .PARAMETER CommandHistoryMaxLogsToKeep
+        The maximum number of logs to keep for command history. Once this value is reached, the logs will start rotating.
     .PARAMETER BackendConfiguration
         A hashtable of configuration options required by the backend chat network implementation.
     .PARAMETER PluginConfiguration
@@ -167,6 +173,9 @@ function New-PoshBotConfiguration {
         [LogLevel]$LogLevel = [LogLevel]::Verbose,
         [int]$MaxLogSizeMB = 10,
         [int]$MaxLogsToKeep = 5,
+        [bool]$LogCommandHistory = $true,
+        [int]$CommandHistoryMaxLogSizeMB = 10,
+        [int]$CommandHistoryMaxLogsToKeep = 5,
         [hashtable]$BackendConfiguration = @{},
         [hashtable]$PluginConfiguration = @{},
         [string[]]$BotAdmins = @(),
@@ -190,6 +199,9 @@ function New-PoshBotConfiguration {
     $config.LogLevel = $LogLevel
     $config.MaxLogSizeMB = $MaxLogSizeMB
     $config.MaxLogsToKeep = $MaxLogsToKeep
+    $config.LogCommandHistory = $LogCommandHistory
+    $config.CommandHistoryMaxLogSizeMB = $CommandHistoryMaxLogSizeMB
+    $config.CommandHistoryMaxLogsToKeep = $CommandHistoryMaxLogsToKeep
     $config.BackendConfiguration = $BackendConfiguration
     $config.PluginConfiguration = $PluginConfiguration
     $config.ModuleManifestsToLoad = $ModuleManifestsToLoad

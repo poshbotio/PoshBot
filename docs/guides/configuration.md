@@ -23,10 +23,16 @@ If you look at `.\PoshBotConfig.psd1` it should resemble the following:
   Name = 'PoshBot'
   BotAdmins = @('<my-slack-handle>')
   LogLevel = 'Verbose'
+  MaxLogSizeMB = 10
+  MaxLogsToKeep = 3
+  LogCommandHistory = $true
+  CommandHistoryMaxLogSizeMB = 10
+  CommandHistoryMaxLogsToKeep = 5
   SendCommandResponseToPrivate = @()
   ConfigurationDirectory = 'C:\Users\brandon\.poshbot'
+  AddCommandReactions = $True
   PluginDirectory = 'C:\Users\brandon\.poshbot'
-  MuteUnknownCommand = $False
+  MuteUnknownCommand = $false
   PluginConfiguration = @{
 
   }
@@ -58,7 +64,13 @@ LogDirectory                      | string    | The directory to store bot logs 
 PluginDirectory                   | string    | The directory to first look for plugins (modules) in
 PluginRepository                  | string[]  | The PowerShell repository(s) to look for plugins (modules) in
 ModuleManifestsToLoad             | string[]  | Path(s) to module manifests to load at bot startup
+AddCommandReactions               | bool      | Add reactions to a chat message indicating the command is being executed, has succeeded, or failed
 LogLevel                          | string    | The verbosity of logs
+MaxLogSizeMB                      | int       | The maximum log file size in megabytes
+MaxLogsToKeep                     | int       | The maximum number of logs to keep before rotating
+LogCommandHistory                 | bool      | Log command history to a separate file for convenience
+CommandHistoryMaxLogSizeMB        | int       | The maximum log file size for the command history
+CommandHistoryMaxLogsToKeep       | int       | The maximum number of logs to keep for command history before rotating
 BackendConfiguration              | hashtable | Hashtable containing configuration settings needed by backend provider
 PluginConfiguration               | hashtable | Hashtable of parameter values to pass to bot commands when appropriate
 BotAdmins                         | string[]  | List of chat handles who will granted bot administrator privledges

@@ -19,6 +19,12 @@ class BotConfiguration {
 
     [int]$MaxLogsToKeep = 5
 
+    [bool]$LogCommandHistory = $true
+
+    [int]$CommandHistoryMaxLogSizeMB = 10
+
+    [int]$CommandHistoryMaxLogsToKeep = 5
+
     [hashtable]$BackendConfiguration = @{}
 
     [hashtable]$PluginConfiguration = @{}

@@ -14,7 +14,8 @@ Creates a new PoshBot configuration object.
 ```
 New-PoshBotConfiguration [[-Name] <String>] [[-ConfigurationDirectory] <String>] [[-LogDirectory] <String>]
  [[-PluginDirectory] <String>] [[-PluginRepository] <String[]>] [[-ModuleManifestsToLoad] <String[]>]
- [[-LogLevel] <LogLevel>] [[-MaxLogSizeMB] <Int32>] [[-MaxLogsToKeep] <Int32>]
+ [[-LogLevel] <LogLevel>] [[-MaxLogSizeMB] <Int32>] [[-MaxLogsToKeep] <Int32>] [[-LogCommandHistory] <Boolean>]
+ [[-CommandHistoryMaxLogSizeMB] <Int32>] [[-CommandHistoryMaxLogsToKeep] <Int32>]
  [[-BackendConfiguration] <Hashtable>] [[-PluginConfiguration] <Hashtable>] [[-BotAdmins] <String[]>]
  [[-CommandPrefix] <Char>] [[-AlternateCommandPrefixes] <String[]>]
  [[-AlternateCommandPrefixSeperators] <Char[]>] [[-SendCommandResponseToPrivate] <String[]>]
@@ -231,6 +232,53 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -LogCommandHistory
+Enable command history to be logged to a separate file for convenience.
+The default it $true
+
+```yaml
+Type: Boolean
+Parameter Sets: (All)
+Aliases: 
+
+Required: False
+Position: 10
+Default value: True
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -CommandHistoryMaxLogSizeMB
+The maximum log file size for the command history
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases: 
+
+Required: False
+Position: 11
+Default value: 10
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -CommandHistoryMaxLogsToKeep
+The maximum number of logs to keep for command history.
+Once this value is reached, the logs will start rotating.
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases: 
+
+Required: False
+Position: 12
+Default value: 5
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -BackendConfiguration
 A hashtable of configuration options required by the backend chat network implementation.
 
@@ -240,7 +288,7 @@ Parameter Sets: (All)
 Aliases: 
 
 Required: False
-Position: 10
+Position: 13
 Default value: @{}
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -288,7 +336,7 @@ Parameter Sets: (All)
 Aliases: 
 
 Required: False
-Position: 11
+Position: 14
 Default value: @{}
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -306,7 +354,7 @@ Parameter Sets: (All)
 Aliases: 
 
 Required: False
-Position: 12
+Position: 15
 Default value: @()
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -323,7 +371,7 @@ Parameter Sets: (All)
 Aliases: 
 
 Required: False
-Position: 13
+Position: 16
 Default value: !
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -344,7 +392,7 @@ Parameter Sets: (All)
 Aliases: 
 
 Required: False
-Position: 14
+Position: 17
 Default value: @('poshbot')
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -363,7 +411,7 @@ Parameter Sets: (All)
 Aliases: 
 
 Required: False
-Position: 15
+Position: 18
 Default value: @(':', ',', ';')
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -384,7 +432,7 @@ Parameter Sets: (All)
 Aliases: 
 
 Required: False
-Position: 16
+Position: 19
 Default value: @()
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -399,7 +447,7 @@ Parameter Sets: (All)
 Aliases: 
 
 Required: False
-Position: 17
+Position: 20
 Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -414,7 +462,7 @@ Parameter Sets: (All)
 Aliases: 
 
 Required: False
-Position: 18
+Position: 21
 Default value: True
 Accept pipeline input: False
 Accept wildcard characters: False

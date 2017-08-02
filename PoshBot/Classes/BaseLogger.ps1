@@ -88,4 +88,10 @@ class BaseLogger {
         $Message.Method = @(Get-PSCallStack)[2].FunctionName
         $this.Logger.Log($Message)
     }
+
+    hidden [void]Log([LogMessage]$Message, [string]$LogFile, [int]$MaxLogSizeMB, [int]$MaxLogsToKeep) {
+        $Message.Class = $this.GetType().Name
+        $Message.Method = @(Get-PSCallStack)[2].FunctionName
+        $this.Logger.Log($Message, $LogFile, $MaxLogSizeMB, $MaxLogsToKeep)
+    }
 }

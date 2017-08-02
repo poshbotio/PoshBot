@@ -68,6 +68,14 @@ class Logger {
         }
     }
 
+    [void]Log([LogMessage]$Message, [string]$LogFile, [int]$MaxLogSizeMB, [int]$MaxLogsToKeep) {
+        $this.RollLog($LogFile, $false, $MaxLogSizeMB, $MaxLogSizeMB)
+        $json = $Message.ToJson()
+        $sw = [System.IO.StreamWriter]::new($LogFile, [System.Text.Encoding]::UTF8)
+        $sw.WriteLine($json)
+        $sw.Close()
+    }
+
     # Write line to file
     hidden [void]WriteLine([string]$Message) {
         $sw = [System.IO.StreamWriter]::new($this.LogFile, [System.Text.Encoding]::UTF8)
@@ -75,16 +83,20 @@ class Logger {
         $sw.Close()
     }
 
+    hidden [void]RollLog([string]$LogFile, [bool]$Always) {
+        $this.RollLog($LogFile, $Always, $this.MaxSizeMB, $this.FilesToKeep)
+    }
+
     # Checks to see if file in question is larger than the max size specified for the logger.
     # If it is, it will roll the log and delete older logs to keep our number of logs per log type to
     # our max specifiex in the logger.
     # Specified $Always = $true will roll the log regardless
-    hidden [void]RollLog([string]$LogFile, [bool]$Always) {
+    hidden [void]RollLog([string]$LogFile, [bool]$Always, $MaxLogSize, $MaxFilesToKeep) {
 
-        $keep = $this.FilesToKeep - 1
+        $keep = $MaxFilesToKeep - 1
 
         if (Test-Path -Path $LogFile) {
-            if ((($file = Get-Item -Path $logFile) -and ($file.Length/1mb) -gt $this.MaxSizeMB) -or $Always) {
+            if ((($file = Get-Item -Path $logFile) -and ($file.Length/1mb) -gt $MaxLogSize) -or $Always) {
                 # Remove the last item if it would go over the limit
                 if (Test-Path -Path "$logFile.$keep") {
                     Remove-Item -Path "$logFile.$keep"
@@ -95,7 +107,7 @@ class Logger {
                     }
                 }
                 Move-Item -Path $logFile -Destination "$logFile.$i"
-                $null = New-Item -Path $LogFile -Type File -Force | Out-Null
+                New-Item -Path $LogFile -Type File -Force > $null
             }
         }
     }

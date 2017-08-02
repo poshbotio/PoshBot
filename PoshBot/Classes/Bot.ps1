@@ -354,6 +354,13 @@ class Bot : BaseLogger {
                 }
             }
 
+            # Write out this command execution to permanent storage
+            if ($this.Configuration.LogCommandHistory) {
+                $logMsg = [LogMessage]::new("[$($cmdExecContext.FullyQualifiedCommandName)] was executed by [$($cmdExecContext.Message.From)]", $cmdExecContext.Summarize())
+                $cmdHistoryLogPath = Join-Path $this.Configuration.LogDirectory -ChildPath 'CommandHistory.log'
+                $this.Log($logMsg, $cmdHistoryLogPath, $this.Configuration.CommandHistoryMaxLogSizeMB, $this.Configuration.CommandHistoryMaxLogsToKeep)
+            }
+
             # Send response back to user in private (DM) channel if this command
             # is marked to devert responses
             if ($this.Configuration.SendCommandResponseToPrivate -contains $cmdExecContext.FullyQualifiedCommandName) {
