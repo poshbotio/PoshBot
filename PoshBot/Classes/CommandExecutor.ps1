@@ -117,7 +117,7 @@ class CommandExecutor : BaseLogger {
             $msg = "Command [$($cmdExecContext.Command.Name)] was not authorized for user [$($Message.From)]"
             $err = [CommandNotAuthorized]::New($msg)
             $cmdExecContext.Complete = $true
-            $cmdExecContext.Result.Errors += err
+            $cmdExecContext.Result.Errors += $err
             $cmdExecContext.Result.Success = $false
             $cmdExecContext.Result.Authorized = $false
             $this.LogInfo([LogSeverity]::Error, $err.Message, $err)
