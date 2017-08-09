@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Command execution history is now logged by default to a separate log file [CommandHistory.log].
     Command history log settings can be controlled with configuration properties [LogCommandHistory], [CommandHistoryMaxLogSizeMB], and [CommandHistoryMaxLogsToKeep].
 ### Changes
-  - Implemented and improved information, verbose, and debug logging throught PoshBot.
+  - Implemented and improved information, verbose, and debug logging throughout PoshBot.
 
 ## [0.6.0] 2017-07-18
 ### Added
