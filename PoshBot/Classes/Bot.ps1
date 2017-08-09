@@ -1,5 +1,5 @@
 
-class Bot {
+class Bot : BaseLogger {
 
     # Friendly name for the bot
     [string]$Name
@@ -24,40 +24,47 @@ class Bot {
 
     [BotConfiguration]$Configuration
 
-    hidden [Logger]$_Logger
-
     hidden [System.Diagnostics.Stopwatch]$_Stopwatch
 
     hidden [System.Collections.Arraylist] $_PossibleCommandPrefixes = (New-Object System.Collections.ArrayList)
 
-    Bot([Backend]$Backend, [string]$PoshBotDir, [BotConfiguration]$Config) {
+    Bot([Backend]$Backend, [string]$PoshBotDir, [BotConfiguration]$Config)
+        : base($Config.LogDirectory, $Config.LogLevel, $Config.MaxLogSizeMB, $Config.MaxLogsToKeep) {
+
         $this.Name = $config.Name
         $this.Backend = $Backend
         $this._PoshBotDir = $PoshBotDir
-        $this.Storage = [StorageProvider]::new($Config.ConfigurationDirectory)
+        $this.Storage = [StorageProvider]::new($Config.ConfigurationDirectory, $this.Logger)
         $this.Initialize($Config)
     }
 
-    Bot([string]$Name, [Backend]$Backend, [string]$PoshBotDir, [string]$ConfigPath) {
+    Bot([string]$Name, [Backend]$Backend, [string]$PoshBotDir, [string]$ConfigPath)
+        : base($Config.LogDirectory, $Config.LogLevel, $Config.MaxLogSizeMB, $Config.MaxLogsToKeep) {
+
         $this.Name = $Name
         $this.Backend = $Backend
         $this._PoshBotDir = $PoshBotDir
-        $this.Storage = [StorageProvider]::new((Split-Path -Path $ConfigPath -Parent))
+        $this.Storage = [StorageProvider]::new((Split-Path -Path $ConfigPath -Parent), $this.Logger)
         $config = Get-PoshBotConfiguration -Path $ConfigPath
         $this.Initialize($config)
     }
 
     [void]Initialize([BotConfiguration]$Config) {
+        $this.LogInfo('Initializing bot')
+
+        # Attach the logger to the backend
+        $this.Backend.Logger = $this.Logger
+        $this.Backend.Connection.Logger = $this.Logger
+
         if ($null -eq $Config) {
             $this.LoadConfiguration()
         } else {
             $this.Configuration = $Config
         }
-        $this._Logger = [Logger]::new($this.Configuration.LogDirectory, $this.Configuration.LogLevel)
-        $this.RoleManager = [RoleManager]::new($this.Backend, $this.Storage, $this._Logger)
-        $this.PluginManager = [PluginManager]::new($this.RoleManager, $this.Storage, $this._Logger, $this._PoshBotDir)
-        $this.Executor = [CommandExecutor]::new($this.RoleManager, $this)
-        $this.Scheduler = [Scheduler]::new($this.Storage, $this._Logger)
+        $this.RoleManager = [RoleManager]::new($this.Backend, $this.Storage, $this.Logger)
+        $this.PluginManager = [PluginManager]::new($this.RoleManager, $this.Storage, $this.Logger, $this._PoshBotDir)
+        $this.Executor = [CommandExecutor]::new($this.RoleManager, $this.Logger, $this)
+        $this.Scheduler = [Scheduler]::new($this.Storage, $this.Logger)
         $this.GenerateCommandPrefixList()
 
         # Ugly hack alert!
@@ -79,25 +86,24 @@ class Bot {
 
         # Set PS repository to trusted
         foreach ($repo in $this.Configuration.PluginRepository) {
-            if (Get-PSRepository -Name $repo -Verbose:$false -ErrorAction SilentlyContinue) {
-                Set-PSRepository -Name $repo -Verbose:$false -InstallationPolicy Trusted
+            if ($r = Get-PSRepository -Name $repo -Verbose:$false -ErrorAction SilentlyContinue) {
+                if ($r.InstallationPolicy -ne 'Trusted') {
+                    $this.LogVerbose("Setting PowerShell repository [$repo] to [Trusted]")
+                    Set-PSRepository -Name $repo -Verbose:$false -InstallationPolicy Trusted
+                }
             } else {
-                [LogSeverity]::Error, "[Bot:Initialize] PowerShell repository [$repo)] is not defined"
+                $this.LogVerbose([LogSeverity]::Warning, "PowerShell repository [$repo)] is not defined on the system")
             }
         }
 
         # Load in plugins listed in configuration
         if ($this.Configuration.ModuleManifestsToLoad.Count -gt 0) {
-            $this._Logger.Info([LogMessage]::new('[Bot:Initialize] Loading in plugins from configuration'))
+            $this.LogInfo('Loading in plugins from configuration')
             foreach ($manifestPath in $this.Configuration.ModuleManifestsToLoad) {
                 if (Test-Path -Path $manifestPath) {
                     $this.PluginManager.InstallPlugin($manifestPath, $false)
                 } else {
-                    $this._Logger.Info(
-                        [LogMessage]::new(
-                            [LogSeverity]::Warning, "[Bot:Initialize] Could not find manifest at [$manifestPath]"
-                        )
-                    )
+                    $this.LogInfo([LogSeverity]::Warning, "Could not find manifest at [$manifestPath]")
                 }
             }
         }
@@ -120,14 +126,14 @@ class Bot {
     # Start the bot
     [void]Start() {
         $this._Stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-        $this._Logger.Info([LogMessage]::new('[Bot:Start] Start your engines'))
+        $this.LogInfo('Start your engines')
 
         try {
             $this.Connect()
 
             # Start the loop to receive and process messages from the backend
             $sw = [System.Diagnostics.Stopwatch]::StartNew()
-            $this._Logger.Info([LogMessage]::new('[Bot:Start] Beginning message processing loop'))
+            $this.LogInfo('Beginning message processing loop')
             while ($this.Backend.Connection.Connected) {
 
                 # Receive message and add to queue
@@ -152,9 +158,7 @@ class Bot {
                 }
             }
         } catch {
-            Write-Error $_
-            $errJson = [ExceptionFormatter]::ToJson($_)
-            $this._Logger.Info([LogMessage]::new([LogSeverity]::Error, "[Bot:Start] Exception [$($_.Exception.Message)]", $errJson))
+            $this.LogInfo([LogSeverity]::Error, "$($_.Exception.Message)", [ExceptionFormatter]::Summarize($_))
         } finally {
             $this.Disconnect()
         }
@@ -162,7 +166,7 @@ class Bot {
 
     # Connect the bot to the chat network
     [void]Connect() {
-        $this._Logger.Verbose([LogMessage]::new('[Bot:Connect] Connecting to backend chat network'))
+        $this.LogVerbose('Connecting to backend chat network')
         $this.Backend.Connect()
 
         # That that we're connected, resolve any bot administrators defined in
@@ -172,24 +176,24 @@ class Bot {
                 try {
                     $this.RoleManager.AddUserToGroup($adminId, 'Admin')
                 } catch {
-                    Write-Error $_
+                    $this.LogInfo([LogSeverity]::Warning, "Unable to add [$admin] to [Admin] group", [ExceptionFormatter]::Summarize($_))
                 }
             } else {
-                $this._Logger.Info([LogMessage]::new([LogSeverity]::Warning, "[Bot:Connect] Unable to resolve ID for admin [$admin]"))
+                $this.LogInfo([LogSeverity]::Warning, "Unable to resolve ID for admin [$admin]")
             }
         }
     }
 
     # Disconnect the bot from the chat network
     [void]Disconnect() {
-        $this._Logger.Verbose([LogMessage]::new('[Bot:Disconnect] Disconnecting from backend chat network'))
+        $this.LogVerbose('Disconnecting from backend chat network')
         $this.Backend.Disconnect()
     }
 
     # Receive messages from the backend chat network
     [void]ReceiveMessage() {
         foreach ($msg in $this.Backend.ReceiveMessage()) {
-            $this._Logger.Debug([LogMessage]::new('[Bot:ReceiveMessage] Received bot message from chat network. Adding to message queue.', $msg))
+            $this.LogDebug('Received bot message from chat network. Adding to message queue.', $msg)
             $this.MessageQueue.Enqueue($msg)
         }
     }
@@ -197,7 +201,7 @@ class Bot {
     # Receive any messages from the scheduler that had their timer elapse and should be executed
     [void]ProcessScheduledMessages() {
         foreach ($msg in $this.Scheduler.GetTriggeredMessages()) {
-            $this._Logger.Debug([LogMessage]::new('[Bot:ProcessScheduledMessages] Received scheduled message from scheduler. Adding to message queue.', $msg))
+            $this.LogDebug('Received scheduled message from scheduler. Adding to message queue.', $msg)
             $this.MessageQueue.Enqueue($msg)
         }
     }
@@ -208,7 +212,7 @@ class Bot {
         $firstWord = ($Message.Text -split ' ')[0]
         foreach ($prefix in $this._PossibleCommandPrefixes ) {
             if ($firstWord -match "^$prefix") {
-                $this._Logger.Debug([LogMessage]::new('[Bot:IsBotCommand] Message is a bot command.'))
+                $this.LogDebug('Message is a bot command')
                 return $true
             }
         }
@@ -219,7 +223,7 @@ class Bot {
     [void]ProcessMessageQueue() {
         while ($this.MessageQueue.Count -ne 0) {
             $msg = $this.MessageQueue.Dequeue()
-            $this._Logger.Debug([LogMessage]::new('[Bot:ProcessMessageQueue] Dequeued message', $msg))
+            $this.LogDebug('Dequeued message', $msg)
             $this.HandleMessage($msg)
         }
     }
@@ -227,7 +231,6 @@ class Bot {
     # Determine if the message received from the backend
     # is something the bot should act on
     [void]HandleMessage([Message]$Message) {
-
         # If message is intended to be a bot command
         # if this is false, and a trigger match is not found
         # then the message is just normal conversation that didn't
@@ -238,14 +241,14 @@ class Bot {
         $cmdSearch = $true
         if (-not $isBotCommand) {
             $cmdSearch = $false
-            $this._Logger.Debug([LogMessage]::new('[Bot:HandleMessage] Message is not a bot command. Command triggers WILL NOT be searched.'))
+            $this.LogDebug('Message is not a bot command. Command triggers WILL NOT be searched.')
         } else {
             # The message is intended to be a bot command
             $Message = $this.TrimPrefix($Message)
         }
 
         $parsedCommand = [CommandParser]::Parse($Message)
-        $this._Logger.Debug([LogMessage]::new('[Bot:HandleMessage] Parsed bot command', $parsedCommand))
+        $this.LogDebug('Parsed bot command', $parsedCommand)
 
         # Match parsed command to a command in the plugin manager
         $pluginCmd = $this.PluginManager.MatchCommand($parsedCommand, $cmdSearch)
@@ -277,7 +280,7 @@ class Bot {
         } else {
             if ($isBotCommand) {
                 $msg = "No command found matching [$($Message.Text)]"
-                $this._Logger.Info([LogMessage]::new([LogSeverity]::Warning, $msg, $parsedCommand))
+                $this.LogInfo([LogSeverity]::Warning, $msg, $parsedCommand)
                 # Only respond with command not found message if configuration allows it.
                 if (-not $this.Configuration.MuteUnknownCommand) {
                     $response = [Response]::new()
@@ -297,10 +300,11 @@ class Bot {
 
         $count = $completedJobs.Count
         if ($count -ge 1) {
-            $this._Logger.Info([LogMessage]::new("[Bot:ProcessCompletedJobs] Processing [$count] completed jobs"))
+            $this.LogInfo("Processing [$count] completed jobs")
         }
 
         foreach ($cmdExecContext in $completedJobs) {
+            $this.LogInfo("Processing job execution [$($cmdExecContext.Id)]")
 
             $response = [Response]::new()
             $response.MessageFrom = $cmdExecContext.Message.From
@@ -311,9 +315,8 @@ class Bot {
                 if (-not $cmdExecContext.Result.Authorized) {
                     $response.Severity = [Severity]::Warning
                     $response.Data = New-PoshBotCardResponse -Type Warning -Text "You do not have authorization to run command [$($cmdExecContext.Command.Name)] :(" -Title 'Command Unauthorized'
+                    $this.LogInfo([LogSeverity]::Warning, 'Command unauthorized')
                 } else {
-                    # TODO
-                    # Handle this better
                     $response.Severity = [Severity]::Error
                     if ($cmdExecContext.Result.Errors.Count -gt 0) {
                         $response.Data = $cmdExecContext.Result.Errors | ForEach-Object {
@@ -327,8 +330,10 @@ class Bot {
                         $response.Data += New-PoshBotCardResponse -Type Error -Text 'Something bad happened :(' -Title 'Command Error'
                         $response.Data += $cmdExecContext.Result.Errors
                     }
+                    $this.LogInfo([LogSeverity]::Error, "Errors encountered running command [$($cmdExecContext.FullyQualifiedCommandName)]", $cmdExecContext.Result.Errors)
                 }
             } else {
+                $this.LogVerbose('Command execution result', $cmdExecContext.Result)
                 foreach ($resultOutput in $cmdExecContext.Result.Output) {
                     if ($null -ne $resultOutput) {
                         if ($this._IsCustomResponse($resultOutput)) {
@@ -349,14 +354,22 @@ class Bot {
                 }
             }
 
+            # Write out this command execution to permanent storage
+            if ($this.Configuration.LogCommandHistory) {
+                $logMsg = [LogMessage]::new("[$($cmdExecContext.FullyQualifiedCommandName)] was executed by [$($cmdExecContext.Message.From)]", $cmdExecContext.Summarize())
+                $cmdHistoryLogPath = Join-Path $this.Configuration.LogDirectory -ChildPath 'CommandHistory.log'
+                $this.Log($logMsg, $cmdHistoryLogPath, $this.Configuration.CommandHistoryMaxLogSizeMB, $this.Configuration.CommandHistoryMaxLogsToKeep)
+            }
+
             # Send response back to user in private (DM) channel if this command
             # is marked to devert responses
             if ($this.Configuration.SendCommandResponseToPrivate -contains $cmdExecContext.FullyQualifiedCommandName) {
-                $this._Logger.Info([LogMessage]::new("[Bot:HandleMessage] Deverting response from command [$($cmdExecContext.FullyQualifiedCommandName)] to private channel"))
+                $this.LogInfo("Deverting response from command [$($cmdExecContext.FullyQualifiedCommandName)] to private channel")
                 $response.To = "@$($this.RoleManager.ResolveUserIdToUserName($cmdExecContext.Message.From))"
             }
 
             $this.SendMessage($response)
+            $this.LogInfo("Done processing command [$($cmdExecContext.FullyQualifiedCommandName)]")
         }
     }
 
@@ -388,19 +401,19 @@ class Bot {
                 $this._PossibleCommandPrefixes.Add($prefixPlusSeperator) > $null
             }
         }
+        $this.LogDebug('Configured command prefixes', $this._PossibleCommandPrefixes)
     }
 
     # Send the response to the backend to execute
     [void]SendMessage([Response]$Response) {
+        $this.LogInfo('Sending response to backend')
         $this.Backend.SendMessage($Response)
     }
 
     # Get any parameters with the
     [hashtable]GetConfigProvidedParameters([PluginCommand]$PluginCmd) {
-
         $command = $PluginCmd.Command.FunctionInfo
-
-        $this._Logger.Debug([LogMessage]::new("[Bot:GetConfigProvidedParameters] Inspecting command [$($PluginCmd.ToString())] for configuration-provided parameters"))
+        $this.LogDebug("Inspecting command [$($PluginCmd.ToString())] for configuration-provided parameters")
         $configParams = foreach($param in $Command.Parameters.GetEnumerator() | Select-Object -ExpandProperty Value) {
             foreach ($attr in $param.Attributes) {
                 if ($attr.GetType().ToString() -eq 'PoshBot.FromConfig') {
@@ -411,11 +424,11 @@ class Bot {
 
         $configProvidedParams = @{}
         if ($configParams) {
+            $this.LogInfo("Command [$($PluginCmd.ToString())] has configuration provided parameters", $configParams)
             $pluginConfig = $this.Configuration.PluginConfiguration[$PluginCmd.Plugin.Name]
             if ($pluginConfig) {
-                $this._Logger.Info([LogMessage]::new("[Bot:GetConfigProvidedParameters] Inspecting bot configuration for parameter values matching command [$($PluginCmd.ToString())]"))
+                $this.LogDebug("Inspecting bot configuration for parameter values matching command [$($PluginCmd.ToString())]")
                 foreach ($cp in $configParams) {
-
                     if (-not [string]::IsNullOrEmpty($cp.Metadata.Name)) {
                         $configParamName = $cp.Metadata.Name
                     } else {
@@ -426,10 +439,16 @@ class Bot {
                         $configProvidedParams.Add($cp.Parameter.Name, $pluginConfig[$configParamName])
                     }
                 }
+                if ($configProvidedParams.Count -ge 0) {
+                    $this.LogDebug('Configuration supplied parameter values', $configProvidedParams)
+                }
             } else {
                 # No plugin configuration defined.
                 # Unable to provide values for these parameters
+                $this.LogDebug([LogSeverity]::Warning, "Command [$($PluginCmd.ToString())] has requested configuration supplied parameters but none where found")
             }
+        } else {
+            $this.LogDebug("Command [$($PluginCmd.ToString())] has 0 configuration provided parameters")
         }
 
         return $configProvidedParams
@@ -445,7 +464,7 @@ class Bot {
                      ($Response.PSObject.TypeNames[0] -eq 'Deserialized.PoshBot.File.Upload'))
 
         if ($isCustom) {
-            $this._Logger.Debug([LogMessage]::new("[Bot:_IsCustomResponse] Detected custom response [$($Response.PSObject.TypeNames[0])] from command"))
+            $this.LogDebug("Detected custom response [$($Response.PSObject.TypeNames[0])] from command")
         }
 
         return $isCustom

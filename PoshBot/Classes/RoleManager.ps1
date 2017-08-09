@@ -1,25 +1,24 @@
 
-class RoleManager {
+class RoleManager : BaseLogger {
     [hashtable]$Groups = @{}
     [hashtable]$Permissions = @{}
     [hashtable]$Roles = @{}
     [hashtable]$RoleUserMapping = @{}
     hidden [object]$_Backend
     hidden [StorageProvider]$_Storage
-    hidden [Logger]$_Logger
     hidden [string[]]$_AdminPermissions = @('manage-roles', 'show-help' ,'view', 'view-role', 'view-group',
                                            'manage-plugins', 'manage-groups', 'manage-permissions', 'manage-schedules')
 
     RoleManager([object]$Backend, [StorageProvider]$Storage, [Logger]$Logger) {
         $this._Backend = $Backend
         $this._Storage = $Storage
-        $this._Logger = $Logger
+        $this.Logger = $Logger
         $this.Initialize()
     }
 
     [void]Initialize() {
         # Load in state from persistent storage
-        $this._Logger.Info([LogMessage]::new('[RoleManager:Initialize] Initializing'))
+        $this.LogInfo('Initializing')
 
         $this.LoadState()
 
@@ -28,7 +27,8 @@ class RoleManager {
         # The bot admin could have modified the permissions for the role and we want to respect those changes
         if (-not $this.Roles['Admin']) {
             # Create the builtin Admin role and add all the permissions defined in the [Builtin] module
-            $adminrole = [Role]::New('Admin', 'Bot administrator role')
+            $this.LogDebug('Creating builtin [Admin] role')
+            $adminrole = [Role]::New('Admin', 'Bot administrator role', $this.Logger)
 
             # TODO
             # Get the builtin permissions from the module manifest rather than hard coding them in the class
@@ -36,10 +36,12 @@ class RoleManager {
                 $p = [Permission]::new($_, 'Builtin')
                 $adminRole.AddPermission($p)
             }
+            $this.LogDebug('Added builtin permissions to [Admin] role', $this._AdminPermissions)
             $this.Roles.Add($adminRole.Name, $adminRole)
 
             # Creat the builtin [Admin] group and add the [Admin] role to it
-            $adminGroup = [Group]::new('Admin', 'Bot administrators')
+            $this.LogDebug('Creating builtin [Admin] group with [Admin] role')
+            $adminGroup = [Group]::new('Admin', 'Bot administrators', $this.Logger)
             $adminGroup.AddRole($adminRole)
             $this.Groups.Add($adminGroup.Name, $adminGroup)
             $this.SaveState()
@@ -50,6 +52,7 @@ class RoleManager {
             $adminRole = $this.Roles['Admin']
             foreach ($perm in $this._AdminPermissions) {
                 if (-not $adminRole.Permissions.ContainsKey($perm)) {
+                    $this.LogInfo("[Admin] role missing builtin permission [$perm]. Adding permission back.")
                     $p = [Permission]::new($perm, 'Builtin')
                     $adminRole.AddPermission($p)
                 }
@@ -59,7 +62,7 @@ class RoleManager {
 
     # Save state to storage
     [void]SaveState() {
-        $this._Logger.Verbose([LogMessage]::new("[RoleManager:SaveState] Saving role manager state to storage"))
+        $this.LogDebug('Saving role manager state to storage')
 
         $permissionsToSave = @{}
         foreach ($permission in $this.Permissions.GetEnumerator()) {
@@ -82,7 +85,7 @@ class RoleManager {
 
     # Load state from storage
     [void]LoadState() {
-        $this._Logger.Verbose([LogMessage]::new("[RoleManager:LoadState] Loading role manager state from storage"))
+        $this.LogDebug('Loading role manager state from storage')
 
         $permissionConfig = $this._Storage.GetConfig('permissions')
         if ($permissionConfig) {
@@ -105,7 +108,7 @@ class RoleManager {
         if ($roleConfig) {
             foreach ($roleKey in $roleConfig.Keys) {
                 $role = $roleConfig[$roleKey]
-                $r = [Role]::new($roleKey)
+                $r = [Role]::new($roleKey, $this.Logger)
                 if ($role.Description) {
                     $r.Description = $role.Description
                 }
@@ -126,7 +129,7 @@ class RoleManager {
         if ($groupConfig) {
             foreach ($groupKey in $groupConfig.Keys) {
                 $group = $groupConfig[$groupKey]
-                $g = [Group]::new($groupKey)
+                $g = [Group]::new($groupKey, $this.Logger)
                 if ($group.Description) {
                     $g.Description = $group.Description
                 }
@@ -153,9 +156,7 @@ class RoleManager {
         if ($g = $this.Groups[$Groupname]) {
             return $g
         } else {
-            $msg = "[RoleManager:GetGroup] Group [$Groupname] not found"
-            $this._Logger.Info([LogMessage]::new([LogSeverity]::Warning, $msg))
-            Write-Error -Message $msg
+            $this.LogInfo([LogSeverity]::Warning, "Group [$Groupname] not found")
             return $null
         }
     }
@@ -165,9 +166,7 @@ class RoleManager {
             $g.Description = $Description
             $this.SaveState()
         } else {
-            $msg = "[RoleManager:UpdateGroupDescription] Group [$Groupname] not found"
-            $this._Logger.Info([LogMessage]::new([LogSeverity]::Warning, $msg))
-            Write-Error -Message $msg
+            $this.LogInfo([LogSeverity]::Warning, "Group [$Groupname] not found")
         }
     }
 
@@ -176,9 +175,7 @@ class RoleManager {
             $r.Description = $Description
             $this.SaveState()
         } else {
-            $msg = "[RoleManager:UpdateRoleDescription] Role [$Rolename] not found"
-            $this._Logger.Info([LogMessage]::new([LogSeverity]::Warning, $msg))
-            Write-Error -Message $msg
+            $this.LogInfo([LogSeverity]::Warning, "Role [$Rolename] not found")
         }
     }
 
@@ -187,9 +184,7 @@ class RoleManager {
         if ($p) {
             return $p
         } else {
-            $msg = "[RoleManager:GetPermission] Permission [$PermissionName] not found"
-            $this._Logger.Info([LogMessage]::new([LogSeverity]::Warning, $msg))
-            Write-Error -Message $msg
+            $this.LogInfo([LogSeverity]::Warning, "Permission [$PermissionName] not found")
             return $null
         }
     }
@@ -199,88 +194,84 @@ class RoleManager {
         if ($r) {
             return $r
         } else {
-            $msg = "[RoleManager:GetRole] Role [$RoleName] not found"
-            $this._Logger.Info([LogMessage]::new([LogSeverity]::Warning, $msg))
-            Write-Error -Message $msg
+            $this.LogInfo([LogSeverity]::Warning, "Role [$RoleName] not found")
             return $null
         }
     }
 
     [void]AddGroup([Group]$Group) {
         if (-not $this.Groups.ContainsKey($Group.Name)) {
-            $this._Logger.Info([LogMessage]::new("[RoleManager:AddGroup] Adding group [$($Group.Name)]"))
+            $this.LogVerbose("Adding group [$($Group.Name)]")
             $this.Groups.Add($Group.Name, $Group)
             $this.SaveState()
         } else {
-            $this._Logger.Info([LogMessage]::new("[RoleManager:AddGroup] Group [$($Group.Name)] is already loaded"))
+            $this.LogInfo([LogSeverity]::Warning, "Group [$($Group.Name)] is already loaded")
         }
     }
 
     [void]AddPermission([Permission]$Permission) {
         if (-not $this.Permissions.ContainsKey($Permission.ToString())) {
-            $this._Logger.Info([LogMessage]::new("[RoleManager:AddPermission] Adding permission [$($Permission.Name)]"))
+            $this.LogVerbose("Adding permission [$($Permission.Name)]")
             $this.Permissions.Add($Permission.ToString(), $Permission)
             $this.SaveState()
         } else {
-            $this._Logger.Info([LogMessage]::new("[RoleManager:AddPermission] Permission [$($Permission.Name)] is already loaded"))
+            $this.LogInfo([LogSeverity]::Warning, "Permission [$($Permission.Name)] is already loaded")
         }
     }
 
     [void]AddRole([Role]$Role) {
         if (-not $this.Roles.ContainsKey($Role.Name)) {
-            $this._Logger.Info([LogMessage]::new("[RoleManager:AddRole] Adding role [$($Role.Name)]"))
+            $this.LogVerbose("Adding role [$($Role.Name)]")
             $this.Roles.Add($Role.Name, $Role)
             $this.SaveState()
         } else {
-            $this._Logger.Info([LogMessage]::new("[RoleManager:AddRole] Role [$($Role.Name)] is already loaded"))
+            $this.LogInfo([LogSeverity]::Warning, "Role [$($Role.Name)] is already loaded")
         }
     }
 
     [void]RemoveGroup([Group]$Group) {
         if ($this.Groups.ContainsKey($Group.Name)) {
-            $this._Logger.Info([LogMessage]::new("[RoleManager:RemoveGroup] Removing group [$($Group.Name)]"))
+            $this.LogVerbose("Removing group [$($Group.Name)]")
             $this.Groups.Remove($Group.Name)
             $this.SaveState()
         } else {
-            $this._Logger.Info([LogMessage]::new([LogSeverity]::Warning, "[RoleManager:RemoveGroup] Group [$($Group.Name)] was not found"))
+            $this.LogInfo([LogSeverity]::Warning, "Group [$($Group.Name)] was not found")
         }
     }
 
     [void]RemovePermission([Permission]$Permission) {
         if (-not $this.Permissions.ContainsKey($Permission.ToString())) {
-
             # Remove the permission from roles
             foreach ($role in $this.Roles.GetEnumerator()) {
                 if ($role.Value.Permissions.ContainsKey($Permission.ToString())) {
-                    $this._Logger.Info([LogMessage]::new("[RoleManager:RemovePermission] Removing permission [$($Permission.ToString())] from role [$($role.Value.Name)]"))
+                    $this.LogVerbose("Removing permission [$($Permission.ToString())] from role [$($role.Value.Name)]")
                     $role.Value.RemovePermission($Permission)
                 }
             }
 
-            $this._Logger.Info([LogMessage]::new("[RoleManager:RemoveGroup] Removing permission [$($Permission.ToString())]"))
+            $this.LogVerbose("Removing permission [$($Permission.ToString())]")
             $this.Permissions.Remove($Permission.ToString())
             $this.SaveState()
         } else {
-            $this._Logger.Info([LogMessage]::new([LogSeverity]::Warning, "[RoleManager:RemovePermission] Permission [$($Permission.ToString())] was not found"))
+            $this.LogInfo([LogSeverity]::Warning, "Permission [$($Permission.ToString())] was not found")
         }
     }
 
     [void]RemoveRole([Role]$Role) {
         if ($this.Roles.ContainsKey($Role.Name)) {
-
             # Remove the role from groups
             foreach ($group in $this.Groups.GetEnumerator()) {
                 if ($group.Value.Roles.ContainsKey($Role.Name)) {
-                    $this._Logger.Info([LogMessage]::new("[RoleManager:RemoveRole] Removing role [$($Role.Name)] from group [$($group.Value.Name)]"))
+                    $this.LogVerbose("Removing role [$($Role.Name)] from group [$($group.Value.Name)]")
                     $group.Value.RemoveRole($Role)
                 }
             }
 
-            $this._Logger.Info([LogMessage]::new("[RoleManager:RemoveRole] Removing role [$($Role.Name)]"))
+            $this.LogVerbose("Removing role [$($Role.Name)]")
             $this.Roles.Remove($Role.Name)
             $this.SaveState()
         } else {
-            $this._Logger.Info([LogMessage]::new([LogSeverity]::Warning, "[RoleManager:RemoveRole] Role [$($Role.Name)] was not found"))
+            $this.LogInfo([LogSeverity]::Warning, "Role [$($Role.Name)] was not found")
         }
     }
 
@@ -288,18 +279,17 @@ class RoleManager {
         try {
             if ($role = $this.GetRole($RoleName)) {
                 if ($group = $this.Groups[$GroupName]) {
-                    $msg = "Adding role [$RoleName] to group [$($group.Name)]"
-                    $this._Logger.Info([LogMessage]::new("[RoleManager:AddRoleToGroup] $msg"))
+                    $this.LogVerbose("Adding role [$RoleName] to group [$($group.Name)]")
                     $group.AddRole($role)
                     $this.SaveState()
                 } else {
                     $msg = "Unknown group [$GroupName]"
-                    $this._Logger.Info([LogMessage]::new([LogSeverity]::Warning, "[RoleManager:AddRoleToGroup] $msg"))
+                    $this.LogInfo([LogSeverity]::Warning, $msg)
                     throw $msg
                 }
             } else {
                 $msg = "Unable to find role [$RoleName]"
-                $this._Logger.Info([LogMessage]::new([LogSeverity]::Warning, "[RoleManager:AddRoleToGroup] $msg"))
+                $this.LogInfo([LogSeverity]::Warning, $msg)
                 throw $msg
             }
         } catch {
@@ -311,21 +301,21 @@ class RoleManager {
         try {
             if ($this._Backend.GetUser($UserId)) {
                 if ($group = $this.Groups[$GroupName]) {
-                    $msg = "Adding user [$UserId] to [$($group.Name)]"
-                    $this._Logger.Info([LogMessage]::new([LogSeverity]::Warning, "[RoleManager:AddUserToGroup] $msg"))
+                    $this.LogVerbose("Adding user [$UserId] to [$($group.Name)]")
                     $group.AddUser($UserId)
                     $this.SaveState()
                 } else {
                     $msg = "Unknown group [$GroupName]"
-                    $this._Logger.Info([LogMessage]::new([LogSeverity]::Warning, "[RoleManager:AddUserToGroup] $msg"))
+                    $this.LogInfo([LogSeverity]::Warning, $msg)
                     throw $msg
                 }
             } else {
                 $msg = "Unable to find user [$UserId]"
-                $this._Logger.Info([LogMessage]::new([LogSeverity]::Warning, "[RoleManager:AddUserToGroup] $msg"))
+                $this.LogInfo([LogSeverity]::Warning, $msg)
                 throw $msg
             }
         } catch {
+            $this.LogInfo([LogSeverity]::Error, "Exception adding [$UserId] to [$GroupName]", $_)
             throw $_
         }
     }
@@ -334,21 +324,21 @@ class RoleManager {
         try {
             if ($role = $this.GetRole($RoleName)) {
                 if ($group = $this.Groups[$GroupName]) {
-                    $msg = "Removing role [$RoleName] from group [$($group.Name)]"
-                    $this._Logger.Info([LogMessage]::new("[RoleManager:RemoveUserFromGroup] $msg"))
+                    $this.LogVerbose("Removing role [$RoleName] from group [$($group.Name)]")
                     $group.RemoveRole($role)
                     $this.SaveState()
                 } else {
                     $msg = "Unknown group [$GroupName]"
-                    $this._Logger.Info([LogMessage]::new([LogSeverity]::Warning, "[RoleManager:RemoveUserFromGroup] $msg"))
+                    $this.LogInfo([LogSeverity]::Warning, $msg)
                     throw $msg
                 }
             } else {
                 $msg = "Unable to find role [$RoleName]"
-                $this._Logger.Info([LogMessage]::new([LogSeverity]::Warning, "[RoleManager:RemoveUserFromGroup] $msg"))
+                $this.LogInfo([LogSeverity]::Warning, $msg)
                 throw $msg
             }
         } catch {
+            $this.LogInfo([LogSeverity]::Error, "Exception removing [$RoleName] from [$GroupName]", $_)
             throw $_
         }
     }
@@ -357,15 +347,17 @@ class RoleManager {
         try {
             if ($group = $this.Groups[$GroupName]) {
                 if ($group.Users.ContainsKey($UserId)) {
+                    $this.LogVerbose("Removing user [$UserId] from group [$($group.Name)]")
                     $group.RemoveUser($UserId)
                     $this.SaveState()
                 }
             } else {
                 $msg = "Unknown group [$GroupName]"
-                $this._Logger.Info([LogMessage]::new([LogSeverity]::Warning, "[RoleManager:RemoveUserFromGroup] $msg"))
+                $this.LogInfo([LogSeverity]::Warning, $msg)
                 throw $msg
             }
         } catch {
+            $this.LogInfo([LogSeverity]::Error, "Exception removing [$UserId] from [$GroupName]", $_)
             throw $_
         }
     }
@@ -374,21 +366,21 @@ class RoleManager {
         try {
             if ($role = $this.GetRole($RoleName)) {
                 if ($perm = $this.Permissions[$PermissionName]) {
-                    $msg = "Adding permission [$PermissionName] to role [$($role.Name)]"
-                    $this._Logger.Info([LogMessage]::new("[RoleManager:AddPermissionToRole] $msg"))
+                    $this.LogVerbose("Adding permission [$PermissionName] to role [$($role.Name)]")
                     $role.AddPermission($perm)
                     $this.SaveState()
                 } else {
                     $msg = "Unknown permission [$perm]"
-                    $this._Logger.Info([LogMessage]::new([LogSeverity]::Warning, "[RoleManager:AddPermissionToRole] $msg"))
+                    $this.LogInfo([LogSeverity]::Warning, $msg)
                     throw $msg
                 }
             } else {
                 $msg = "Unable to find role [$RoleName]"
-                $this._Logger.Info([LogMessage]::new([LogSeverity]::Warning, "[RoleManager:AddPermissionToRole] $msg"))
+                $this.LogInfo([LogSeverity]::Warning, $msg)
                 throw $msg
             }
         } catch {
+            $this.LogInfo([LogSeverity]::Error, "Exception adding [$PermissionName] to [$RoleName]", $_)
             throw $_
         }
     }
@@ -397,21 +389,21 @@ class RoleManager {
         try {
             if ($role = $this.GetRole($RoleName)) {
                 if ($perm = $this.Permissions[$PermissionName]) {
-                    $msg = "Removing permission [$PermissionName] from role [$($role.Name)]"
-                    $this._Logger.Info([LogMessage]::new("[RoleManager:RemovePermissionFromRole] $msg"))
+                    $this.LogVerbose("Removing permission [$PermissionName] from role [$($role.Name)]")
                     $role.RemovePermission($perm)
                     $this.SaveState()
                 } else {
                     $msg = "Unknown permission [$PermissionName]"
-                    $this._Logger.Info([LogMessage]::new([LogSeverity]::Warning, "[RoleManager:RemovePermissionFromRole] $msg"))
+                    $this.LogInfo([LogSeverity]::Warning, $msg)
                     throw $msg
                 }
             } else {
                 $msg = "Unable to find role [$RoleName]"
-                $this._Logger.Info([LogMessage]::new([LogSeverity]::Warning, "[RoleManager:RemovePermissionFromRole] $msg"))
+                $this.LogInfo([LogSeverity]::Warning, $msg)
                 throw $msg
             }
         } catch {
+            $this.LogInfo([LogSeverity]::Error, "Exception removing [$PermissionName] from [$RoleName]", $_)
             throw $_
         }
     }

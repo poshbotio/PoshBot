@@ -27,7 +27,7 @@ class ModuleCommand {
     }
 }
 
-class Plugin {
+class Plugin : BaseLogger {
 
     # Unique name for the plugin
     [string]$Name
@@ -43,13 +43,15 @@ class Plugin {
 
     hidden [string]$_ManifestPath
 
-    Plugin() {
+    Plugin([Logger]$Logger) {
         $this.Name = $this.GetType().Name
+        $this.Logger = $Logger
         $this.Enabled = $true
     }
 
-    Plugin([string]$Name) {
+    Plugin([string]$Name, [Logger]$Logger) {
         $this.Name = $Name
+        $this.Logger = $Logger
         $this.Enabled = $true
     }
 
@@ -58,17 +60,10 @@ class Plugin {
         return $this.Commands.($Command.Name)
     }
 
-    # Add a PowerShell module to the plugin
-    [void]AddModule([string]$ModuleName) {
-        if (-not $this.Modules.ContainsKey($ModuleName)) {
-            $this.Modules.Add($ModuleName, $null)
-            $this.LoadModuleCommands($ModuleName)
-        }
-    }
-
     # Add a new command
     [void]AddCommand([Command]$Command) {
         if (-not $this.FindCommand($Command)) {
+            $this.LogDebug("Adding command [$($Command.Name)]")
             $this.Commands.Add($Command.Name, $Command)
         }
     }
@@ -77,6 +72,7 @@ class Plugin {
     [void]RemoveCommand([Command]$Command) {
         $existingCommand = $this.FindCommand($Command)
         if ($existingCommand) {
+            $this.LogDebug("Removing command [$($Command.Name)]")
             $this.Commands.Remove($Command.Name)
         }
     }
@@ -85,6 +81,7 @@ class Plugin {
     [void]ActivateCommand([Command]$Command) {
         $existingCommand = $this.FindCommand($Command)
         if ($existingCommand) {
+            $this.LogDebug("Activating command [$($Command.Name)]")
             $existingCommand.Activate()
         }
     }
@@ -93,12 +90,14 @@ class Plugin {
     [void]DeactivateCommand([Command]$Command) {
         $existingCommand = $this.FindCommand($Command)
         if ($existingCommand) {
+            $this.LogDebug("Deactivating command [$($Command.Name)]")
             $existingCommand.Deactivate()
         }
     }
 
     [void]AddPermission([Permission]$Permission) {
         if (-not $this.Permissions.ContainsKey($Permission.ToString())) {
+            $this.LogDebug("Adding permission [$Permission.ToString()] to plugin [$($this.Name)`:$($this.Version.ToString())]")
             $this.Permissions.Add($Permission.ToString(), $Permission)
         }
     }
@@ -109,12 +108,14 @@ class Plugin {
 
     [void]RemovePermission([Permission]$Permission) {
         if ($this.Permissions.ContainsKey($Permission.ToString())) {
+            $this.LogDebug("Removing permission [$Permission.ToString()] from plugin [$($this.Name)`:$($this.Version.ToString())]")
             $this.Permissions.Remove($Permission.ToString())
         }
     }
 
     # Activate plugin and all commands
     [void]Activate() {
+        $this.LogDebug("Activating plugin [$($this.Name)`:$($this.Version.ToString())]")
         $this.Enabled = $true
         $this.Commands.GetEnumerator() | ForEach-Object {
             $_.Value.Activate()
@@ -123,6 +124,7 @@ class Plugin {
 
     # Deactivate plugin and all commands
     [void]Deactivate() {
+        $this.LogDebug("Deactivating plugin [$($this.Name)`:$($this.Version.ToString())]")
         $this.Enabled = $false
         $this.Commands.GetEnumerator() | ForEach-Object {
             $_.Value.Deactivate()

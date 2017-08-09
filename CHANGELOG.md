@@ -6,6 +6,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.7.0] Unreleased
+### Added
+  - New bot configuration properties [MaxLogSizeMB] and [MaxLogsToKeep] to control log file size and rotation.
+  - Command execution history is now logged by default to a separate log file [CommandHistory.log].
+    Command history log settings can be controlled with configuration properties [LogCommandHistory], [CommandHistoryMaxLogSizeMB], and [CommandHistoryMaxLogsToKeep].
+### Changes
+  - Implemented and improved information, verbose, and debug logging throughout PoshBot.
+
 ## [0.6.0] 2017-07-18
 ### Added
 - New builtin command 'Update-Plugin' which updates an existing plugin to a newer version and optionally removes all previous versions.

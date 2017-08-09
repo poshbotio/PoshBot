@@ -28,7 +28,7 @@ function New-Group {
         [string]$Description
     )
 
-    $group = [Group]::New($Name)
+    $group = [Group]::New($Name, $Bot.Logger)
     if ($PSBoundParameters.ContainsKey('Description')) {
         $group.Description = $Description
     }

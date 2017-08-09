@@ -12,7 +12,7 @@
 RootModule = 'PoshBot.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.6.0'
+ModuleVersion = '0.7.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -127,6 +127,14 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
+## [0.7.0] Unreleased
+### Added
+  - New bot configuration properties [MaxLogSizeMB] and [MaxLogsToKeep] to control log file size and rotation.
+  - Command execution history is now logged by default to a separate log file [CommandHistory.log].
+    Command history log settings can be controlled with configuration properties [LogCommandHistory], [CommandHistoryMaxLogSizeMB], and [CommandHistoryMaxLogsToKeep].
+### Changes
+  - Implemented and improved information, verbose, and debug logging throught PoshBot.
+
 ## [0.6.0] 2017-07-18
 ### Added
 - New builtin command 'Update-Plugin' which updates an existing plugin to a newer version and optionally removes all previous versions.
@@ -137,8 +145,8 @@ PrivateData = @{
 - Use [Configuration] module when reading in bot configuration with [Get-PoshBotConfiguration] so PSCredentials can be deserialized correctly.
 - Improved user name/id resolution to avoid Slack API rate limits.
 - Fixed regression when using the [PoshBot.BotFrom()] custom attribute with an empty parameter.
-- PR46 - Adjust help filter in [Get-CommandHelp] command to match exact first and display results if exactly one command was matched. Continue with
-  existing behaviour if more than one command is returned. (via @RamblingCookieMonster)
+- PR46 - Adjust help filter in [Get-CommandHelp] command to match exact first and display results if exactly one command was matched.
+  Continue with existing behavior if more than one command is returned. (via @RamblingCookieMonster)
 
 ## [0.5.0] 2017-06-14
 ### Added
@@ -195,7 +203,7 @@ PrivateData = @{
 ## [0.2.2] 2017-04-17
 ### Fixed
 - Command tokenization issues on Nano Server.
-- #24: Nano Server compatability
+- #24: Nano Server compatibility
 
 ## [0.2.1] 2017-04-14
 ### Fixed
@@ -226,9 +234,9 @@ PrivateData = @{
 - Support for multiple plugin versions
 
 ### Changed
-- Standadized builtin bot command parameter names
-- Move demo commands (WolframAlpha, Giphy) into seperate plugin repos
-- Move network plugin into seperate repo
+- Standardized builtin bot command parameter names
+- Move demo commands (WolframAlpha, Giphy) into separate plugin repos
+- Move network plugin into separate repo
 
 ### Fixed
 - Fix StopUpstreamCommandsException exception from being thrown in Install-Plugin command
