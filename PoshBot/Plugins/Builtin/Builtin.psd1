@@ -12,7 +12,7 @@
 RootModule = 'Builtin.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.6.1'
+ModuleVersion = '0.6.2'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -74,7 +74,7 @@ FunctionsToExport = 'About', 'Add-CommandPermission', 'Add-GroupRole', 'Add-Grou
                'Get-CommandHistory', 'Get-Group', 'Get-Permission', 'Get-Plugin',
                'Get-Role', 'Get-CommandHelp', 'Install-Plugin', 'New-Group', 'New-Permission',
                'New-Role', 'Remove-Group', 'Remove-GroupRole', 'Remove-GroupUser',
-               'Remove-Plugin', 'Remove-Role', 'Remove-RolePermission', 'Status',
+               'Remove-Plugin', 'Remove-Role', 'Remove-RolePermission', 'Slap', 'Status',
                'Update-GroupDescription', 'Update-RoleDescription', 'Get-ScheduledCommand',
                'New-ScheduledCommand', 'Set-ScheduledCommand', 'Remove-ScheduledCommand',
                'Enable-ScheduledCommand', 'Disable-ScheduledCommand', 'Update-Plugin', 'Get-CommandStatus'
@@ -155,7 +155,11 @@ PrivateData = @{
         # IconUri = ''
 
         # ReleaseNotes of this module
-        # ReleaseNotes = ''
+        ReleaseNotes = '
+## [0.6.2] - 2017-08-10
+### Changed
+- Added Slap command, to slap someone around a bit with a large trout
+        '
 
         # External dependent modules of this module
         # ExternalModuleDependencies = ''
