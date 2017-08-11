@@ -7,9 +7,6 @@ function Slap {
     .EXAMPLE
         !slap --user jaap
     #>
-
-
-    [PoshBot.BotCommand(Permissions = 'view')]
     [cmdletbinding()]
     param(
         [parameter(Mandatory)]
