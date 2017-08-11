@@ -7,7 +7,6 @@ class ParsedCommand {
     [string[]]$Tokens = @()
     [hashtable]$NamedParameters = @{}
     [System.Collections.ArrayList]$PositionalParameters = (New-Object System.Collections.ArrayList)
-    #[System.Management.Automation.FunctionInfo]$ModuleCommand = $null
     [datetime]$Time = (Get-Date).ToUniversalTime()
     [string]$From = $null
     [string]$To = $null

@@ -412,7 +412,11 @@ class Bot : BaseLogger {
 
     # Get any parameters with the
     [hashtable]GetConfigProvidedParameters([PluginCommand]$PluginCmd) {
-        $command = $PluginCmd.Command.FunctionInfo
+        if ($PluginCmd.Command.FunctionInfo) {
+            $command = $PluginCmd.Command.FunctionInfo
+        } else {
+            $command = $PluginCmd.Command.CmdletInfo
+        }
         $this.LogDebug("Inspecting command [$($PluginCmd.ToString())] for configuration-provided parameters")
         $configParams = foreach($param in $Command.Parameters.GetEnumerator() | Select-Object -ExpandProperty Value) {
             foreach ($attr in $param.Attributes) {

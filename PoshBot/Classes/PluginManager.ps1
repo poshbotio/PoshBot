@@ -439,7 +439,7 @@ class PluginManager : BaseLogger {
             # Get exported cmdlets/functions from the module and add them to the plugin
             # Adjust bot command behaviour based on metadata as appropriate
             Import-Module -Name $manifestPath -Scope Local -Verbose:$false -WarningAction SilentlyContinue
-            $moduleCommands = Microsoft.PowerShell.Core\Get-Command -Module $ModuleName -CommandType @('Cmdlet', 'Function', 'Workflow') -Verbose:$false
+            $moduleCommands = Microsoft.PowerShell.Core\Get-Command -Module $ModuleName -CommandType @('Cmdlet', 'Function') -Verbose:$false
             foreach ($command in $moduleCommands) {
 
                 # Get the command help so we can pull information from it
@@ -448,7 +448,12 @@ class PluginManager : BaseLogger {
 
                 # Get any command metadata that may be attached to the command
                 # via the PoshBot.BotCommand extended attribute
-                $metadata = $this.GetCommandMetadata($command)
+                # NOTE: This only works on functions, not cmdlets
+                if ($command.CommandType -eq 'Function') {
+                    $metadata = $this.GetCommandMetadata($command)
+                } else {
+                    $metadata = $null
+                }
 
                 $this.LogVerbose("Creating command [$($command.Name)] for new plugin [$($plugin.Name)]")
                 $cmd = [Command]::new()
@@ -551,7 +556,12 @@ class PluginManager : BaseLogger {
                     $cmd.Description = $cmdHelp.Synopsis.Trim()
                 }
                 $cmd.ManifestPath = $manifestPath
-                $cmd.FunctionInfo = $command
+
+                if ($command.CommandType -eq 'Function') {
+                    $cmd.FunctionInfo = $command
+                } elseIf ($command.CommandType -eq 'Cmdlet') {
+                    $cmd.CmdletInfo = $command
+                }
 
                 # Set the command usage differently for [Command] and [Regex] trigger types
                 if ($cmd.TriggerType -eq [TriggerType]::Command) {

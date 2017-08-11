@@ -232,7 +232,14 @@ class CommandExecutor : BaseLogger {
     # Validate that all mandatory parameters have been provided
     [bool]ValidateMandatoryParameters([ParsedCommand]$ParsedCommand, [Command]$Command) {
         $validated = $false
-        foreach ($parameterSet in $Command.FunctionInfo.ParameterSets) {
+
+        if ($Command.FunctionInfo) {
+            $parameterSets = $Command.FunctionInfo.ParameterSets
+        } else {
+            $parameterSets = $Command.CmdletInfo.ParameterSets
+        }
+
+        foreach ($parameterSet in $parameterSets) {
             $this.LogDebug("Validating parameters for parameter set [$($parameterSet.Name)]")
             $mandatoryParameters = @($parameterSet.Parameters | Where-Object {$_.IsMandatory -eq $true}).Name
             if ($mandatoryParameters.Count -gt 0) {

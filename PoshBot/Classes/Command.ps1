@@ -56,6 +56,8 @@ class Command : BaseLogger {
 
     [System.Management.Automation.FunctionInfo]$FunctionInfo
 
+    [System.Management.Automation.CmdletInfo]$CmdletInfo
+
     [AccessFilter]$AccessFilter = [AccessFilter]::new()
 
     [bool]$Enabled = $true
@@ -97,10 +99,17 @@ class Command : BaseLogger {
         [string]$sb = [string]::Empty
         $options = @{
             ManifestPath = $this.ManifestPath
-            Function = $this.FunctionInfo
             ParsedCommand = $ParsedCommand
             ConfigurationDirectory = $script:ConfigurationDirectory
         }
+        if ($this.FunctionInfo) {
+            $options.Function = $this.FunctionInfo
+            $fqCommand = "$($this.FunctionInfo.Module.name)\$($this.FunctionInfo.name)"
+        } elseIf ($this.CmdletInfo) {
+            $options.Function = $this.CmdletInfo
+            $fqCommand = "$($this.CmdletInfo.Module.name)\$($this.CmdletInfo.name)"
+        }
+
         if ([TriggerType]::Command -in $this.Triggers.Type) {
             $options.NamedParameters = $ParsedCommand.NamedParameters
             $options.PositionalParameters = $ParsedCommand.PositionalParameters
@@ -110,12 +119,6 @@ class Command : BaseLogger {
                 Arguments = $regex.Match($ParsedCommand.CommandString).Groups | Select-Object -ExpandProperty Value
             }
             $options.PositionalParameters = @()
-        }
-
-        $fqCommand = "$($this.FunctionInfo.Module.name)\$($this.FunctionInfo.name)"
-
-        if ($this.FunctionInfo) {
-            $options.FunctionInfo = $this.FunctionInfo
         }
 
         if ($InvokeAsJob) {

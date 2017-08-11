@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [0.7.0] Unreleased
 ### Added
+  - Support for importing PowerShell modules that include cmdlets as well as functions.
+    Note that custom PoshBot metadata to control command name, aliases, command type, etc is currently not supported on cmdlets.
   - New bot configuration properties [MaxLogSizeMB] and [MaxLogsToKeep] to control log file size and rotation.
   - Command execution history is now logged by default to a separate log file [CommandHistory.log].
     Command history log settings can be controlled with configuration properties [LogCommandHistory], [CommandHistoryMaxLogSizeMB], and [CommandHistoryMaxLogsToKeep].
