@@ -428,7 +428,8 @@ class Bot : BaseLogger {
 
         $configProvidedParams = @{}
         if ($configParams) {
-            $this.LogInfo("Command [$($PluginCmd.ToString())] has configuration provided parameters", $configParams)
+            $configParamNames = $configParams.Parameter | Select-Object -ExpandProperty Name
+            $this.LogInfo("Command [$($PluginCmd.ToString())] has configuration provided parameters", $configParamNames)
             $pluginConfig = $this.Configuration.PluginConfiguration[$PluginCmd.Plugin.Name]
             if ($pluginConfig) {
                 $this.LogDebug("Inspecting bot configuration for parameter values matching command [$($PluginCmd.ToString())]")
