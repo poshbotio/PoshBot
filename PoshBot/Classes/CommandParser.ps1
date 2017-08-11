@@ -34,7 +34,13 @@ class CommandParser {
 
         # The command is the first word of the message
         $command = $commandString.Split(' ')[0]
-        $arrCmdStr = $command.Split(':')
+
+        # The first word of the message COULD be a URI, don't try and parse than into a command
+        if ($command -notlike '*://*') {
+            $arrCmdStr = $command.Split(':')
+        } else {
+            $arrCmdStr = @($command)
+        }
 
         # Check if a specific version of the command was specified
         $version = $null
