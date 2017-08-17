@@ -139,7 +139,7 @@ function Cookies {
 
 This command will match every incoming chat message against the regex `'^grafana\s(cpu|disk)\s(.*)'`.
 This regex expects the word `grafana` to start at the beginning of the line and the next word to be `cpu` or `disk`.
-The next work can be anything.
+The next word can be anything.
 
 ```powershell
 function Get-GrafanaGraph {
@@ -152,6 +152,7 @@ function Get-GrafanaGraph {
         grafana disk myotherserver02
     #>
     [PoshBot.BotCommand(
+        Command = $false,
         CommandName = 'grafana',
         TriggerType = 'regex',
         Regex = '^grafana\s(cpu|disk)\s(.*)'
