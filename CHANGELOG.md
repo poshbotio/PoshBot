@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Implemented and improved information, verbose, and debug logging throughout PoshBot.
 ### Fixed
   - Bug where parser was incorrectly parsing URLs in command string
+  - Improved reconnection logic and logging in Slack backend implementation.
 
 ## [0.6.0] 2017-07-18
 ### Added

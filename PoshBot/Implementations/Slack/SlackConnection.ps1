@@ -41,7 +41,6 @@ class SlackConnection : Connection {
             }
         } catch {
             $this.LogInfo([LogSeverity]::Error, 'Error connecting to Slack Real Time API', [ExceptionFormatter]::Summarize($_))
-            throw $_
         }
     }
 
@@ -81,6 +80,13 @@ class SlackConnection : Connection {
                     $jsonResult
                 }
             }
+            $socketStatus = [pscustomobject]@{
+                State = $webSocket.State
+                CloseStatus = $webSocket.CloseStatus
+                CloseStatusDescription = $webSocket.CloseStatusDescription
+            }
+            $socketStatusStr = ($socketStatus | Format-List | Out-String).Trim()
+            Write-Warning -Message "Websocket state is [$($webSocket.State.ToString())].`n$socketStatusStr"
         }
         try {
             $this.ReceiveJob = Start-Job -Name ReceiveRtmMessages -ScriptBlock $recv -ArgumentList $this.WebSocketUrl -ErrorAction Stop -Verbose
@@ -88,12 +94,41 @@ class SlackConnection : Connection {
             $this.Status = [ConnectionStatus]::Connected
             $this.LogInfo("Started websocket receive job [$($this.ReceiveJob.Id)]")
         } catch {
-            throw $_
+            $this.LogInfo([LogSeverity]::Error, "$($_.Exception.Message)", [ExceptionFormatter]::Summarize($_))
         }
     }
 
     # Read all available data from the job
     [string]ReadReceiveJob() {
+        # Read stream info from the job so we can log them
+        $infoStream = $this.ReceiveJob.ChildJobs[0].Information.ReadAll()
+        $warningStream = $this.ReceiveJob.ChildJobs[0].Warning.ReadAll()
+        $errStream = $this.ReceiveJob.ChildJobs[0].Error.ReadAll()
+        $verboseStream = $this.ReceiveJob.ChildJobs[0].Verbose.ReadAll()
+        $debugStream = $this.ReceiveJob.ChildJobs[0].Debug.ReadAll()
+        foreach ($item in $infoStream) {
+            $this.LogInfo($item.ToString())
+        }
+        foreach ($item in $warningStream) {
+            $this.LogInfo([LogSeverity]::Warning, $item.ToString())
+        }
+        foreach ($item in $errStream) {
+            $this.LogInfo([LogSeverity]::Error, $item.ToString())
+        }
+        foreach ($item in $verboseStream) {
+            $this.LogVerbose($item.ToString())
+        }
+        foreach ($item in $debugStream) {
+            $this.LogVerbose($item.ToString())
+        }
+
+        # The receive job stopped for some reason. Reestablish the connection if the job isn't running
+        if ($this.ReceiveJob.State -ne 'Running') {
+            $this.LogInfo([LogSeverity]::Warning, "Receive job state is [$($this.ReceiveJob.State)]. Attempting to reconnect...")
+            Start-Sleep -Seconds 5
+            $this.Connect()
+        }
+
         if ($this.ReceiveJob.HasMoreData) {
             return $this.ReceiveJob.ChildJobs[0].Output.ReadAll()
         } else {
