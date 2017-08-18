@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - New bot configuration properties [MaxLogSizeMB] and [MaxLogsToKeep] to control log file size and rotation.
   - Command execution history is now logged by default to a separate log file [CommandHistory.log].
     Command history log settings can be controlled with configuration properties [LogCommandHistory], [CommandHistoryMaxLogSizeMB], and [CommandHistoryMaxLogsToKeep].
+  - New [slap] command to slap a user with a large trout (via @jaapbrasser)
 ### Changes
   - Implemented and improved information, verbose, and debug logging throughout PoshBot.
 ### Fixed

@@ -104,6 +104,9 @@ Locale: en-US
 ### [Set-ScheduledCommand](Set-ScheduledCommand.md)
 {{Manually Enter Set-ScheduledCommand Description Here}}
 
+### [Slap](Slap.md)
+{{Manually Enter Slap Description Here}}
+
 ### [Status](Status.md)
 {{Manually Enter Status Description Here}}
 
