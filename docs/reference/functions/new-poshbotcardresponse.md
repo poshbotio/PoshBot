@@ -79,7 +79,7 @@ If the \[Color\] parameter is specified as well, it will override this parameter
 
 | Type    | Color  | Hex code |
 |---------|--------|----------|
-| Normal  | Green  | #008000  |
+| Normal  | Greed  | #008000  |
 | Warning | Yellow | #FFA500  |
 | Error   | Red    | #FF0000  |
 
