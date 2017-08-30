@@ -127,7 +127,7 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## [0.7.0] Unreleased
+## [0.7.0] 2017-08-29
 ### Added
   - Support for importing PowerShell modules that include cmdlets as well as functions.
     Note that custom PoshBot metadata to control command name, aliases, command type, etc is currently not supported on cmdlets.
