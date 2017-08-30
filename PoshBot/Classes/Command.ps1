@@ -157,15 +157,19 @@ class Command : BaseLogger {
     }
 
     [bool]IsAuthorized([string]$UserId, [RoleManager]$RoleManager) {
-        $perms = $RoleManager.GetUserPermissions($UserId)
         $isAuth = $false
-        foreach ($perm in $perms) {
-            $result = $this.AccessFilter.Authorize($perm.Name)
-            if ($result.Authorized) {
-                $this.LogDebug("User [$UserId] authorized to execute command [$($this.Name)] via permission [$($perm.Name)]")
-                $isAuth = $true
-                break
+        if ($this.AccessFilter.Permissions.Count -gt 0) {
+            $perms = $RoleManager.GetUserPermissions($UserId)
+            foreach ($perm in $perms) {
+                $result = $this.AccessFilter.Authorize($perm.Name)
+                if ($result.Authorized) {
+                    $this.LogDebug("User [$UserId] authorized to execute command [$($this.Name)] via permission [$($perm.Name)]")
+                    $isAuth = $true
+                    break
+                }
             }
+        } else {
+            $isAuth = $true
         }
 
         if ($isAuth) {
