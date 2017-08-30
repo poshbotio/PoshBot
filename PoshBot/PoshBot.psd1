@@ -134,10 +134,14 @@ PrivateData = @{
   - New bot configuration properties [MaxLogSizeMB] and [MaxLogsToKeep] to control log file size and rotation.
   - Command execution history is now logged by default to a separate log file [CommandHistory.log].
     Command history log settings can be controlled with configuration properties [LogCommandHistory], [CommandHistoryMaxLogSizeMB], and [CommandHistoryMaxLogsToKeep].
+  - New [slap] command to slap a user with a large trout (via @jaapbrasser)
 ### Changes
   - Implemented and improved information, verbose, and debug logging throughout PoshBot.
 ### Fixed
   - Bug where parser was incorrectly parsing URLs in command string
+  - Bug where users who had no permissions assigned via groups/roles where being prevented from executing commands that had no permissions attached to them.
+  who had no permissions assigned to them
+  - Improved reconnection logic and logging in Slack backend implementation.
 
 ## [0.6.0] 2017-07-18
 ### Added
