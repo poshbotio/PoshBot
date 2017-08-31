@@ -127,6 +127,10 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
+## [0.7.1] Unreleased
+### Fixed
+  - Bug in [CommandParser] class when parsing certain strings (particularly complex urls)
+
 ## [0.7.0] 2017-08-29
 ### Added
   - Support for importing PowerShell modules that include cmdlets as well as functions.

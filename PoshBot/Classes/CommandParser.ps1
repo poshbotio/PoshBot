@@ -85,15 +85,16 @@ class CommandParser {
             $namedParams = @{}
 
             if (-not [string]::IsNullOrEmpty($commandString)) {
+
                 # Replace '--<ParamName>' with '-<ParamName' so AST works
                 $astCmdStr = $commandString -replace '(--([a-zA-Z]))', '-$2'
+
                 $ast = [System.Management.Automation.Language.Parser]::ParseInput($astCmdStr, [ref]$null, [ref]$null)
                 $commandAST = $ast.FindAll({$args[0] -as [System.Management.Automation.Language.CommandAst]},$false)
 
                 for ($x = 1; $x -lt $commandAST.CommandElements.Count; $x++) {
 
                     $element = $commandAST.CommandElements[$x]
-
                     if ($element -is [System.Management.Automation.Language.CommandParameterAst]) {
 
                         $paramName = $element.ParameterName
@@ -108,7 +109,12 @@ class CommandParser {
                             # Inspect the elements immediately after this CommandAst as they are values
                             # for a named parameter and pull out the values (array, string, bool, etc)
                             do {
-                                $paramValues += $commandAST.CommandElements[$x+$y].SafeGetValue()
+                                $elementValue = $commandAST.CommandElements[$x+$y]
+                                if ($elementValue.Value) {
+                                    $paramValues += $elementValue.Value
+                                } else {
+                                    $paramValues += $elementValue.SafeGetValue()
+                                }
                                 $y++
                             } until ((-not $commandAST.CommandElements[$x+$y]) -or $commandAST.CommandElements[$x+$y] -is [System.Management.Automation.Language.CommandParameterAst])
                         }
@@ -120,7 +126,11 @@ class CommandParser {
                         $x += $y-1
                     } else {
                         # This element is a positional parameter value so just get the value
-                        $positionalParams += $element.SafeGetValue()
+                        if ($element.Value) {
+                            $positionalParams += $element.Value
+                        } else {
+                            $positionalParams += $element.SafeGetValue()
+                        }
                     }
                 }
             }
