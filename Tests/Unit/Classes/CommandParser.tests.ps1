@@ -176,6 +176,24 @@ InModuleScope PoshBot {
                 $parsedCommand.PositionalParameters[0] | should be 'pos1'
                 $parsedCommand.PositionalParameters[1] | should be 12345
             }
+
+            It 'Parses command with @mentions' {
+                $msg = [Message]::new()
+                $msg.Text = 'givekarma @devblackops 100'
+                $parsedCommand = [CommandParser]::Parse($msg)
+
+                $parsedCommand.PositionalParameters.Count | should be 2
+                $parsedCommand.PositionalParameters[0] | should be '@devblackops'
+                $parsedCommand.PositionalParameters[1] | should be 100
+            }
+
+            It "Doesn't replace '--' in command string values, only parameter names" {
+                $msg = [Message]::new()
+                $msg.Text = "shorten --url 'http://abc--123-asdf--qwerty.mydomain.tld:()"
+                $parsedCommand = [CommandParser]::Parse($msg)
+
+                $parsedCommand.NamedParameters['url'] | should be 'http://abc--123-asdf--qwerty.mydomain.tld:()'
+            }
         }
     }
 }

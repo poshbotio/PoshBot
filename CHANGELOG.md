@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [0.7.1] Unreleased
 ### Fixed
-  - Bug in [CommandParser] class when parsing certain strings (particularly complex urls)
+  - Bugs in [CommandParser] class when parsing certain strings (particularly complex urls and @mentions)
 
 ## [0.7.0] 2017-08-29
 ### Added
