@@ -272,6 +272,12 @@ class SlackBackend : Backend {
                             }
                         }
 
+                        # Slack displays @mentions like '@devblackops' but internally in the message
+                        # it is <@U4AM3SYI8>
+                        # Fix that so we actually see the @username
+                        $processed = $this._ProcessMentions($msg.Text)
+                        $msg.Text = $processed
+
                         # ** Important safety tip, don't cross the streams **
                         # Only return messages that didn't come from the bot
                         # else we'd cause a feedback loop with the bot processing
@@ -625,7 +631,7 @@ class SlackBackend : Backend {
         } else {
             $this.LogDebug([LogSeverity]::Warning, "Could not resolve user [$UserId]")
         }
-        return $null
+        return $name
     }
 
     # Remove extra characters that Slack decorates urls with
@@ -651,6 +657,30 @@ class SlackBackend : Backend {
             'Processing' { return 'gear' }
         }
         return $emoji
+    }
+
+    # Translate formatted @mentions like <@U4AM3SYI8> into @devblackops
+    hidden [string]_ProcessMentions([string]$Text) {
+        $processed = $Text
+
+        $mentions = $processed | Select-String -Pattern '(?<name><@[^>]*>*)' -AllMatches | ForEach-Object {
+            $_.Matches | ForEach-Object {
+                [pscustomobject]@{
+                    FormattedId = $_.Value
+                    UnformattedId = $_.Value.TrimStart('<@').TrimEnd('>')
+                }
+            }
+        }
+        $mentions | ForEach-Object {
+            if ($name = $this.UserIdToUsername($_.UnformattedId)) {
+                $processed = $processed -replace $_.FormattedId, "@$name"
+                $this.LogDebug($processed)
+            } else {
+                $this.LogDebug([LogSeverity]::Warning, "Unable to translate @mention [$($_.FormattedId)] into a username")
+            }
+        }
+
+        return $processed
     }
 }
 
