@@ -35,7 +35,11 @@ class CommandParser {
         # The command is the first word of the message
         $cmdArray = $commandString.Split(' ')
         $command = $cmdArray[0]
-        $commandArgs = $cmdArray[1..($cmdArray.length-1)] -join ' '
+        if ($cmdArray.Count -gt 1) {
+            $commandArgs = $cmdArray[1..($cmdArray.length-1)] -join ' '
+        } else {
+            $commandArgs = [string]::Empty
+        }
 
         # The first word of the message COULD be a URI, don't try and parse than into a command
         if ($command -notlike '*://*') {
