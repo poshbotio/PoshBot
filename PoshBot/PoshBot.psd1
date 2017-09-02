@@ -129,7 +129,10 @@ PrivateData = @{
         ReleaseNotes = @'
 ## [0.7.1] Unreleased
 ### Fixed
-  - Bug in [CommandParser] class when parsing certain strings (particularly complex urls)
+  - Bugs in [CommandParser] class when parsing certain strings (particularly complex urls and @mentions)
+### Changes
+  - The Slack backend will now translate @mentions that are internally referenced by Id into a username.
+    '<@U4AM3SYI8>' becomes '@devblackops'
 
 ## [0.7.0] 2017-08-29
 ### Added
