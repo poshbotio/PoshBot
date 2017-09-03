@@ -127,7 +127,7 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## [0.7.1] Unreleased
+## [0.7.1] 2017-09-03
 ### Fixed
   - Bugs in [CommandParser] class when parsing certain strings (particularly complex urls and @mentions)
 ### Changes
