@@ -12,7 +12,7 @@
 RootModule = 'PoshBot.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.7.1'
+ModuleVersion = '0.7.2'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -127,6 +127,11 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
+## [0.7.2] Unreleased
+### Fixed
+  - Ignore ephemeral messages from Slack that come from SlackBot. We don't want to attempt to trigger commands based on these.
+  - Config provided parameters can now be used on commands of type [regex].
+
 ## [0.7.1] 2017-09-03
 ### Fixed
   - Bugs in [CommandParser] class when parsing certain strings (particularly complex urls and @mentions)

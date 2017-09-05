@@ -6,6 +6,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.7.2] Unreleased
+### Fixed
+  - Ignore ephemeral messages from Slack that come from SlackBot. We don't want to attempt to trigger commands based on these.
+  - Config provided parameters can now be used on commands of type [regex].
+
 ## [0.7.1] 2017-09-03
 ### Fixed
   - Bugs in [CommandParser] class when parsing certain strings (particularly complex urls and @mentions)
