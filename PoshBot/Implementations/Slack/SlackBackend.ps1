@@ -188,6 +188,14 @@ class SlackBackend : Backend {
                 $slackMessages = @($jsonResult | ConvertFrom-Json)
                 foreach ($slackMessage in $slackMessages) {
 
+                    # Slack will sometimes send back ephemeral messages from user [SlackBot]. Ignore these
+                    # These are messages like notifing that a message won't be unfurled because it's already
+                    # in the channel in the last hour. Helpful message for some, but not for us.
+                    if ($slackMessage.subtype -eq 'bot_message') {
+                        $this.LogDebug('SubType is [bot_message]. Ignoring')
+                        continue
+                    }
+
                     # We only care about certain message types from Slack
                     if ($slackMessage.Type -in $this.MessageTypes) {
                         $msg = [Message]::new()
