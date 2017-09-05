@@ -260,6 +260,16 @@ class Bot : BaseLogger {
                 $parsedCommand.Plugin = $pluginCmd.Plugin.Name
             }
 
+            # If the command trigger is a [regex], then we shoudn't parse named/positional
+            # parameters from the message so clear them out. Only the regex matches and
+            # config provided parameters are allowed.
+            if ([TriggerType]::Regex -in $pluginCmd.Command.Triggers.Type) {
+                $parsedCommand.NamedParameters = @{}
+                $parsedCommand.PositionalParameters = @()
+                $regex = [regex]$pluginCmd.Command.Triggers[0].Trigger
+                $parsedCommand.NamedParameters['Arguments'] = $regex.Match($parsedCommand.CommandString).Groups | Select-Object -ExpandProperty Value
+            }
+
             # Pass in the bot to the module command.
             # We need this for builtin commands
             if ($pluginCmd.Plugin.Name -eq 'Builtin') {
@@ -272,6 +282,7 @@ class Bot : BaseLogger {
             $configProvidedParams = $this.GetConfigProvidedParameters($pluginCmd)
             foreach ($cp in $configProvidedParams.GetEnumerator()) {
                 if (-not $parsedCommand.NamedParameters.ContainsKey($cp.Name)) {
+                    $this.LogDebug("Inserting configuration provided named parameter", $cp)
                     $parsedCommand.NamedParameters.Add($cp.Name, $cp.Value)
                 }
             }

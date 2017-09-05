@@ -79,9 +79,9 @@ class Command : BaseLogger {
 
             Import-Module -Name $Options.ManifestPath -Scope Local -Force -Verbose:$false -WarningAction SilentlyContinue
 
-            $named = $Options.NamedParameters
-            $pos = $Options.PositionalParameters
-            $func = $Options.Function
+            $cmd = $Options.Function
+            $namedParameters = $Options.NamedParameters
+            $positionalParameters = $Options.PositionalParameters
 
             # Context for who/how the command was called
             $global:PoshBotContext = [pscustomobject]@{
@@ -93,7 +93,7 @@ class Command : BaseLogger {
                 ParsedCommand = $options.ParsedCommand
             }
 
-            & $func @named @pos
+            & $cmd @namedParameters @positionalParameters
         }
 
         [string]$sb = [string]::Empty
@@ -110,16 +110,9 @@ class Command : BaseLogger {
             $fqCommand = "$($this.CmdletInfo.Module.name)\$($this.CmdletInfo.name)"
         }
 
-        if ([TriggerType]::Command -in $this.Triggers.Type) {
-            $options.NamedParameters = $ParsedCommand.NamedParameters
-            $options.PositionalParameters = $ParsedCommand.PositionalParameters
-        } elseIf ([TriggerType]::Regex -in $this.Triggers.Type) {
-            $regex = [regex]$this.Triggers[0].Trigger
-            $options.NamedParameters = @{
-                Arguments = $regex.Match($ParsedCommand.CommandString).Groups | Select-Object -ExpandProperty Value
-            }
-            $options.PositionalParameters = @()
-        }
+        # Add named/positional parameters
+        $options.NamedParameters = $ParsedCommand.NamedParameters
+        $options.PositionalParameters = $ParsedCommand.PositionalParameters
 
         if ($InvokeAsJob) {
             $this.LogDebug("Executing command [$fqCommand] as job")
