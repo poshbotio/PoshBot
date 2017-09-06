@@ -33,12 +33,6 @@ class CommandExecutor : BaseLogger {
         $cmdExecContext.ParsedCommand = $ParsedCommand
         $cmdExecContext.Message = $Message
 
-        $params = @{
-            NamedParameters = $ParsedCommand.NamedParameters
-            PositionalParameters = $ParsedCommand.PositionalParameters
-        }
-        $this.LogDebug("Executing command [$($PluginCmd.ToString())] with parameters", $params)
-
         # Verify command is not disabled
         if (-not $cmdExecContext.Command.Enabled) {
             $err = [CommandDisabled]::New("Command [$($cmdExecContext.Command.Name)] is disabled")
