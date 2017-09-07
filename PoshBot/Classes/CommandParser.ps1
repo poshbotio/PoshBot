@@ -4,7 +4,6 @@ class ParsedCommand {
     [string]$Plugin = $null
     [string]$Command = $null
     [string]$Version = $null
-    [string[]]$Tokens = @()
     [hashtable]$NamedParameters = @{}
     [System.Collections.ArrayList]$PositionalParameters = (New-Object System.Collections.ArrayList)
     [datetime]$Time = (Get-Date).ToUniversalTime()
