@@ -100,4 +100,9 @@ class Backend : BaseLogger {
         # Must be extended by the specific Backend implementation
         throw 'Implement me!'
     }
+
+    [string]ChannelIdToName([string]$ChannelId) {
+        # Must be extended by the specific Backend implementation
+        throw 'Implement me!'
+    }
 }

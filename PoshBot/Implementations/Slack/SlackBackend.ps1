@@ -259,6 +259,17 @@ class SlackBackend : Backend {
                         if ($slackMessage.channel) { $msg.To   = $slackMessage.channel }
                         if ($slackMessage.user)    { $msg.From = $slackMessage.user }
 
+                        # Resolve From name
+                        if ($msg.From) {
+                            $msg.FromName = $this.UserIdToUsername($msg.From)
+                        }
+
+                        # Resolve channel name
+                        # Skip DM channels, they won't have names
+                        if ($msg.To -and $msg.To -notmatch '^D') {
+                            $msg.ToName = $this.ChannelIdToName($msg.To)
+                        }
+
                         if ($slackMessage.ts) {
                             $unixEpoch = [datetime]'1970-01-01'
                             $msg.Time = $unixEpoch.AddSeconds($slackMessage.ts)
@@ -638,6 +649,24 @@ class SlackBackend : Backend {
             $this.LogDebug("Resolved [$UserId] to [$name]")
         } else {
             $this.LogDebug([LogSeverity]::Warning, "Could not resolve user [$UserId]")
+        }
+        return $name
+    }
+
+    # Get the channel name by Id
+    [string]ChannelIdToName([string]$ChannelId) {
+        $name = $null
+        if ($this.Rooms.ContainsKey($ChannelId)) {
+            $name = $this.Rooms[$ChannelId].Name
+        } else {
+            $this.LogDebug([LogSeverity]::Warning, "Channel [$ChannelId] not found. Refreshing channels")
+            $this.LoadRooms()
+            $name = $this.Rooms[$ChannelId].Name
+        }
+        if ($name) {
+            $this.LogDebug("Resolved [$ChannelId] to [$name]")
+        } else {
+            $this.LogDebug([LogSeverity]::Warning, "Could not resolve channel [$ChannelId]")
         }
         return $name
     }

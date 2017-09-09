@@ -88,7 +88,9 @@ class Command : BaseLogger {
                 Plugin = $options.ParsedCommand.Plugin
                 Command = $options.ParsedCommand.Command
                 From = $options.ParsedCommand.From
+                FromName = $options.ParsedCommand.FromName
                 To = $options.ParsedCommand.To
+                ToName = $options.ParsedCommand.ToName
                 ConfigurationDirectory = $options.ConfigurationDirectory
                 ParsedCommand = $options.ParsedCommand
             }

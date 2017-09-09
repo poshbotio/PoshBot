@@ -8,7 +8,9 @@ class ParsedCommand {
     [System.Collections.ArrayList]$PositionalParameters = (New-Object System.Collections.ArrayList)
     [datetime]$Time = (Get-Date).ToUniversalTime()
     [string]$From = $null
+    [string]$FromName = $null
     [string]$To = $null
+    [string]$ToName = $null
     [Message]$OriginalMessage
 
     [pscustomobject]Summarize() {
@@ -79,9 +81,11 @@ class CommandParser {
         $parsedCommand.Command = $command
         $parsedCommand.OriginalMessage = $Message
         $parsedCommand.Time = $Message.Time
-        if ($version)      { $parsedCommand.Version = $version }
-        if ($Message.To)   { $parsedCommand.To      = $Message.To }
-        if ($Message.From) { $parsedCommand.From    = $Message.From }
+        if ($version)          { $parsedCommand.Version  = $version }
+        if ($Message.To)       { $parsedCommand.To       = $Message.To }
+        if ($Message.ToName)   { $parsedCommand.ToName   = $Message.ToName }
+        if ($Message.From)     { $parsedCommand.From     = $Message.From }
+        if ($Message.FromName) { $parsedCommand.FromName = $Message.FromName }
 
         # Parse the message text using AST into named and positional parameters
         try {

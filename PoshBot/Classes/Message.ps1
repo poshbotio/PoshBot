@@ -26,8 +26,10 @@ class Message {
     [MessageType]$Type = [MessageType]::Message
     [MessageSubtype]$Subtype = [MessageSubtype]::None    # Some messages have subtypes
     [string]$Text               # Text of message. This may be empty depending on the message type
-    [string]$To
-    [string]$From               # Who sent the message
+    [string]$To                 # Id of user/channel the message is to
+    [string]$ToName             # Name of user/channel the message is to
+    [string]$From               # ID of user who sent the message
+    [string]$FromName           # Name of user who sent the message
     [datetime]$Time             # The date/time (UTC) the message was received
     [hashtable]$Options         # Any other bits of information about a message. This will be backend specific
     [pscustomobject]$RawMessage # The raw message as received by the backend. This can be usefull for the backend
