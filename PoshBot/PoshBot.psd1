@@ -128,9 +128,13 @@ PrivateData = @{
         # ReleaseNotes of this module
         ReleaseNotes = @'
 ## [0.7.2] Unreleased
+### Added
+  - For convenience, added the name of the user [FromName] and name of the channel [ToName] to the [$global:PoshBotContext] object that is available to all bot commands.
 ### Fixed
   - Ignore ephemeral messages from Slack that come from SlackBot. We don't want to attempt to trigger commands based on these.
   - Config provided parameters can now be used on commands of type [regex].
+### Changes
+  - Module are now removed from the PowerShell session when removed from PoshBot.
 
 ## [0.7.1] 2017-09-03
 ### Fixed

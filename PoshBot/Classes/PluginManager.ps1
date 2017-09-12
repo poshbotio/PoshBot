@@ -149,10 +149,24 @@ class PluginManager : BaseLogger {
                 }
                 $this.LogInfo("Removing plugin [$($Plugin.Name)]")
                 $this.Plugins.Remove($Plugin.Name)
+
+                # Unload the PS module
+                $moduleSpec = @{
+                    ModuleName = $Plugin.Name
+                    ModuleVersion = $pluginVersions
+                }
+                Remove-Module -FullyQualifiedName $moduleSpec -Verbose:$false -Force
             } else {
                 if ($pluginVersions.ContainsKey($Plugin.Version)) {
                     $this.LogInfo("Removing plugin [$($Plugin.Name)] version [$($Plugin.Version)]")
                     $pluginVersions.Remove($Plugin.Version)
+
+                    # Unload the PS module
+                    $moduleSpec = @{
+                        ModuleName = $Plugin.Name
+                        ModuleVersion = $Plugin.Version
+                    }
+                    Remove-Module -FullyQualifiedName $moduleSpec -Verbose:$false -Force
                 } else {
                     $msg = "Plugin [$($Plugin.Name)] version [$($Plugin.Version)] is not loaded in bot"
                     $this.LogInfo([LogSeverity]::Warning, $msg)

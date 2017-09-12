@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
   - Ignore ephemeral messages from Slack that come from SlackBot. We don't want to attempt to trigger commands based on these.
   - Config provided parameters can now be used on commands of type [regex].
+### Changes
+  - Module are now removed from the PowerShell session when removed from PoshBot.
 
 ## [0.7.1] 2017-09-03
 ### Fixed
