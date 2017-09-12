@@ -33,6 +33,7 @@ enum ReactionType {
     Failure
     Processing
     Custom
+    Warning
 }
 
 # Unit of time for scheduled commands

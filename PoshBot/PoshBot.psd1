@@ -133,8 +133,10 @@ PrivateData = @{
 ### Fixed
   - Ignore ephemeral messages from Slack that come from SlackBot. We don't want to attempt to trigger commands based on these.
   - Config provided parameters can now be used on commands of type [regex].
+  - Do not send command reactions to event-triggered commands as there is not a normal message to add the reaction to.
 ### Changes
   - Module are now removed from the PowerShell session when removed from PoshBot.
+  - Add warning reaction to commands that have any items in the warning stream of the job.
 
 ## [0.7.1] 2017-09-03
 ### Fixed

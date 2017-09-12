@@ -72,9 +72,12 @@ class CommandExecutor : BaseLogger {
         }
 
         if ($authorized) {
-            # Add reaction telling the user that the command is being executed
-            if ($this._bot.Configuration.AddCommandReactions) {
-                $this._bot.Backend.AddReaction($Message, [ReactionType]::Processing)
+            # If command is [command] or [regex] trigger type, add reaction telling the user that the command is being executed
+            # Reactions don't make sense for event triggered commands
+            if ($cmdExecContext.Command.TriggerType -in @('Command', 'Regex')) {
+                if ($this._bot.Configuration.AddCommandReactions) {
+                    $this._bot.Backend.AddReaction($Message, [ReactionType]::Processing)
+                }
             }
 
             if ($cmdExecContext.Command.AsJob) {
@@ -182,14 +185,18 @@ class CommandExecutor : BaseLogger {
                     }
                 }
 
-                # Send a success or fail reaction
-                if ($this._bot.Configuration.AddCommandReactions) {
-                    if ($cmdExecContext.Result.Success) {
-                        $reaction = [ReactionType]::Success
-                    } else {
-                        $reaction = [ReactionType]::Failure
+                # Send a success, warning, or fail reaction
+                if ($cmdExecContext.Command.TriggerType -in @('Command', 'Regex')) {
+                    if ($this._bot.Configuration.AddCommandReactions) {
+                        if (-not $cmdExecContext.Result.Success) {
+                            $reaction = [ReactionType]::Failure
+                        } elseIf ($cmdExecContext.Result.Streams.Warning.Count -gt 0) {
+                            $reaction = [ReactionType]::Warning
+                        } else {
+                            $reaction = [ReactionType]::Success
+                        }
+                        $this._bot.Backend.AddReaction($cmdExecContext.Message, $reaction)
                     }
-                    $this._bot.Backend.AddReaction($cmdExecContext.Message, $reaction)
                 }
 
                 # Add to history
@@ -201,8 +208,10 @@ class CommandExecutor : BaseLogger {
                 $this._jobTracker.Remove($cmdExecContext.Id)
 
                 # Remove the reaction specifying the command is in process
-                if ($this._bot.Configuration.AddCommandReactions) {
-                    $this._bot.Backend.RemoveReaction($cmdExecContext.Message, [ReactionType]::Processing)
+                if ($cmdExecContext.Command.TriggerType -in @('Command', 'Regex')) {
+                    if ($this._bot.Configuration.AddCommandReactions) {
+                        $this._bot.Backend.RemoveReaction($cmdExecContext.Message, [ReactionType]::Processing)
+                    }
                 }
 
                 # Track number of commands executed

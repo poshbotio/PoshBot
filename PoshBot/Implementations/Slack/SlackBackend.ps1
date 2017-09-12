@@ -692,6 +692,7 @@ class SlackBackend : Backend {
             'Success'    { return 'white_check_mark' }
             'Failure'    { return 'exclamation' }
             'Processing' { return 'gear' }
+            'Warning'    { return 'warning' }
         }
         return $emoji
     }
