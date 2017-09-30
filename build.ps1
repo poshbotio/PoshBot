@@ -1,7 +1,7 @@
 
 [cmdletbinding(DefaultParameterSetName = 'task')]
 param(
-    [parameter(ParameterSetName = 'task')]
+    [parameter(ParameterSetName = 'task', Position = 0)]
     [string[]]$Task = 'default',
 
     [parameter(ParameterSetName = 'help')]
