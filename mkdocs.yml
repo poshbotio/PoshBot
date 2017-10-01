@@ -31,7 +31,7 @@ pages:
         - Help: reference/commands/Get-CommandHelp.md
         - Status: reference/commands/Get-PoshBotStatus.md
         - Get-CommandHistory: reference/commands/Get-CommandHistory.md
-        - Get-CommandStatus: reference/commands/Get-Commandstatus.md
+        - Get-CommandStatus: reference/commands/Get-CommandStatus.md
         - Slap: reference/commands/Slap.md
       - Security:
         - Groups:
