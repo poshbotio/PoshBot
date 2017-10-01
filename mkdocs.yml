@@ -12,6 +12,7 @@ pages:
     - Triggers: guides/triggers.md
     - Scheduled Commands: guides/scheduled-commands.md
     - Scheduled Task: guides/scheduled-task.md
+    - Command Approvals: guides/command-approvals.md
     - Command Authorization:
       - Overview: guides/command-authorization/overview.md
       - Permissions: guides/command-authorization/permissions.md
