@@ -1,7 +1,7 @@
 
 # Configuration
 
-Configuration for PoshBot consists of a number of properties that govern the behaviour of the bot.
+Configuration for PoshBot consists of a number of properties that govern the behavior of the bot.
 
 A default bot configuration can be created by running `New-PoshBotConfiguration`
 
