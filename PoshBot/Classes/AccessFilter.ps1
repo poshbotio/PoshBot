@@ -1,22 +1,4 @@
 
-class CommandAuthorizationResult {
-    [bool]$Authorized
-    [string]$Message
-
-    CommandAuthorizationResult() {
-        $this.Authorized = $true
-    }
-
-    CommandAuthorizationResult([bool]$Authorized) {
-        $this.Authorized = $Authorized
-    }
-
-    CommandAuthorizationResult([bool]$Authorized, [string]$Message) {
-        $this.Authorized = $Authorized
-        $this.Message = $Message
-    }
-}
-
 # An access filter controls under what conditions a command can be run and who can run it.
 class AccessFilter {
 

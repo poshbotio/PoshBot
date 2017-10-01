@@ -6,15 +6,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.7.2] Unreleased
+## [0.8.0] Unreleased
 ### Added
+  - Commands can now be marked as needing approval by someone in a designated group.
+    Commands that require approval will be put into a pending state with an expiration time set via the bot configuration.
+    These pending commands can be approved by the calling user (if calling user is already in designed approval group) or require peer approval by another user.
+    Pending commands can either be approved or denied by a user in the approver group(s). Who approved (or denied) a command is logged.
+  - Added builtin commands [approve], [deny], and [pending] to managed commands that require approval.
+  - Added new message reactions to reflect pending / approved, or denied command status.
   - For convenience, added the name of the user [FromName] and name of the channel [ToName] to the [$global:PoshBotContext] object that is available to all bot commands.
 ### Fixed
   - Ignore ephemeral messages from Slack that come from SlackBot. We don't want to attempt to trigger commands based on these.
   - Config provided parameters can now be used on commands of type [regex].
   - Do not send command reactions to event-triggered commands as there is not a normal message to add the reaction to.
 ### Changes
-  - Module are now removed from the PowerShell session when removed from PoshBot.
+  - Modules are now removed from the PowerShell session when removed from PoshBot.
   - Add warning reaction to commands that have any items in the warning stream of the job.
 
 ## [0.7.1] 2017-09-03

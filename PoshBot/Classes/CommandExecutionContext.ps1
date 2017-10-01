@@ -1,7 +1,7 @@
 
 # Represents the state of a currently executing command
 class CommandExecutionContext {
-    [string]$Id = (New-Guid).ToString()
+    [string]$Id = (New-Guid).ToString().Split('-')[0]
     [bool]$Complete = $false
     [CommandResult]$Result
     [string]$FullyQualifiedCommandName
@@ -12,6 +12,8 @@ class CommandExecutionContext {
     [datetime]$Started
     [datetime]$Ended
     [object]$Job
+    [ApprovalState]$ApprovalState = [ApprovalState]::AutoApproved
+    [Approver]$Approver = [Approver]::new()
 
     [pscustomobject]Summarize() {
         return [pscustomobject]@{
@@ -24,6 +26,8 @@ class CommandExecutionContext {
             IsJob = $this.IsJob
             Started = $this.Started.ToUniversalTime().ToString('u')
             Ended = $this.Ended.ToUniversalTime().ToString('u')
+            ApprovalState = $this.ApprovalState.ToString()
+            Approver = $this.Approver
         }
     }
 

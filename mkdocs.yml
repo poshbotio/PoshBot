@@ -29,26 +29,35 @@ pages:
       - General:
         - About: reference/commands/about.md
         - Help: reference/commands/Get-CommandHelp.md
-        - Status: reference/commands/status.md
+        - Status: reference/commands/Get-PoshBotStatus.md
         - Get-CommandHistory: reference/commands/Get-CommandHistory.md
+        - Get-CommandStatus: reference/commands/Get-Commandstatus.md
+        - Slap: reference/commands/Slap.md
       - Security:
         - Groups:
           - Add-GroupRole: reference/commands/add-grouprole.md
           - Add-GroupUser: reference/commands/add-groupuser.md
           - Get-Group: reference/commands/get-group.md
           - New-Group: reference/commands/new-group.md
+          - Remove-Group: reference/commands/Remove-Group.md
           - Remove-GroupRole: reference/commands/remove-grouprole.md
           - Remove-GroupUser: reference/commands/remove-groupuser.md
           - Update-GroupDescription: reference/commands/Update-GroupDescription.md
         - Permissions:
           - Add-CommandPermission: reference/commands/Add-CommandPermission.md
           - Get-Permission: reference/commands/get-permission.md
+          - New-Permission: reference/commands/New-Permission.md
         - Roles:
           - Add-RolePermission: reference/commands/add-rolepermission.md
           - Get-Role: reference/commands/get-role.md
           - New-Role: reference/commands/new-role.md
+          - Remove-Role: reference/commands/Remove-Role.md
           - Remove-RolePermission: reference/commands/remove-rolepermission.md
           - Update-RoleDescription: reference/commands/Update-RoleDescription.md
+        - Approvals:
+          - Approve-PendingCommand: reference/commands/Approve-PendingCommand.md
+          - Deny-PendingCommand: reference/commands/Deny-PendingCommand.md
+          - Get-PendingCommand: reference/commands/Get-PendingCommand.md
       - Scheduled Commands:
         - Get-ScheduledCommand: reference/commands/Get-ScheduledCommand.md
         - New-ScheduledCommand: reference/commands/New-ScheduledCommand.md
@@ -62,6 +71,8 @@ pages:
         - Enable-Plugin: reference/commands/enable-plugin.md
         - Disable-Plugin: reference/commands/disable-plugin.md
         - Install-Plugin: reference/commands/install-plugin.md
+        - Remove-Plugin: reference/commands/Remove-Plugin.md
+        - Update-Plugin: reference/commands/Update-Plugin.md
     - Modules Functions:
       - Get-PoshBot: reference/functions/get-poshbot.md
       - Get-PoshBotConfiguration: reference/functions/get-poshbotconfiguration.md

@@ -24,14 +24,7 @@ class CommandExecutor : BaseLogger {
     }
 
     # Execute a command
-    [void]ExecuteCommand([PluginCommand]$PluginCmd, [ParsedCommand]$ParsedCommand, [Message]$Message) {
-        $cmdExecContext = [CommandExecutionContext]::new()
-        $cmdExecContext.Started = (Get-Date).ToUniversalTime()
-        $cmdExecContext.Result = [CommandResult]::New()
-        $cmdExecContext.Command = $pluginCmd.Command
-        $cmdExecContext.FullyQualifiedCommandName = $pluginCmd.ToString()
-        $cmdExecContext.ParsedCommand = $ParsedCommand
-        $cmdExecContext.Message = $Message
+    [void]ExecuteCommand([CommandExecutionContext]$cmdExecContext) {
 
         # Verify command is not disabled
         if (-not $cmdExecContext.Command.Enabled) {
@@ -48,7 +41,7 @@ class CommandExecutor : BaseLogger {
         # Verify that all mandatory parameters have been provided for "command" type bot commands
         # This doesn't apply to commands triggered from regex matches, timers, or events
         if ($cmdExecContext.Command.TriggerType -eq [TriggerType]::Command) {
-            if (-not $this.ValidateMandatoryParameters($ParsedCommand, $cmdExecContext.Command)) {
+            if (-not $this.ValidateMandatoryParameters($cmdExecContext.ParsedCommand, $cmdExecContext.Command)) {
                 $msg = "Mandatory parameters for [$($cmdExecContext.Command.Name)] not provided.`nUsage:`n"
                 foreach ($usage in $cmdExecContext.Command.Usage) {
                     $msg += "    $usage`n"
@@ -66,57 +59,85 @@ class CommandExecutor : BaseLogger {
 
         # If command is [command] or [regex] trigger types, verify that the caller is authorized to execute it
         if ($cmdExecContext.Command.TriggerType -in @('Command', 'Regex')) {
-            $authorized = $cmdExecContext.Command.IsAuthorized($Message.From, $this.RoleManager)
+            $authorized = $cmdExecContext.Command.IsAuthorized($cmdExecContext.Message.From, $this.RoleManager)
         } else {
             $authorized = $true
         }
 
         if ($authorized) {
-            # If command is [command] or [regex] trigger type, add reaction telling the user that the command is being executed
-            # Reactions don't make sense for event triggered commands
-            if ($cmdExecContext.Command.TriggerType -in @('Command', 'Regex')) {
-                if ($this._bot.Configuration.AddCommandReactions) {
-                    $this._bot.Backend.AddReaction($Message, [ReactionType]::Processing)
+
+            # Check if approval(s) are needed to execute this command
+            if ($this.ApprovalNeeded($cmdExecContext)) {
+                $cmdExecContext.ApprovalState = [ApprovalState]::Pending
+                $this._bot.Backend.AddReaction($cmdExecContext.Message, [ReactionType]::ApprovalNeeded)
+
+                # Put this message in the deferred bucket until it is released by the [!approve] command from an authorized approver
+                if (-not $this._bot.DeferredCommandExecutionContexts.ContainsKey($cmdExecContext.id)) {
+                    $this._bot.DeferredCommandExecutionContexts.Add($cmdExecContext.id, $cmdExecContext)
+                } else {
+                    $this.LogInfo([LogSeverity]::Error, "This shouldn't happen, but command execution context [$($cmdExecContext.id)] is already in the deferred bucket")
                 }
-            }
 
-            if ($cmdExecContext.Command.AsJob) {
-                $this.LogDebug("Command [$($cmdExecContext.FullyQualifiedCommandName)] will be executed as a job")
-
-                # Kick off job and add to job tracker
-                $cmdExecContext.IsJob = $true
-                $cmdExecContext.Job = $cmdExecContext.Command.Invoke($ParsedCommand, $true)
-                $this.LogDebug("Command [$($cmdExecContext.FullyQualifiedCommandName)] executing in job [$($cmdExecContext.Job.Id)]")
-                $cmdExecContext.Complete = $false
+                $approverGroups = $this.GetApprovalGroups($cmdExecContext) -join ', '
+                $prefix = $this._bot.Configuration.CommandPrefix
+                $msg = "Approval is needed to run [$($cmdExecContext.ParsedCommand.CommandString)] from someone in the approval group(s) [$approverGroups]."
+                $msg += "`nTo approve, say '$($prefix)approve $($cmdExecContext.Id)'."
+                $msg += "`nTo deny, say '$($prefix)deny $($cmdExecContext.Id)'."
+                $msg += "`nTo list pending approvals, say '$($prefix)pendingapprovals'."
+                $response = [Response]::new()
+                $response.MessageFrom = $cmdExecContext.Message.From
+                $response.To = $cmdExecContext.Message.To
+                $response.Data = New-PoshBotCardResponse -Type Warning -Title "Approval Needed for [$($cmdExecContext.ParsedCommand.CommandString)]" -Text $msg
+                $this._bot.SendMessage($response)
+                return
             } else {
-                # Run command in current session and get results
-                # This should only be 'builtin' commands
-                try {
-                    $cmdExecContext.IsJob = $false
-                    $hash = $cmdExecContext.Command.Invoke($ParsedCommand, $false)
-                    $cmdExecContext.Complete = $true
-                    $cmdExecContext.Ended = (Get-Date).ToUniversalTime()
-                    $cmdExecContext.Result.Errors = $hash.Error
-                    $cmdExecContext.Result.Streams.Error = $hash.Error
-                    $cmdExecContext.Result.Streams.Information = $hash.Information
-                    $cmdExecContext.Result.Streams.Warning = $hash.Warning
-                    $cmdExecContext.Result.Output = $hash.Output
-                    if ($cmdExecContext.Result.Errors.Count -gt 0) {
-                        $cmdExecContext.Result.Success = $false
-                    } else {
-                        $cmdExecContext.Result.Success = $true
+
+                # If command is [command] or [regex] trigger type, add reaction telling the user that the command is being executed
+                # Reactions don't make sense for event triggered commands
+                if ($cmdExecContext.Command.TriggerType -in @('Command', 'Regex')) {
+                    if ($this._bot.Configuration.AddCommandReactions) {
+                        $this._bot.Backend.AddReaction($cmdExecContext.Message, [ReactionType]::Processing)
                     }
-                    $this.LogVerbose("Command [$($cmdExecContext.FullyQualifiedCommandName)] completed with successful result [$($cmdExecContext.Result.Success)]")
-                } catch {
-                    $cmdExecContext.Complete = $true
-                    $cmdExecContext.Result.Success = $false
-                    $cmdExecContext.Result.Errors = $_.Exception.Message
-                    $cmdExecContext.Result.Streams.Error = $_.Exception.Message
-                    $this.LogInfo([LogSeverity]::Error, $_.Exception.Message, $_)
+                }
+
+                if ($cmdExecContext.Command.AsJob) {
+                    $this.LogDebug("Command [$($cmdExecContext.FullyQualifiedCommandName)] will be executed as a job")
+
+                    # Kick off job and add to job tracker
+                    $cmdExecContext.IsJob = $true
+                    $cmdExecContext.Job = $cmdExecContext.Command.Invoke($cmdExecContext.ParsedCommand, $true)
+                    $this.LogDebug("Command [$($cmdExecContext.FullyQualifiedCommandName)] executing in job [$($cmdExecContext.Job.Id)]")
+                    $cmdExecContext.Complete = $false
+                } else {
+                    # Run command in current session and get results
+                    # This should only be 'builtin' commands
+                    try {
+                        $cmdExecContext.IsJob = $false
+                        $hash = $cmdExecContext.Command.Invoke($cmdExecContext.ParsedCommand, $false)
+                        $cmdExecContext.Complete = $true
+                        $cmdExecContext.Ended = (Get-Date).ToUniversalTime()
+                        $cmdExecContext.Result.Errors = $hash.Error
+                        $cmdExecContext.Result.Streams.Error = $hash.Error
+                        $cmdExecContext.Result.Streams.Information = $hash.Information
+                        $cmdExecContext.Result.Streams.Warning = $hash.Warning
+                        $cmdExecContext.Result.Output = $hash.Output
+                        if ($cmdExecContext.Result.Errors.Count -gt 0) {
+                            $cmdExecContext.Result.Success = $false
+                        } else {
+                            $cmdExecContext.Result.Success = $true
+                        }
+                        $this.LogVerbose("Command [$($cmdExecContext.FullyQualifiedCommandName)] completed with successful result [$($cmdExecContext.Result.Success)]")
+                    } catch {
+                        $cmdExecContext.Complete = $true
+                        $cmdExecContext.Result.Success = $false
+                        $cmdExecContext.Result.Errors = $_.Exception.Message
+                        $cmdExecContext.Result.Streams.Error = $_.Exception.Message
+                        $this.LogInfo([LogSeverity]::Error, $_.Exception.Message, $_)
+                    }
                 }
             }
         } else {
-            $msg = "Command [$($cmdExecContext.Command.Name)] was not authorized for user [$($Message.From)]"
+            $msg = "Command [$($cmdExecContext.Command.Name)] was not authorized for user [$($cmdExecContext.Message.From)]"
             $err = [CommandNotAuthorized]::New($msg)
             $cmdExecContext.Complete = $true
             $cmdExecContext.Result.Errors += $err
@@ -278,5 +299,54 @@ class CommandExecutor : BaseLogger {
         }
 
         return $validated
+    }
+
+    # Check if command needs approval by checking against command expressions in the approval configuration
+    # if peer approval is needed, always return $true regardless if calling user is in approval group
+    [bool]ApprovalNeeded([CommandExecutionContext]$Context) {
+        if ($Context.ApprovalState -ne [ApprovalState]::Approved) {
+            foreach ($approvalConfig in $this._bot.Configuration.ApprovalConfiguration.Commands) {
+                if ($Context.FullyQualifiedCommandName -like $approvalConfig.PluginCommandExpression) {
+
+                    $approvalGroups = $this._bot.RoleManager.GetUserGroups($Context.ParsedCommand.From)
+                    $compareParams = @{
+                        ReferenceObject = $this.GetApprovalGroups($Context)
+                        DifferenceObject = $approvalGroups.Name
+                        PassThru = $true
+                        IncludeEqual = $true
+                        ExcludeDifferent = $true
+                    }
+                    $inApprovalGroup = (Compare-Object @compareParams).Count -gt 0
+
+                    $Context.ApprovalState = [ApprovalState]::Pending
+                    $this.LogDebug("Execution context ID [$($Context.Id)] needs approval from group(s) [$($approvalGroups.Name -join ', ')]")
+
+                    if ($approvalConfig.PeerApproval) {
+                        $this.LogDebug("Execution context ID [$($Context.Id)] needs peer approval")
+                    }
+
+                    if ($approvalConfig.PeerApproval -and $inApprovalGroup) {
+                        $this.LogInfo("Approval needed to execute context ID [$($Context.Id)]")
+                        return $true
+                    } else {
+                        $this.LogInfo("Approval not needed to execute context ID [$($Context.Id)]")
+                        $Context.ApprovalState = [ApprovalState]::Approved
+                        return $false
+                    }
+                }
+            }
+        }
+
+        return $false
+    }
+
+    # Get list of approval groups for a command that needs approval
+    [string[]]GetApprovalGroups([CommandExecutionContext]$Context) {
+        foreach ($approvalConfig in $this._bot.Configuration.ApprovalConfiguration.Commands) {
+            if ($Context.FullyQualifiedCommandName -like $approvalConfig.PluginCommandExpression) {
+                return $approvalConfig.ApprovalGroups
+            }
+        }
+        return @()
     }
 }

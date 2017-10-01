@@ -23,7 +23,7 @@ function Get-PoshBotStatus {
     } else {
         $uptime = $null
     }
-    $manifest = Import-PowerShellDataFile -Path "$PSScriptRoot/../../PoshBot.psd1"
+    $manifest = Import-PowerShellDataFile -Path "$PSScriptRoot/../../../PoshBot.psd1"
     $hash = [ordered]@{
         Version = $manifest.ModuleVersion
         Uptime = $uptime

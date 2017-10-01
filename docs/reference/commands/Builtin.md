@@ -26,6 +26,12 @@ Locale: en-US
 ### [Add-RolePermission](Add-RolePermission.md)
 {{Manually Enter Add-RolePermission Description Here}}
 
+### [Approve-PendingCommand](Approve-PendingCommand.md)
+{{Manually Enter Approve-PendingCommand Description Here}}
+
+### [Deny-PendingCommand](Deny-PendingCommand.md)
+{{Manually Enter Deny-PendingCommand Description Here}}
+
 ### [Disable-Plugin](Disable-Plugin.md)
 {{Manually Enter Disable-Plugin Description Here}}
 
@@ -53,11 +59,17 @@ Locale: en-US
 ### [Get-Group](Get-Group.md)
 {{Manually Enter Get-Group Description Here}}
 
+### [Get-PendingCommand](Get-PendingCommand.md)
+{{Manually Enter Get-PendingCommand Description Here}}
+
 ### [Get-Permission](Get-Permission.md)
 {{Manually Enter Get-Permission Description Here}}
 
 ### [Get-Plugin](Get-Plugin.md)
 {{Manually Enter Get-Plugin Description Here}}
+
+### [Get-PoshBotStatus](Get-PoshBotStatus.md)
+{{Manually Enter Get-PoshBotStatus Description Here}}
 
 ### [Get-Role](Get-Role.md)
 {{Manually Enter Get-Role Description Here}}
@@ -106,9 +118,6 @@ Locale: en-US
 
 ### [Slap](Slap.md)
 {{Manually Enter Slap Description Here}}
-
-### [Status](Status.md)
-{{Manually Enter Status Description Here}}
 
 ### [Update-GroupDescription](Update-GroupDescription.md)
 {{Manually Enter Update-GroupDescription Description Here}}

@@ -689,10 +689,13 @@ class SlackBackend : Backend {
     hidden [string]_ResolveEmoji([ReactionType]$Type) {
         $emoji = [string]::Empty
         Switch ($Type) {
-            'Success'    { return 'white_check_mark' }
-            'Failure'    { return 'exclamation' }
-            'Processing' { return 'gear' }
-            'Warning'    { return 'warning' }
+            'Success'        { return 'white_check_mark' }
+            'Failure'        { return 'exclamation' }
+            'Processing'     { return 'gear' }
+            'Warning'        { return 'warning' }
+            'ApprovalNeeded' { return 'closed_lock_with_key'}
+            'Cancelled'      { return 'no_entry_sign'}
+            'Denied'         { return 'x'}
         }
         return $emoji
     }

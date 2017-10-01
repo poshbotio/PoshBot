@@ -42,4 +42,6 @@ class BotConfiguration {
     [bool]$MuteUnknownCommand = $false
 
     [bool]$AddCommandReactions = $true
+
+    [ApprovalConfiguration]$ApprovalConfiguration = [ApprovalConfiguration]::new()
 }

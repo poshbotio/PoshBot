@@ -16,6 +16,13 @@ enum TriggerType {
     Regex
 }
 
+enum Severity {
+    Success
+    Warning
+    Error
+    None
+}
+
 enum LogLevel {
     Info = 1
     Verbose = 2
@@ -34,6 +41,9 @@ enum ReactionType {
     Processing
     Custom
     Warning
+    ApprovalNeeded
+    Cancelled
+    Denied
 }
 
 # Unit of time for scheduled commands
@@ -42,4 +52,32 @@ enum TimeInterval {
     Hours
     Minutes
     Seconds
+}
+
+enum ApprovalState {
+    AutoApproved
+    Pending
+    Approved
+    Denied
+}
+
+enum MessageType {
+    ChannelRenamed
+    Message
+    PinAdded
+    PinRemoved
+    PresenceChange
+    ReactionAdded
+    ReactionRemoved
+    StarAdded
+    StarRemoved
+}
+
+enum MessageSubtype {
+    None
+    ChannelJoined
+    ChannelLeft
+    ChannelRenamed
+    ChannelPurposeChanged
+    ChannelTopicChanged
 }

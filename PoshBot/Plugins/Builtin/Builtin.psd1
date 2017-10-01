@@ -12,7 +12,7 @@
 RootModule = 'Builtin.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.6.2'
+ModuleVersion = '0.8.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -74,10 +74,11 @@ FunctionsToExport = 'About', 'Add-CommandPermission', 'Add-GroupRole', 'Add-Grou
                'Get-CommandHistory', 'Get-Group', 'Get-Permission', 'Get-Plugin',
                'Get-Role', 'Get-CommandHelp', 'Install-Plugin', 'New-Group', 'New-Permission',
                'New-Role', 'Remove-Group', 'Remove-GroupRole', 'Remove-GroupUser',
-               'Remove-Plugin', 'Remove-Role', 'Remove-RolePermission', 'Slap', 'Status',
+               'Remove-Plugin', 'Remove-Role', 'Remove-RolePermission', 'Slap', 'Get-PoshBotStatus',
                'Update-GroupDescription', 'Update-RoleDescription', 'Get-ScheduledCommand',
                'New-ScheduledCommand', 'Set-ScheduledCommand', 'Remove-ScheduledCommand',
-               'Enable-ScheduledCommand', 'Disable-ScheduledCommand', 'Update-Plugin', 'Get-CommandStatus'
+               'Enable-ScheduledCommand', 'Disable-ScheduledCommand', 'Update-Plugin', 'Get-CommandStatus',
+               'Approve-PendingCommand', 'Deny-PendingCommand', 'Get-PendingCommand'
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
 CmdletsToExport = @()

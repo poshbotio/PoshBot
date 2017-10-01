@@ -84,9 +84,27 @@ function Get-PoshBotConfiguration {
                     Write-Verbose -Message "Loading bot configuration from [$item]"
                     $hash = Get-Content -Path $item -Raw | ConvertFrom-Metadata
                     $config = [BotConfiguration]::new()
-                    $hash.Keys | Foreach-Object {
-                        if ($config | Get-Member -MemberType Property -Name $_) {
-                            $config.($_) = $hash[$_]
+                    foreach ($key in $hash.Keys) {
+                        if ($config | Get-Member -MemberType Property -Name $key) {
+
+                            if ($key -eq 'ApprovalConfiguration') {
+                                # Validate ExpireMinutes
+                                if ($hash[$key].ExpireMinutes -is [int]) {
+                                    $config.ApprovalConfiguration.ExpireMinutes = $hash[$key].ExpireMinutes
+                                }
+                                # Validate ApprovalCommandConfiguration
+                                if ($hash[$key].Commands.Count -ge 1) {
+                                    foreach ($approvalConfig in $hash[$key].Commands) {
+                                        $acc = [ApprovalCommandConfiguration]::new()
+                                        $acc.PluginCommandExpression = $approvalConfig.Expression
+                                        $acc.ApprovalGroups = $approvalConfig.Groups
+                                        $acc.PeerApproval = $approvalConfig.PeerApproval
+                                        $config.ApprovalConfiguration.Commands.Add($acc) > $null
+                                    }
+                                }
+                            } else {
+                                $config.$Key = $hash[$key]
+                            }
                         }
                     }
                     $config

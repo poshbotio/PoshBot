@@ -19,7 +19,8 @@ New-PoshBotConfiguration [[-Name] <String>] [[-ConfigurationDirectory] <String>]
  [[-BackendConfiguration] <Hashtable>] [[-PluginConfiguration] <Hashtable>] [[-BotAdmins] <String[]>]
  [[-CommandPrefix] <Char>] [[-AlternateCommandPrefixes] <String[]>]
  [[-AlternateCommandPrefixSeperators] <Char[]>] [[-SendCommandResponseToPrivate] <String[]>]
- [[-MuteUnknownCommand] <Boolean>] [[-AddCommandReactions] <Boolean>]
+ [[-MuteUnknownCommand] <Boolean>] [[-AddCommandReactions] <Boolean>] [[-ApprovalExpireMinutes] <Int32>]
+ [[-ApprovalCommandConfigurations] <Hashtable[]>]
 ```
 
 ## DESCRIPTION
@@ -464,6 +465,36 @@ Aliases:
 Required: False
 Position: 21
 Default value: True
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ApprovalExpireMinutes
+{{Fill ApprovalExpireMinutes Description}}
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases: 
+
+Required: False
+Position: 22
+Default value: 30
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ApprovalCommandConfigurations
+{{Fill ApprovalCommandConfigurations Description}}
+
+```yaml
+Type: Hashtable[]
+Parameter Sets: (All)
+Aliases: 
+
+Required: False
+Position: 23
+Default value: @()
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

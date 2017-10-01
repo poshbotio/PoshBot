@@ -9,6 +9,6 @@ class PluginCommand {
     }
 
     [string]ToString() {
-        return "$($this.Plugin.Name):$($this.Command.Name)"
+        return "$($this.Plugin.Name):$($this.Command.Name):$($this.Plugin.Version.ToString())"
     }
 }

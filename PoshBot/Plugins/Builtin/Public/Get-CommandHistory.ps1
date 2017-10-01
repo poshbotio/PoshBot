@@ -75,6 +75,10 @@ function Get-CommandHistory {
             Label = 'CommandString'
             Expression = { $_.ParsedCommand.CommandString }
         }
+        @{
+            Label = 'Approver'
+            Expression = { $_.Approver.Name }
+        }
     )
 
     $allHistory = $Bot.Executor.History | Sort-Object -Property Started -Descending

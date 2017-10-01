@@ -22,6 +22,10 @@ class Bot : BaseLogger {
     # Queue of messages from the chat network to process
     [System.Collections.Queue]$MessageQueue = (New-Object System.Collections.Queue)
 
+    [hashtable]$DeferredCommandExecutionContexts = @{}
+
+    [System.Collections.Queue]$ProcessedDeferredContextQueue = (New-Object System.Collections.Queue)
+
     [BotConfiguration]$Configuration
 
     hidden [System.Diagnostics.Stopwatch]$_Stopwatch
@@ -143,6 +147,9 @@ class Bot : BaseLogger {
                 # and add to message queue
                 $this.ProcessScheduledMessages()
 
+                # Determine if any contexts that are deferred are expired
+                $this.ProcessDeferredContexts()
+
                 # Determine if message is for bot and handle as necessary
                 $this.ProcessMessageQueue()
 
@@ -203,6 +210,51 @@ class Bot : BaseLogger {
         foreach ($msg in $this.Scheduler.GetTriggeredMessages()) {
             $this.LogDebug('Received scheduled message from scheduler. Adding to message queue.', $msg)
             $this.MessageQueue.Enqueue($msg)
+        }
+    }
+
+    [void]ProcessDeferredContexts() {
+        $now = (Get-Date).ToUniversalTime()
+        $expireMinutes = $this.Configuration.ApprovalConfiguration.ExpireMinutes
+
+        $toRemove = New-Object System.Collections.ArrayList
+        foreach ($context in $this.DeferredCommandExecutionContexts.Values) {
+            $expireTime = $context.Started.AddMinutes($expireMinutes)
+            if ($now -gt $expireTime) {
+                $msg = "[$($context.Id)] - [$($context.ParsedCommand.CommandString)] has been pending approval for more than [$expireMinutes] minutes. The command will be cancelled."
+
+                # Add cancelled reation
+                $this.Backend.RemoveReaction($context.Message, [ReactionType]::ApprovalNeeded)
+                $this.Backend.AddReaction($context.Message, [ReactionType]::Cancelled)
+
+                # Send message back to Slack saying command context was cancelled due to timeout
+                $this.LogInfo($msg)
+                $response = [Response]::new()
+                $response.MessageFrom = $context.Message.From
+                $response.To = $context.Message.To
+                $response.Data = New-PoshBotCardResponse -Type Warning -Text $msg
+                $this.SendMessage($response)
+
+                $toRemove.Add($context.Id)
+            }
+        }
+        foreach ($id in $toRemove) {
+            $this.DeferredCommandExecutionContexts.Remove($id)
+        }
+
+        while ($this.ProcessedDeferredContextQueue.Count -ne 0) {
+            $cmdExecContext = $this.ProcessedDeferredContextQueue.Dequeue()
+            $this.DeferredCommandExecutionContexts.Remove($cmdExecContext.Id)
+
+            if ($cmdExecContext.ApprovalState -eq [ApprovalState]::Approved) {
+                $this.LogDebug("Starting exeuction of context [$($cmdExecContext.Id)]")
+                $this.Backend.RemoveReaction($cmdExecContext.Message, [ReactionType]::ApprovalNeeded)
+                $this.Executor.ExecuteCommand($cmdExecContext)
+            } elseif ($cmdExecContext.ApprovalState -eq [ApprovalState]::Denied) {
+                $this.LogDebug("Context [$($cmdExecContext.Id)] was denied")
+                $this.Backend.RemoveReaction($cmdExecContext.Message, [ReactionType]::ApprovalNeeded)
+                $this.Backend.AddReaction($cmdExecContext.Message, [ReactionType]::Denied)
+            }
         }
     }
 
@@ -287,7 +339,16 @@ class Bot : BaseLogger {
                 }
             }
 
-            $this.Executor.ExecuteCommand($PluginCmd, $ParsedCommand, $Message)
+            # Create the command execution context
+            $cmdExecContext = [CommandExecutionContext]::new()
+            $cmdExecContext.Started = (Get-Date).ToUniversalTime()
+            $cmdExecContext.Result = [CommandResult]::New()
+            $cmdExecContext.Command = $pluginCmd.Command
+            $cmdExecContext.FullyQualifiedCommandName = $pluginCmd.ToString()
+            $cmdExecContext.ParsedCommand = $ParsedCommand
+            $cmdExecContext.Message = $Message
+
+            $this.Executor.ExecuteCommand($cmdExecContext)
         } else {
             if ($isBotCommand) {
                 $msg = "No command found matching [$($Message.Text)]"

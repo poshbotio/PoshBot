@@ -1,25 +1,4 @@
 
-enum MessageType {
-    ChannelRenamed
-    Message
-    PinAdded
-    PinRemoved
-    PresenceChange
-    ReactionAdded
-    ReactionRemoved
-    StarAdded
-    StarRemoved
-}
-
-enum MessageSubtype {
-    None
-    ChannelJoined
-    ChannelLeft
-    ChannelRenamed
-    ChannelPurposeChanged
-    ChannelTopicChanged
-}
-
 # A chat message that is received from the chat network
 class Message {
     [string]$Id                 # MAY have this
@@ -46,7 +25,3 @@ class Message {
         return $newMsg
     }
 }
-
-class UserEnterMessage : Message {}
-class UserExitMessage : Message {}
-class TopicChangeMessage : Message {}
