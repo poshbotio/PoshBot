@@ -49,6 +49,7 @@ AlternateCommandPrefixSeperators : {:, ,, ;}
 SendCommandResponseToPrivate     : {}
 MuteUnknownCommand               : False
 AddCommandReactions              : True
+ApprovalConfiguration            : ApprovalConfiguration
 
 Create a new PoshBot configuration with default values except for the bot name and alternate command prefixes that it will listen for.
 
@@ -82,6 +83,7 @@ AlternateCommandPrefixSeperators : {:, ,, ;}
 SendCommandResponseToPrivate     : {}
 MuteUnknownCommand               : False
 AddCommandReactions              : True
+ApprovalConfiguration            : ApprovalConfiguration
 
 PS C:\\\> $myBotConfig | Start-PoshBot -AsJob
 
@@ -470,7 +472,7 @@ Accept wildcard characters: False
 ```
 
 ### -ApprovalExpireMinutes
-{{Fill ApprovalExpireMinutes Description}}
+The amount of time (minutes) that a command the requires approval will be pending until it expires.
 
 ```yaml
 Type: Int32
@@ -485,7 +487,20 @@ Accept wildcard characters: False
 ```
 
 ### -ApprovalCommandConfigurations
-{{Fill ApprovalCommandConfigurations Description}}
+Array of hashtables containing command approval configurations.
+
+@(
+    @{
+        Expression = 'MyModule:Execute-Deploy:*'
+        Groups = 'platform-admins'
+        PeerApproval = $true
+    }
+    @{
+        Expression = 'MyModule:Deploy-HRApp:*'
+        Groups = @('platform-managers', 'hr-managers')
+        PeerApproval = $true
+    }
+)
 
 ```yaml
 Type: Hashtable[]
