@@ -11,12 +11,12 @@ You can also use this to enforce the "four eyes" approach to ensure a second per
 ## Configuration
 
 In order to enable approvals on commands, you populate the `ApprovalConfiguration` section of your bot configuration.
-This coniguration section has `two` top-level properties
+This configuration section has `two` top-level properties
 
 #### ExpireMinutes
 
 This property governs how long a command will be in a pending state (awaiting an approval or deny command) before it expires.
-Set this to a reasonable about of time that you can wait before a command is approved or denied.
+Set this to a reasonable amount of time that you can wait before a command is approved or denied.
 
 #### Commands
 
