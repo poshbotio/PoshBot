@@ -127,7 +127,7 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## [0.8.0] Unreleased
+## [0.8.0] 2017-10-01
 ### Added
   - Commands can now be marked as needing approval by someone in a designated group.
     Commands that require approval will be put into a pending state with an expiration time set via the bot configuration.
