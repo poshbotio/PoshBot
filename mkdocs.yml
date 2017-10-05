@@ -18,6 +18,7 @@ pages:
       - Permissions: guides/command-authorization/permissions.md
       - Roles: guides/command-authorization/roles.md
       - Groups: guides/command-authorization/groups.md
+    - Plugin Configuration: guides/plugin-configuration.md
     - Run Poshbot as a Service: guides/run-poshbot-as-a-service.md
   - Tutorials:
     - Backend Development:
