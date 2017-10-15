@@ -24,6 +24,7 @@ The custom attribute is applied to the function similarly to the `[CmdletBinding
 | MessageType    | string   | Type of message this command is triggered against. Only valid when TriggerType is `Event`
 | MessageSubtype | string   | Subtype of message this command is triggered against. Only valid when TriggerType is `Event`
 | Permissions    | string[] | String array of permissions to apply to the command. Only users with the given permissions are allow to execute command
+| KeepHistory    | bool     | Control whether command execution history is kept.
 
 #### Example
 
