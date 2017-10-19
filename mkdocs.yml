@@ -26,12 +26,12 @@ pages:
     - Plugin Development:
       - Simple: tutorials/plugin-development/simple.md
       - Advanced:
-        - Overview: tutorials/plugin-development/overview.md
-        - PoshBot.BotCommand Custom Attribute: tutorials/plugin-development/poshbot.botcommand-attribute.md
-        - Comment-Based Help: tutorials/plugin-development/comment-based-help.md
-        - Custom Responses: tutorials/plugin-development/custom-responses.md
-        - Config-Providied Parameters: tutorials/plugin-development/config-provided-parameters.md
-        - Stateful Data: tutorials/plugin-development/stateful-data.md
+        - Overview: tutorials/plugin-development/advanced/overview.md
+        - PoshBot.BotCommand Custom Attribute: tutorials/plugin-development/advanced/poshbot.botcommand-attribute.md
+        - Comment-Based Help: tutorials/plugin-development/advanced/comment-based-help.md
+        - Custom Responses: tutorials/plugin-development/advanced/custom-responses.md
+        - Config-Providied Parameters: tutorials/plugin-development/advanced/config-provided-parameters.md
+        - Stateful Data: tutorials/plugin-development/advanced/stateful-data.md
   - Reference:
     - Builtin Commands:
       - General:
