@@ -53,12 +53,21 @@ function Save-PoshBotConfiguration {
             $hash = @{}
             $InputObject | Get-Member -MemberType Property | ForEach-Object {
 
-                # Serialize the ApprovalConfiguration property differently as ConvertTo-Metadata
-                # won't know how to do it since it's a custom PoshBot class
-                if ($_.Name -eq 'ApprovalConfiguration') {
-                    $hash.Add($_.Name, $InputObject.($_.Name).ToHash())
-                } else {
-                    $hash.Add($_.Name, $InputObject.($_.Name))
+                switch ($_.Name) {
+                    # Serialize ApprovedCommandsInChannel and ApprovalConfiguration property differently as
+                    # ConvertTo-Metadata won't know how to do it since it's a custom PoshBot class
+                    'ApprovedCommandsInChannel' {
+                        $hash.Add($_.Name, $InputObject.($_.Name).ToHash())
+                        break
+                    }
+                    'ApprovalConfiguration' {
+                        $hash.Add($_.Name, $InputObject.($_.Name).ToHash())
+                        break
+                    }
+                    Default {
+                        $hash.Add($_.Name, $InputObject.($_.Name))
+                        break
+                    }
                 }
             }
 

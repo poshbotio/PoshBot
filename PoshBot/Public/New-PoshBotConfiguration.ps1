@@ -116,6 +116,17 @@ function New-PoshBotConfiguration {
                 PeerApproval = $true
             }
         )
+    .PARAMETER ApprovedCommandsInChannel
+        Array of whitelisted channels the bot can participate in. Wildcards are allowed. Channel names that
+        match against this list will be allowed to have Poshbot commands executed in them.
+
+        Internally this uses the `-like` comparison operator, not `-match`. Regexes are not allowed.
+
+        For best results, list channels and commands from most specific to least specific. PoshBot will
+        evaluate the first match found.
+
+        Note that the bot will still receive messages from all channels it is a member of. These message MAY
+        be logged depending on your configured logging level.
     .EXAMPLE
         PS C:\> New-PoshBotConfiguration -Name Cherry2000 -AlternateCommandPrefixes @('Cherry', 'Sam')
 
@@ -207,9 +218,9 @@ function New-PoshBotConfiguration {
         [bool]$MuteUnknownCommand = $false,
         [bool]$AddCommandReactions = $true,
         [int]$ApprovalExpireMinutes = 30,
-        [hashtable[]]$ApprovalCommandConfigurations = @()
-
         [switch]$DisallowDMs,
+        [hashtable[]]$ApprovalCommandConfigurations = @(),
+        [hashtable[]]$ApprovedCommandsInChannel = @(@{Channel = '*'; Commands = @('*')})
     )
 
     Write-Verbose -Message 'Creating new PoshBot configuration'
@@ -237,6 +248,12 @@ function New-PoshBotConfiguration {
     $config.AddCommandReactions = $AddCommandReactions
     $config.ApprovalConfiguration.ExpireMinutes = $ApprovalExpireMinutes
     $config.DisallowDMs = ($DisallowDMs -eq $true)
+    if ($ApprovedCommandsInChannel.Count -ge 1) {
+        foreach ($item in $ApprovedCommandsInChannel) {
+            $config.ApprovedCommandsInChannel += [ChannelApprovedCommand]::new($item.Channel, $item.Commands)
+        }
+    }
+    $config.ApprovedCommandsInChannel = $ApprovedCommandsInChannel
     if ($ApprovalCommandConfigurations.Count -ge 1) {
         foreach ($item in $ApprovalCommandConfigurations) {
             $acc = [ApprovalCommandConfiguration]::new()

@@ -320,6 +320,19 @@ class Bot : BaseLogger {
         $pluginCmd = $this.PluginManager.MatchCommand($parsedCommand, $cmdSearch)
         if ($pluginCmd) {
 
+            # Check command is allowed in channel
+            if (-not $this.CommandInAllowedChannel($parsedCommand, $pluginCmd)) {
+                $this.LogDebug('Igoring message. Command in not approved channel', $pluginCmd.ToString())
+                $this.AddReaction($Message, [ReactionType]::Denied)
+                $response = [Response]::new()
+                $response.MessageFrom = $Message.From
+                $response.To = $Message.To
+                $response.Severity = [Severity]::Warning
+                $response.Data = New-PoshBotCardResponse -Type Warning -Text 'Sorry :( PoshBot has been configured to not allow that command in this channel. Please contact your bot administrator.'
+                $this.SendMessage($response)
+                return
+            }
+
             # Add the name of the plugin to the parsed command
             # if it wasn't fully qualified to begin with
             if ([string]::IsNullOrEmpty($parsedCommand.Plugin)) {
@@ -557,6 +570,37 @@ class Bot : BaseLogger {
         }
 
         return $configProvidedParams
+    }
+
+    # Check command against approved commands in channels
+    [bool]CommandInAllowedChannel([ParsedCommand]$ParsedCommand, [PluginCommand]$PluginCommand) {
+
+        # DMs won't be goverened by the 'ApprovedCommandsInChannel' configuration property
+        if ($ParsedCommand.OriginalMessage.IsDM) {
+            return $true
+        }
+
+        $channel = $ParsedCommand.ToName
+        $fullyQualifiedCommand = $PluginCommand.ToString()
+
+        $match = $false
+        $isApproved = $false
+        foreach ($approvedChannel in $this.Configuration.ApprovedCommandsInChannel) {
+            if ($channel -like $approvedChannel.Channel) {
+                $match = $true
+                foreach ($approvedCommand in $approvedChannel.Commands) {
+                    if ($fullyQualifiedCommand -like $approvedCommand) {
+                        $isApproved = $true
+                        break
+                    }
+                }
+            }
+            if ($match) {
+                return $isApproved
+            }
+        }
+
+        return $false
     }
 
     # Determine if response from command is custom and the output should be formatted
