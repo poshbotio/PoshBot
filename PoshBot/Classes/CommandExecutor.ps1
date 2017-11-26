@@ -83,7 +83,7 @@ class CommandExecutor : BaseLogger {
                 $msg = "Approval is needed to run [$($cmdExecContext.ParsedCommand.CommandString)] from someone in the approval group(s) [$approverGroups]."
                 $msg += "`nTo approve, say '$($prefix)approve $($cmdExecContext.Id)'."
                 $msg += "`nTo deny, say '$($prefix)deny $($cmdExecContext.Id)'."
-                $msg += "`nTo list pending approvals, say '$($prefix)pendingapprovals'."
+                $msg += "`nTo list pending approvals, say '$($prefix)pending'."
                 $response = [Response]::new()
                 $response.MessageFrom = $cmdExecContext.Message.From
                 $response.To = $cmdExecContext.Message.To
@@ -306,7 +306,7 @@ class CommandExecutor : BaseLogger {
     [bool]ApprovalNeeded([CommandExecutionContext]$Context) {
         if ($Context.ApprovalState -ne [ApprovalState]::Approved) {
             foreach ($approvalConfig in $this._bot.Configuration.ApprovalConfiguration.Commands) {
-                if ($Context.FullyQualifiedCommandName -like $approvalConfig.PluginCommandExpression) {
+                if ($Context.FullyQualifiedCommandName -like $approvalConfig.Expression) {
 
                     $approvalGroups = $this._bot.RoleManager.GetUserGroups($Context.ParsedCommand.From)
                     $compareParams = @{
@@ -343,7 +343,7 @@ class CommandExecutor : BaseLogger {
     # Get list of approval groups for a command that needs approval
     [string[]]GetApprovalGroups([CommandExecutionContext]$Context) {
         foreach ($approvalConfig in $this._bot.Configuration.ApprovalConfiguration.Commands) {
-            if ($Context.FullyQualifiedCommandName -like $approvalConfig.PluginCommandExpression) {
+            if ($Context.FullyQualifiedCommandName -like $approvalConfig.Expression) {
                 return $approvalConfig.ApprovalGroups
             }
         }

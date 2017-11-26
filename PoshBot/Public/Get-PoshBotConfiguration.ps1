@@ -96,7 +96,7 @@ function Get-PoshBotConfiguration {
                                 if ($hash[$key].Commands.Count -ge 1) {
                                     foreach ($approvalConfig in $hash[$key].Commands) {
                                         $acc = [ApprovalCommandConfiguration]::new()
-                                        $acc.PluginCommandExpression = $approvalConfig.Expression
+                                        $acc.Expression = $approvalConfig.Expression
                                         $acc.ApprovalGroups = $approvalConfig.Groups
                                         $acc.PeerApproval = $approvalConfig.PeerApproval
                                         $config.ApprovalConfiguration.Commands.Add($acc) > $null

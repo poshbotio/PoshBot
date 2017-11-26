@@ -52,7 +52,14 @@ function Save-PoshBotConfiguration {
         if ($PSCmdlet.ShouldProcess($Path, 'Save PoshBot configuration')) {
             $hash = @{}
             $InputObject | Get-Member -MemberType Property | ForEach-Object {
-                $hash.Add($_.Name, $InputObject.($_.Name))
+
+                # Serialize the ApprovalConfiguration property differently as ConvertTo-Metadata
+                # won't know how to do it since it's a custom PoshBot class
+                if ($_.Name -eq 'ApprovalConfiguration') {
+                    $hash.Add($_.Name, $InputObject.($_.Name).ToHash())
+                } else {
+                    $hash.Add($_.Name, $InputObject.($_.Name))
+                }
             }
 
             $meta = $hash | ConvertTo-Metadata -WarningAction SilentlyContinue
