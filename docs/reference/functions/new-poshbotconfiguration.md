@@ -1,5 +1,6 @@
 ---
 external help file: PoshBot-help.xml
+Module Name: poshbot
 online version: 
 schema: 2.0.0
 ---
@@ -20,7 +21,7 @@ New-PoshBotConfiguration [[-Name] <String>] [[-ConfigurationDirectory] <String>]
  [[-CommandPrefix] <Char>] [[-AlternateCommandPrefixes] <String[]>]
  [[-AlternateCommandPrefixSeperators] <Char[]>] [[-SendCommandResponseToPrivate] <String[]>]
  [[-MuteUnknownCommand] <Boolean>] [[-AddCommandReactions] <Boolean>] [[-ApprovalExpireMinutes] <Int32>]
- [[-ApprovalCommandConfigurations] <Hashtable[]>]
+ [-DisallowDMs] [[-ApprovalCommandConfigurations] <Hashtable[]>] [[-ApprovedCommandsInChannel] <Hashtable[]>]
 ```
 
 ## DESCRIPTION
@@ -486,6 +487,22 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -DisallowDMs
+Disallow DMs (direct messages) with the bot.
+If a user tries to DM the bot it will be ignored.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases: 
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -ApprovalCommandConfigurations
 Array of hashtables containing command approval configurations.
 
@@ -510,6 +527,35 @@ Aliases:
 Required: False
 Position: 23
 Default value: @()
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ApprovedCommandsInChannel
+Array of whitelisted channels the bot can participate in.
+Wildcards are allowed.
+Channel names that
+match against this list will be allowed to have Poshbot commands executed in them.
+
+Internally this uses the \`-like\` comparison operator, not \`-match\`.
+Regexes are not allowed.
+
+For best results, list channels and commands from most specific to least specific.
+PoshBot will
+evaluate the first match found.
+
+Note that the bot will still receive messages from all channels it is a member of.
+These message MAY
+be logged depending on your configured logging level.
+
+```yaml
+Type: Hashtable[]
+Parameter Sets: (All)
+Aliases: 
+
+Required: False
+Position: 24
+Default value: @(@{Channel = '*'; Commands = @('*')})
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

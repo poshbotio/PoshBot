@@ -1,5 +1,6 @@
 ---
 external help file: PoshBot-help.xml
+Module Name: poshbot
 online version: 
 schema: 2.0.0
 ---
