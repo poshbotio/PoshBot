@@ -43,5 +43,6 @@ class BotConfiguration {
 
     [bool]$AddCommandReactions = $true
 
+    [bool]$DisallowDMs = $false
     [ApprovalConfiguration]$ApprovalConfiguration = [ApprovalConfiguration]::new()
 }

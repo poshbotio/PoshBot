@@ -200,6 +200,20 @@ class Bot : BaseLogger {
     # Receive messages from the backend chat network
     [void]ReceiveMessage() {
         foreach ($msg in $this.Backend.ReceiveMessage()) {
+
+            # Ignore DMs if told to
+            if ($msg.IsDM -and $this.Configuration.DisallowDMs) {
+                $this.LogInfo('Ignoring message. DMs are disabled.', $msg)
+                $this.AddReaction($msg, [ReactionType]::Denied)
+                $response = [Response]::new()
+                $response.MessageFrom = $msg.From
+                $response.To = $msg.To
+                $response.Severity = [Severity]::Warning
+                $response.Data = New-PoshBotCardResponse -Type Warning -Text 'Sorry :( PoshBot has been configured to ignore DMs (direct messages). Please contact your bot administrator.'
+                $this.SendMessage($response)
+                return
+            }
+
             $this.LogDebug('Received bot message from chat network. Adding to message queue.', $msg)
             $this.MessageQueue.Enqueue($msg)
         }
@@ -224,8 +238,8 @@ class Bot : BaseLogger {
                 $msg = "[$($context.Id)] - [$($context.ParsedCommand.CommandString)] has been pending approval for more than [$expireMinutes] minutes. The command will be cancelled."
 
                 # Add cancelled reation
-                $this.Backend.RemoveReaction($context.Message, [ReactionType]::ApprovalNeeded)
-                $this.Backend.AddReaction($context.Message, [ReactionType]::Cancelled)
+                $this.RemoveReaction($context.Message, [ReactionType]::ApprovalNeeded)
+                $this.AddReaction($context.Message, [ReactionType]::Cancelled)
 
                 # Send message back to Slack saying command context was cancelled due to timeout
                 $this.LogInfo($msg)
@@ -248,12 +262,12 @@ class Bot : BaseLogger {
 
             if ($cmdExecContext.ApprovalState -eq [ApprovalState]::Approved) {
                 $this.LogDebug("Starting exeuction of context [$($cmdExecContext.Id)]")
-                $this.Backend.RemoveReaction($cmdExecContext.Message, [ReactionType]::ApprovalNeeded)
+                $this.RemoveReaction($cmdExecContext.Message, [ReactionType]::ApprovalNeeded)
                 $this.Executor.ExecuteCommand($cmdExecContext)
             } elseif ($cmdExecContext.ApprovalState -eq [ApprovalState]::Denied) {
                 $this.LogDebug("Context [$($cmdExecContext.Id)] was denied")
-                $this.Backend.RemoveReaction($cmdExecContext.Message, [ReactionType]::ApprovalNeeded)
-                $this.Backend.AddReaction($cmdExecContext.Message, [ReactionType]::Denied)
+                $this.RemoveReaction($cmdExecContext.Message, [ReactionType]::ApprovalNeeded)
+                $this.AddReaction($cmdExecContext.Message, [ReactionType]::Denied)
             }
         }
     }
@@ -480,6 +494,20 @@ class Bot : BaseLogger {
     [void]SendMessage([Response]$Response) {
         $this.LogInfo('Sending response to backend')
         $this.Backend.SendMessage($Response)
+    }
+
+    # Add a reaction to a message
+    [void]AddReaction([Message]$Message, [ReactionType]$ReactionType) {
+        if ($this.Configuration.AddCommandReactions) {
+            $this.Backend.AddReaction($Message, $ReactionType)
+        }
+    }
+
+    # Remove a reaction from a message
+    [void]RemoveReaction([Message]$Message, [ReactionType]$ReactionType) {
+        if ($this.Configuration.AddCommandReactions) {
+            $this.Backend.RemoveReaction($Message, $ReactionType)
+        }
     }
 
     # Get any parameters with the

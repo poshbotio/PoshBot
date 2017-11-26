@@ -99,6 +99,8 @@ function New-PoshBotConfiguration {
         Add reactions to a chat message indicating the command is being executed, has succeeded, or failed.
     .PARAMETER ApprovalExpireMinutes
         The amount of time (minutes) that a command the requires approval will be pending until it expires.
+    .PARAMETER DisallowDMs
+        Disallow DMs (direct messages) with the bot. If a user tries to DM the bot it will be ignored.
     .PARAMETER ApprovalCommandConfigurations
         Array of hashtables containing command approval configurations.
 
@@ -207,6 +209,7 @@ function New-PoshBotConfiguration {
         [int]$ApprovalExpireMinutes = 30,
         [hashtable[]]$ApprovalCommandConfigurations = @()
 
+        [switch]$DisallowDMs,
     )
 
     Write-Verbose -Message 'Creating new PoshBot configuration'
@@ -233,6 +236,7 @@ function New-PoshBotConfiguration {
     $config.SendCommandResponseToPrivate = $SendCommandResponseToPrivate
     $config.AddCommandReactions = $AddCommandReactions
     $config.ApprovalConfiguration.ExpireMinutes = $ApprovalExpireMinutes
+    $config.DisallowDMs = ($DisallowDMs -eq $true)
     if ($ApprovalCommandConfigurations.Count -ge 1) {
         foreach ($item in $ApprovalCommandConfigurations) {
             $acc = [ApprovalCommandConfiguration]::new()
