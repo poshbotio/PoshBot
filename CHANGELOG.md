@@ -6,6 +6,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.9.0] Unreleased
+### Added
+  - PoshBot can now be constrained to certain channels via a whitelist in the bot configuration. Commands initiated from other channels will be ignored.
+  - DMs to the bot can be disallowed via configuration.
+
+### Fixed
+  - Configuration settings for commands requiring approval were not be saved to disk correctly.
+
 ## [0.8.0] 2017-10-01
 ### Added
   - Commands can now be marked as needing approval by someone in a designated group.
