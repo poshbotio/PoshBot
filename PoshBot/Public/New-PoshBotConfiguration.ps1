@@ -250,7 +250,7 @@ function New-PoshBotConfiguration {
     $config.DisallowDMs = ($DisallowDMs -eq $true)
     if ($ApprovedCommandsInChannel.Count -ge 1) {
         foreach ($item in $ApprovedCommandsInChannel) {
-            $config.ApprovedCommandsInChannel += [ChannelApprovedCommand]::new($item.Channel, $item.Commands)
+            $config.ApprovedCommandsInChannel += [ChannelApprovedCommand]::new($item.Channel, $item.IncludeCommands, $item.ExcludeCommands)
         }
     }
     $config.ApprovedCommandsInChannel = $ApprovedCommandsInChannel

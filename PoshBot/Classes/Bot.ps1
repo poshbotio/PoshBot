@@ -322,7 +322,7 @@ class Bot : BaseLogger {
 
             # Check command is allowed in channel
             if (-not $this.CommandInAllowedChannel($parsedCommand, $pluginCmd)) {
-                $this.LogDebug('Igoring message. Command in not approved channel', $pluginCmd.ToString())
+                $this.LogDebug('Igoring message. Command not approved in channel', $pluginCmd.ToString())
                 $this.AddReaction($Message, [ReactionType]::Denied)
                 $response = [Response]::new()
                 $response.MessageFrom = $Message.From
@@ -575,7 +575,7 @@ class Bot : BaseLogger {
     # Check command against approved commands in channels
     [bool]CommandInAllowedChannel([ParsedCommand]$ParsedCommand, [PluginCommand]$PluginCommand) {
 
-        # DMs won't be goverened by the 'ApprovedCommandsInChannel' configuration property
+        # DMs won't be governed by the 'ApprovedCommandsInChannel' configuration property
         if ($ParsedCommand.OriginalMessage.IsDM) {
             return $true
         }
@@ -583,20 +583,25 @@ class Bot : BaseLogger {
         $channel = $ParsedCommand.ToName
         $fullyQualifiedCommand = $PluginCommand.ToString()
 
-        $match = $false
-        $isApproved = $false
-        foreach ($approvedChannel in $this.Configuration.ApprovedCommandsInChannel) {
-            if ($channel -like $approvedChannel.Channel) {
-                $match = $true
-                foreach ($approvedCommand in $approvedChannel.Commands) {
-                    if ($fullyQualifiedCommand -like $approvedCommand) {
-                        $isApproved = $true
-                        break
+        # Match command against included/excluded commands for the channel
+        # If there is a channel match, assume command is NOT approved unless
+        # it matches the included commands list and DOESN'T match the excluded list
+        foreach ($channelConfig in $this.Configuration.ApprovedCommandsInChannel) {
+            if ($channel -like $channelConfig.Channel) {
+                foreach ($includedCommand in $channelConfig.IncludeCommands) {
+                    if ($fullyQualifiedCommand -like $includedCommand) {
+                        $this.LogDebug("Matched [$fullyQualifiedCommand] to included command [$includedCommand]")
+                        foreach ($excludedCommand in $channelConfig.ExcludeCommands) {
+                            if ($fullyQualifiedCommand -like $excludedCommand) {
+                                $this.LogDebug("Matched [$fullyQualifiedCommand] to excluded command [$excludedCommand]")
+                                return $false
+                            }
+                        }
+
+                        return $true
                     }
                 }
-            }
-            if ($match) {
-                return $isApproved
+                return $false
             }
         }
 

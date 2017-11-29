@@ -1,22 +1,26 @@
 
 class ChannelApprovedCommand {
     [string]$Channel
-    [string[]]$Commands
+    [string[]]$IncludeCommands
+    [string[]]$ExcludeCommands
 
     ChannelApprovedCommand() {
         $this.Channel = '*'
-        $this.Commands = @('*')
+        $this.IncludeCommands = @('*')
+        $this.ExcludeCommands = @()
     }
 
-    ChannelApprovedCommand([string]$Channel, [string[]]$Commands) {
+    ChannelApprovedCommand([string]$Channel, [string[]]$IncludeCommands, [string]$ExcludeCommands) {
         $this.Channel = $Channel
-        $this.Commands = $Commands
+        $this.IncludeCommands = $IncludeCommands
+        $this.ExcludeCommands = $ExcludeCommands
     }
 
     [hashtable]ToHash() {
         return @{
             Channel = $this.Channel
-            Commands = $this.Commands
+            IncludeCommands = $this.IncludeCommands
+            ExcludeCommands = $this.ExcludeCommands
         }
     }
 }

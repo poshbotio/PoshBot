@@ -46,7 +46,8 @@ If you look at `.\PoshBotConfig.psd1` it should resemble the following:
   ApprovedCommandsInChannel = @(
     @{
       Channel = '*'
-      Commands = @('*')
+      IncludeCommands = @('*')
+      ExcludeCommands = @()
     }
   )
   DisallowDMs = $false
