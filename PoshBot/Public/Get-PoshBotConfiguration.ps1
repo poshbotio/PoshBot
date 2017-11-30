@@ -87,10 +87,10 @@ function Get-PoshBotConfiguration {
                     foreach ($key in $hash.Keys) {
                         if ($config | Get-Member -MemberType Property -Name $key) {
                             switch ($key) {
-                                'ApprovedCommandsInChannel' {
-                                    $config.ApprovedCommandsInChannel = @()
+                                'ChannelRules' {
+                                    $config.ChannelRules = @()
                                     foreach ($item in $hash[$key]) {
-                                        $config.ApprovedCommandsInChannel += [ChannelApprovedCommand]::new($item.Channel, $item.IncludeCommands, $item.ExcludeCommands)
+                                        $config.ChannelRules += [ChannelRule]::new($item.Channel, $item.IncludeCommands, $item.ExcludeCommands)
                                     }
                                     break
                                 }

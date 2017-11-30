@@ -586,12 +586,12 @@ class Bot : BaseLogger {
         # Match command against included/excluded commands for the channel
         # If there is a channel match, assume command is NOT approved unless
         # it matches the included commands list and DOESN'T match the excluded list
-        foreach ($channelConfig in $this.Configuration.ApprovedCommandsInChannel) {
-            if ($channel -like $channelConfig.Channel) {
-                foreach ($includedCommand in $channelConfig.IncludeCommands) {
+        foreach ($ChannelRule in $this.Configuration.ChannelRules) {
+            if ($channel -like $ChannelRule.Channel) {
+                foreach ($includedCommand in $ChannelRule.IncludeCommands) {
                     if ($fullyQualifiedCommand -like $includedCommand) {
                         $this.LogDebug("Matched [$fullyQualifiedCommand] to included command [$includedCommand]")
-                        foreach ($excludedCommand in $channelConfig.ExcludeCommands) {
+                        foreach ($excludedCommand in $ChannelRule.ExcludeCommands) {
                             if ($fullyQualifiedCommand -like $excludedCommand) {
                                 $this.LogDebug("Matched [$fullyQualifiedCommand] to excluded command [$excludedCommand]")
                                 return $false

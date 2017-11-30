@@ -175,7 +175,7 @@ task Compile -depends Clean {
         'Backend'
         'ApprovalCommandConfiguration'
         'ApprovalConfiguration'
-        'ChannelApprovedCommand'
+        'ChannelRule'
         'BotConfiguration'
         'Bot'
     ) | ForEach-Object {

@@ -1,16 +1,16 @@
 
-class ChannelApprovedCommand {
+class ChannelRule {
     [string]$Channel
     [string[]]$IncludeCommands
     [string[]]$ExcludeCommands
 
-    ChannelApprovedCommand() {
+    ChannelRule() {
         $this.Channel = '*'
         $this.IncludeCommands = @('*')
         $this.ExcludeCommands = @()
     }
 
-    ChannelApprovedCommand([string]$Channel, [string[]]$IncludeCommands, [string]$ExcludeCommands) {
+    ChannelRule([string]$Channel, [string[]]$IncludeCommands, [string]$ExcludeCommands) {
         $this.Channel = $Channel
         $this.IncludeCommands = $IncludeCommands
         $this.ExcludeCommands = $ExcludeCommands

@@ -116,9 +116,9 @@ function New-PoshBotConfiguration {
                 PeerApproval = $true
             }
         )
-    .PARAMETER ApprovedCommandsInChannel
-        Array of whitelisted channels the bot can participate in. Wildcards are allowed. Channel names that
-        match against this list will be allowed to have Poshbot commands executed in them.
+    .PARAMETER ChannelRules
+        Array of channels rules that control what plugin commands are allowed in a channel. Wildcards are supported.
+        Channel names that match against this list will be allowed to have Poshbot commands executed in them.
 
         Internally this uses the `-like` comparison operator, not `-match`. Regexes are not allowed.
 
@@ -127,6 +127,34 @@ function New-PoshBotConfiguration {
 
         Note that the bot will still receive messages from all channels it is a member of. These message MAY
         be logged depending on your configured logging level.
+
+        Example value:
+        @(
+            # Only allow builtin commands in the 'botadmin' channel
+            @{
+                Channel = 'botadmin'
+                IncludeCommands = @('builtin:*')
+                ExcludeCommands = @()
+            }
+            # Exclude builtin commands from any "projectX" channel
+            @{
+                Channel = '*projectx*'
+                IncludeCommands = @('*')
+                ExcludeCommands = @('builtin:*')
+            }
+            # It's the wild west in random, except giphy :)
+            @{
+                Channel = 'random'
+                IncludeCommands = @('*')
+                ExcludeCommands = @('*giphy*')
+            }
+            # All commands are otherwise allowed
+            @{
+                Channel = '*'
+                IncludeCommands = @('*')
+                ExcludeCommands = @()
+            }
+        )
     .EXAMPLE
         PS C:\> New-PoshBotConfiguration -Name Cherry2000 -AlternateCommandPrefixes @('Cherry', 'Sam')
 
@@ -220,7 +248,7 @@ function New-PoshBotConfiguration {
         [int]$ApprovalExpireMinutes = 30,
         [switch]$DisallowDMs,
         [hashtable[]]$ApprovalCommandConfigurations = @(),
-        [hashtable[]]$ApprovedCommandsInChannel = @(@{Channel = '*'; Commands = @('*')})
+        [hashtable[]]$ChannelRules = @(@{Channel = '*'; Commands = @('*')})
     )
 
     Write-Verbose -Message 'Creating new PoshBot configuration'
@@ -248,12 +276,11 @@ function New-PoshBotConfiguration {
     $config.AddCommandReactions = $AddCommandReactions
     $config.ApprovalConfiguration.ExpireMinutes = $ApprovalExpireMinutes
     $config.DisallowDMs = ($DisallowDMs -eq $true)
-    if ($ApprovedCommandsInChannel.Count -ge 1) {
-        foreach ($item in $ApprovedCommandsInChannel) {
-            $config.ApprovedCommandsInChannel += [ChannelApprovedCommand]::new($item.Channel, $item.IncludeCommands, $item.ExcludeCommands)
+    if ($ChannelRules.Count -ge 1) {
+        foreach ($item in $ChannelRules) {
+            $config.ChannelRules += [ChannelRule]::new($item.Channel, $item.IncludeCommands, $item.ExcludeCommands)
         }
     }
-    $config.ApprovedCommandsInChannel = $ApprovedCommandsInChannel
     if ($ApprovalCommandConfigurations.Count -ge 1) {
         foreach ($item in $ApprovalCommandConfigurations) {
             $acc = [ApprovalCommandConfiguration]::new()

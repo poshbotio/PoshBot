@@ -45,7 +45,7 @@ class BotConfiguration {
 
     [bool]$DisallowDMs = $false
 
-    [ChannelApprovedCommand[]]$ApprovedCommandsInChannel = @([ChannelApprovedCommand]::new())
+    [ChannelRule[]]$ChannelRules = @([ChannelRule]::new())
 
     [ApprovalConfiguration]$ApprovalConfiguration = [ApprovalConfiguration]::new()
 }

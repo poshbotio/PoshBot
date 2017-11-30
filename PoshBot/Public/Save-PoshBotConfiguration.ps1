@@ -56,7 +56,7 @@ function Save-PoshBotConfiguration {
                 switch ($_.Name) {
                     # Serialize ApprovedCommandsInChannel and ApprovalConfiguration property differently as
                     # ConvertTo-Metadata won't know how to do it since it's a custom PoshBot class
-                    'ApprovedCommandsInChannel' {
+                    'ChannelRules' {
                         $hash.Add($_.Name, $InputObject.($_.Name).ToHash())
                         break
                     }
