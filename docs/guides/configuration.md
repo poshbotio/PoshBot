@@ -43,7 +43,7 @@ If you look at `.\PoshBotConfig.psd1` it should resemble the following:
     Name = 'SlackBackend'
   }
   ApprovalConfiguration = @{}
-  ApprovedCommandsInChannel = @(
+  ChannelRules = @(
     @{
       Channel = '*'
       IncludeCommands = @('*')
@@ -91,7 +91,7 @@ MuteUnknownCommand                | bool        | Control whether unknown comman
 ApprovalExpireMinutes             | int         | The amount of time (minutes) that a command the requires approval will be pending until it expires
 ApprovalCommandConfigurations     | hashtable[] | Array of hashtables containing command approval configurations
 DisallowDMs                       | bool        | Disallow commands in DM channels with PoshBot
-ApprovedCommandsInChannel         | hashtable[] | Array of whitelisted channels the bot can participate in
+ChannelRules                      | hashtable[] | Array of channels rules that control what plugin commands are allowed in a channel
 
 ## Storage
 

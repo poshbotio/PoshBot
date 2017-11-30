@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [0.9.0] Unreleased
 ### Added
   - PoshBot can now be constrained to certain channels via a whitelist in the bot configuration. Commands initiated from other channels will be ignored.
-  - DMs to the bot can be disallowed via configuration.
+  - Direct messages (DMs) to the bot can be disallowed via configuration.
 
 ### Fixed
   - Configuration settings for commands requiring approval were not be saved to disk correctly.
