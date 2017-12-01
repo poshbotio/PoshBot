@@ -71,8 +71,11 @@ Channel rules allow the bot administrator to control what channels PoshBot is al
     ChannelRules = @(
         @{
             Channel = '*project_x*'
-            IncludeCommands = @('ProjectX:*')
-            ExcludeCommands = @('builtin:*')
+            IncludeCommands = @(
+                'ProjectX:*'
+                'builtin:*'
+            )
+            ExcludeCommands = @()
         }
     )
 }
