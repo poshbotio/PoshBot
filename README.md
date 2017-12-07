@@ -88,19 +88,19 @@ Get-Command -Module PoshBot
 
 CommandType     Name                                               Version    Source
 -----------     ----                                               -------    ------
-Function        Get-PoshBot                                        0.8.0      poshbot
-Function        Get-PoshBotConfiguration                           0.8.0      poshbot
-Function        Get-PoshBotStatefulData                            0.8.0      poshbot
-Function        New-PoshBotCardResponse                            0.8.0      poshbot
-Function        New-PoshBotConfiguration                           0.8.0      poshbot
-Function        New-PoshBotFileUpload                              0.8.0      poshbot
-Function        New-PoshBotInstance                                0.8.0      poshbot
-Function        New-PoshBotScheduledTask                           0.8.0      poshbot
-Function        New-PoshBotSlackBackend                            0.8.0      poshbot
-Function        New-PoshBotTextResponse                            0.8.0      poshbot
-Function        Remove-PoshBotStatefulData                         0.8.0      poshbot
-Function        Save-PoshBotConfiguration                          0.8.0      poshbot
-Function        Set-PoshBotStatefulData                            0.8.0      poshbot
-Function        Start-PoshBot                                      0.8.0      poshbot
-Function        Stop-Poshbot                                       0.8.0      poshbot
+Function        Get-PoshBot                                        0.9.0      poshbot
+Function        Get-PoshBotConfiguration                           0.9.0      poshbot
+Function        Get-PoshBotStatefulData                            0.9.0      poshbot
+Function        New-PoshBotCardResponse                            0.9.0      poshbot
+Function        New-PoshBotConfiguration                           0.9.0      poshbot
+Function        New-PoshBotFileUpload                              0.9.0      poshbot
+Function        New-PoshBotInstance                                0.9.0      poshbot
+Function        New-PoshBotScheduledTask                           0.9.0      poshbot
+Function        New-PoshBotSlackBackend                            0.9.0      poshbot
+Function        New-PoshBotTextResponse                            0.9.0      poshbot
+Function        Remove-PoshBotStatefulData                         0.9.0      poshbot
+Function        Save-PoshBotConfiguration                          0.9.0      poshbot
+Function        Set-PoshBotStatefulData                            0.9.0      poshbot
+Function        Start-PoshBot                                      0.9.0      poshbot
+Function        Stop-Poshbot                                       0.9.0      poshbot
 ```
