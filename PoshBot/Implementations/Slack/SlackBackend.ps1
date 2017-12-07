@@ -270,6 +270,11 @@ class SlackBackend : Backend {
                             $msg.ToName = $this.ChannelIdToName($msg.To)
                         }
 
+                        # Mark as DM
+                        if ($msg.To -match '^D') {
+                            $msg.IsDM = $true
+                        }
+
                         if ($slackMessage.ts) {
                             $unixEpoch = [datetime]'1970-01-01'
                             $msg.Time = $unixEpoch.AddSeconds($slackMessage.ts)

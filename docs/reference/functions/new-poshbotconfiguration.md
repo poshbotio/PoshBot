@@ -21,7 +21,7 @@ New-PoshBotConfiguration [[-Name] <String>] [[-ConfigurationDirectory] <String>]
  [[-CommandPrefix] <Char>] [[-AlternateCommandPrefixes] <String[]>]
  [[-AlternateCommandPrefixSeperators] <Char[]>] [[-SendCommandResponseToPrivate] <String[]>]
  [[-MuteUnknownCommand] <Boolean>] [[-AddCommandReactions] <Boolean>] [[-ApprovalExpireMinutes] <Int32>]
- [[-ApprovalCommandConfigurations] <Hashtable[]>]
+ [-DisallowDMs] [[-ApprovalCommandConfigurations] <Hashtable[]>] [[-ChannelRules] <Hashtable[]>]
 ```
 
 ## DESCRIPTION
@@ -487,6 +487,22 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -DisallowDMs
+Disallow DMs (direct messages) with the bot.
+If a user tries to DM the bot it will be ignored.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases: 
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -ApprovalCommandConfigurations
 Array of hashtables containing command approval configurations.
 
@@ -511,6 +527,62 @@ Aliases:
 Required: False
 Position: 23
 Default value: @()
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ChannelRules
+Array of channels rules that control what plugin commands are allowed in a channel.
+Wildcards are supported.
+Channel names that match against this list will be allowed to have Poshbot commands executed in them.
+
+Internally this uses the \`-like\` comparison operator, not \`-match\`.
+Regexes are not allowed.
+
+For best results, list channels and commands from most specific to least specific.
+PoshBot will
+evaluate the first match found.
+
+Note that the bot will still receive messages from all channels it is a member of.
+These message MAY
+be logged depending on your configured logging level.
+
+Example value:
+@(
+    # Only allow builtin commands in the 'botadmin' channel
+    @{
+        Channel = 'botadmin'
+        IncludeCommands = @('builtin:*')
+        ExcludeCommands = @()
+    }
+    # Exclude builtin commands from any "projectX" channel
+    @{
+        Channel = '*projectx*'
+        IncludeCommands = @('*')
+        ExcludeCommands = @('builtin:*')
+    }
+    # It's the wild west in random, except giphy :)
+    @{
+        Channel = 'random'
+        IncludeCommands = @('*')
+        ExcludeCommands = @('*giphy*')
+    }
+    # All commands are otherwise allowed
+    @{
+        Channel = '*'
+        IncludeCommands = @('*')
+        ExcludeCommands = @()
+    }
+)
+
+```yaml
+Type: Hashtable[]
+Parameter Sets: (All)
+Aliases: 
+
+Required: False
+Position: 24
+Default value: @(@{Channel = '*'; Commands = @('*')})
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

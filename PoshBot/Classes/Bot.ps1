@@ -200,6 +200,20 @@ class Bot : BaseLogger {
     # Receive messages from the backend chat network
     [void]ReceiveMessage() {
         foreach ($msg in $this.Backend.ReceiveMessage()) {
+
+            # Ignore DMs if told to
+            if ($msg.IsDM -and $this.Configuration.DisallowDMs) {
+                $this.LogInfo('Ignoring message. DMs are disabled.', $msg)
+                $this.AddReaction($msg, [ReactionType]::Denied)
+                $response = [Response]::new()
+                $response.MessageFrom = $msg.From
+                $response.To = $msg.To
+                $response.Severity = [Severity]::Warning
+                $response.Data = New-PoshBotCardResponse -Type Warning -Text 'Sorry :( PoshBot has been configured to ignore DMs (direct messages). Please contact your bot administrator.'
+                $this.SendMessage($response)
+                return
+            }
+
             $this.LogDebug('Received bot message from chat network. Adding to message queue.', $msg)
             $this.MessageQueue.Enqueue($msg)
         }
@@ -224,8 +238,8 @@ class Bot : BaseLogger {
                 $msg = "[$($context.Id)] - [$($context.ParsedCommand.CommandString)] has been pending approval for more than [$expireMinutes] minutes. The command will be cancelled."
 
                 # Add cancelled reation
-                $this.Backend.RemoveReaction($context.Message, [ReactionType]::ApprovalNeeded)
-                $this.Backend.AddReaction($context.Message, [ReactionType]::Cancelled)
+                $this.RemoveReaction($context.Message, [ReactionType]::ApprovalNeeded)
+                $this.AddReaction($context.Message, [ReactionType]::Cancelled)
 
                 # Send message back to Slack saying command context was cancelled due to timeout
                 $this.LogInfo($msg)
@@ -248,12 +262,12 @@ class Bot : BaseLogger {
 
             if ($cmdExecContext.ApprovalState -eq [ApprovalState]::Approved) {
                 $this.LogDebug("Starting exeuction of context [$($cmdExecContext.Id)]")
-                $this.Backend.RemoveReaction($cmdExecContext.Message, [ReactionType]::ApprovalNeeded)
+                $this.RemoveReaction($cmdExecContext.Message, [ReactionType]::ApprovalNeeded)
                 $this.Executor.ExecuteCommand($cmdExecContext)
             } elseif ($cmdExecContext.ApprovalState -eq [ApprovalState]::Denied) {
                 $this.LogDebug("Context [$($cmdExecContext.Id)] was denied")
-                $this.Backend.RemoveReaction($cmdExecContext.Message, [ReactionType]::ApprovalNeeded)
-                $this.Backend.AddReaction($cmdExecContext.Message, [ReactionType]::Denied)
+                $this.RemoveReaction($cmdExecContext.Message, [ReactionType]::ApprovalNeeded)
+                $this.AddReaction($cmdExecContext.Message, [ReactionType]::Denied)
             }
         }
     }
@@ -305,6 +319,19 @@ class Bot : BaseLogger {
         # Match parsed command to a command in the plugin manager
         $pluginCmd = $this.PluginManager.MatchCommand($parsedCommand, $cmdSearch)
         if ($pluginCmd) {
+
+            # Check command is allowed in channel
+            if (-not $this.CommandInAllowedChannel($parsedCommand, $pluginCmd)) {
+                $this.LogDebug('Igoring message. Command not approved in channel', $pluginCmd.ToString())
+                $this.AddReaction($Message, [ReactionType]::Denied)
+                $response = [Response]::new()
+                $response.MessageFrom = $Message.From
+                $response.To = $Message.To
+                $response.Severity = [Severity]::Warning
+                $response.Data = New-PoshBotCardResponse -Type Warning -Text 'Sorry :( PoshBot has been configured to not allow that command in this channel. Please contact your bot administrator.'
+                $this.SendMessage($response)
+                return
+            }
 
             # Add the name of the plugin to the parsed command
             # if it wasn't fully qualified to begin with
@@ -482,6 +509,20 @@ class Bot : BaseLogger {
         $this.Backend.SendMessage($Response)
     }
 
+    # Add a reaction to a message
+    [void]AddReaction([Message]$Message, [ReactionType]$ReactionType) {
+        if ($this.Configuration.AddCommandReactions) {
+            $this.Backend.AddReaction($Message, $ReactionType)
+        }
+    }
+
+    # Remove a reaction from a message
+    [void]RemoveReaction([Message]$Message, [ReactionType]$ReactionType) {
+        if ($this.Configuration.AddCommandReactions) {
+            $this.Backend.RemoveReaction($Message, $ReactionType)
+        }
+    }
+
     # Get any parameters with the
     [hashtable]GetConfigProvidedParameters([PluginCommand]$PluginCmd) {
         if ($PluginCmd.Command.FunctionInfo) {
@@ -529,6 +570,42 @@ class Bot : BaseLogger {
         }
 
         return $configProvidedParams
+    }
+
+    # Check command against approved commands in channels
+    [bool]CommandInAllowedChannel([ParsedCommand]$ParsedCommand, [PluginCommand]$PluginCommand) {
+
+        # DMs won't be governed by the 'ApprovedCommandsInChannel' configuration property
+        if ($ParsedCommand.OriginalMessage.IsDM) {
+            return $true
+        }
+
+        $channel = $ParsedCommand.ToName
+        $fullyQualifiedCommand = $PluginCommand.ToString()
+
+        # Match command against included/excluded commands for the channel
+        # If there is a channel match, assume command is NOT approved unless
+        # it matches the included commands list and DOESN'T match the excluded list
+        foreach ($ChannelRule in $this.Configuration.ChannelRules) {
+            if ($channel -like $ChannelRule.Channel) {
+                foreach ($includedCommand in $ChannelRule.IncludeCommands) {
+                    if ($fullyQualifiedCommand -like $includedCommand) {
+                        $this.LogDebug("Matched [$fullyQualifiedCommand] to included command [$includedCommand]")
+                        foreach ($excludedCommand in $ChannelRule.ExcludeCommands) {
+                            if ($fullyQualifiedCommand -like $excludedCommand) {
+                                $this.LogDebug("Matched [$fullyQualifiedCommand] to excluded command [$excludedCommand]")
+                                return $false
+                            }
+                        }
+
+                        return $true
+                    }
+                }
+                return $false
+            }
+        }
+
+        return $false
     }
 
     # Determine if response from command is custom and the output should be formatted

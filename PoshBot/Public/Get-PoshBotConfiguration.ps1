@@ -86,24 +86,35 @@ function Get-PoshBotConfiguration {
                     $config = [BotConfiguration]::new()
                     foreach ($key in $hash.Keys) {
                         if ($config | Get-Member -MemberType Property -Name $key) {
-
-                            if ($key -eq 'ApprovalConfiguration') {
-                                # Validate ExpireMinutes
-                                if ($hash[$key].ExpireMinutes -is [int]) {
-                                    $config.ApprovalConfiguration.ExpireMinutes = $hash[$key].ExpireMinutes
-                                }
-                                # Validate ApprovalCommandConfiguration
-                                if ($hash[$key].Commands.Count -ge 1) {
-                                    foreach ($approvalConfig in $hash[$key].Commands) {
-                                        $acc = [ApprovalCommandConfiguration]::new()
-                                        $acc.PluginCommandExpression = $approvalConfig.Expression
-                                        $acc.ApprovalGroups = $approvalConfig.Groups
-                                        $acc.PeerApproval = $approvalConfig.PeerApproval
-                                        $config.ApprovalConfiguration.Commands.Add($acc) > $null
+                            switch ($key) {
+                                'ChannelRules' {
+                                    $config.ChannelRules = @()
+                                    foreach ($item in $hash[$key]) {
+                                        $config.ChannelRules += [ChannelRule]::new($item.Channel, $item.IncludeCommands, $item.ExcludeCommands)
                                     }
+                                    break
                                 }
-                            } else {
-                                $config.$Key = $hash[$key]
+                                'ApprovalConfiguration' {
+                                    # Validate ExpireMinutes
+                                    if ($hash[$key].ExpireMinutes -is [int]) {
+                                        $config.ApprovalConfiguration.ExpireMinutes = $hash[$key].ExpireMinutes
+                                    }
+                                    # Validate ApprovalCommandConfiguration
+                                    if ($hash[$key].Commands.Count -ge 1) {
+                                        foreach ($approvalConfig in $hash[$key].Commands) {
+                                            $acc = [ApprovalCommandConfiguration]::new()
+                                            $acc.Expression = $approvalConfig.Expression
+                                            $acc.ApprovalGroups = $approvalConfig.Groups
+                                            $acc.PeerApproval = $approvalConfig.PeerApproval
+                                            $config.ApprovalConfiguration.Commands.Add($acc) > $null
+                                        }
+                                    }
+                                    break
+                                }
+                                Default {
+                                    $config.$Key = $hash[$key]
+                                    break
+                                }
                             }
                         }
                     }

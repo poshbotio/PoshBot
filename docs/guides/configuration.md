@@ -39,9 +39,18 @@ If you look at `.\PoshBotConfig.psd1` it should resemble the following:
   AlternateCommandPrefixes = @('poshbot')
   CommandPrefix = '!'
   BackendConfiguration = @{
-    Token = 'SLACK-API-TOKEN'
+    Token = '<SLACK-API-TOKEN>'
     Name = 'SlackBackend'
   }
+  ApprovalConfiguration = @{}
+  ChannelRules = @(
+    @{
+      Channel = '*'
+      IncludeCommands = @('*')
+      ExcludeCommands = @()
+    }
+  )
+  DisallowDMs = $false
 }
 ```
 
@@ -56,29 +65,33 @@ $bot.Start()
 
 Here is a rundown of the various configuration properties and what they do:
 
-| Property                        | Type      | Description |
-|:--------------------------------|:----------|:------------|
-Name                              | string    | A name of the bot
-ConfigurationDirectory            | string    | The directory to store bot configuration in
-LogDirectory                      | string    | The directory to store bot logs in
-PluginDirectory                   | string    | The directory to first look for plugins (modules) in
-PluginRepository                  | string[]  | The PowerShell repository(s) to look for plugins (modules) in
-ModuleManifestsToLoad             | string[]  | Path(s) to module manifests to load at bot startup
-AddCommandReactions               | bool      | Add reactions to a chat message indicating the command is being executed, has succeeded, or failed
-LogLevel                          | string    | The verbosity of logs
-MaxLogSizeMB                      | int       | The maximum log file size in megabytes
-MaxLogsToKeep                     | int       | The maximum number of logs to keep before rotating
-LogCommandHistory                 | bool      | Log command history to a separate file for convenience
-CommandHistoryMaxLogSizeMB        | int       | The maximum log file size for the command history
-CommandHistoryMaxLogsToKeep       | int       | The maximum number of logs to keep for command history before rotating
-BackendConfiguration              | hashtable | Hashtable containing configuration settings needed by backend provider
-PluginConfiguration               | hashtable | Hashtable of parameter values to pass to bot commands when appropriate
-BotAdmins                         | string[]  | List of chat handles who will granted bot administrator privledges
-CommandPrefix                     | char      | Primary prefix to use to determine if messages are bot commands
-AlternateCommandPrefixes          | string[]  | Alternate prefix(es) to use to determine if messages are bot commands
-AlternateCommandPrefixSeperators  | char[]    | Alternate prefix seperator(s) to use to determine if messages are bot commands
-SendCommandResponseToPrivate      | string[]  | Array of fully qualified bot commands to redirect responses to DM channels
-MuteUnknownCommand                | bool      | Control whether unknown commands produce warning message back to chat network
+| Property                        | Type        | Description |
+|:--------------------------------|:------------|:------------|
+Name                              | string      | A name of the bot
+ConfigurationDirectory            | string      | The directory to store bot configuration in
+LogDirectory                      | string      | The directory to store bot logs in
+PluginDirectory                   | string      | The directory to first look for plugins (modules) in
+PluginRepository                  | string[]    | The PowerShell repository(s) to look for plugins (modules) in
+ModuleManifestsToLoad             | string[]    | Path(s) to module manifests to load at bot startup
+AddCommandReactions               | bool        | Add reactions to a chat message indicating the command is being executed, has succeeded, or failed
+LogLevel                          | string      | The verbosity of logs
+MaxLogSizeMB                      | int         | The maximum log file size in megabytes
+MaxLogsToKeep                     | int         | The maximum number of logs to keep before rotating
+LogCommandHistory                 | bool        | Log command history to a separate file for convenience
+CommandHistoryMaxLogSizeMB        | int         | The maximum log file size for the command history
+CommandHistoryMaxLogsToKeep       | int         | The maximum number of logs to keep for command history before rotating
+BackendConfiguration              | hashtable   | Hashtable containing configuration settings needed by backend provider
+PluginConfiguration               | hashtable   | Hashtable of parameter values to pass to bot commands when appropriate
+BotAdmins                         | string[]    | List of chat handles who will granted bot administrator privledges
+CommandPrefix                     | char        | Primary prefix to use to determine if messages are bot commands
+AlternateCommandPrefixes          | string[]    | Alternate prefix(es) to use to determine if messages are bot commands
+AlternateCommandPrefixSeperators  | char[]      | Alternate prefix seperator(s) to use to determine if messages are bot commands
+SendCommandResponseToPrivate      | string[]    | Array of fully qualified bot commands to redirect responses to DM channels
+MuteUnknownCommand                | bool        | Control whether unknown commands produce warning message back to chat network
+ApprovalExpireMinutes             | int         | The amount of time (minutes) that a command the requires approval will be pending until it expires
+ApprovalCommandConfigurations     | hashtable[] | Array of hashtables containing command approval configurations
+DisallowDMs                       | bool        | Disallow commands in DM channels with PoshBot
+ChannelRules                      | hashtable[] | Array of channels rules that control what plugin commands are allowed in a channel
 
 ## Storage
 
