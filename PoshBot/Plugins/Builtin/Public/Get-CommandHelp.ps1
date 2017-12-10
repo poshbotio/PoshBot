@@ -7,6 +7,10 @@ function Get-CommandHelp {
         The text to filter available commands and plugins on.
     .PARAMETER Detailed
         Show more detailed help information for the command.
+    .PARAMETER Examples
+        Include command name, synopsis, and examples.
+    .PARAMETER Full
+        Displays the entire help topic, including parameter descriptions and attributes, examples, input and output object types, and additional notes.
     .PARAMETER Type
         Only return commands of specified type.
     .EXAMPLE
@@ -21,11 +25,19 @@ function Get-CommandHelp {
         !help --type regex
 
         List all commands with the [regex] trigger type.
+    .EXAMPLE
+        !help commandx -Full
+
+        Display full help for commandx
+    .EXAMPLE
+        !help commandx -Examples
+
+        Display examples for commandx
     #>
     [PoshBot.BotCommand(
         Aliases = ('man', 'help')
     )]
-    [cmdletbinding()]
+    [cmdletbinding(DefaultParameterSetName = 'Detailed')]
     param(
         [parameter(Mandatory)]
         $Bot,
@@ -33,7 +45,17 @@ function Get-CommandHelp {
         [parameter(Position = 0)]
         [string]$Filter,
 
+        [parameter(ParameterSetName = 'Detailed')]
+        [Alias('d')]
         [switch]$Detailed,
+
+        [parameter(ParameterSetName = 'Examples')]
+        [Alias('e')]
+        [switch]$Examples,
+
+        [parameter(ParameterSetName = 'Full')]
+        [Alias('f')]
+        [switch]$Full,
 
         [ValidateSet('*', 'Command', 'Event', 'Regex')]
         [string]$Type = '*'
@@ -100,9 +122,15 @@ function Get-CommandHelp {
             )
             $respParams.Text = ($result | Select-Object -Property $fields | Out-String)
         } else {
-            if ($Detailed) {
+            $HelpParams = @{}
+            foreach($HelpOption in 'Detailed', 'Examples', 'Full') {
+                if($PSBoundParameters.ContainsKey($HelpOption)) {
+                    $HelpParams.add($HelpOption,$PSBoundParameters[$HelpOption])
+                }
+            }
+            if ($HelpParams.Keys.Count -gt 0) {
                 $fullVersionName = "$($result.FullCommandName)`:$($result.Version)"
-                $manString = ($Bot.PluginManager.Commands[$fullVersionName] | Get-Help -Detailed | Out-String)
+                $manString = ($Bot.PluginManager.Commands[$fullVersionName] | Get-Help @HelpParams | Out-String)
                 $result | Add-Member -MemberType NoteProperty -Name Manual -Value "`n$manString"
             }
             $respParams.Text = ($result | Format-List | Out-String -Width 150).Trim()
