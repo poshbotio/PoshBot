@@ -6,6 +6,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.10.0] Unreleased
+### Fixed
+  - An exception was raised when running `Save-PoshBotConfiguration`.
+
 ## [0.9.0] 2017-12-06
 ### Added
   - PoshBot can now be constrained to certain channels via a whitelist in the bot configuration. Commands initiated from other channels will be ignored.

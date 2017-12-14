@@ -51,21 +51,20 @@ function Save-PoshBotConfiguration {
     process {
         if ($PSCmdlet.ShouldProcess($Path, 'Save PoshBot configuration')) {
             $hash = @{}
-            $InputObject | Get-Member -MemberType Property | ForEach-Object {
-
-                switch ($_.Name) {
+            foreach ($prop in ($InputObject | Get-Member -MemberType Property)) {
+                switch ($prop.Name) {
                     # Serialize ApprovedCommandsInChannel and ApprovalConfiguration property differently as
                     # ConvertTo-Metadata won't know how to do it since it's a custom PoshBot class
                     'ChannelRules' {
-                        $hash.Add($_.Name, $InputObject.($_.Name).ToHash())
+                        $hash.Add($prop.Name, $InputObject.($prop.Name).ToHash())
                         break
                     }
                     'ApprovalConfiguration' {
-                        $hash.Add($_.Name, $InputObject.($_.Name).ToHash())
+                        $hash.Add($prop.Name, $InputObject.($prop.Name).ToHash())
                         break
                     }
                     Default {
-                        $hash.Add($_.Name, $InputObject.($_.Name))
+                        $hash.Add($prop.Name, $InputObject.($prop.Name))
                         break
                     }
                 }
