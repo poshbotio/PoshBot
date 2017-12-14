@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - An exception was raised when running `Save-PoshBotConfiguration`.
 
+- Logic bug where the `SendCommandResponseToPrivate` configuration property was not being honored.
+
 - [**#73**](https://github.com/poshbotio/PoshBot/pull/73) Command resolution when running builtin command `Get-CommandHelp` was returning unexpected results. (via [@RamblingCookieMonster](https://github.com/RamblingCookieMonster))
 
 ## [0.9.0] 2017-12-06

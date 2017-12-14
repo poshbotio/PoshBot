@@ -467,9 +467,12 @@ class Bot : BaseLogger {
 
             # Send response back to user in private (DM) channel if this command
             # is marked to devert responses
-            if ($this.Configuration.SendCommandResponseToPrivate -contains $cmdExecContext.FullyQualifiedCommandName) {
-                $this.LogInfo("Deverting response from command [$($cmdExecContext.FullyQualifiedCommandName)] to private channel")
-                $response.To = "@$($this.RoleManager.ResolveUserIdToUserName($cmdExecContext.Message.From))"
+            foreach ($rule in $this.Configuration.SendCommandResponseToPrivate) {
+                if ($cmdExecContext.FullyQualifiedCommandName -like $rule) {
+                    $this.LogInfo("Deverting response from command [$($cmdExecContext.FullyQualifiedCommandName)] to private channel")
+                    $response.To = "@$($this.RoleManager.ResolveUserIdToUserName($cmdExecContext.Message.From))"
+                    break
+                }
             }
 
             $this.SendMessage($response)
