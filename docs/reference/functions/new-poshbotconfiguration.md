@@ -21,7 +21,8 @@ New-PoshBotConfiguration [[-Name] <String>] [[-ConfigurationDirectory] <String>]
  [[-CommandPrefix] <Char>] [[-AlternateCommandPrefixes] <String[]>]
  [[-AlternateCommandPrefixSeperators] <Char[]>] [[-SendCommandResponseToPrivate] <String[]>]
  [[-MuteUnknownCommand] <Boolean>] [[-AddCommandReactions] <Boolean>] [[-ApprovalExpireMinutes] <Int32>]
- [-DisallowDMs] [[-ApprovalCommandConfigurations] <Hashtable[]>] [[-ChannelRules] <Hashtable[]>]
+ [-DisallowDMs] [[-FormatEnumerationLimitOverride] <Int32>] [[-ApprovalCommandConfigurations] <Hashtable[]>]
+ [[-ChannelRules] <Hashtable[]>]
 ```
 
 ## DESCRIPTION
@@ -503,6 +504,26 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -FormatEnumerationLimitOverride
+Set $FormatEnumerationLimit to this. 
+Defaults to unlimited (-1)
+
+Determines how many enumerated items are included in a display.
+This variable does not affect the underlying objects; just the display.
+When the value of $FormatEnumerationLimit is less than the number of enumerated items, PowerShell adds an ellipsis (...) to indicate items not shown.
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases: 
+
+Required: False
+Position: 23
+Default value: -1
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -ApprovalCommandConfigurations
 Array of hashtables containing command approval configurations.
 
@@ -525,7 +546,7 @@ Parameter Sets: (All)
 Aliases: 
 
 Required: False
-Position: 23
+Position: 24
 Default value: @()
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -581,7 +602,7 @@ Parameter Sets: (All)
 Aliases: 
 
 Required: False
-Position: 24
+Position: 25
 Default value: @()
 Accept pipeline input: False
 Accept wildcard characters: False
