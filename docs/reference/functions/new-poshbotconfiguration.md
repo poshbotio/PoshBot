@@ -582,7 +582,7 @@ Aliases:
 
 Required: False
 Position: 24
-Default value: @(@{Channel = '*'; IncludeCommands = @('*'); ExcludeCommands = @()})
+Default value: @()
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

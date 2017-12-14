@@ -248,7 +248,7 @@ function New-PoshBotConfiguration {
         [int]$ApprovalExpireMinutes = 30,
         [switch]$DisallowDMs,
         [hashtable[]]$ApprovalCommandConfigurations = @(),
-        [hashtable[]]$ChannelRules = @(@{Channel = '*'; IncludeCommands = @('*'); ExcludeCommands = @()})
+        [hashtable[]]$ChannelRules = @()
     )
 
     Write-Verbose -Message 'Creating new PoshBot configuration'
