@@ -131,7 +131,11 @@ class Bot : BaseLogger {
     [void]Start() {
         $this._Stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
         $this.LogInfo('Start your engines')
-
+        $OldFormatEnumerationLimit = $global:FormatEnumerationLimit
+        if($this.Configuration.FormatEnumerationLimitOverride -is [int]) {
+            $global:FormatEnumerationLimit = $this.Configuration.FormatEnumerationLimitOverride
+            $this.LogInfo("Setting global FormatEnumerationLimit to [$($this.Configuration.FormatEnumerationLimitOverride)]")
+        }
         try {
             $this.Connect()
 
@@ -167,6 +171,7 @@ class Bot : BaseLogger {
         } catch {
             $this.LogInfo([LogSeverity]::Error, "$($_.Exception.Message)", [ExceptionFormatter]::Summarize($_))
         } finally {
+            $global:FormatEnumerationLimit = $OldFormatEnumerationLimit
             $this.Disconnect()
         }
     }

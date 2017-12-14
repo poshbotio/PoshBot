@@ -45,6 +45,8 @@ class BotConfiguration {
 
     [bool]$DisallowDMs = $false
 
+    [int]$FormatEnumerationLimitOverride = -1
+
     [ChannelRule[]]$ChannelRules = @([ChannelRule]::new())
 
     [ApprovalConfiguration]$ApprovalConfiguration = [ApprovalConfiguration]::new()

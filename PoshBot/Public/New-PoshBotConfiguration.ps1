@@ -101,6 +101,12 @@ function New-PoshBotConfiguration {
         The amount of time (minutes) that a command the requires approval will be pending until it expires.
     .PARAMETER DisallowDMs
         Disallow DMs (direct messages) with the bot. If a user tries to DM the bot it will be ignored.
+    .PARAMETER FormatEnumerationLimitOverride
+        Set $FormatEnumerationLimit to this.  Defaults to unlimited (-1)
+        
+        Determines how many enumerated items are included in a display.
+        This variable does not affect the underlying objects; just the display.
+        When the value of $FormatEnumerationLimit is less than the number of enumerated items, PowerShell adds an ellipsis (...) to indicate items not shown.
     .PARAMETER ApprovalCommandConfigurations
         Array of hashtables containing command approval configurations.
 
@@ -247,6 +253,7 @@ function New-PoshBotConfiguration {
         [bool]$AddCommandReactions = $true,
         [int]$ApprovalExpireMinutes = 30,
         [switch]$DisallowDMs,
+        [int]$FormatEnumerationLimitOverride = -1,
         [hashtable[]]$ApprovalCommandConfigurations = @(),
         [hashtable[]]$ChannelRules = @()
     )
@@ -276,6 +283,7 @@ function New-PoshBotConfiguration {
     $config.AddCommandReactions = $AddCommandReactions
     $config.ApprovalConfiguration.ExpireMinutes = $ApprovalExpireMinutes
     $config.DisallowDMs = ($DisallowDMs -eq $true)
+    $config.FormatEnumerationLimitOverride = $FormatEnumerationLimitOverride
     if ($ChannelRules.Count -ge 1) {
         foreach ($item in $ChannelRules) {
             $config.ChannelRules += [ChannelRule]::new($item.Channel, $item.IncludeCommands, $item.ExcludeCommands)
