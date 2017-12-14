@@ -12,8 +12,19 @@ Show details and help information about bot commands.
 
 ## SYNTAX
 
+### Detailed (Default)
 ```
 Get-CommandHelp -Bot <Object> [[-Filter] <String>] [-Detailed] [-Type <String>]
+```
+
+### Examples
+```
+Get-CommandHelp -Bot <Object> [[-Filter] <String>] [-Examples] [-Type <String>]
+```
+
+### Full
+```
+Get-CommandHelp -Bot <Object> [[-Filter] <String>] [-Full] [-Type <String>]
 ```
 
 ## DESCRIPTION
@@ -41,6 +52,20 @@ Get detailed help on the 'New-group' command
 ```
 
 List all commands with the \[regex\] trigger type.
+
+### -------------------------- EXAMPLE 4 --------------------------
+```
+!help commandx -Full
+```
+
+Display full help for commandx
+
+### -------------------------- EXAMPLE 5 --------------------------
+```
+!help commandx -Examples
+```
+
+Display examples for commandx
 
 ## PARAMETERS
 
@@ -79,8 +104,38 @@ Show more detailed help information for the command.
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: (All)
-Aliases: 
+Parameter Sets: Detailed
+Aliases: d
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Examples
+Include command name, synopsis, and examples.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: Examples
+Aliases: e
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Full
+Displays the entire help topic, including parameter descriptions and attributes, examples, input and output object types, and additional notes.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: Full
+Aliases: f
 
 Required: False
 Position: Named
