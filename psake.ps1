@@ -145,7 +145,6 @@ task Compile -depends Clean {
         'Person'
         'Room'
         'Response'
-        'Card'
         'Message'
         'Stream'
         'CommandResult'
