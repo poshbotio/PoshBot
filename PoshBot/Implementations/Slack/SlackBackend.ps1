@@ -434,9 +434,20 @@ class SlackBackend : Backend {
                     } else {
                         $uploadParams.Title = Split-Path -Path $customResponse.Path -Leaf
                     }
-                    $this.LogDebug("Uploading [$($customResponse.Path)] to Slack channel [$sendTo]")
-                    Send-SlackFile @uploadParams -Verbose:$false
-                    Remove-Item -LiteralPath $customResponse.Path -Force
+                    $this.LogDebug("Title is $($uploadParams.Title)")
+                    if((Test-Path $uploadParams.Path -ErrorAction SilentlyContinue)) {
+                        $this.LogDebug("Uploading [$($customResponse.Path)] to Slack channel [$sendTo]")
+                        Send-SlackFile @uploadParams -Verbose:$false
+                        if(-not $customResponse.KeepFile) {
+                            Remove-Item -LiteralPath $customResponse.Path -Force
+                        }
+                    }
+                    else {
+                        $att = New-SlackMessageAttachment -Color '#FF0000' -Title 'Rut row' -Text "File [$($uploadParams.Path)] not found" -Fallback 'Rut row'
+                        $msg = $att | New-SlackMessage -Channel $sendTo -AsUser
+                        $this.LogDebug("Sending card response back to Slack channel [$sendTo]", $att)
+                        $null = $msg | Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Verbose:$false
+                    }
                     break
                 }
             }
