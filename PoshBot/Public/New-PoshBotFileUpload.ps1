@@ -17,6 +17,8 @@ function New-PoshBotFileUpload {
         The title for the uploaded file.
     .PARAMETER DM
         Tell PoshBot to redirect the file upload to a DM channel.
+    .PARAMETER KeepFile
+        If specified, keep the source file after calling Send-SlackFile. The source file is deleted without this
     .EXAMPLE
         function Do-Stuff {
             [cmdletbinding()]
@@ -52,6 +54,25 @@ function New-PoshBotFileUpload {
         }
 
         Export a CSV file and tell PoshBot to upload the file back to a DM channel with the calling user.
+
+    .EXAMPLE
+        function Do-Stuff {
+            [cmdletbinding()]
+            param()
+
+            $myObj = [pscustomobject]@{
+                value1 = 'foo'
+                value2 = 'bar'
+            }
+
+            $csv = Join-Path -Path $env:TEMP -ChildPath "$((New-Guid).ToString()).csv"
+            $myObj | Export-Csv -Path $csv -NoTypeInformation
+
+            New-PoshBotFileUpload -Path $csv -KeepFile
+        }
+
+        Export a CSV file and tell PoshBot to upload the file back to the channel that initiated this command.
+        Keep the file after uploading it.
     .INPUTS
         String
     .OUTPUTS
@@ -87,7 +108,9 @@ function New-PoshBotFileUpload {
 
         [string]$Title = [string]::Empty,
 
-        [switch]$DM
+        [switch]$DM,
+
+        [switch]$KeepFile
     )
 
     process {
@@ -104,6 +127,7 @@ function New-PoshBotFileUpload {
                 Path = $item
                 Title = $Title
                 DM = ($PSBoundParameters.ContainsKey('DM') -and $DM)
+                KeepFile = ($PSBoundParameters.ContainsKey('KeepFile') -and $KeepFile)
             }
         }
     }
