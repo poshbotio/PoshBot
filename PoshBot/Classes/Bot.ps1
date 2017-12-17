@@ -210,9 +210,7 @@ class Bot : BaseLogger {
             if ($msg.IsDM -and $this.Configuration.DisallowDMs) {
                 $this.LogInfo('Ignoring message. DMs are disabled.', $msg)
                 $this.AddReaction($msg, [ReactionType]::Denied)
-                $response = [Response]::new()
-                $response.MessageFrom = $msg.From
-                $response.To = $msg.To
+                $response = [Response]::new($msg)
                 $response.Severity = [Severity]::Warning
                 $response.Data = New-PoshBotCardResponse -Type Warning -Text 'Sorry :( PoshBot has been configured to ignore DMs (direct messages). Please contact your bot administrator.'
                 $this.SendMessage($response)
@@ -246,11 +244,9 @@ class Bot : BaseLogger {
                 $this.RemoveReaction($context.Message, [ReactionType]::ApprovalNeeded)
                 $this.AddReaction($context.Message, [ReactionType]::Cancelled)
 
-                # Send message back to Slack saying command context was cancelled due to timeout
+                # Send message back to backend saying command context was cancelled due to timeout
                 $this.LogInfo($msg)
-                $response = [Response]::new()
-                $response.MessageFrom = $context.Message.From
-                $response.To = $context.Message.To
+                $response = [Response]::new($context.Message)
                 $response.Data = New-PoshBotCardResponse -Type Warning -Text $msg
                 $this.SendMessage($response)
 
@@ -329,9 +325,7 @@ class Bot : BaseLogger {
             if (-not $this.CommandInAllowedChannel($parsedCommand, $pluginCmd)) {
                 $this.LogDebug('Igoring message. Command not approved in channel', $pluginCmd.ToString())
                 $this.AddReaction($Message, [ReactionType]::Denied)
-                $response = [Response]::new()
-                $response.MessageFrom = $Message.From
-                $response.To = $Message.To
+                $response = [Response]::new($Message)
                 $response.Severity = [Severity]::Warning
                 $response.Data = New-PoshBotCardResponse -Type Warning -Text 'Sorry :( PoshBot has been configured to not allow that command in this channel. Please contact your bot administrator.'
                 $this.SendMessage($response)
@@ -387,9 +381,7 @@ class Bot : BaseLogger {
                 $this.LogInfo([LogSeverity]::Warning, $msg, $parsedCommand)
                 # Only respond with command not found message if configuration allows it.
                 if (-not $this.Configuration.MuteUnknownCommand) {
-                    $response = [Response]::new()
-                    $response.MessageFrom = $Message.From
-                    $response.To = $Message.To
+                    $response = [Response]::new($Message)
                     $response.Severity = [Severity]::Warning
                     $response.Data = New-PoshBotCardResponse -Type Warning -Text $msg
                     $this.SendMessage($response)
@@ -410,9 +402,7 @@ class Bot : BaseLogger {
         foreach ($cmdExecContext in $completedJobs) {
             $this.LogInfo("Processing job execution [$($cmdExecContext.Id)]")
 
-            $response = [Response]::new()
-            $response.MessageFrom = $cmdExecContext.Message.From
-            $response.To = $cmdExecContext.Message.To
+            $response = [Response]::new($cmdExecContext.Message)
 
             if (-not $cmdExecContext.Result.Success) {
                 # Was the command authorized?
