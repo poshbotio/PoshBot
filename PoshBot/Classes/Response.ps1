@@ -5,5 +5,12 @@ class Response {
     [string[]]$Text
     [string]$MessageFrom
     [string]$To
+    [Message]$OriginalMessage = [Message]::new()
     [pscustomobject[]]$Data = @()
+
+    Response([Message]$Message) {
+        $this.MessageFrom = $Message.From
+        $this.To = $Message.To
+        $this.OriginalMessage = $Message
+    }
 }

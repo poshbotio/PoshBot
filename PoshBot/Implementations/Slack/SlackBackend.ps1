@@ -429,20 +429,23 @@ class SlackBackend : Backend {
                         Channel = $sendTo
                         Path = $customResponse.Path
                     }
-                    if (-not [string]::IsNullOrEmpty($customResponse.Title)) {
-                        $uploadParams.Title = $customResponse.Title
-                    } else {
-                        $uploadParams.Title = Split-Path -Path $customResponse.Path -Leaf
-                    }
-                    $this.LogDebug("Title is $($uploadParams.Title)")
-                    if((Test-Path $uploadParams.Path -ErrorAction SilentlyContinue)) {
+                    if ((Test-Path $uploadParams.Path -ErrorAction SilentlyContinue)) {
+                        if (-not [string]::IsNullOrEmpty($customResponse.Title)) {
+                            $uploadParams.Title = $customResponse.Title
+                        } else {
+                            $uploadParams.Title = Split-Path -Path $customResponse.Path -Leaf
+                        }
+                        $this.LogDebug("Title is $($uploadParams.Title)")
+
                         $this.LogDebug("Uploading [$($customResponse.Path)] to Slack channel [$sendTo]")
                         Send-SlackFile @uploadParams -Verbose:$false
-                        if(-not $customResponse.KeepFile) {
+                        if (-not $customResponse.KeepFile) {
                             Remove-Item -LiteralPath $customResponse.Path -Force
                         }
-                    }
-                    else {
+                    } else {
+                        # Mark command as failed since we could't find the file to upload
+                        $this.RemoveReaction($Response.OriginalMessage, [ReactionType]::Success)
+                        $this.AddReaction($Response.OriginalMessage, [ReactionType]::Failure)
                         $att = New-SlackMessageAttachment -Color '#FF0000' -Title 'Rut row' -Text "File [$($uploadParams.Path)] not found" -Fallback 'Rut row'
                         $msg = $att | New-SlackMessage -Channel $sendTo -AsUser
                         $this.LogDebug("Sending card response back to Slack channel [$sendTo]", $att)

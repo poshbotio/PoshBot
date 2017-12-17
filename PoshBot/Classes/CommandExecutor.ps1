@@ -84,9 +84,7 @@ class CommandExecutor : BaseLogger {
                 $msg += "`nTo approve, say '$($prefix)approve $($cmdExecContext.Id)'."
                 $msg += "`nTo deny, say '$($prefix)deny $($cmdExecContext.Id)'."
                 $msg += "`nTo list pending approvals, say '$($prefix)pending'."
-                $response = [Response]::new()
-                $response.MessageFrom = $cmdExecContext.Message.From
-                $response.To = $cmdExecContext.Message.To
+                $response = [Response]::new($cmdExecContext.Message)
                 $response.Data = New-PoshBotCardResponse -Type Warning -Title "Approval Needed for [$($cmdExecContext.ParsedCommand.CommandString)]" -Text $msg
                 $this._bot.SendMessage($response)
                 return
