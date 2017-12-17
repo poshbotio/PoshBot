@@ -14,12 +14,12 @@ Tells PoshBot to upload a file to the chat network.
 
 ### Path (Default)
 ```
-New-PoshBotFileUpload [-Path] <String[]> [-Title <String>] [-DM]
+New-PoshBotFileUpload [-Path] <String[]> [-Title <String>] [-DM] [-KeepFile]
 ```
 
 ### LiteralPath
 ```
-New-PoshBotFileUpload [-LiteralPath] <String[]> [-Title <String>] [-DM]
+New-PoshBotFileUpload [-LiteralPath] <String[]> [-Title <String>] [-DM] [-KeepFile]
 ```
 
 ## DESCRIPTION
@@ -72,6 +72,28 @@ function Get-SecretPlan {
 }
 
 Export a CSV file and tell PoshBot to upload the file back to a DM channel with the calling user.
+
+### -------------------------- EXAMPLE 3 --------------------------
+```
+function Do-Stuff {
+```
+
+\[cmdletbinding()\]
+    param()
+
+    $myObj = \[pscustomobject\]@{
+        value1 = 'foo'
+        value2 = 'bar'
+    }
+
+    $csv = Join-Path -Path $env:TEMP -ChildPath "$((New-Guid).ToString()).csv"
+    $myObj | Export-Csv -Path $csv -NoTypeInformation
+
+    New-PoshBotFileUpload -Path $csv -KeepFile
+}
+
+Export a CSV file and tell PoshBot to upload the file back to the channel that initiated this command.
+Keep the file after uploading it.
 
 ## PARAMETERS
 
@@ -128,6 +150,22 @@ Accept wildcard characters: False
 
 ### -DM
 Tell PoshBot to redirect the file upload to a DM channel.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases: 
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -KeepFile
+If specified, keep the source file after calling Send-SlackFile.
+The source file is deleted without this
 
 ```yaml
 Type: SwitchParameter
