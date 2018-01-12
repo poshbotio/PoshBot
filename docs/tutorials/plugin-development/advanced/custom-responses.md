@@ -185,4 +185,4 @@ function Get-ProcessChart {
 }
 ```
 
-![file upload](../../../images/file-upload.png)
+![file upload](../../../images/file-upload.PNG)
