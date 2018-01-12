@@ -41,7 +41,7 @@ function Invoke-WolframQuery {
 }
 ```
 
-![card response](../../../images/config-provided-parameter-example.png)
+![card response](../../../images/config-provided-parameter-example.PNG)
 
 > Notice that we didn't need to specify the `ApiKey` parameter.
 
