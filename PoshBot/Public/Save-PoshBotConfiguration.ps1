@@ -41,7 +41,7 @@ function Save-PoshBotConfiguration {
         [Alias('Configuration')]
         [BotConfiguration]$InputObject,
 
-        [string]$Path = (Join-Path -Path (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot') -ChildPath 'PoshBot.psd1'),
+        [string]$Path = (Join-Path -Path $script:defaultPoshBotDir -ChildPath 'PoshBot.psd1'),
 
         [switch]$Force,
 

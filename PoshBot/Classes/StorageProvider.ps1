@@ -6,7 +6,7 @@ class StorageProvider : BaseLogger {
 
     StorageProvider([Logger]$Logger) {
         $this.Logger = $Logger
-        $this.ConfigPath = (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot')
+        $this.ConfigPath = $script:defaultPoshBotDir
     }
 
     StorageProvider([string]$Dir, [Logger]$Logger) {

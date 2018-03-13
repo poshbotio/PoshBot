@@ -103,7 +103,7 @@ function New-PoshBotConfiguration {
         Disallow DMs (direct messages) with the bot. If a user tries to DM the bot it will be ignored.
     .PARAMETER FormatEnumerationLimitOverride
         Set $FormatEnumerationLimit to this.  Defaults to unlimited (-1)
-        
+
         Determines how many enumerated items are included in a display.
         This variable does not affect the underlying objects; just the display.
         When the value of $FormatEnumerationLimit is less than the number of enumerated items, PowerShell adds an ellipsis (...) to indicate items not shown.
@@ -231,9 +231,9 @@ function New-PoshBotConfiguration {
     [cmdletbinding()]
     param(
         [string]$Name = 'PoshBot',
-        [string]$ConfigurationDirectory = (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot'),
-        [string]$LogDirectory = (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot'),
-        [string]$PluginDirectory = (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot'),
+        [string]$ConfigurationDirectory = $script:defaultPoshBotDir,
+        [string]$LogDirectory = $script:defaultPoshBotDir,
+        [string]$PluginDirectory = $script:defaultPoshBotDir,
         [string[]]$PluginRepository = @('PSGallery'),
         [string[]]$ModuleManifestsToLoad = @(),
         [LogLevel]$LogLevel = [LogLevel]::Verbose,

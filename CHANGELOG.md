@@ -6,6 +6,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.10.1] Unreleased
+
+### Fixed
+
+- Fixed default PoshBot directory paths to work on macOS and Linux.
+
 ## [0.10.0] 2012-12-13
 
 ### Added

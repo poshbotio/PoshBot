@@ -3,11 +3,11 @@ class BotConfiguration {
 
     [string]$Name = 'PoshBot'
 
-    [string]$ConfigurationDirectory = (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot')
+    [string]$ConfigurationDirectory = $script:defaultPoshBotDir
 
-    [string]$LogDirectory = (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot')
+    [string]$LogDirectory = $script:defaultPoshBotDir
 
-    [string]$PluginDirectory = (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot')
+    [string]$PluginDirectory = $script:defaultPoshBotDir
 
     [string[]]$PluginRepository = @('PSGallery')
 

@@ -11,6 +11,7 @@ properties {
     $manifest = Import-PowerShellDataFile -Path $env:BHPSModuleManifest
     $outputModVerDir = Join-Path -Path $outputModDir -ChildPath $manifest.ModuleVersion
     $psVersion = $PSVersionTable.PSVersion.Major
+    $pathSeperator = [IO.Path]::PathSeparator
 }
 
 task default -depends Test
@@ -59,8 +60,8 @@ task Pester -Depends Build {
     }
 
     $origModulePath = $env:PSModulePath
-    if ( $env:PSModulePath.split(';') -notcontains $outputDir ) {
-        $env:PSModulePath = "$outputDir;$origModulePath"
+    if ( $env:PSModulePath.split($pathSeperator) -notcontains $outputDir ) {
+        $env:PSModulePath = ($outputDir + $pathSeperator + $origModulePath)
     }
 
     Remove-Module $ENV:BHProjectName -ErrorAction SilentlyContinue -Verbose:$false
