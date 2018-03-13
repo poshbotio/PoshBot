@@ -1,7 +1,7 @@
 ---
 external help file: PoshBot-help.xml
 Module Name: poshbot
-online version: 
+online version:
 schema: 2.0.0
 ---
 
@@ -14,12 +14,12 @@ Tells PoshBot to upload a file to the chat network.
 
 ### Path (Default)
 ```
-New-PoshBotFileUpload [-Path] <String[]> [-Title <String>] [-DM] [-KeepFile]
+New-PoshBotFileUpload [-Path] <String[]> [-Title <String>] [-DM] [-KeepFile] [<CommonParameters>]
 ```
 
 ### LiteralPath
 ```
-New-PoshBotFileUpload [-LiteralPath] <String[]> [-Title <String>] [-DM] [-KeepFile]
+New-PoshBotFileUpload [-LiteralPath] <String[]> [-Title <String>] [-DM] [-KeepFile] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -31,7 +31,7 @@ the contents the bot command returns are sensitive and should not be visible to 
 
 ## EXAMPLES
 
-### -------------------------- EXAMPLE 1 --------------------------
+### EXAMPLE 1
 ```
 function Do-Stuff {
 ```
@@ -52,7 +52,7 @@ function Do-Stuff {
 
 Export a CSV file and tell PoshBot to upload the file back to the channel that initiated this command.
 
-### -------------------------- EXAMPLE 2 --------------------------
+### EXAMPLE 2
 ```
 function Get-SecretPlan {
 ```
@@ -73,7 +73,7 @@ function Get-SecretPlan {
 
 Export a CSV file and tell PoshBot to upload the file back to a DM channel with the calling user.
 
-### -------------------------- EXAMPLE 3 --------------------------
+### EXAMPLE 3
 ```
 function Do-Stuff {
 ```
@@ -104,7 +104,7 @@ Wildcards are permitted.
 ```yaml
 Type: String[]
 Parameter Sets: Path
-Aliases: 
+Aliases:
 
 Required: True
 Position: 1
@@ -139,7 +139,7 @@ The title for the uploaded file.
 ```yaml
 Type: String
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named
@@ -154,7 +154,7 @@ Tell PoshBot to redirect the file upload to a DM channel.
 ```yaml
 Type: SwitchParameter
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named
@@ -170,7 +170,7 @@ The source file is deleted without this
 ```yaml
 Type: SwitchParameter
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named
@@ -178,6 +178,10 @@ Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
+
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable.
+For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 

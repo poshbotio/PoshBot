@@ -1,7 +1,7 @@
 ---
 external help file: PoshBot-help.xml
 Module Name: poshbot
-online version: 
+online version:
 schema: 2.0.0
 ---
 
@@ -14,7 +14,7 @@ Save stateful data to use in another PoshBot command
 
 ```
 Set-PoshBotStatefulData [-Name] <String> [-Value] <Object[]> [[-Scope] <String>] [[-Depth] <Int32>] [-WhatIf]
- [-Confirm]
+ [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -26,14 +26,14 @@ If \<Name\> property exists in current stateful data file, it is overwritten
 
 ## EXAMPLES
 
-### -------------------------- EXAMPLE 1 --------------------------
+### EXAMPLE 1
 ```
 Set-PoshBotStatefulData -Name 'ToUse' -Value 'Later'
 ```
 
 Adds a 'ToUse' property to the stateful data for the PoshBot plugin you are currently running this from.
 
-### -------------------------- EXAMPLE 2 --------------------------
+### EXAMPLE 2
 ```
 $Anything | Set-PoshBotStatefulData -Name 'Something' -Scope Global
 ```
@@ -48,7 +48,7 @@ Property to add to the stateful data file
 ```yaml
 Type: String
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: True
 Position: 1
@@ -63,7 +63,7 @@ Value to set for the Name property in the stateful data file
 ```yaml
 Type: Object[]
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: True
 Position: 2
@@ -80,7 +80,7 @@ Sets the scope of stateful data to set:
 ```yaml
 Type: String
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: 3
@@ -96,7 +96,7 @@ The default value is 2
 ```yaml
 Type: Int32
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: 4
@@ -135,6 +135,10 @@ Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
+
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable.
+For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 

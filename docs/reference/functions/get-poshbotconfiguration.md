@@ -1,7 +1,7 @@
 ---
 external help file: PoshBot-help.xml
 Module Name: poshbot
-online version: 
+online version:
 schema: 2.0.0
 ---
 
@@ -14,12 +14,12 @@ Gets a PoshBot configuration from a file.
 
 ### Path (Default)
 ```
-Get-PoshBotConfiguration [-Path] <String[]>
+Get-PoshBotConfiguration [-Path] <String[]> [<CommonParameters>]
 ```
 
 ### LiteralPath
 ```
-Get-PoshBotConfiguration [-LiteralPath] <String[]>
+Get-PoshBotConfiguration [-LiteralPath] <String[]> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -28,7 +28,7 @@ This functions will load that file and return a \[BotConfiguration\] object.
 
 ## EXAMPLES
 
-### -------------------------- EXAMPLE 1 --------------------------
+### EXAMPLE 1
 ```
 Get-PoshBotConfiguration -Path C:\Users\joeuser\.poshbot\Cherry2000.psd1
 ```
@@ -52,7 +52,7 @@ AddCommandReactions              : True
 
 Gets the bot configuration located at \[C:\Users\joeuser\.poshbot\Cherry2000.psd1\].
 
-### -------------------------- EXAMPLE 2 --------------------------
+### EXAMPLE 2
 ```
 $botConfig = 'C:\Users\joeuser\.poshbot\Cherry2000.psd1' | Get-PoshBotConfiguration
 ```
@@ -67,7 +67,7 @@ One or more paths to a PoshBot configuration file.
 ```yaml
 Type: String[]
 Parameter Sets: Path
-Aliases: 
+Aliases:
 
 Required: True
 Position: 1
@@ -95,6 +95,10 @@ Default value: None
 Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
+
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable.
+For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 

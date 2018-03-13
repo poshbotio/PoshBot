@@ -1,7 +1,7 @@
 ---
 external help file: PoshBot-help.xml
 Module Name: poshbot
-online version: 
+online version:
 schema: 2.0.0
 ---
 
@@ -14,7 +14,7 @@ Creates a new scheduled task to run PoshBot in the background.
 
 ```
 New-PoshBotScheduledTask [[-Name] <String>] [[-Description] <String>] [-Path] <String>
- [-Credential] <PSCredential> [-PassThru] [-Force] [-WhatIf] [-Confirm]
+ [-Credential] <PSCredential> [-PassThru] [-Force] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -24,7 +24,7 @@ to run on startup and to not stop after any time period.
 
 ## EXAMPLES
 
-### -------------------------- EXAMPLE 1 --------------------------
+### EXAMPLE 1
 ```
 $cred = Get-Credential
 ```
@@ -34,7 +34,7 @@ PS C:\\\> New-PoshBotScheduledTask -Name PoshBot -Path C:\PoshBot\myconfig.psd1 
 Creates a new scheduled task to start PoshBot using the configuration file located at C:\PoshBot\myconfig.psd1
 and the specified credential.
 
-### -------------------------- EXAMPLE 2 --------------------------
+### EXAMPLE 2
 ```
 $cred = Get-Credential
 ```
@@ -60,7 +60,7 @@ The name for the scheduled task
 ```yaml
 Type: String
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: 1
@@ -75,7 +75,7 @@ The description for the scheduled task
 ```yaml
 Type: String
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: 2
@@ -90,7 +90,7 @@ The path to the PoshBot configuration file to load and execute
 ```yaml
 Type: String
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: True
 Position: 3
@@ -105,7 +105,7 @@ The credential to run the scheduled task under.
 ```yaml
 Type: PSCredential
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: True
 Position: 4
@@ -120,7 +120,7 @@ Return the newly created scheduled task object
 ```yaml
 Type: SwitchParameter
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named
@@ -135,7 +135,7 @@ Overwrite a previously created scheduled task
 ```yaml
 Type: SwitchParameter
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named
@@ -174,6 +174,10 @@ Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
+
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable.
+For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 

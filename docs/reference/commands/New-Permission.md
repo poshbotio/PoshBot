@@ -1,7 +1,7 @@
 ---
 external help file: Builtin-help.xml
 Module Name: Builtin
-online version: 
+online version:
 schema: 2.0.0
 ---
 
@@ -13,7 +13,7 @@ Creates a new adhoc permission associated with a plugin.
 ## SYNTAX
 
 ```
-New-Permission -Bot <Object> [-Name] <String> [-Plugin] <String> [[-Description] <String>]
+New-Permission -Bot <Object> [-Name] <String> [-Plugin] <String> [[-Description] <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -21,7 +21,7 @@ New-Permission -Bot <Object> [-Name] <String> [-Plugin] <String> [[-Description]
 
 ## EXAMPLES
 
-### -------------------------- EXAMPLE 1 --------------------------
+### EXAMPLE 1
 ```
 !new-permission --name read --plugin myplugin --description 'Execute all read commands'
 ```
@@ -36,7 +36,7 @@ Create the \[read\] permission in the \[myplugin\] plugin.
 ```yaml
 Type: Object
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: True
 Position: Named
@@ -51,7 +51,7 @@ The name of the new permission to create.
 ```yaml
 Type: String
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: True
 Position: 1
@@ -66,7 +66,7 @@ The name of the plugin in which to associate the permission to.
 ```yaml
 Type: String
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: True
 Position: 2
@@ -81,7 +81,7 @@ The description for the new permission.
 ```yaml
 Type: String
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: 3
@@ -90,6 +90,10 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable.
+For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
+
 ## INPUTS
 
 ## OUTPUTS
@@ -97,4 +101,3 @@ Accept wildcard characters: False
 ## NOTES
 
 ## RELATED LINKS
-

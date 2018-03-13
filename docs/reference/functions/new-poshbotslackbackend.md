@@ -1,7 +1,7 @@
 ---
 external help file: PoshBot-help.xml
 Module Name: poshbot
-online version: 
+online version:
 schema: 2.0.0
 ---
 
@@ -13,7 +13,7 @@ Create a new instance of a Slack backend
 ## SYNTAX
 
 ```
-New-PoshBotSlackBackend [-Configuration] <Hashtable[]>
+New-PoshBotSlackBackend [-Configuration] <Hashtable[]> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -21,7 +21,7 @@ Create a new instance of a Slack backend
 
 ## EXAMPLES
 
-### -------------------------- EXAMPLE 1 --------------------------
+### EXAMPLE 1
 ```
 $backendConfig = @{Name = 'SlackBackend'; Token = '<SLACK-API-TOKEN>'}
 ```
@@ -47,6 +47,10 @@ Accept pipeline input: True (ByPropertyName, ByValue)
 Accept wildcard characters: False
 ```
 
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable.
+For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
+
 ## INPUTS
 
 ### Hashtable
@@ -58,4 +62,3 @@ Accept wildcard characters: False
 ## NOTES
 
 ## RELATED LINKS
-

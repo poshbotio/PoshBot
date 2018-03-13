@@ -1,7 +1,7 @@
 ---
 external help file: Builtin-help.xml
 Module Name: Builtin
-online version: 
+online version:
 schema: 2.0.0
 ---
 
@@ -13,7 +13,7 @@ Get the details of a specific plugin or list all plugins.
 ## SYNTAX
 
 ```
-Get-Plugin -Bot <Object> [[-Name] <String>] [[-Version] <String>]
+Get-Plugin -Bot <Object> [[-Name] <String>] [[-Version] <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -21,14 +21,14 @@ Get-Plugin -Bot <Object> [[-Name] <String>] [[-Version] <String>]
 
 ## EXAMPLES
 
-### -------------------------- EXAMPLE 1 --------------------------
+### EXAMPLE 1
 ```
 !get-plugin builtin
 ```
 
 Get the details of the \[builtin\] plugin.
 
-### -------------------------- EXAMPLE 2 --------------------------
+### EXAMPLE 2
 ```
 !get-plugin --name builtin --version 0.5.0
 ```
@@ -43,7 +43,7 @@ Get the details of version \[0.5.0\] of the \[builtin\] plugin.
 ```yaml
 Type: Object
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: True
 Position: Named
@@ -58,7 +58,7 @@ The name of the plugin to get.
 ```yaml
 Type: String
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: 1
@@ -73,7 +73,7 @@ The version of the plugin to get.
 ```yaml
 Type: String
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: 2
@@ -82,6 +82,10 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable.
+For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
+
 ## INPUTS
 
 ## OUTPUTS
@@ -89,4 +93,3 @@ Accept wildcard characters: False
 ## NOTES
 
 ## RELATED LINKS
-

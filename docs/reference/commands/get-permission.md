@@ -1,7 +1,7 @@
 ---
 external help file: Builtin-help.xml
 Module Name: Builtin
-online version: 
+online version:
 schema: 2.0.0
 ---
 
@@ -13,7 +13,7 @@ Show details about bot permissions.
 ## SYNTAX
 
 ```
-Get-Permission -Bot <Object> [[-Name] <String>]
+Get-Permission -Bot <Object> [[-Name] <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -21,14 +21,14 @@ Get-Permission -Bot <Object> [[-Name] <String>]
 
 ## EXAMPLES
 
-### -------------------------- EXAMPLE 1 --------------------------
+### EXAMPLE 1
 ```
 !get-permission
 ```
 
 Get a list of all permissions.
 
-### -------------------------- EXAMPLE 2 --------------------------
+### EXAMPLE 2
 ```
 !get-permission --name builtin:manage-groups
 ```
@@ -43,7 +43,7 @@ Get details about the \[builtin:manage-groups\] permission.
 ```yaml
 Type: Object
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: True
 Position: Named
@@ -58,7 +58,7 @@ The name of the permission to get.
 ```yaml
 Type: String
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: 1
@@ -67,6 +67,10 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable.
+For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
+
 ## INPUTS
 
 ## OUTPUTS
@@ -74,4 +78,3 @@ Accept wildcard characters: False
 ## NOTES
 
 ## RELATED LINKS
-

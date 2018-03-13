@@ -1,7 +1,7 @@
 ---
 external help file: Builtin-help.xml
 Module Name: Builtin
-online version: 
+online version:
 schema: 2.0.0
 ---
 
@@ -13,7 +13,7 @@ Get the status of running commands.
 ## SYNTAX
 
 ```
-Get-CommandStatus [-Bot] <Object>
+Get-CommandStatus [-Bot] <Object> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -21,7 +21,7 @@ Get-CommandStatus [-Bot] <Object>
 
 ## EXAMPLES
 
-### -------------------------- EXAMPLE 1 --------------------------
+### EXAMPLE 1
 ```
 !get-commandstatus
 ```
@@ -36,7 +36,7 @@ List the currently running commands in PoshBot.
 ```yaml
 Type: Object
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: True
 Position: 1
@@ -45,6 +45,10 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable.
+For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
+
 ## INPUTS
 
 ## OUTPUTS
@@ -52,4 +56,3 @@ Accept wildcard characters: False
 ## NOTES
 
 ## RELATED LINKS
-

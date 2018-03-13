@@ -1,7 +1,7 @@
 ---
 external help file: Builtin-help.xml
 Module Name: Builtin
-online version: 
+online version:
 schema: 2.0.0
 ---
 
@@ -13,7 +13,7 @@ Slap a user with a large trout
 ## SYNTAX
 
 ```
-Slap -Bot <Object> [-User] <String>
+Slap -Bot <Object> [-User] <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -21,7 +21,7 @@ Slap -Bot <Object> [-User] <String>
 
 ## EXAMPLES
 
-### -------------------------- EXAMPLE 1 --------------------------
+### EXAMPLE 1
 ```
 !slap --user jaap
 ```
@@ -34,7 +34,7 @@ Slap -Bot <Object> [-User] <String>
 ```yaml
 Type: Object
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: True
 Position: Named
@@ -49,7 +49,7 @@ The user that will be slapped
 ```yaml
 Type: String
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: True
 Position: 1
@@ -58,6 +58,10 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable.
+For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
+
 ## INPUTS
 
 ## OUTPUTS
@@ -65,4 +69,3 @@ Accept wildcard characters: False
 ## NOTES
 
 ## RELATED LINKS
-

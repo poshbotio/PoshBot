@@ -1,7 +1,7 @@
 ---
 external help file: Builtin-help.xml
 Module Name: Builtin
-online version: 
+online version:
 schema: 2.0.0
 ---
 
@@ -14,17 +14,17 @@ Show details and help information about bot commands.
 
 ### Detailed (Default)
 ```
-Get-CommandHelp -Bot <Object> [[-Filter] <String>] [-Detailed] [-Type <String>]
+Get-CommandHelp -Bot <Object> [[-Filter] <String>] [-Detailed] [-Type <String>] [<CommonParameters>]
 ```
 
 ### Examples
 ```
-Get-CommandHelp -Bot <Object> [[-Filter] <String>] [-Examples] [-Type <String>]
+Get-CommandHelp -Bot <Object> [[-Filter] <String>] [-Examples] [-Type <String>] [<CommonParameters>]
 ```
 
 ### Full
 ```
-Get-CommandHelp -Bot <Object> [[-Filter] <String>] [-Full] [-Type <String>]
+Get-CommandHelp -Bot <Object> [[-Filter] <String>] [-Full] [-Type <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -32,35 +32,35 @@ Get-CommandHelp -Bot <Object> [[-Filter] <String>] [-Full] [-Type <String>]
 
 ## EXAMPLES
 
-### -------------------------- EXAMPLE 1 --------------------------
+### EXAMPLE 1
 ```
 !help --filter new-group
 ```
 
 Get help on the 'New-Group' command.
 
-### -------------------------- EXAMPLE 2 --------------------------
+### EXAMPLE 2
 ```
 !help new-group --detailed
 ```
 
 Get detailed help on the 'New-group' command
 
-### -------------------------- EXAMPLE 3 --------------------------
+### EXAMPLE 3
 ```
 !help --type regex
 ```
 
 List all commands with the \[regex\] trigger type.
 
-### -------------------------- EXAMPLE 4 --------------------------
+### EXAMPLE 4
 ```
 !help commandx -Full
 ```
 
 Display full help for commandx
 
-### -------------------------- EXAMPLE 5 --------------------------
+### EXAMPLE 5
 ```
 !help commandx -Examples
 ```
@@ -75,7 +75,7 @@ Display examples for commandx
 ```yaml
 Type: Object
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: True
 Position: Named
@@ -90,7 +90,7 @@ The text to filter available commands and plugins on.
 ```yaml
 Type: String
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: 1
@@ -150,7 +150,7 @@ Only return commands of specified type.
 ```yaml
 Type: String
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named
@@ -159,6 +159,10 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable.
+For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
+
 ## INPUTS
 
 ## OUTPUTS
@@ -166,4 +170,3 @@ Accept wildcard characters: False
 ## NOTES
 
 ## RELATED LINKS
-

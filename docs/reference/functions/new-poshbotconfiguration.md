@@ -1,7 +1,7 @@
 ---
 external help file: PoshBot-help.xml
 Module Name: poshbot
-online version: 
+online version:
 schema: 2.0.0
 ---
 
@@ -22,7 +22,7 @@ New-PoshBotConfiguration [[-Name] <String>] [[-ConfigurationDirectory] <String>]
  [[-AlternateCommandPrefixSeperators] <Char[]>] [[-SendCommandResponseToPrivate] <String[]>]
  [[-MuteUnknownCommand] <Boolean>] [[-AddCommandReactions] <Boolean>] [[-ApprovalExpireMinutes] <Int32>]
  [-DisallowDMs] [[-FormatEnumerationLimitOverride] <Int32>] [[-ApprovalCommandConfigurations] <Hashtable[]>]
- [[-ChannelRules] <Hashtable[]>]
+ [[-ChannelRules] <Hashtable[]>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -30,7 +30,7 @@ Creates a new PoshBot configuration object.
 
 ## EXAMPLES
 
-### -------------------------- EXAMPLE 1 --------------------------
+### EXAMPLE 1
 ```
 New-PoshBotConfiguration -Name Cherry2000 -AlternateCommandPrefixes @('Cherry', 'Sam')
 ```
@@ -55,7 +55,7 @@ ApprovalConfiguration            : ApprovalConfiguration
 
 Create a new PoshBot configuration with default values except for the bot name and alternate command prefixes that it will listen for.
 
-### -------------------------- EXAMPLE 2 --------------------------
+### EXAMPLE 2
 ```
 $backend = @{Name = 'SlackBackend'; Token = 'xoxb-569733935137-njOPkyBThqOTTUnCZb7tZpKK'}
 ```
@@ -102,7 +102,7 @@ The name the bot instance will be known as.
 ```yaml
 Type: String
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: 1
@@ -117,11 +117,11 @@ The directory when PoshBot configuration data will be written to.
 ```yaml
 Type: String
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: 2
-Default value: (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot')
+Default value: $script:defaultPoshBotDir
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -132,11 +132,11 @@ The log directory logs will be written to.
 ```yaml
 Type: String
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: 3
-Default value: (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot')
+Default value: $script:defaultPoshBotDir
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -148,11 +148,11 @@ This path will be prepended to your $env:PSModulePath.
 ```yaml
 Type: String
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: 4
-Default value: (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot')
+Default value: $script:defaultPoshBotDir
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -164,7 +164,7 @@ These will be the repository name(s) as found in Get-PSRepository.
 ```yaml
 Type: String[]
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: 5
@@ -181,7 +181,7 @@ loaded when PoshBot starts.
 ```yaml
 Type: String[]
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: 6
@@ -196,7 +196,7 @@ The level of logging that PoshBot will do.
 ```yaml
 Type: LogLevel
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 Accepted values: Info, Verbose, Debug
 
 Required: False
@@ -212,7 +212,7 @@ The maximum log file size in megabytes.
 ```yaml
 Type: Int32
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: 8
@@ -228,7 +228,7 @@ Once this value is reached, logs will start rotating.
 ```yaml
 Type: Int32
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: 9
@@ -244,7 +244,7 @@ The default it $true
 ```yaml
 Type: Boolean
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: 10
@@ -259,7 +259,7 @@ The maximum log file size for the command history
 ```yaml
 Type: Int32
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: 11
@@ -275,7 +275,7 @@ Once this value is reached, the logs will start rotating.
 ```yaml
 Type: Int32
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: 12
@@ -290,7 +290,7 @@ A hashtable of configuration options required by the backend chat network implem
 ```yaml
 Type: Hashtable
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: 13
@@ -338,7 +338,7 @@ Example plugin configuration:
 ```yaml
 Type: Hashtable
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: 14
@@ -356,7 +356,7 @@ PoshBot will resolve these handles into IDs given by the chat network.
 ```yaml
 Type: String[]
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: 15
@@ -373,7 +373,7 @@ The prefix (single character) that must be specified in front of a command in or
 ```yaml
 Type: Char
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: 16
@@ -394,7 +394,7 @@ hal open-doors --type pod
 ```yaml
 Type: String[]
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: 17
@@ -413,7 +413,7 @@ hal; open-doors --type pod
 ```yaml
 Type: Char[]
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: 18
@@ -434,7 +434,7 @@ channel with the calling user rather than a shared channel.
 ```yaml
 Type: String[]
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: 19
@@ -449,7 +449,7 @@ Instead of PoshBot returning a warning message when it is unable to find a comma
 ```yaml
 Type: Boolean
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: 20
@@ -464,7 +464,7 @@ Add reactions to a chat message indicating the command is being executed, has su
 ```yaml
 Type: Boolean
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: 21
@@ -479,7 +479,7 @@ The amount of time (minutes) that a command the requires approval will be pendin
 ```yaml
 Type: Int32
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: 22
@@ -495,7 +495,7 @@ If a user tries to DM the bot it will be ignored.
 ```yaml
 Type: SwitchParameter
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named
@@ -515,7 +515,7 @@ When the value of $FormatEnumerationLimit is less than the number of enumerated 
 ```yaml
 Type: Int32
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: 23
@@ -543,7 +543,7 @@ Array of hashtables containing command approval configurations.
 ```yaml
 Type: Hashtable[]
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: 24
@@ -599,7 +599,7 @@ Example value:
 ```yaml
 Type: Hashtable[]
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: 25
@@ -607,6 +607,10 @@ Default value: @()
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
+
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable.
+For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 

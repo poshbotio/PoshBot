@@ -1,7 +1,7 @@
 ---
 external help file: Builtin-help.xml
 Module Name: Builtin
-online version: 
+online version:
 schema: 2.0.0
 ---
 
@@ -13,7 +13,7 @@ Disable a scheduled command.
 ## SYNTAX
 
 ```
-Disable-ScheduledCommand -Bot <Object> [-Id] <String>
+Disable-ScheduledCommand -Bot <Object> [-Id] <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -21,7 +21,7 @@ Disable-ScheduledCommand -Bot <Object> [-Id] <String>
 
 ## EXAMPLES
 
-### -------------------------- EXAMPLE 1 --------------------------
+### EXAMPLE 1
 ```
 !disable-scheduledcommand --id 2979f9961a0c4dea9fa6ea073a281e35
 ```
@@ -36,7 +36,7 @@ Disable the scheduled command with id \[2979f9961a0c4dea9fa6ea073a281e35\].
 ```yaml
 Type: Object
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: True
 Position: Named
@@ -51,7 +51,7 @@ The Id of the scheduled command to disable.
 ```yaml
 Type: String
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: True
 Position: 1
@@ -60,6 +60,10 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable.
+For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
+
 ## INPUTS
 
 ## OUTPUTS
@@ -67,4 +71,3 @@ Accept wildcard characters: False
 ## NOTES
 
 ## RELATED LINKS
-

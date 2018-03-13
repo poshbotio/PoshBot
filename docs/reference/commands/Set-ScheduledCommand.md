@@ -1,7 +1,7 @@
 ---
 external help file: Builtin-help.xml
 Module Name: Builtin
-online version: 
+online version:
 schema: 2.0.0
 ---
 
@@ -14,6 +14,7 @@ Modify a scheduled command.
 
 ```
 Set-ScheduledCommand -Bot <Object> [-Id] <String> [-Value] <Int32> [-Interval] <String> [-StartAfter <String>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -21,7 +22,7 @@ Set-ScheduledCommand -Bot <Object> [-Id] <String> [-Value] <Int32> [-Interval] <
 
 ## EXAMPLES
 
-### -------------------------- EXAMPLE 1 --------------------------
+### EXAMPLE 1
 ```
 !set-scheduledcommand --id e26b82cf473647e780041cee00a941de --value 2 --interval days
 ```
@@ -29,7 +30,7 @@ Set-ScheduledCommand -Bot <Object> [-Id] <String> [-Value] <Int32> [-Interval] <
 Edit the existing scheduled command with Id \[e26b82cf473647e780041cee00a941de\] and set the
 repetition interval to every 2 days.
 
-### -------------------------- EXAMPLE 2 --------------------------
+### EXAMPLE 2
 ```
 !set-scheduledcommand --id ccef0790b94542a685e78b4ec50c8c1e --value 1 --interval hours --startafter '10:00pm'
 ```
@@ -45,7 +46,7 @@ repition interval to every hours starting at 10:00pm.
 ```yaml
 Type: Object
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: True
 Position: Named
@@ -60,7 +61,7 @@ The Id of the scheduled command to edit.
 ```yaml
 Type: String
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: True
 Position: 1
@@ -75,7 +76,7 @@ Execute the command after the specified number of intervals (e.g., 2 hours).
 ```yaml
 Type: Int32
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: True
 Position: 2
@@ -90,7 +91,7 @@ Accept wildcard characters: False
 ```yaml
 Type: String
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: True
 Position: 3
@@ -105,7 +106,7 @@ Start the scheduled command exeuction after this date/time.
 ```yaml
 Type: String
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named
@@ -114,6 +115,10 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable.
+For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
+
 ## INPUTS
 
 ## OUTPUTS
@@ -121,4 +126,3 @@ Accept wildcard characters: False
 ## NOTES
 
 ## RELATED LINKS
-

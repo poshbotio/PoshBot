@@ -1,7 +1,7 @@
 ---
 external help file: Builtin-help.xml
 Module Name: Builtin
-online version: 
+online version:
 schema: 2.0.0
 ---
 
@@ -13,7 +13,7 @@ Adds a permission to a command.
 ## SYNTAX
 
 ```
-Add-CommandPermission -Bot <Object> [-Command] <String> [-Permission] <String>
+Add-CommandPermission -Bot <Object> [-Command] <String> [-Permission] <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -21,7 +21,7 @@ Add-CommandPermission -Bot <Object> [-Command] <String> [-Permission] <String>
 
 ## EXAMPLES
 
-### -------------------------- EXAMPLE 1 --------------------------
+### EXAMPLE 1
 ```
 !add-commandpermission --command myplugin:mycommand --permission myplugin:read
 ```
@@ -36,7 +36,7 @@ Add the permission \[myplugin:read\] to the \[myplugin:mycommand\] command.
 ```yaml
 Type: Object
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: True
 Position: Named
@@ -66,7 +66,7 @@ The fully qualified permission name \[pluginname:permissionname\] to add to the 
 ```yaml
 Type: String
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: True
 Position: 2
@@ -75,6 +75,10 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable.
+For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
+
 ## INPUTS
 
 ## OUTPUTS
@@ -82,4 +86,3 @@ Accept wildcard characters: False
 ## NOTES
 
 ## RELATED LINKS
-

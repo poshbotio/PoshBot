@@ -1,7 +1,7 @@
 ---
 external help file: Builtin-help.xml
 Module Name: Builtin
-online version: 
+online version:
 schema: 2.0.0
 ---
 
@@ -14,17 +14,17 @@ Get the recent execution history of a command
 
 ### all (Default)
 ```
-Get-CommandHistory -Bot <Object> [[-Count] <Int32>]
+Get-CommandHistory -Bot <Object> [[-Count] <Int32>] [<CommonParameters>]
 ```
 
 ### name
 ```
-Get-CommandHistory -Bot <Object> [[-Name] <String>] [[-Count] <Int32>]
+Get-CommandHistory -Bot <Object> [[-Name] <String>] [[-Count] <Int32>] [<CommonParameters>]
 ```
 
 ### id
 ```
-Get-CommandHistory -Bot <Object> [[-Id] <String>] [[-Count] <Int32>]
+Get-CommandHistory -Bot <Object> [[-Id] <String>] [[-Count] <Int32>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -32,21 +32,21 @@ Get-CommandHistory -Bot <Object> [[-Id] <String>] [[-Count] <Int32>]
 
 ## EXAMPLES
 
-### -------------------------- EXAMPLE 1 --------------------------
+### EXAMPLE 1
 ```
 !get-commandhistory
 ```
 
 Get all recent command history.
 
-### -------------------------- EXAMPLE 2 --------------------------
+### EXAMPLE 2
 ```
 !get-commandhistory --name 'status' --count 2
 ```
 
 Get the last 2 execution history entries for the \[status\] command.
 
-### -------------------------- EXAMPLE 3 --------------------------
+### EXAMPLE 3
 ```
 !get-commandhistory --id 5d337f17-bdc7-4f51-af0f-2629ac8224ce
 ```
@@ -61,7 +61,7 @@ Get details about command exeuction Id \[5d337f17-bdc7-4f51-af0f-2629ac8224ce\].
 ```yaml
 Type: Object
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: True
 Position: Named
@@ -76,7 +76,7 @@ The command name to get history for.
 ```yaml
 Type: String
 Parameter Sets: name
-Aliases: 
+Aliases:
 
 Required: False
 Position: 1
@@ -91,7 +91,7 @@ Theh Id of the command execution to get details for.
 ```yaml
 Type: String
 Parameter Sets: id
-Aliases: 
+Aliases:
 
 Required: False
 Position: 1
@@ -106,7 +106,7 @@ The number of most recent history items to retrieve.
 ```yaml
 Type: Int32
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: 1
@@ -115,6 +115,10 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable.
+For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
+
 ## INPUTS
 
 ## OUTPUTS
@@ -122,4 +126,3 @@ Accept wildcard characters: False
 ## NOTES
 
 ## RELATED LINKS
-

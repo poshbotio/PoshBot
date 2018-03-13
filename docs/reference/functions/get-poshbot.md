@@ -1,7 +1,7 @@
 ---
 external help file: PoshBot-help.xml
 Module Name: poshbot
-online version: 
+online version:
 schema: 2.0.0
 ---
 
@@ -13,7 +13,7 @@ Gets any currently running instances of PoshBot that are running as background j
 ## SYNTAX
 
 ```
-Get-PoshBot [[-Id] <Int32[]>]
+Get-PoshBot [[-Id] <Int32[]>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -23,7 +23,7 @@ any currently running PoshBot instances.
 
 ## EXAMPLES
 
-### -------------------------- EXAMPLE 1 --------------------------
+### EXAMPLE 1
 ```
 Get-PoshBot
 ```
@@ -34,7 +34,7 @@ State      : Running
 InstanceId : 3ddfc676406d40fca149019d935f065d
 Config     : BotConfiguration
 
-### -------------------------- EXAMPLE 2 --------------------------
+### EXAMPLE 2
 ```
 Get-PoshBot -Id 100
 ```
@@ -55,7 +55,7 @@ One or more job IDs to retrieve.
 ```yaml
 Type: Int32[]
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: 1
@@ -63,6 +63,10 @@ Default value: @()
 Accept pipeline input: True (ByPropertyName, ByValue)
 Accept wildcard characters: False
 ```
+
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable.
+For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
