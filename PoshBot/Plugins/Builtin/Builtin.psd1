@@ -12,7 +12,7 @@
 RootModule = 'Builtin.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.8.0'
+ModuleVersion = '0.10.1'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -27,7 +27,7 @@ Author = 'Brandon Olin'
 CompanyName = 'Community'
 
 # Copyright statement for this module
-Copyright = '(c) 2017 Brandon Olin. All rights reserved.'
+Copyright = '(c) 2018 Brandon Olin. All rights reserved.'
 
 # Description of the functionality provided by this module
 Description = 'Builtin PoshBot commands'
