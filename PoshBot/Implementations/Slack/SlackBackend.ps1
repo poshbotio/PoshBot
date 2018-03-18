@@ -4,7 +4,19 @@ class SlackBackend : Backend {
 
     # The types of message that we care about from Slack
     # All othere will be ignored
-    [string[]]$MessageTypes = @('channel_rename', 'message', 'pin_added', 'pin_removed', 'presence_change', 'reaction_added', 'reaction_removed', 'star_added', 'star_removed')
+    [string[]]$MessageTypes = @(
+        'channel_rename'
+        'member_joined_channel'
+        'member_left_channel'
+        'message'
+        'pin_added'
+        'pin_removed'
+        'presence_change'
+        'reaction_added'
+        'reaction_removed'
+        'star_added'
+        'star_removed'
+    )
 
     [int]$MaxMessageLength = 4000
 
@@ -206,6 +218,14 @@ class SlackBackend : Backend {
                             'channel_rename' {
                                 $msg.Type = [MessageType]::ChannelRenamed
                             }
+                            'member_joined_channel' {
+                                $msg.Type = [MessageType]::Message
+                                $msg.SubType = [MessageSubtype]::ChannelJoined
+                            }
+                            'member_left_channel' {
+                                $msg.Type = [MessageType]::Message
+                                $msg.SubType = [MessageSubtype]::ChannelLeft
+                            }
                             'message' {
                                 $msg.Type = [MessageType]::Message
                             }
@@ -230,6 +250,12 @@ class SlackBackend : Backend {
                             'star_removed' {
                                 $msg.Type = [MessageType]::StarRemoved
                             }
+                        }
+
+                        # The channel the message occured in is sometimes
+                        # nested in an 'item' property
+                        if ($slackMessage.item -and ($slackMessage.item.channel)) {
+                            $msg.To = $slackMessage.item.channel
                         }
 
                         if ($slackMessage.subtype) {
@@ -275,9 +301,12 @@ class SlackBackend : Backend {
                             $msg.IsDM = $true
                         }
 
+                        # Get time of message
+                        $unixEpoch = [datetime]'1970-01-01'
                         if ($slackMessage.ts) {
-                            $unixEpoch = [datetime]'1970-01-01'
                             $msg.Time = $unixEpoch.AddSeconds($slackMessage.ts)
+                        } elseIf ($slackMessage.event_ts) {
+                            $msg.Time = $unixEpoch.AddSeconds($slackMessage.event_ts)
                         } else {
                             $msg.Time = (Get-Date).ToUniversalTime()
                         }
