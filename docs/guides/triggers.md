@@ -97,6 +97,72 @@ Events like a user entering or exiting a room, channel topic change, a user's pr
 When a message is received by PoshBot, it will evaluate the message type and look for commands that have registered a trigger that matches this message type.
 When one is found, the command will be executed.
 
+#### Event Types
+
+| Event Type      | Subtype | Description |
+|-----------------|---------------|-------------|
+| Message         | ChannelJoined | A user joined a channel
+| Message         | ChannelLeft   | A user left a channel
+| PinAdded        | None          | A user pinned an item
+| PinRemoved      | None          | A user unpinned an item
+| PresenceChange  | None          | A user's presence changed
+| ReactionAdded   | None          | A user added an emoji reaction to a message
+| ReactionRemoved | None          | A user removed an emoji reaction to a message
+| StarAdded       | None          | A user starred a message
+| StarRemoved     | None          | A user removed a star from a message
+
+#### Example 1
+
+This is an example command that trigger when a user joins a channel/room.
+
+```powershell
+function WelcomeUserToRoom {
+    <#
+    .SYNOPSIS
+    Responds to channel join events with a friendly message
+    #>
+    [PoshBot.BotCommand(
+        Command = $false,
+        TriggerType = 'event',
+        MessageType = 'Message',
+        MessageSubType = 'ChannelJoined'
+    )]
+    [cmdletbinding()]
+    param(
+        [parameter(ValueFromRemainingArguments)]
+        $Dummy
+    )
+
+    Write-Output 'Greetings! We were just talking about you.'
+}
+```
+
+#### Example 2
+
+This is an example command at will trigger when a reaction is added to a message.
+
+```powershell
+function ReacionAdded {
+    <#
+    .SYNOPSIS
+    Responds to reactions added to messages
+    #>
+    [PoshBot.BotCommand(
+        Command = $false,
+        TriggerType = 'event',
+        MessageType = 'ReacionAddeed'
+    )]
+    [cmdletbinding()]
+    param(
+        [parameter(ValueFromRemainingArguments)]
+        $Dummy
+    )
+
+   $userWhoReacted = $global:PoshBotContext.FromName
+    Write-Output "Tell us how you really feel $userWhoReacted"
+}
+```
+
 ### RegEx
 
 This type of trigger matches a regex expression against the chat message text.
