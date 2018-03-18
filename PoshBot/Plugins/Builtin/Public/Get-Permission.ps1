@@ -15,7 +15,7 @@ function Get-Permission {
         Get details about the [builtin:manage-groups] permission.
     #>
     [PoshBot.BotCommand(
-        Aliases = ('gp', 'getpermission'),
+        Aliases = ('getpermission'),
         Permissions = 'view'
     )]
     [cmdletbinding()]
