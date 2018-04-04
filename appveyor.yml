@@ -1,10 +1,16 @@
+environment:
+  matrix:
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      PowerShellEdition: PowerShellCore
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      PowerShellEdition: WindowsPowerShell
 
 version: 0.10.1.{build}
-image: Visual Studio 2017
 skip_commits:
   message: /updated readme.*|update readme.*s/
 build: off
 
 #Kick off the CI/CD pipeline
 test_script:
-  - ps: . .\build.ps1 -Task Test
+  - ps:   if ($env:PowerShellEdition -eq 'WindowsPowerShell') { . .\build.ps1 -Task Test }
+  - pwsh: if ($env:PowerShellEdition -eq 'PowerShellCore')    { . .\build.ps1 -Task Test }
