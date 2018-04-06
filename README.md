@@ -17,7 +17,7 @@ PoshBot currently supports connecting to Slack to provide you with awesome ChatO
 ## What Can PoshBot Do?
 
 Pretty much anything you want :) No seriously.
-PoshBot executes functions/cmdlets from PowerShell modules.
+PoshBot executes functions or cmdlets from PowerShell modules.
 Use PoshBot to connect to servers and report status, deploy code, execute runbooks, query APIs, etc.
 If you can write it in PowerShell, PoshBot can execute it.
 
@@ -33,7 +33,7 @@ If you can write it in PowerShell, PoshBot can execute it.
 
 To get started now, get a SLACK-API-TOKEN for your bot:
 
-[https://api.slack.com/bot-users](https://api.slack.com/bot-users)
+[https://my.slack.com/services/new/bot](https://my.slack.com/services/new/bot)
 
 ```powershell
 # Install the module from PSGallery
@@ -88,19 +88,19 @@ Get-Command -Module PoshBot
 
 CommandType     Name                                               Version    Source
 -----------     ----                                               -------    ------
-Function        Get-PoshBot                                        0.9.0      poshbot
-Function        Get-PoshBotConfiguration                           0.9.0      poshbot
-Function        Get-PoshBotStatefulData                            0.9.0      poshbot
-Function        New-PoshBotCardResponse                            0.9.0      poshbot
-Function        New-PoshBotConfiguration                           0.9.0      poshbot
-Function        New-PoshBotFileUpload                              0.9.0      poshbot
-Function        New-PoshBotInstance                                0.9.0      poshbot
-Function        New-PoshBotScheduledTask                           0.9.0      poshbot
-Function        New-PoshBotSlackBackend                            0.9.0      poshbot
-Function        New-PoshBotTextResponse                            0.9.0      poshbot
-Function        Remove-PoshBotStatefulData                         0.9.0      poshbot
-Function        Save-PoshBotConfiguration                          0.9.0      poshbot
-Function        Set-PoshBotStatefulData                            0.9.0      poshbot
-Function        Start-PoshBot                                      0.9.0      poshbot
-Function        Stop-Poshbot                                       0.9.0      poshbot
+Function        Get-PoshBot                                        0.10.1     PoshBot
+Function        Get-PoshBotConfiguration                           0.10.1     PoshBot
+Function        Get-PoshBotStatefulData                            0.10.1     PoshBot
+Function        New-PoshBotCardResponse                            0.10.1     PoshBot
+Function        New-PoshBotConfiguration                           0.10.1     PoshBot
+Function        New-PoshBotFileUpload                              0.10.1     PoshBot
+Function        New-PoshBotInstance                                0.10.1     PoshBot
+Function        New-PoshBotScheduledTask                           0.10.1     PoshBot
+Function        New-PoshBotSlackBackend                            0.10.1     PoshBot
+Function        New-PoshBotTextResponse                            0.10.1     PoshBot
+Function        Remove-PoshBotStatefulData                         0.10.1     PoshBot
+Function        Save-PoshBotConfiguration                          0.10.1     PoshBot
+Function        Set-PoshBotStatefulData                            0.10.1     PoshBot
+Function        Start-PoshBot                                      0.10.1     PoshBot
+Function        Stop-Poshbot                                       0.10.1     PoshBot
 ```
