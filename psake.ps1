@@ -204,7 +204,7 @@ task Compile -depends Clean {
     "    Created compiled module at [$modDir]"
 } -description 'Compiles module from source'
 
-task Build -depends Compile, CreateMarkdownHelp {
+task Build -depends Compile, CreateExternalHelp {
     # External help
     $helpXml = New-ExternalHelp "$projectRoot\docs\reference\functions" -OutputPath (Join-Path -Path $outputModVerDir -ChildPath 'en-US')
     "    Module XML help created at [$helpXml]"
