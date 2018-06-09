@@ -1,9 +1,23 @@
 
 # PoshBot
 
-[![Build status](https://ci.appveyor.com/api/projects/status/9em7etgtlmeax7gl?svg=true)](https://ci.appveyor.com/project/devblackops/poshbot)
-[![Documentation Status](https://readthedocs.org/projects/poshbot/badge/?version=latest)](http://poshbot.readthedocs.io/en/latest/)
-[![Patreon](https://img.shields.io/badge/patreon-donate-yellow.svg)](https://www.patreon.com/devblackops)
+[![Build status][appveyor-badge]][appveyor-build]
+[![Documentation Status][docs-badge]][docs]
+[![PowerShell Gallery][psgallery-badge]][psgallery]
+[![License][license-badge]][license]
+<!-- [![Patreon](https://img.shields.io/badge/patreon-donate-yellow.svg)](https://www.patreon.com/devblackops/memberships) -->
+
+<h2 align="center">Supporting PoshBot</h2>
+
+PoshBot is a MIT-licensed open source project. Ongoing development is made possible thanks to the support of backers. If you'd like to become a backer or sponsor, you can do so on Patreon.
+
+<p align="center">
+    <a href="https://www.patreon.com/devblackops/memberships" target="_blank" title="Become a Patron">
+        <img style="height:50px" src="Media/become_a_patron_button.png" alt="Become a Patron">
+    </a>
+</p>
+
+# Introduction
 
 PoshBot is a chat bot written in [PowerShell](https://msdn.microsoft.com/powershell).
 It makes extensive use of classes introduced in PowerShell 5.0.
@@ -11,7 +25,7 @@ PowerShell modules are loaded into PoshBot and instantly become available as bot
 PoshBot currently supports connecting to Slack to provide you with awesome ChatOps goodness.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/poshbotio/PoshBot/master/Media/poshbot_logo_300_432.png" alt="PoshBot logo"/>
+  <img style="height:250px;" src="https://raw.githubusercontent.com/poshbotio/PoshBot/master/Media/poshbot_logo_300_432.png" alt="PoshBot logo"/>
 </p>
 
 ## What Can PoshBot Do?
@@ -21,9 +35,17 @@ PoshBot executes functions or cmdlets from PowerShell modules.
 Use PoshBot to connect to servers and report status, deploy code, execute runbooks, query APIs, etc.
 If you can write it in PowerShell, PoshBot can execute it.
 
-> Detailed documentation can be found at [ReadTheDocs](http://poshbot.readthedocs.io/en/latest/)
+## Documentation
 
-> See [Building PoshBot](./building.md) for documentation on how to build PoshBot from source.
+Detailed documentation can be found at [ReadTheDocs](http://poshbot.readthedocs.io/en/latest/).
+
+## Building PoshBot
+
+See [Building PoshBot](./building.md) for documentation on how to build PoshBot from source.
+
+## Changelog
+
+Detailed changes for each release are documented in the [release notes](https://github.com/poshbotio/poshbot/releases).
 
 ## [YouTube] PoshBot Demo at the Portland User Group on 2017-05-31
 
@@ -104,3 +126,13 @@ Function        Set-PoshBotStatefulData                            0.10.1     Po
 Function        Start-PoshBot                                      0.10.1     PoshBot
 Function        Stop-Poshbot                                       0.10.1     PoshBot
 ```
+
+[appveyor-badge]: https://ci.appveyor.com/api/projects/status/9em7etgtlmeax7gl?svg=true
+[appveyor-build]: https://ci.appveyor.com/project/devblackops/poshbot
+[docs-badge]: https://readthedocs.org/projects/poshbot/badge/?version=latest
+[docs]: http://poshbot.readthedocs.io/en/latest/
+[psgallery-badge]: https://img.shields.io/powershellgallery/dt/poshbot.svg
+[psgallery]: https://www.powershellgallery.com/packages/poshbot
+[license-badge]: https://img.shields.io/github/license/poshbotio/poshbot.svg
+[license]: https://www.powershellgallery.com/packages/poshbot
+
