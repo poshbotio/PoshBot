@@ -18,9 +18,18 @@ class ChannelRule {
 
     [hashtable]ToHash() {
         return @{
-            Channel = $this.Channel
+            Channel         = $this.Channel
             IncludeCommands = $this.IncludeCommands
             ExcludeCommands = $this.ExcludeCommands
         }
+    }
+
+    static [ChannelRule] Serialize([PSObject]$DeserializedObject) {
+        $cr = [ChannelRule]::new()
+        $cr.Channel = $DeserializedObject.Channel
+        $cr.IncludeCommands = $DeserializedObject.IncludeCommands
+        $cr.ExcludeCommands = $DeserializedObject.ExcludeCommands
+
+        return $cr
     }
 }

@@ -97,12 +97,16 @@ function Start-PoshBot {
 
                     Import-Module PoshBot -ErrorAction Stop
 
+                    $tempConfig = New-PoshBotConfiguration
+                    $realConfig = $tempConfig.SerializeInstance($Configuration)
+
                     while($true) {
                         try {
-                            $backend = New-PoshBotSlackBackend -Configuration $Configuration.BackendConfiguration
-                            $bot = New-PoshBotInstance -Backend $backend -Configuration $Configuration
+                            $backend = New-PoshBotSlackBackend -Configuration $realConfig.BackendConfiguration
+                            $bot = New-PoshBotInstance -Backend $backend -Configuration $realConfig
                             $bot.Start()
                         } catch {
+                            Write-Error $_
                             Write-Error 'PoshBot crashed :( Restarting...'
                             Start-Sleep -Seconds 5
                         }

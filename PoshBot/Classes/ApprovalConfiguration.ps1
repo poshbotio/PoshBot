@@ -20,4 +20,16 @@ class ApprovalConfiguration {
 
         return $hash
     }
+
+    static [ApprovalConfiguration] Serialize([PSObject]$DeserializedObject) {
+        $ac = [ApprovalConfiguration]::new()
+        $ac.ExpireMinutes = $DeserializedObject.ExpireMinutes
+        $DeserializedObject.Commands | ForEach-Object {
+            $ac.Commands.Add(
+                [ApprovalCommandConfiguration]::Serialize($_)
+            ) > $null
+        }
+
+        return $ac
+    }
 }

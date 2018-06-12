@@ -50,4 +50,39 @@ class BotConfiguration {
     [ChannelRule[]]$ChannelRules = @([ChannelRule]::new())
 
     [ApprovalConfiguration]$ApprovalConfiguration = [ApprovalConfiguration]::new()
+
+    [BotConfiguration] SerializeInstance([PSObject]$DeserializedObject) {
+        return [BotConfiguration]::Serialize($DeserializedObject)
+    }
+
+    static [BotConfiguration] Serialize([PSObject]$DeserializedObject) {
+        $bc = [BotConfiguration]::new()
+        $bc.Name                             = $DeserializedObject.Name
+        $bc.ConfigurationDirectory           = $DeserializedObject.ConfigurationDirectory
+        $bc.LogDirectory                     = $DeserializedObject.LogDirectory
+        $bc.PluginDirectory                  = $DeserializedObject.PluginDirectory
+        $bc.PluginRepository                 = $DeserializedObject.PluginRepository
+        $bc.ModuleManifestsToLoad            = $DeserializedObject.ModuleManifestsToLoad
+        $bc.LogLevel                         = $DeserializedObject.LogLevel
+        $bc.MaxLogSizeMB                     = $DeserializedObject.MaxLogSizeMB
+        $bc.MaxLogsToKeep                    = $DeserializedObject.MaxLogsToKeep
+        $bc.LogCommandHistory                = $DeserializedObject.LogCommandHistory
+        $bc.CommandHistoryMaxLogSizeMB       = $DeserializedObject.CommandHistoryMaxLogSizeMB
+        $bc.CommandHistoryMaxLogsToKeep      = $DeserializedObject.CommandHistoryMaxLogsToKeep
+        $bc.BackendConfiguration             = $DeserializedObject.BackendConfiguration
+        $bc.PluginConfiguration              = $DeserializedObject.PluginConfiguration
+        $bc.BotAdmins                        = $DeserializedObject.BotAdmins
+        $bc.CommandPrefix                    = $DeserializedObject.CommandPrefix
+        $bc.AlternateCommandPrefixes         = $DeserializedObject.AlternateCommandPrefixes
+        $bc.AlternateCommandPrefixSeperators = $DeserializedObject.AlternateCommandPrefixSeperators
+        $bc.SendCommandResponseToPrivate     = $DeserializedObject.SendCommandResponseToPrivate
+        $bc.MuteUnknownCommand               = $DeserializedObject.MuteUnknownCommand
+        $bc.AddCommandReactions              = $DeserializedObject.AddCommandReactions
+        $bc.DisallowDMs                      = $DeserializedObject.DisallowDMs
+        $bc.FormatEnumerationLimitOverride   = $DeserializedObject.FormatEnumerationLimitOverride
+        $bc.ChannelRules                     = [ChannelRule]::Serialize($DeserializedObject.ChannelRule)
+        $bc.ApprovalConfiguration            = [ApprovalConfiguration]::Serialize($DeserializedObject.ApprovalConfiguration)
+
+        return $bc
+    }
 }
