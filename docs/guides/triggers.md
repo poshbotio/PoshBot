@@ -142,7 +142,7 @@ function WelcomeUserToRoom {
 This is an example command at will trigger when a reaction is added to a message.
 
 ```powershell
-function ReacionAdded {
+function ReactionAdded {
     <#
     .SYNOPSIS
     Responds to reactions added to messages
@@ -150,7 +150,7 @@ function ReacionAdded {
     [PoshBot.BotCommand(
         Command = $false,
         TriggerType = 'event',
-        MessageType = 'ReacionAddeed'
+        MessageType = 'ReactionAdded'
     )]
     [cmdletbinding()]
     param(
