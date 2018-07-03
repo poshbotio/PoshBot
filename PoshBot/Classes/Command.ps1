@@ -84,6 +84,7 @@ class Command : BaseLogger {
             $positionalParameters = $Options.PositionalParameters
 
             # Context for who/how the command was called
+            $parsedCommandExcludes = @('From', 'FromName', 'To', 'ToName', 'CallingUserInfo', 'OriginalMessage')
             $global:PoshBotContext = [pscustomobject]@{
                 Plugin = $options.ParsedCommand.Plugin
                 Command = $options.ParsedCommand.Command
@@ -91,8 +92,10 @@ class Command : BaseLogger {
                 FromName = $options.ParsedCommand.FromName
                 To = $options.ParsedCommand.To
                 ToName = $options.ParsedCommand.ToName
+                CallingUserInfo = $options.CallingUserInfo
                 ConfigurationDirectory = $options.ConfigurationDirectory
-                ParsedCommand = $options.ParsedCommand
+                ParsedCommand = $options.ParsedCommand | Select-Object -ExcludeProperty $parsedCommandExcludes
+                OriginalMessage = $options.OriginalMessage
             }
 
             & $cmd @namedParameters @positionalParameters
@@ -102,6 +105,8 @@ class Command : BaseLogger {
         $options = @{
             ManifestPath = $this.ManifestPath
             ParsedCommand = $ParsedCommand
+            CallingUserInfo = $ParsedCommand.CallingUserInfo
+            OriginalMessage = $ParsedCommand.OriginalMessage.ToHash()
             ConfigurationDirectory = $script:ConfigurationDirectory
         }
         if ($this.FunctionInfo) {

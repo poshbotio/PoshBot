@@ -101,6 +101,11 @@ class Backend : BaseLogger {
         throw 'Implement me!'
     }
 
+    [hashtable]GetUserInfo([string]$UserId) {
+        # Must be extended by the specific Backend implementation
+        throw 'Implement me!'
+    }
+
     [string]ChannelIdToName([string]$ChannelId) {
         # Must be extended by the specific Backend implementation
         throw 'Implement me!'

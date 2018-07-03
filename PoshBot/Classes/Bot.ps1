@@ -330,6 +330,9 @@ class Bot : BaseLogger {
         $parsedCommand = [CommandParser]::Parse($Message)
         $this.LogDebug('Parsed bot command', $parsedCommand)
 
+        # Attempt to populate the parsed command with full user info from the backend
+        $parsedCommand.CallingUserInfo = $this.Backend.GetUserInfo($parsedCommand.From)
+
         # Match parsed command to a command in the plugin manager
         $pluginCmd = $this.PluginManager.MatchCommand($parsedCommand, $cmdSearch)
         if ($pluginCmd) {

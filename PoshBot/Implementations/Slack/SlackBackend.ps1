@@ -719,6 +719,26 @@ class SlackBackend : Backend {
         return $name
     }
 
+    # Get all user info by their ID
+    [hashtable]GetUserInfo([string]$UserId) {
+        $user = $null
+        if ($this.Users.ContainsKey($UserId)) {
+            $user = $this.Users[$UserId]
+        } else {
+            $this.LogDebug([LogSeverity]::Warning, "User [$UserId] not found. Refreshing users")
+            $this.LoadUsers()
+            $user = $this.Users[$UserId]
+        }
+
+        if ($user) {
+            $this.LogDebug("Resolved [$UserId] to [$($user.Nickname)]")
+            return $user.ToHash()
+        } else {
+            $this.LogDebug([LogSeverity]::Warning, "Could not resolve channel [$UserId]")
+            return $null
+        }
+    }
+
     # Remove extra characters that Slack decorates urls with
     hidden [string] _SanitizeURIs([string]$Text) {
         $sanitizedText = $Text -replace '<([^\|>]+)\|([^\|>]+)>', '$2'

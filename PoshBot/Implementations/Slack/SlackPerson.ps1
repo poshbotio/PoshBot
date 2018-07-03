@@ -14,4 +14,12 @@ class SlackPerson : Person {
     [string]$TimeZone
     [string]$Presence
     [bool]$Deleted
+
+    [hashtable]ToHash() {
+        $hash = @{}
+        $this | Get-Member -MemberType Property | Foreach-Object {
+            $hash.Add($_.Name, $this.($_.name))
+        }
+        return $hash
+    }
 }

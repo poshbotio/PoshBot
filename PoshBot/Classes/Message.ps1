@@ -25,4 +25,25 @@ class Message {
         }
         return $newMsg
     }
+
+    [hashtable] ToHash() {
+        return @{
+            Id         = $this.Id
+            Type       = $this.Type.ToString()
+            Subtype    = $this.Subtype.ToString()
+            Text       = $this.Text
+            To         = $this.To
+            ToName     = $this.ToName
+            From       = $this.From
+            FromName   = $this.FromName
+            Time       = $this.Time.ToUniversalTime().ToString('u')
+            IsDM       = $this.IsDM
+            Options    = $this.Options
+            RawMessage = $this.RawMessage
+        }
+    }
+
+    [string] ToJson() {
+        return $this.ToHash() | ConvertTo-Json -Depth 10 -Compress
+    }
 }

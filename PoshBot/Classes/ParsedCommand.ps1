@@ -9,6 +9,7 @@ class ParsedCommand {
     [datetime]$Time = (Get-Date).ToUniversalTime()
     [string]$From = $null
     [string]$FromName = $null
+    [hashtable]$CallingUserInfo = @{}
     [string]$To = $null
     [string]$ToName = $null
     [Message]$OriginalMessage
