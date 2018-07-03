@@ -612,7 +612,8 @@ Accept wildcard characters: False
 ```
 
 ### -PreReceiveMiddlewareHooks
-{{Fill PreReceiveMiddlewareHooks Description}}
+Array of middleware scriptblocks that will run before PoshBot "receives" the message from the backend implementation.
+This middleware will receive the original message sent from the chat network and have a chance to modify, analyze, and optionally drop the message before PoshBot continues processing it.
 
 ```yaml
 Type: MiddlewareHook[]
@@ -627,7 +628,8 @@ Accept wildcard characters: False
 ```
 
 ### -PostReceiveMiddlewareHooks
-{{Fill PostReceiveMiddlewareHooks Description}}
+Array of middleware scriptblocks that will run after a message is "received" from the backend implementation.
+This middleware runs after messages have been parsed and matched with a registered command in PoshBot.
 
 ```yaml
 Type: MiddlewareHook[]
@@ -642,7 +644,8 @@ Accept wildcard characters: False
 ```
 
 ### -PreExecuteMiddlewareHooks
-{{Fill PreExecuteMiddlewareHooks Description}}
+Array of middleware scriptblocks that will run before a command is executed.
+This middleware is a good spot to run extra authentication or validation processes before commands are executed.
 
 ```yaml
 Type: MiddlewareHook[]
@@ -657,7 +660,8 @@ Accept wildcard characters: False
 ```
 
 ### -PreResponseMiddlewareHooks
-{{Fill PreResponseMiddlewareHooks Description}}
+Array of middleware scriptblocks that will run before command responses are sent to the backend implementation.
+This middleware is a good spot for modifying or sanitizing responses before they are sent to the chat network.
 
 ```yaml
 Type: MiddlewareHook[]
@@ -672,7 +676,8 @@ Accept wildcard characters: False
 ```
 
 ### -PostResponseMiddlewareHooks
-{{Fill PostResponseMiddlewareHooks Description}}
+Array of middleware scriptblocks that will run after command responses have been sent to the backend implementation.
+This middleware runs after all processing is complete for a command and is a good spot for additional custom logging.
 
 ```yaml
 Type: MiddlewareHook[]
