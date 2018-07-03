@@ -77,8 +77,9 @@ $preReceiveHook = New-PoshBotMiddlewareHook -Name 'prereceive' -ScriptBlock {
     if ($Context.Message.Text -match "^!about*") {
         $Bot.LogInfo("Dropping [!about] about command")
         return
+    } else {
+        $Context
     }
-    $Context
 }
 ```
 
@@ -105,6 +106,143 @@ A new instance of PoshBot is created and starting using the configuration object
 $backend = New-PoshBotSlackBackend -Configuration $config.BackendConfiguration
 $bot = New-PoshBotInstance -Backend $backend -Configuration $config
 $bot | Start-PoshBot
+```
+
+## Examples
+
+### PreReceive Example
+
+A simple example of dropping all messages from users Sally and Bob.
+
+```powershell
+$userDropHook = New-PoshBotMiddlewareHook -Name 'dropuser' -ScriptBlock {
+    param(
+        $Context,
+        $Bot
+    )
+
+    $blacklistedUsers = @('sally', 'bob')
+    $user = $Context.Message.FromName
+
+    $Bot.LogDebug('Running user drop middleware')
+    if ($blacklistedUsers -contains $user) {
+        $Bot.LogInfo("Dropping message from [$user]")
+        return
+    }
+    $Context
+}
+$config.MiddlewareConfiguration.Add($userDropHook, 'PreReceive')
+```
+
+### PostReceive Example
+
+Example of logging all messages initiated from a certain user.
+
+```powershell
+$userLogHook = New-PoshBotMiddlewareHook -Name 'logmessages' -ScriptBlock {
+    param(
+        $Context,
+        $Bot
+    )
+
+    $user = $Context.Message.FromName
+    if ($user -eq 'Bob') {
+        $Bot.LogInfo("Logging message from [$user]")
+        $userMessagesLog = Join-Path -Path $Bot.Configuration.LogDirectory -ChildPath "$user-messages.json"
+        $Context.ToJson() | Out-File -FilePath $userMessagesLog -Append -Force
+    }
+
+    $Context
+}
+```
+
+### PreExecute Example
+
+Example of performing custom authentication logic using Active Directory to determine if a user can run a command.
+
+```powershell
+$userLogHook = New-PoshBotMiddlewareHook -Name 'adauth' -ScriptBlock {
+    param(
+        $Context,
+        $Bot
+    )
+
+    $user = $Context.Message.FromName
+    $adGroup = 'botusers'
+
+    $userGroups = (New-Object System.DirectoryServices.DirectorySearcher("(&(objectCategory=User)(samAccountName=$user)))")).FindOne().GetDirectoryEntry().memberOf
+    if (-not ($userGroups -contains $adGroup)) {
+        $Bot.LogInfo("User [$user] is not in AD group [$adGroup]. Bot commands cannot be run.")
+        return
+    } else {
+        $Context
+    }
+}
+```
+
+### PostExecute Example
+
+Example of custom logging of all command and results results.
+
+```powershell
+$commandResultsHook = New-PoshBotMiddlewareHook -Name 'commandresults' -ScriptBlock {
+    param(
+        $Context,
+        $Bot
+    )
+
+    $resultsLog = Join-Path -Path $Bot.Configuration.LogDirectory -ChildPath 'commandresults.json'
+
+    $commandResult = [pscustomobject]@{
+        ParsedCommand = $Context.ParsedCommand.Summarize()
+        Results = $context.Result.Summarize()
+    } | ConvertTo-Json -Depth 15 -Compress
+
+    $commandResult | Out-File -FilePath $resultsLog -Append -Force
+
+    $Context
+}
+```
+
+### PreResponse Example
+
+Example of inspecting command response for Social Security numbers and stripping them if present.
+
+```powershell
+$sanitizeResponsesHook = New-PoshBotMiddlewareHook -Name 'sanitizeresponses' -ScriptBlock {
+    param(
+        $Context,
+        $Bot
+    )
+
+    if ($Context.Response.Text -match '\d\d\d-\d\d-\d\d\d\d') {
+        $Bot.LogInfo('Sanitizing response')
+        $Context.Response.Text -replace '\d\d\d-\d\d-\d\d\d\d', '###-##-####'
+    }
+
+    $Context
+}
+```
+
+### PostResponse Example
+
+Example of logging all command responses.
+
+```powershell
+$commandResponseHook = New-PoshBotMiddlewareHook -Name 'commandresponses' -ScriptBlock {
+    param(
+        $Context,
+        $Bot
+    )
+
+    $responseLog = Join-Path -Path $Bot.Configuration.LogDirectory -ChildPath 'responses.json'
+
+    $Context.Response.Summarize() |
+        ConvertTo-Json -Depth 10 -Compress |
+        Out-File -FilePath $responseLog -Append -Force
+
+    $Context
+}
 ```
 
 ## Performance
