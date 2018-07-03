@@ -6,7 +6,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.10.3] Unreleased
+## [0.11.0] Unreleased
+
+### Added
+
+Support for custom `scriptblock` execution during the command processing life cycle has been added.
+It is now possible to execute custom logic pre/post receiving a message from the chat network, pre/post command execution, and pre/post command response.
+This execution hooks can be used for centralized authentication logic, custom command whitelisting and blacklisting, response sanitation, or any number of other uses.
 
 ### Fixed
 

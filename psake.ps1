@@ -172,6 +172,8 @@ task Compile -depends Clean {
         'PluginCommand'
         'Approver'
         'CommandExecutionContext'
+        'MiddlewareHook'
+        'MiddlewareConfiguration'
         'CommandExecutor'
         'ScheduledMessage'
         'Scheduler'

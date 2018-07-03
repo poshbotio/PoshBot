@@ -32,6 +32,9 @@ Locale: en-US
 ### [New-PoshBotInstance](New-PoshBotInstance.md)
 {{Manually Enter New-PoshBotInstance Description Here}}
 
+### [New-PoshBotMiddlewareHook](New-PoshBotMiddlewareHook.md)
+{{Manually Enter New-PoshBotMiddlewareHook Description Here}}
+
 ### [New-PoshBotScheduledTask](New-PoshBotScheduledTask.md)
 {{Manually Enter New-PoshBotScheduledTask Description Here}}
 

@@ -32,6 +32,8 @@ class Bot : BaseLogger {
 
     hidden [System.Collections.Arraylist] $_PossibleCommandPrefixes = (New-Object System.Collections.ArrayList)
 
+    hidden [MiddlewareConfiguration] $_Middleware
+
     Bot([Backend]$Backend, [string]$PoshBotDir, [BotConfiguration]$Config)
         : base($Config.LogDirectory, $Config.LogLevel, $Config.MaxLogSizeMB, $Config.MaxLogsToKeep) {
 
@@ -70,6 +72,9 @@ class Bot : BaseLogger {
         $this.Executor = [CommandExecutor]::new($this.RoleManager, $this.Logger, $this)
         $this.Scheduler = [Scheduler]::new($this.Storage, $this.Logger)
         $this.GenerateCommandPrefixList()
+
+        # Register middleware hooks
+        $this._Middleware = $Config.MiddlewareConfiguration
 
         # Ugly hack alert!
         # Store the ConfigurationDirectory property in a script level variable
@@ -217,8 +222,16 @@ class Bot : BaseLogger {
                 return
             }
 
-            $this.LogDebug('Received bot message from chat network. Adding to message queue.', $msg)
-            $this.MessageQueue.Enqueue($msg)
+            # Execute PreReceive middleware hooks
+            $cmdExecContext = [CommandExecutionContext]::new()
+            $cmdExecContext.Started = (Get-Date).ToUniversalTime()
+            $cmdExecContext.Message = $msg
+            $cmdExecContext = $this._ExecuteMiddleware($cmdExecContext, [MiddlewareType]::PreReceive)
+
+            if ($cmdExecContext) {
+                $this.LogDebug('Received bot message from chat network. Adding to message queue.', $cmdExecContext.Message)
+                $this.MessageQueue.Enqueue($cmdExecContext.Message)
+            }
         }
     }
 
@@ -321,60 +334,70 @@ class Bot : BaseLogger {
         $pluginCmd = $this.PluginManager.MatchCommand($parsedCommand, $cmdSearch)
         if ($pluginCmd) {
 
-            # Check command is allowed in channel
-            if (-not $this.CommandInAllowedChannel($parsedCommand, $pluginCmd)) {
-                $this.LogDebug('Igoring message. Command not approved in channel', $pluginCmd.ToString())
-                $this.AddReaction($Message, [ReactionType]::Denied)
-                $response = [Response]::new($Message)
-                $response.Severity = [Severity]::Warning
-                $response.Data = New-PoshBotCardResponse -Type Warning -Text 'Sorry :( PoshBot has been configured to not allow that command in this channel. Please contact your bot administrator.'
-                $this.SendMessage($response)
-                return
-            }
-
-            # Add the name of the plugin to the parsed command
-            # if it wasn't fully qualified to begin with
-            if ([string]::IsNullOrEmpty($parsedCommand.Plugin)) {
-                $parsedCommand.Plugin = $pluginCmd.Plugin.Name
-            }
-
-            # If the command trigger is a [regex], then we shoudn't parse named/positional
-            # parameters from the message so clear them out. Only the regex matches and
-            # config provided parameters are allowed.
-            if ([TriggerType]::Regex -in $pluginCmd.Command.Triggers.Type) {
-                $parsedCommand.NamedParameters = @{}
-                $parsedCommand.PositionalParameters = @()
-                $regex = [regex]$pluginCmd.Command.Triggers[0].Trigger
-                $parsedCommand.NamedParameters['Arguments'] = $regex.Match($parsedCommand.CommandString).Groups | Select-Object -ExpandProperty Value
-            }
-
-            # Pass in the bot to the module command.
-            # We need this for builtin commands
-            if ($pluginCmd.Plugin.Name -eq 'Builtin') {
-                $parsedCommand.NamedParameters.Add('Bot', $this)
-            }
-
-            # Inspect the command and find any parameters that should
-            # be provided from the bot configuration
-            # Insert these as named parameters
-            $configProvidedParams = $this.GetConfigProvidedParameters($pluginCmd)
-            foreach ($cp in $configProvidedParams.GetEnumerator()) {
-                if (-not $parsedCommand.NamedParameters.ContainsKey($cp.Name)) {
-                    $this.LogDebug("Inserting configuration provided named parameter", $cp)
-                    $parsedCommand.NamedParameters.Add($cp.Name, $cp.Value)
-                }
-            }
-
             # Create the command execution context
             $cmdExecContext = [CommandExecutionContext]::new()
             $cmdExecContext.Started = (Get-Date).ToUniversalTime()
             $cmdExecContext.Result = [CommandResult]::New()
             $cmdExecContext.Command = $pluginCmd.Command
             $cmdExecContext.FullyQualifiedCommandName = $pluginCmd.ToString()
-            $cmdExecContext.ParsedCommand = $ParsedCommand
+            $cmdExecContext.ParsedCommand = $parsedCommand
             $cmdExecContext.Message = $Message
 
-            $this.Executor.ExecuteCommand($cmdExecContext)
+            # Execute PostReceive middleware hooks
+            $cmdExecContext = $this._ExecuteMiddleware($cmdExecContext, [MiddlewareType]::PostReceive)
+
+            if ($cmdExecContext) {
+                # Check command is allowed in channel
+                if (-not $this.CommandInAllowedChannel($parsedCommand, $pluginCmd)) {
+                    $this.LogDebug('Igoring message. Command not approved in channel', $pluginCmd.ToString())
+                    $this.AddReaction($Message, [ReactionType]::Denied)
+                    $response = [Response]::new($Message)
+                    $response.Severity = [Severity]::Warning
+                    $response.Data = New-PoshBotCardResponse -Type Warning -Text 'Sorry :( PoshBot has been configured to not allow that command in this channel. Please contact your bot administrator.'
+                    $this.SendMessage($response)
+                    return
+                }
+
+                # Add the name of the plugin to the parsed command
+                # if it wasn't fully qualified to begin with
+                if ([string]::IsNullOrEmpty($parsedCommand.Plugin)) {
+                    $parsedCommand.Plugin = $pluginCmd.Plugin.Name
+                }
+
+                # If the command trigger is a [regex], then we shoudn't parse named/positional
+                # parameters from the message so clear them out. Only the regex matches and
+                # config provided parameters are allowed.
+                if ([TriggerType]::Regex -in $pluginCmd.Command.Triggers.Type) {
+                    $parsedCommand.NamedParameters = @{}
+                    $parsedCommand.PositionalParameters = @()
+                    $regex = [regex]$pluginCmd.Command.Triggers[0].Trigger
+                    $parsedCommand.NamedParameters['Arguments'] = $regex.Match($parsedCommand.CommandString).Groups | Select-Object -ExpandProperty Value
+                }
+
+                # Pass in the bot to the module command.
+                # We need this for builtin commands
+                if ($pluginCmd.Plugin.Name -eq 'Builtin') {
+                    $parsedCommand.NamedParameters.Add('Bot', $this)
+                }
+
+                # Inspect the command and find any parameters that should
+                # be provided from the bot configuration
+                # Insert these as named parameters
+                $configProvidedParams = $this.GetConfigProvidedParameters($pluginCmd)
+                foreach ($cp in $configProvidedParams.GetEnumerator()) {
+                    if (-not $parsedCommand.NamedParameters.ContainsKey($cp.Name)) {
+                        $this.LogDebug("Inserting configuration provided named parameter", $cp)
+                        $parsedCommand.NamedParameters.Add($cp.Name, $cp.Value)
+                    }
+                }
+
+                # Execute PreExecute middleware hooks
+                $cmdExecContext = $this._ExecuteMiddleware($cmdExecContext, [MiddlewareType]::PreExecute)
+
+                if ($cmdExecContext) {
+                    $this.Executor.ExecuteCommand($cmdExecContext)
+                }
+            }
         } else {
             if ($isBotCommand) {
                 $msg = "No command found matching [$($Message.Text)]"
@@ -402,70 +425,85 @@ class Bot : BaseLogger {
         foreach ($cmdExecContext in $completedJobs) {
             $this.LogInfo("Processing job execution [$($cmdExecContext.Id)]")
 
-            $response = [Response]::new($cmdExecContext.Message)
+            # Execute PostExecute middleware hooks
+            $cmdExecContext = $this._ExecuteMiddleware($cmdExecContext, [MiddlewareType]::PostExecute)
 
-            if (-not $cmdExecContext.Result.Success) {
-                # Was the command authorized?
-                if (-not $cmdExecContext.Result.Authorized) {
-                    $response.Severity = [Severity]::Warning
-                    $response.Data = New-PoshBotCardResponse -Type Warning -Text "You do not have authorization to run command [$($cmdExecContext.Command.Name)] :(" -Title 'Command Unauthorized'
-                    $this.LogInfo([LogSeverity]::Warning, 'Command unauthorized')
-                } else {
-                    $response.Severity = [Severity]::Error
-                    if ($cmdExecContext.Result.Errors.Count -gt 0) {
-                        $response.Data = $cmdExecContext.Result.Errors | ForEach-Object {
-                            if ($_.Exception) {
-                                New-PoshBotCardResponse -Type Error -Text $_.Exception.Message -Title 'Command Exception'
-                            } else {
-                                New-PoshBotCardResponse -Type Error -Text $_ -Title 'Command Exception'
-                            }
-                        }
+            if ($cmdExecContext) {
+                $cmdExecContext.Response = [Response]::new($cmdExecContext.Message)
+
+                if (-not $cmdExecContext.Result.Success) {
+                    # Was the command authorized?
+                    if (-not $cmdExecContext.Result.Authorized) {
+                        $cmdExecContext.Response.Severity = [Severity]::Warning
+                        $cmdExecContext.Response.Data = New-PoshBotCardResponse -Type Warning -Text "You do not have authorization to run command [$($cmdExecContext.Command.Name)] :(" -Title 'Command Unauthorized'
+                        $this.LogInfo([LogSeverity]::Warning, 'Command unauthorized')
                     } else {
-                        $response.Data += New-PoshBotCardResponse -Type Error -Text 'Something bad happened :(' -Title 'Command Error'
-                        $response.Data += $cmdExecContext.Result.Errors
-                    }
-                    $this.LogInfo([LogSeverity]::Error, "Errors encountered running command [$($cmdExecContext.FullyQualifiedCommandName)]", $cmdExecContext.Result.Errors)
-                }
-            } else {
-                $this.LogVerbose('Command execution result', $cmdExecContext.Result)
-                foreach ($resultOutput in $cmdExecContext.Result.Output) {
-                    if ($null -ne $resultOutput) {
-                        if ($this._IsCustomResponse($resultOutput)) {
-                            $response.Data += $resultOutput
+                        $cmdExecContext.Response.Severity = [Severity]::Error
+                        if ($cmdExecContext.Result.Errors.Count -gt 0) {
+                            $cmdExecContext.Response.Data = $cmdExecContext.Result.Errors | ForEach-Object {
+                                if ($_.Exception) {
+                                    New-PoshBotCardResponse -Type Error -Text $_.Exception.Message -Title 'Command Exception'
+                                } else {
+                                    New-PoshBotCardResponse -Type Error -Text $_ -Title 'Command Exception'
+                                }
+                            }
                         } else {
-                            # If the response is a simple type, just display it as a string
-                            # otherwise we need remove auto-generated properties that show up
-                            # from deserialized objects
-                            if ($this._IsPrimitiveType($resultOutput)) {
-                                $response.Text += $resultOutput.ToString().Trim()
+                            $cmdExecContext.Response.Data += New-PoshBotCardResponse -Type Error -Text 'Something bad happened :(' -Title 'Command Error'
+                            $cmdExecContext.Response.Data += $cmdExecContext.Result.Errors
+                        }
+                        $this.LogInfo([LogSeverity]::Error, "Errors encountered running command [$($cmdExecContext.FullyQualifiedCommandName)]", $cmdExecContext.Result.Errors)
+                    }
+                } else {
+                    $this.LogVerbose('Command execution result', $cmdExecContext.Result)
+                    foreach ($resultOutput in $cmdExecContext.Result.Output) {
+                        if ($null -ne $resultOutput) {
+                            if ($this._IsCustomResponse($resultOutput)) {
+                                $cmdExecContext.Response.Data += $resultOutput
                             } else {
-                                $deserializedProps = 'PSComputerName', 'PSShowComputerName', 'PSSourceJobInstanceId', 'RunspaceId'
-                                $resultText = $resultOutput | Select-Object -Property * -ExcludeProperty $deserializedProps
-                                $response.Text += ($resultText | Format-List -Property * | Out-String).Trim()
+                                # If the response is a simple type, just display it as a string
+                                # otherwise we need remove auto-generated properties that show up
+                                # from deserialized objects
+                                if ($this._IsPrimitiveType($resultOutput)) {
+                                    $cmdExecContext.Response.Text += $resultOutput.ToString().Trim()
+                                } else {
+                                    $deserializedProps = 'PSComputerName', 'PSShowComputerName', 'PSSourceJobInstanceId', 'RunspaceId'
+                                    $resultText = $resultOutput | Select-Object -Property * -ExcludeProperty $deserializedProps
+                                    $cmdExecContext.Response.Text += ($resultText | Format-List -Property * | Out-String).Trim()
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            # Write out this command execution to permanent storage
-            if ($this.Configuration.LogCommandHistory) {
-                $logMsg = [LogMessage]::new("[$($cmdExecContext.FullyQualifiedCommandName)] was executed by [$($cmdExecContext.Message.From)]", $cmdExecContext.Summarize())
-                $cmdHistoryLogPath = Join-Path $this.Configuration.LogDirectory -ChildPath 'CommandHistory.log'
-                $this.Log($logMsg, $cmdHistoryLogPath, $this.Configuration.CommandHistoryMaxLogSizeMB, $this.Configuration.CommandHistoryMaxLogsToKeep)
-            }
-
-            # Send response back to user in private (DM) channel if this command
-            # is marked to devert responses
-            foreach ($rule in $this.Configuration.SendCommandResponseToPrivate) {
-                if ($cmdExecContext.FullyQualifiedCommandName -like $rule) {
-                    $this.LogInfo("Deverting response from command [$($cmdExecContext.FullyQualifiedCommandName)] to private channel")
-                    $response.To = "@$($this.RoleManager.ResolveUserIdToUserName($cmdExecContext.Message.From))"
-                    break
+                # Write out this command execution to permanent storage
+                if ($this.Configuration.LogCommandHistory) {
+                    $logMsg = [LogMessage]::new("[$($cmdExecContext.FullyQualifiedCommandName)] was executed by [$($cmdExecContext.Message.From)]", $cmdExecContext.Summarize())
+                    $cmdHistoryLogPath = Join-Path $this.Configuration.LogDirectory -ChildPath 'CommandHistory.log'
+                    $this.Log($logMsg, $cmdHistoryLogPath, $this.Configuration.CommandHistoryMaxLogSizeMB, $this.Configuration.CommandHistoryMaxLogsToKeep)
                 }
+
+                # Send response back to user in private (DM) channel if this command
+                # is marked to devert responses
+                foreach ($rule in $this.Configuration.SendCommandResponseToPrivate) {
+                    if ($cmdExecContext.FullyQualifiedCommandName -like $rule) {
+                        $this.LogInfo("Deverting response from command [$($cmdExecContext.FullyQualifiedCommandName)] to private channel")
+                        $cmdExecContext.Response.To = "@$($this.RoleManager.ResolveUserIdToUserName($cmdExecContext.Message.From))"
+                        break
+                    }
+                }
+
+                # Execute PreResponse middleware hooks
+                $cmdExecContext = $this._ExecuteMiddleware($cmdExecContext, [MiddlewareType]::PreResponse)
+
+                # Send response back to chat network
+                if ($cmdExecContext) {
+                    $this.SendMessage($cmdExecContext.Response)
+                }
+
+                # Execute PostResponse middleware hooks
+                $cmdExecContext = $this._ExecuteMiddleware($cmdExecContext, [MiddlewareType]::PostResponse)
             }
 
-            $this.SendMessage($response)
             $this.LogInfo("Done processing command [$($cmdExecContext.FullyQualifiedCommandName)]")
         }
     }
@@ -629,5 +667,29 @@ class Bot : BaseLogger {
                         'Char', 'String', 'XmlDocument', 'SecureString', 'Boolean', 'Guid', 'Uri', 'Version'
         )
         return ($Item.GetType().Name -in $primitives)
+    }
+
+    hidden [CommandExecutionContext] _ExecuteMiddleware([CommandExecutionContext]$Context, [MiddlewareType]$Type) {
+
+        $hooks = $this._Middleware."$($Type.ToString())Hooks"
+
+        # Execute PostResponse middleware hooks
+        foreach ($hook in $hooks.Values) {
+            try {
+                $this.LogDebug("Executing [$($Type.ToString())] hook [$($hook.Name)]")
+                if ($null -ne $Context) {
+                    $Context = $hook.Execute($Context, $this)
+                    if ($null -eq $Context) {
+                        $this.LogInfo([LogSeverity]::Warning, "[$($Type.ToString())] middleware [$($hook.Name)] dropped message.")
+                        break
+                    }
+                }
+            } catch {
+                $this.LogInfo([LogSeverity]::Error, "[$($Type.ToString())] middleware [$($hook.Name)] raised an exception. Command context dropped.")
+                return $null
+            }
+        }
+
+        return $Context
     }
 }

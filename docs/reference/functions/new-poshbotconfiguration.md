@@ -22,7 +22,10 @@ New-PoshBotConfiguration [[-Name] <String>] [[-ConfigurationDirectory] <String>]
  [[-AlternateCommandPrefixSeperators] <Char[]>] [[-SendCommandResponseToPrivate] <String[]>]
  [[-MuteUnknownCommand] <Boolean>] [[-AddCommandReactions] <Boolean>] [[-ApprovalExpireMinutes] <Int32>]
  [-DisallowDMs] [[-FormatEnumerationLimitOverride] <Int32>] [[-ApprovalCommandConfigurations] <Hashtable[]>]
- [[-ChannelRules] <Hashtable[]>] [<CommonParameters>]
+ [[-ChannelRules] <Hashtable[]>] [[-PreReceiveMiddlewareHooks] <MiddlewareHook[]>]
+ [[-PostReceiveMiddlewareHooks] <MiddlewareHook[]>] [[-PreExecuteMiddlewareHooks] <MiddlewareHook[]>]
+ [[-PreResponseMiddlewareHooks] <MiddlewareHook[]>] [[-PostResponseMiddlewareHooks] <MiddlewareHook[]>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -603,6 +606,81 @@ Aliases:
 
 Required: False
 Position: 25
+Default value: @()
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PreReceiveMiddlewareHooks
+{{Fill PreReceiveMiddlewareHooks Description}}
+
+```yaml
+Type: MiddlewareHook[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 26
+Default value: @()
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PostReceiveMiddlewareHooks
+{{Fill PostReceiveMiddlewareHooks Description}}
+
+```yaml
+Type: MiddlewareHook[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 27
+Default value: @()
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PreExecuteMiddlewareHooks
+{{Fill PreExecuteMiddlewareHooks Description}}
+
+```yaml
+Type: MiddlewareHook[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 28
+Default value: @()
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PreResponseMiddlewareHooks
+{{Fill PreResponseMiddlewareHooks Description}}
+
+```yaml
+Type: MiddlewareHook[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 29
+Default value: @()
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PostResponseMiddlewareHooks
+{{Fill PostResponseMiddlewareHooks Description}}
+
+```yaml
+Type: MiddlewareHook[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 30
 Default value: @()
 Accept pipeline input: False
 Accept wildcard characters: False

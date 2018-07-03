@@ -81,3 +81,12 @@ enum MessageSubtype {
     ChannelPurposeChanged
     ChannelTopicChanged
 }
+
+enum MiddlewareType {
+    PreReceive
+    PostReceive
+    PreExecute
+    PostExecute
+    PreResponse
+    PostResponse
+}

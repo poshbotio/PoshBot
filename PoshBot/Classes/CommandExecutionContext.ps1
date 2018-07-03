@@ -14,20 +14,22 @@ class CommandExecutionContext {
     [object]$Job
     [ApprovalState]$ApprovalState = [ApprovalState]::AutoApproved
     [Approver]$Approver = [Approver]::new()
+    [Response]$Response = [Response]::new()
 
     [pscustomobject]Summarize() {
         return [pscustomobject]@{
-            Id = $this.Id
-            Complete = $this.Complete
-            Result = $this.Result.Summarize()
+            Id                        = $this.Id
+            Complete                  = $this.Complete
+            Result                    = $this.Result.Summarize()
             FullyQualifiedCommandName = $this.FullyQualifiedCommandName
-            ParsedCommand = $this.ParsedCommand.Summarize()
-            Message = $this.Message
-            IsJob = $this.IsJob
-            Started = $this.Started.ToUniversalTime().ToString('u')
-            Ended = $this.Ended.ToUniversalTime().ToString('u')
-            ApprovalState = $this.ApprovalState.ToString()
-            Approver = $this.Approver
+            ParsedCommand             = $this.ParsedCommand.Summarize()
+            Message                   = $this.Message
+            IsJob                     = $this.IsJob
+            Started                   = $this.Started.ToUniversalTime().ToString('u')
+            Ended                     = $this.Ended.ToUniversalTime().ToString('u')
+            ApprovalState             = $this.ApprovalState.ToString()
+            Approver                  = $this.Approver
+            Response                  = $this.Response.Summarize()
         }
     }
 

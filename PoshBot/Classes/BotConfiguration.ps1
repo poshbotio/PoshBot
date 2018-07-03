@@ -51,6 +51,8 @@ class BotConfiguration {
 
     [ApprovalConfiguration]$ApprovalConfiguration = [ApprovalConfiguration]::new()
 
+    [MiddlewareConfiguration]$MiddlewareConfiguration = [MiddlewareConfiguration]::new()
+
     [BotConfiguration] SerializeInstance([PSObject]$DeserializedObject) {
         return [BotConfiguration]::Serialize($DeserializedObject)
     }
