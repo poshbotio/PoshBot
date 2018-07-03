@@ -20,6 +20,7 @@ pages:
       - Roles: guides/command-authorization/roles.md
       - Groups: guides/command-authorization/groups.md
     - Plugin Configuration: guides/plugin-configuration.md
+    - Middleware: guides/middleware.md
     - Run Poshbot as a Service: guides/run-poshbot-as-a-service.md
   - Tutorials:
     - Backend Development:
@@ -31,7 +32,7 @@ pages:
         - PoshBot.BotCommand Custom Attribute: tutorials/plugin-development/advanced/poshbot.botcommand-attribute.md
         - Comment-Based Help: tutorials/plugin-development/advanced/comment-based-help.md
         - Custom Responses: tutorials/plugin-development/advanced/custom-responses.md
-        - Config-Providied Parameters: tutorials/plugin-development/advanced/config-provided-parameters.md
+        - Config-Provided Parameters: tutorials/plugin-development/advanced/config-provided-parameters.md
         - Stateful Data: tutorials/plugin-development/advanced/stateful-data.md
   - Reference:
     - Builtin Commands:
