@@ -41,6 +41,9 @@ Locale: en-US
 ### [New-PoshBotSlackBackend](New-PoshBotSlackBackend.md)
 {{Manually Enter New-PoshBotSlackBackend Description Here}}
 
+### [New-PoshBotTeamsBackend](New-PoshBotTeamsBackend.md)
+{{Manually Enter New-PoshBotTeamsBackend Description Here}}
+
 ### [New-PoshBotTextResponse](New-PoshBotTextResponse.md)
 {{Manually Enter New-PoshBotTextResponse Description Here}}
 

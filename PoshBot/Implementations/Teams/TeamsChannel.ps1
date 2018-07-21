@@ -1,0 +1,3 @@
+class TeamsChannel : Room {
+
+}
