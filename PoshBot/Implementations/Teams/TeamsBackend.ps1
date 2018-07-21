@@ -504,7 +504,20 @@ function New-PoshBotTeamsBackend {
     .PARAMETER Configuration
         The hashtable containing backend-specific properties on how to create the instance.
     .EXAMPLE
-        TODO
+        PS C:\> $backendConfig = @{
+            Name = 'TeamsBackend'
+            Credential = [pscredential]::new(
+                '<BOT-ID>',
+                ('<BOT-PASSWORD>' | ConvertTo-SecureString -AsPlainText -Force)
+            )
+            ServiceBusNamespace = '<SERVICEBUS-NAMESPACE>'
+            QueueName           = '<QUEUE-NAME>'
+            AccessKeyName       = '<KEY-NAME>'
+            AccessKey           = '<SECRET>' | ConvertTo-SecureString -AsPlainText -Force
+        }
+        PS C:\> $$backend = New-PoshBotTeamsBackend -Configuration $backendConfig
+
+        Create a Microsoft Teams backend using the specified Bot Framework credentials and Service Bus information
     .INPUTS
         Hashtable
     .OUTPUTS
@@ -520,29 +533,20 @@ function New-PoshBotTeamsBackend {
 
     process {
         foreach ($item in $Configuration) {
-            #if ((-not $item.Credential) -or (-not $item.Endpoint)) {
-            #    throw 'Configuration is missing required parameters'
-            #} else {
-                Write-Verbose 'Creating new Teams backend instance'
+            Write-Verbose 'Creating new Teams backend instance'
 
-                # Http endpoints always need to end with '/'
-                # if (-not $item.Endpoint.Endswith('/')) {
-                #     $item.Endpoint += '/'
-                # }
+            $connectionConfig = [TeamsConnectionConfig]::new()
+            $connectionConfig.Credential          = $item.Credential
+            $connectionConfig.ServiceBusNamespace = $item.ServiceBusNamespace
+            $connectionConfig.QueueName           = $item.QueueName
+            $connectionConfig.AccessKeyName       = $item.AccessKeyName
+            $connectionConfig.AccessKey           = $item.AccessKey
 
-                $connectionConfig = [TeamsConnectionConfig]::new()
-                $connectionConfig.Credential          = $item.Credential
-                $connectionConfig.ServiceBusNamespace = $item.ServiceBusNamespace
-                $connectionConfig.QueueName           = $item.QueueName
-                $connectionConfig.AccessKeyName       = $item.AccessKeyName
-                $connectionConfig.AccessKey           = $item.AccessKey
-
-                $backend = [TeamsBackend]::new($connectionConfig)
-                if ($item.Name) {
-                    $backend.Name = $item.Name
-                }
-                $backend
-            #}
+            $backend = [TeamsBackend]::new($connectionConfig)
+            if ($item.Name) {
+                $backend.Name = $item.Name
+            }
+            $backend
         }
     }
 }
