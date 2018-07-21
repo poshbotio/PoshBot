@@ -57,7 +57,10 @@ RequiredModules = @('Configuration', 'PSSlack')
 # RequiredAssemblies = @()
 
 # Script files (.ps1) that are run in the caller's environment prior to importing this module.
-ScriptsToProcess = @('PoshBotAttribute.ps1')
+ScriptsToProcess = @(
+    'LoadDLLs.ps1'
+    'PoshBotAttribute.ps1'
+)
 
 # Type files (.ps1xml) to be loaded when importing this module
 # TypesToProcess = @()
@@ -81,6 +84,7 @@ FunctionsToExport = @(
     'New-PoshBotMiddlewareHook'
     'New-PoshBotScheduledTask'
     'New-PoshBotSlackBackend'
+    'New-PoshBotTeamsBackend'
     'New-HelloPlugin'
     'New-PoshBotCardResponse'
     'New-PoshBotTextResponse'

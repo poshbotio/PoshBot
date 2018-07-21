@@ -12,6 +12,9 @@ properties {
     $outputModVerDir = Join-Path -Path $outputModDir -ChildPath $manifest.ModuleVersion
     $psVersion = $PSVersionTable.PSVersion.Major
     $pathSeperator = [IO.Path]::PathSeparator
+
+    $dotnetFramework = 'netstandard2.0'
+    $release = 'release'
 }
 
 task default -depends Test
@@ -194,12 +197,16 @@ task Compile -depends Clean {
         Get-Content -Raw | Add-Content -Path $psm1 -Encoding UTF8
     Get-ChildItem -Path (Join-Path -Path $sut -ChildPath 'Public') -Recurse |
         Get-Content -Raw | Add-Content -Path $psm1 -Encoding UTF8
-    Get-ChildItem -Path (Join-Path -Path $sut -ChildPath 'Implementations') -File -Recurse |
+    Get-ChildItem -Path (Join-Path -Path $sut -ChildPath 'Implementations') -File -Recurse -Filter '*.ps1' |
         Get-Content -Raw | Add-Content -Path $psm1 -Encoding UTF8
+
+    New-Item -Path $outputModVerDir/lib -ItemType Directory > $null
+    Copy-Item -Path "$sut/lib/*" -Destination $outputModVerDir/lib -Recurse
 
     # Copy over other items
     Copy-Item -Path $env:BHPSModuleManifest -Destination $outputModVerDir
     Copy-Item -Path (Join-Path -Path $classDir -ChildPath 'PoshBotAttribute.ps1') -Destination $outputModVerDir
+    Copy-Item -Path (Join-Path -Path $sut -ChildPath 'LoadDLLs.ps1') -Destination $outputModVerDir
     Copy-Item -Path (Join-Path -Path $sut -ChildPath 'Plugins') -Destination $outputModVerDir -Recurse
     Copy-Item -Path (Join-Path -Path $sut -ChildPath 'Task') -Destination $outputModVerDir -Recurse
 
