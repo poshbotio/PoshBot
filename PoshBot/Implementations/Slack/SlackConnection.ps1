@@ -88,6 +88,7 @@ class SlackConnection : Connection {
             $socketStatusStr = ($socketStatus | Format-List | Out-String).Trim()
             Write-Warning -Message "Websocket state is [$($webSocket.State.ToString())].`n$socketStatusStr"
         }
+
         try {
             $this.ReceiveJob = Start-Job -Name ReceiveRtmMessages -ScriptBlock $recv -ArgumentList $this.WebSocketUrl -ErrorAction Stop -Verbose
             $this.Connected = $true
