@@ -34,6 +34,8 @@ class Bot : BaseLogger {
 
     hidden [MiddlewareConfiguration] $_Middleware
 
+    hidden [bool]$LazyLoadComplete = $false
+
     Bot([Backend]$Backend, [string]$PoshBotDir, [BotConfiguration]$Config)
         : base($Config.LogDirectory, $Config.LogLevel, $Config.MaxLogSizeMB, $Config.MaxLogsToKeep) {
 
@@ -186,18 +188,10 @@ class Bot : BaseLogger {
         $this.LogVerbose('Connecting to backend chat network')
         $this.Backend.Connect()
 
-        # That that we're connected, resolve any bot administrators defined in
-        # configuration to their IDs and add to the [admin] role
-        foreach ($admin in $this.Configuration.BotAdmins) {
-            if ($adminId = $this.RoleManager.ResolveUsernameToId($admin)) {
-                try {
-                    $this.RoleManager.AddUserToGroup($adminId, 'Admin')
-                } catch {
-                    $this.LogInfo([LogSeverity]::Warning, "Unable to add [$admin] to [Admin] group", [ExceptionFormatter]::Summarize($_))
-                }
-            } else {
-                $this.LogInfo([LogSeverity]::Warning, "Unable to resolve ID for admin [$admin]")
-            }
+        # If the backend is not configured to lazy load
+        # then add admins now
+        if (-not $this.Backend.LazyLoadUsers) {
+            $this._LoadAdmins()
         }
     }
 
@@ -210,6 +204,12 @@ class Bot : BaseLogger {
     # Receive messages from the backend chat network
     [void]ReceiveMessage() {
         foreach ($msg in $this.Backend.ReceiveMessage()) {
+
+            # If the backend lazy loads and has done so
+            if (($this.Backend.LazyLoadUsers) -and (-not $this.LazyLoadComplete)) {
+                $this._LoadAdmins()
+                $this.LazyLoadComplete = $true
+            }
 
             # Ignore DMs if told to
             if ($msg.IsDM -and $this.Configuration.DisallowDMs) {
@@ -694,5 +694,21 @@ class Bot : BaseLogger {
         }
 
         return $Context
+    }
+
+    # Resolve any bot administrators defined in configuration to their IDs
+    # and add to the [admin] role
+    hidden [void] _LoadAdmins() {
+        foreach ($admin in $this.Configuration.BotAdmins) {
+            if ($adminId = $this.RoleManager.ResolveUsernameToId($admin)) {
+                try {
+                    $this.RoleManager.AddUserToGroup($adminId, 'Admin')
+                } catch {
+                    $this.LogInfo([LogSeverity]::Warning, "Unable to add [$admin] to [Admin] group", [ExceptionFormatter]::Summarize($_))
+                }
+            } else {
+                $this.LogInfo([LogSeverity]::Warning, "Unable to resolve ID for admin [$admin]")
+            }
+        }
     }
 }

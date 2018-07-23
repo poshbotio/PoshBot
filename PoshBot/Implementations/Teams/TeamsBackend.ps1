@@ -1,6 +1,8 @@
 
 class TeamsBackend : Backend {
 
+    [bool]$LazyLoadUsers = $true
+
     # The types of message that we care about from Slack
     # All othere will be ignored
     [string[]]$MessageTypes = @(
@@ -9,9 +11,14 @@ class TeamsBackend : Backend {
 
     [string]$TeamId = $null
     [string]$ServiceUrl = $null
+    [string]$BotId = $null
+    [string]$BotName = $null
+
+    [hashtable]$DMConverations = @{}
 
     TeamsBackend([TeamsConnectionConfig]$Config) {
         $conn = [TeamsConnection]::new($Config)
+        $this.TeamId = $Config.TeamId
         $this.Connection = $conn
     }
 
@@ -20,8 +27,8 @@ class TeamsBackend : Backend {
         $this.LogInfo('Connecting to backend')
         $this.Connection.Connect()
         #$this.BotId = $this.GetBotIdentity()
-        $this.LoadUsers()
-        $this.LoadRooms()
+        #$this.LoadUsers()
+        #$this.LoadRooms()
     }
 
     [Message[]]ReceiveMessage() {
@@ -37,7 +44,8 @@ class TeamsBackend : Backend {
 
                 foreach ($teamsMessage in $teamsMessages) {
 
-                    $this.SetTeamId($teamsMessage)
+                    $this.DelayedInit($teamsMessage)
+                    #$this.SetTeamId($teamsMessage)
 
                     # We only care about certain message types from Teams
                     if ($teamsMessage.type -in $this.MessageTypes) {
@@ -57,9 +65,14 @@ class TeamsBackend : Backend {
 
                         $msg.RawMessage = $teamsMessage
                         $this.LogDebug('Raw message', $teamsMessage)
+
+                        # When commands are directed to PoshBot, the bot must be "at" mentions.
+                        # This will show up in the text of the message received. We don't need it
+                        # so strip it out.
                         if ($teamsMessage.text)    {
-                            $msg.Text = $teamsMessage.text.Replace('<at>PoshBot</at> ', '')
+                            $msg.Text = $teamsMessage.text.Replace("<at>$($this.Connection.Config.BotName)</at> ", '')
                         }
+
                         if ($teamsMessage.channelData) { $msg.To   = $teamsMessage.channelData.clientActivityId }
                         if ($teamsMessage.from) {
                             $msg.From = $teamsMessage.from.id
@@ -106,10 +119,11 @@ class TeamsBackend : Backend {
         $this.LogDebug("[$($Response.Data.Count)] custom responses")
         foreach ($customResponse in $Response.Data) {
 
-            [string]$sendTo = $Response.To
-            if ($customResponse.DM) {
-                $sendTo = "@$($this.UserIdToUsername($Response.MessageFrom))"
-            }
+            # TODO: Implement DMs
+            # [string]$sendTo = $Response.To
+            # if ($customResponse.DM) {
+            #     $sendTo = "@$($this.UserIdToUsername($Response.MessageFrom))"
+            # }
 
             switch -Regex ($customResponse.PSObject.TypeNames[0]) {
                 '(.*?)PoshBot\.Card\.Response' {
@@ -151,38 +165,44 @@ class TeamsBackend : Backend {
                     break
                 }
                 '(.*?)PoshBot\.Text\.Response' {
-
                     $this.LogDebug('Custom response is [PoshBot.Text.Response]')
 
-                    $jsonResponse = @{
-                        type = 'message'
-                        from = @{
-                            id = $Response.OriginalMessage.RawMessage.recipient.id
-                            name = $Response.OriginalMessage.RawMessage.recipient.name
-                        }
-                        conversation = @{
-                            id = $Response.OriginalMessage.RawMessage.conversation.id
-                            name = ''
-                        }
-                        recipient = @{
-                            id = $Response.OriginalMessage.RawMessage.from.id
-                            name = $Response.OriginalMessage.RawMessage.from.name
-                        }
-                        text = $customResponse.Text
-                        replyToId = $activityId
-                    }
-                    if ($customResponse.AsCode) {
-                        $jsonResponse.text = '<code>' + $jsonResponse.text + '</code>'
-                        $jsonResponse.textFormat = 'xml'
-                    }
-                    $jsonResponse = $jsonResponse | ConvertTo-Json
+                    $cardBody = $this._GetCardStub()
+                    $cardBody.from.id         = $Response.OriginalMessage.RawMessage.recipient.id
+                    $cardBody.from.name       = $Response.OriginalMessage.RawMessage.recipient.name
+                    $cardBody.conversation.id = $Response.OriginalMessage.RawMessage.conversation.id
+                    $cardBody.recipient.id    = $Response.OriginalMessage.RawMessage.from.id
+                    $cardBody.recipient.name  = $Response.OriginalMessage.RawMessage.from.name
+                    $cardBody.replyToId       = $activityId
 
-                    $this.LogDebug("Sending response back to Teams channel [$channelId]")
+                    # Add TextBlock section for the message text
+                    if ($customResponse.Text) {
+                        $cardText = $customResponse.Text
+                        if ($customResponse.AdCode) {
+                            $cardText = '`' + $cardText + '`'
+                        }
+
+                        $cardBody.attachments[0].content.body[0].items[0].columns += @{
+                            type  = 'Column'
+                            width = 'stretch'
+                            items = @(
+                                @{
+                                    type = 'TextBlock'
+                                    text = $cardText
+                                    wrap = $true
+                                }
+                            )
+                        }
+                    }
+
+                    $body = $cardBody | ConvertTo-Json -Depth 15
+                    Write-Verbose $body
+                    $this.LogDebug("Sending response back to Teams channel [$channelId]", $body)
                     try {
                         $responseParams = @{
                             Uri         = $responseUrl
                             Method      = 'Post'
-                            Body        = $jsonResponse
+                            Body        = $body
                             ContentType = 'application/json'
                             Headers     = $headers
                         }
@@ -190,7 +210,6 @@ class TeamsBackend : Backend {
                     } catch {
                         $this.LogInfo([LogSeverity]::Error, "$($_.Exception.Message)", [ExceptionFormatter]::Summarize($_))
                     }
-
 
                     break
                 }
@@ -253,43 +272,44 @@ class TeamsBackend : Backend {
 
     # Populate the list of users the Slack team
     [void]LoadUsers() {
-        if (-not [string]::IsNullOrEmpty($this.TeamId)) {
+        if (-not [string]::IsNullOrEmpty($this.ServiceUrl)) {
             $this.LogDebug('Getting Teams users')
 
-            # $uri = "$($this.ServiceUrl)v3/converstations/$($this.TeamId)/members/"
-            # $headers = @{
-            #     Authorization = "Bearer $($this.Connection._AccessTokenInfo.access_token)"
-            # }
-            #$members = Invoke-RestMethod -Uri $uri -Headers $headers
+            $uri = "$($this.ServiceUrl)v3/conversations/$($this.TeamId)/members/"
+            $headers = @{
+                Authorization = "Bearer $($this.Connection._AccessTokenInfo.access_token)"
+            }
+            $members = Invoke-RestMethod -Uri $uri -Headers $headers
+            $this.LogDebug('Finished getting Teams users')
 
-            # $members | Foreach-Object {
-            #     $user = [TeamsPerson]::new()
-            #     $user.Id                = $_.id
-            #     $user.FirstName         = $_.givenName
-            #     $user.LastName          = $_.surname
-            #     $user.NickName          = "$($_.givenName) $($_.surname)"
-            #     $user.FullName          = "$($_.givenName) $($_.surname)"
-            #     $user.Email             = $_.email
-            #     $user.UserPrincipalName = $_.userPrincipalName
+            $members | Foreach-Object {
+                $user = [TeamsPerson]::new()
+                $user.Id                = $_.id
+                $user.FirstName         = $_.givenName
+                $user.LastName          = $_.surname
+                $user.NickName          = $_.userPrincipalName
+                $user.FullName          = "$($_.givenName) $($_.surname)"
+                $user.Email             = $_.email
+                $user.UserPrincipalName = $_.userPrincipalName
 
-            #     if (-not $this.Users.ContainsKey($_.ID)) {
-            #         $this.LogDebug("Adding user [$($_.ID):$($_.Name)]")
-            #         $this.Users[$_.ID] =  $user
-            #     }
-            # }
+                if (-not $this.Users.ContainsKey($_.ID)) {
+                    $this.LogDebug("Adding user [$($_.ID):$($_.Name)]")
+                    $this.Users[$_.ID] =  $user
+                }
+            }
 
-            # foreach ($key in $this.Users.Keys) {
-            #     if ($key -notin $members.ID) {
-            #         $this.LogDebug("Removing outdated user [$key]")
-            #         $this.Users.Remove($key)
-            #     }
-            # }
+            foreach ($key in $this.Users.Keys) {
+                if ($key -notin $members.ID) {
+                    $this.LogDebug("Removing outdated user [$key]")
+                    $this.Users.Remove($key)
+                }
+            }
         }
     }
 
     # Populate the list of channels in the team
     [void]LoadRooms() {
-        if (-not [string]::IsNullOrEmpty($this.TeamId)) {
+        #if (-not [string]::IsNullOrEmpty($this.TeamId)) {
             $this.LogDebug('Getting Teams channels')
 
             $uri = "$($this.ServiceUrl)v3/teams/$($this.TeamId)/conversations"
@@ -314,7 +334,7 @@ class TeamsBackend : Backend {
                     }
                 }
             }
-        }
+        #}
     }
 
     [bool]MsgFromBot([string]$From) {
@@ -421,38 +441,50 @@ class TeamsBackend : Backend {
         }
     }
 
-    hidden [void]SetTeamId([pscustomobject]$Message) {
-        $firstTime = $false
-
-        # The bot won't know what the Teams ID until we receive
-        # the first message after startup (dumb)
-        # If this is the first time getting it
-        # make sure to load user and channel info
-        if ($this.TeamId -ne $Message.channelData.team.id) {
-            if ([string]::IsNullOrEmpty($this.TeamId)) {
-                $firstTime = $true
-            }
-            $this.TeamId = $Message.channelData.team.id
-        }
-
-        # The Service URL for responding back to Teams MAY change
-        # so make sure we always not what it is
-        if ($this.ServiceUrl -ne $Message.serviceUrl) {
+    hidden [void]DelayedInit([pscustomobject]$Message) {
+        if ([string]::IsNullOrEmpty($this.ServiceUrl)) {
             $this.ServiceUrl = $Message.serviceUrl
-        }
-
-        if ($firstTime) {
-            #$this.LoadUsers()
+            $this.LoadUsers()
             $this.LoadRooms()
         }
+
+        if ([string]::IsNullOrEmpty($this.BotId)) {
+            if ($Message.recipient) {
+                $this.BotId   = $Message.recipient.Id
+                $this.BotName = $Message.recipient.name
+            }
+        }
+
+        # $firstTime = $false
+        # # The bot won't know what the Teams ID until we receive
+        # # the first message after startup (dumb)
+        # # If this is the first time getting it
+        # # make sure to load user and channel info
+        # if ($this.TeamId -ne $Message.channelData.team.id) {
+        #     if ([string]::IsNullOrEmpty($this.TeamId)) {
+        #         $firstTime = $true
+        #     }
+        #     $this.TeamId = $Message.channelData.team.id
+        # }
+
+        # # The Service URL for responding back to Teams MAY change
+        # # so make sure we always not what it is
+        # if ($this.ServiceUrl -ne $Message.serviceUrl) {
+        #     $this.ServiceUrl = $Message.serviceUrl
+        # }
+
+        # if ($firstTime) {
+        #     #$this.LoadUsers()
+        #     $this.LoadRooms()
+        # }
     }
 
     hidden [void]SendTeamsMessaage([Response]$Response) {
-        $baseUrl = $Response.OriginalMessage.RawMessage.serviceUrl
+        $baseUrl        = $Response.OriginalMessage.RawMessage.serviceUrl
         $conversationId = $Response.OriginalMessage.RawMessage.conversation.id
-        $activityId = $Response.OriginalMessage.RawMessage.id
-        $responseUrl = "$($baseUrl)v3/conversations/$conversationId/activities/$activityId"
-        $channelId = $Response.OriginalMessage.RawMessage.channelData.teamsChannelId
+        $activityId     = $Response.OriginalMessage.RawMessage.id
+        $responseUrl    = "$($baseUrl)v3/conversations/$conversationId/activities/$activityId"
+        $channelId      = $Response.OriginalMessage.RawMessage.channelData.teamsChannelId
         $headers = @{
             Authorization = "Bearer $($this.Connection._AccessTokenInfo.access_token)"
         }
@@ -494,61 +526,160 @@ class TeamsBackend : Backend {
             }
         }
     }
-}
-function New-PoshBotTeamsBackend {
-    <#
-    .SYNOPSIS
-        Create a new instance of a Microsoft Teams backend
-    .DESCRIPTION
-        Create a new instance of a Microsoft Teams backend
-    .PARAMETER Configuration
-        The hashtable containing backend-specific properties on how to create the instance.
-    .EXAMPLE
-        PS C:\> $backendConfig = @{
-            Name = 'TeamsBackend'
-            Credential = [pscredential]::new(
-                '<BOT-ID>',
-                ('<BOT-PASSWORD>' | ConvertTo-SecureString -AsPlainText -Force)
-            )
-            ServiceBusNamespace = '<SERVICEBUS-NAMESPACE>'
-            QueueName           = '<QUEUE-NAME>'
-            AccessKeyName       = '<KEY-NAME>'
-            AccessKey           = '<SECRET>' | ConvertTo-SecureString -AsPlainText -Force
-        }
-        PS C:\> $$backend = New-PoshBotTeamsBackend -Configuration $backendConfig
 
-        Create a Microsoft Teams backend using the specified Bot Framework credentials and Service Bus information
-    .INPUTS
-        Hashtable
-    .OUTPUTS
-        TeamsBackend
-    #>
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Scope='Function', Target='*')]
-    [cmdletbinding()]
-    param(
-        [parameter(Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName)]
-        [Alias('BackendConfiguration')]
-        [hashtable[]]$Configuration
-    )
-
-    process {
-        foreach ($item in $Configuration) {
-            Write-Verbose 'Creating new Teams backend instance'
-
-            $connectionConfig = [TeamsConnectionConfig]::new()
-            $connectionConfig.Credential          = $item.Credential
-            $connectionConfig.ServiceBusNamespace = $item.ServiceBusNamespace
-            $connectionConfig.QueueName           = $item.QueueName
-            $connectionConfig.AccessKeyName       = $item.AccessKeyName
-            $connectionConfig.AccessKey           = $item.AccessKey
-
-            $backend = [TeamsBackend]::new($connectionConfig)
-            if ($item.Name) {
-                $backend.Name = $item.Name
+    # Create a new DM conversation and return the converation ID
+    # If there is an existing conversation, return that ID
+    hidden [string]CreateDMConversation([string]$UserId) {
+        if ($this.DMConverations.ContainsKey($userId)) {
+            return $this.DMConverations[$UserId]
+        } else {
+            $newConversationUrl = "$($this.ServiceUrl)v3/conversations/"
+            $headers = @{
+                Authorization = "Bearer $($this.Connection._AccessTokenInfo.access_token)"
             }
-            $backend
+
+            $conversationParams = @{
+                bot = @{
+                    id = $this.BotId
+                    name = $this.BotName
+                }
+                isGroup = $false
+                members = @(
+                    @{
+                        id = $UserId
+                        name = $this.UserIdToUsername($UserId)
+                    }
+                )
+                topicName = ''
+            }
+
+            $params = @{
+                Uri         = $newConversationUrl
+                Method      = 'Post'
+                Body        = $conversationParams | ConvertTo-Json
+                ContentType = 'application/json'
+                Headers     = $headers
+            }
+            $conversation = Invoke-RestMethod @params
+            if ($conversation) {
+                return $conversation.id
+            } else {
+                $this.LogInfo([LogSeverity]::Error, "$($_.Exception.Message)", [ExceptionFormatter]::Summarize($_))
+                return $null
+            }
         }
     }
-}
 
-Export-ModuleMember -Function 'New-PoshBotTeamsBackend'
+    hidden [hashtable]_CreateTextReponse(
+        [string]$Text,
+        [string]$FromId,
+        [string]$FromName,
+        [string]$ConversationId,
+        [string]$RecipientId,
+        [string]$RecipientName,
+        [string]$ActivityId
+    ) {
+        return @{
+            type = 'message'
+            from = @{
+                id = $FromId
+                name = $FromId
+            }
+            conversation = @{
+                id = $ConversationId
+                name = ''
+            }
+            recipient = @{
+                id = $RecipientId
+                name = $RecipientName
+            }
+            text = $Text
+            replyToId = $ActivityId
+        }
+    }
+
+    hidden [hashtable]_GetCardStub() {
+        return @{
+            type = 'message'
+            from = @{
+                id   = $null
+                name = $null
+            }
+            conversation = @{
+                id = $null
+                #name = ''
+            }
+            recipient = @{
+                id = $null
+                name = $null
+            }
+            attachments = @(
+                @{
+                    contentType = 'application/vnd.microsoft.card.adaptive'
+                    content = @{
+                        type = 'AdaptiveCard'
+                        version = '1.0'
+                        fallbackText = $null
+                        body = @(
+                            @{
+                                type = 'Container'
+                                spacing = 'none'
+                                items = @(
+                                    # # Title & Thumbnail row
+                                    @{
+                                        type = 'ColumnSet'
+                                        spacing = 'none'
+                                        columns = @()
+                                    }
+                                    # Text & image row
+                                    @{
+                                        type = 'ColumnSet'
+                                        spacing = 'none'
+                                        columns = @()
+                                    }
+                                    # Facts row
+                                    @{
+                                        type = 'FactSet'
+                                        facts = @()
+                                    }
+                                )
+                            }
+                        )
+                    }
+                }
+            )
+            replyToId = $null
+        }
+    }
+
+    # hidden [hashtable]_CreateDMTextResponse(
+    #     [string]$Text,
+    #     [string]$FromId,
+    #     [string]$FromName,
+    #     [string]$ConversationId,
+    #     [string]$RecipientId,
+    #     [string]$RecipientName,
+    #     [string]$ActivityId
+    # ) {
+    #     $this._CreateTextReponse($Text, $FromId, $FromName, $ConversationId, $RecipientId, $RecipientName, $ActivityId)
+    # }
+
+    # Send a generic response back to Teams
+    hidden [void]_SendTeamsMessage([string]$ResponseUrl, [hashtable]$Message) {
+        $params = @{
+            Uri         = $ResponseUrl
+            Method      = 'Post'
+            Body        = $Message | ConvertTo-Json
+            ContentType = 'application/json'
+            Headers     = @{
+                Authorization = "Bearer $($this.Connection._AccessTokenInfo.access_token)"
+            }
+        }
+        try {
+            $teamsResponse = Invoke-RestMethod @params
+        } catch {
+            $this.LogInfo([LogSeverity]::Error, "$($_.Exception.Message)", [ExceptionFormatter]::Summarize($_))
+        }
+    }
+
+}

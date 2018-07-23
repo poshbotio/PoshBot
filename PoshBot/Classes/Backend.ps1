@@ -15,6 +15,8 @@ class Backend : BaseLogger {
 
     [System.Collections.ArrayList]$IgnoredMessageTypes = (New-Object System.Collections.ArrayList)
 
+    [bool]$LazyLoadUsers = $false
+
     Backend() {}
 
     # Send a message
