@@ -115,45 +115,145 @@ class TeamsBackend : Backend {
             Authorization = "Bearer $($this.Connection._AccessTokenInfo.access_token)"
         }
 
+        $fromId         = $Response.OriginalMessage.RawMessage.from.id
+        $fromName       = $Response.OriginalMessage.RawMessage.from.name
+        $recipientId    = $Response.OriginalMessage.RawMessage.recipient.id
+        $recipientName  = $Response.OriginalMessage.RawMessage.recipient.name
+        $conversationId = $Response.OriginalMessage.RawMessage.conversation.id
+
         # Process any custom responses
         $this.LogDebug("[$($Response.Data.Count)] custom responses")
         foreach ($customResponse in $Response.Data) {
 
-            # TODO: Implement DMs
-            # [string]$sendTo = $Response.To
-            # if ($customResponse.DM) {
-            #     $sendTo = "@$($this.UserIdToUsername($Response.MessageFrom))"
-            # }
+            if ($customResponse.Text) {
+                #$customResponse.Text = $this._RepairText($customResponse.Text)
+            }
+
+            # Redirect response to DM channel if told to
+            if ($customResponse.DM) {
+                $conversationId = $this._CreateDMConversation($Response.OriginalMessage.RawMessage.from.id)
+            }
 
             switch -Regex ($customResponse.PSObject.TypeNames[0]) {
                 '(.*?)PoshBot\.Card\.Response' {
                     $this.LogDebug('Custom response is [PoshBot.Card.Response]')
 
-                    $jsonResponse = @{
-                        type = 'message'
-                        from = @{
-                            id = $Response.OriginalMessage.RawMessage.recipient.id
-                            name = $Response.OriginalMessage.RawMessage.recipient.name
-                        }
-                        conversation = @{
-                            id = $Response.OriginalMessage.RawMessage.conversation.id
-                            name = ''
-                        }
-                        recipient = @{
-                            id = $Response.OriginalMessage.RawMessage.from.id
-                            name = $Response.OriginalMessage.RawMessage.from.name
-                        }
-                        text = $customResponse | ConvertTo-Json
-                        replyToId = $activityId
-                    }
-                    $jsonResponse = $jsonResponse | ConvertTo-Json
+                    $cardBody = $this._GetCardStub()
+                    $cardBody.from.id         = $recipientId
+                    $cardBody.from.name       = $recipientName
+                    $cardBody.conversation.id = $conversationId
+                    $cardBody.recipient.id    = $fromId
+                    $cardBody.recipient.name  = $fromName
+                    $cardBody.replyToId       = $activityId
 
-                    $this.LogDebug("Sending response back to Teams channel [$channelId]")
+                    # Thumbnail
+                    if ($customResponse.ThumbnailUrl) {
+                        $cardBody.attachments[0].content.body[0].items[0].columns += @{
+                            type = 'Column'
+                            width = 'auto'
+                            items = @(
+                                @{
+                                    type = 'Image'
+                                    url = $customResponse.ThumbnailUrl
+                                    size = 'medium'
+                                }
+                            )
+                        }
+                    }
+
+                    # Title
+                    if ($customResponse.Title) {
+                        if ($customResponse.LinkUrl) {
+                            $customResponse.Title = "[$($customResponse.Title)]($($customResponse.LinkUrl))"
+                        }
+                        $cardBody.attachments[0].content.body[0].items[0].columns += @{
+                            type = 'Column'
+                            width = 'stretch'
+                            items = @(
+                                @{
+                                    type = 'TextBlock'
+                                    size = 'medium'
+                                    weight = 'bolder'
+                                    text = $customResponse.Title
+                                    color = 'default'
+                                }
+                            )
+                        }
+                    }
+
+                    # TextBlock
+                    if ($customResponse.Text) {
+                        $cardText = $customResponse.Text
+                        if ($customResponse.AsCode) {
+                            $cardText = '```' + $cardText + '```'
+                        }
+
+                        $cardBody.attachments[0].content.body[0].items[1].columns += @{
+                            type  = 'Column'
+                            width = 'stretch'
+                            items = @(
+                                @{
+                                    type = 'TextBlock'
+                                    text = $cardText
+                                    wrap = $true
+                                }
+                            )
+                        }
+                    }
+
+                    # Image
+                    if ($customResponse.ImageUrl) {
+                        $cardBody.attachments[0].content.body[0].items[1].columns += @{
+                            type  = 'Column'
+                            width = 'auto'
+                            items = @(
+                                type = 'Image'
+                                url  = $customResponse.ImageUrl
+                                size = 'auto'
+                            )
+                        }
+                    }
+
+                    # Facts
+                    if ($customResponse.Fields.Count -gt 0) {
+                        foreach ($field in $customResponse.Fields.GetEnumerator()) {
+                            $cardBody.attachments[0].content.body[0].items[2].facts += @{
+                                title = $field.Name
+                                value = $field.Value.ToString()
+                            }
+                        }
+                    }
+
+                    # Prepend Error or Warning TextBlock to the the card is response is marked as such
+                    if ($customResponse.Type -ne 'Normal') {
+                        $textBlock = @{
+                            type = "TextBlock"
+                            size = 'medium'
+                            weight = 'bolder'
+                        }
+                        if ($customResponse.Type -eq 'Warning') {
+                            $textBlock.text = 'Warning'
+                            $textBlock.color = 'warning'
+                        } elseIf ($customResponse.Type -eq 'Error') {
+                            $textBlock.text = 'Error'
+                            $textBlock.color = 'attention'
+                        }
+
+                        $cardBody.attachments[0].content.body[0].items = @(
+                            $textBlock
+                            $cardBody.attachments[0].content.body[0].items
+                        )
+                    }
+
+                    $body = $cardBody | ConvertTo-Json -Depth 15
+                    Write-Verbose $body
+                    $body | Out-File -FilePath "$script:moduleBase/responses.json" -Append
+                    $this.LogDebug("Sending response back to Teams channel [$channelId]", $body)
                     try {
                         $responseParams = @{
                             Uri         = $responseUrl
                             Method      = 'Post'
-                            Body        = $jsonResponse
+                            Body        = $body
                             ContentType = 'application/json'
                             Headers     = $headers
                         }
@@ -168,21 +268,21 @@ class TeamsBackend : Backend {
                     $this.LogDebug('Custom response is [PoshBot.Text.Response]')
 
                     $cardBody = $this._GetCardStub()
-                    $cardBody.from.id         = $Response.OriginalMessage.RawMessage.recipient.id
-                    $cardBody.from.name       = $Response.OriginalMessage.RawMessage.recipient.name
-                    $cardBody.conversation.id = $Response.OriginalMessage.RawMessage.conversation.id
-                    $cardBody.recipient.id    = $Response.OriginalMessage.RawMessage.from.id
-                    $cardBody.recipient.name  = $Response.OriginalMessage.RawMessage.from.name
+                    $cardBody.from.id         = $recipientId
+                    $cardBody.from.name       = $recipientName
+                    $cardBody.conversation.id = $conversationId
+                    $cardBody.recipient.id    = $fromId
+                    $cardBody.recipient.name  = $fromName
                     $cardBody.replyToId       = $activityId
 
-                    # Add TextBlock section for the message text
+                    # TextBlock
                     if ($customResponse.Text) {
                         $cardText = $customResponse.Text
-                        if ($customResponse.AdCode) {
-                            $cardText = '`' + $cardText + '`'
+                        if ($customResponse.AsCode) {
+                            $cardText = '```' + $cardText + '```'
                         }
 
-                        $cardBody.attachments[0].content.body[0].items[0].columns += @{
+                        $cardBody.attachments[0].content.body[0].items[1].columns += @{
                             type  = 'Column'
                             width = 'stretch'
                             items = @(
@@ -197,6 +297,7 @@ class TeamsBackend : Backend {
 
                     $body = $cardBody | ConvertTo-Json -Depth 15
                     Write-Verbose $body
+                    $body | Out-File -FilePath "$script:moduleBase/responses.json" -Append
                     $this.LogDebug("Sending response back to Teams channel [$channelId]", $body)
                     try {
                         $responseParams = @{
@@ -255,6 +356,7 @@ class TeamsBackend : Backend {
 
         # Normal responses
         if ($Response.Text.Count -gt 0) {
+            #$Response.Text = $this._RepairText($Response.Text)
             $this.LogDebug("Sending response back to Teams channel [$($Response.To)]")
             $this.SendTeamsMessaage($Response)
         }
@@ -518,7 +620,6 @@ class TeamsBackend : Backend {
                         ContentType = 'application/json'
                         Headers     = $headers
                     }
-                    #$this.LogDebug('JSON payload', $jsonResponse)
                     $teamsResponse = Invoke-RestMethod @responseParams
                 } catch {
                     $this.LogInfo([LogSeverity]::Error, "$($_.Exception.Message)", [ExceptionFormatter]::Summarize($_))
@@ -529,11 +630,11 @@ class TeamsBackend : Backend {
 
     # Create a new DM conversation and return the converation ID
     # If there is an existing conversation, return that ID
-    hidden [string]CreateDMConversation([string]$UserId) {
+    hidden [string]_CreateDMConversation([string]$UserId) {
         if ($this.DMConverations.ContainsKey($userId)) {
             return $this.DMConverations[$UserId]
         } else {
-            $newConversationUrl = "$($this.ServiceUrl)v3/conversations/"
+            $newConversationUrl = "$($this.ServiceUrl)v3/conversations"
             $headers = @{
                 Authorization = "Bearer $($this.Connection._AccessTokenInfo.access_token)"
             }
@@ -553,10 +654,12 @@ class TeamsBackend : Backend {
                 topicName = ''
             }
 
+            $body = $conversationParams | ConvertTo-Json
+            $body | Out-File -FilePath "$script:moduleBase/create-dm.json" -Append
             $params = @{
                 Uri         = $newConversationUrl
                 Method      = 'Post'
-                Body        = $conversationParams | ConvertTo-Json
+                Body        = $body
                 ContentType = 'application/json'
                 Headers     = $headers
             }
@@ -567,34 +670,6 @@ class TeamsBackend : Backend {
                 $this.LogInfo([LogSeverity]::Error, "$($_.Exception.Message)", [ExceptionFormatter]::Summarize($_))
                 return $null
             }
-        }
-    }
-
-    hidden [hashtable]_CreateTextReponse(
-        [string]$Text,
-        [string]$FromId,
-        [string]$FromName,
-        [string]$ConversationId,
-        [string]$RecipientId,
-        [string]$RecipientName,
-        [string]$ActivityId
-    ) {
-        return @{
-            type = 'message'
-            from = @{
-                id = $FromId
-                name = $FromId
-            }
-            conversation = @{
-                id = $ConversationId
-                name = ''
-            }
-            recipient = @{
-                id = $RecipientId
-                name = $RecipientName
-            }
-            text = $Text
-            replyToId = $ActivityId
         }
     }
 
@@ -652,34 +727,15 @@ class TeamsBackend : Backend {
         }
     }
 
-    # hidden [hashtable]_CreateDMTextResponse(
-    #     [string]$Text,
-    #     [string]$FromId,
-    #     [string]$FromName,
-    #     [string]$ConversationId,
-    #     [string]$RecipientId,
-    #     [string]$RecipientName,
-    #     [string]$ActivityId
-    # ) {
-    #     $this._CreateTextReponse($Text, $FromId, $FromName, $ConversationId, $RecipientId, $RecipientName, $ActivityId)
-    # }
+    hidden [string]_RepairText([string]$Text) {
+        if (-not [string]::IsNullOrEmpty($Text)) {
+            $fixed = $Text.Replace('"', '\"').Replace('\', '\\').Replace("`n", '\n\n').Replace("`r", '').Replace("`t", '\t')
+            $fixed = [System.Text.RegularExpressions.Regex]::Unescape($Text)
+        } else {
+            $fixed = ' '
+        }
 
-    # Send a generic response back to Teams
-    hidden [void]_SendTeamsMessage([string]$ResponseUrl, [hashtable]$Message) {
-        $params = @{
-            Uri         = $ResponseUrl
-            Method      = 'Post'
-            Body        = $Message | ConvertTo-Json
-            ContentType = 'application/json'
-            Headers     = @{
-                Authorization = "Bearer $($this.Connection._AccessTokenInfo.access_token)"
-            }
-        }
-        try {
-            $teamsResponse = Invoke-RestMethod @params
-        } catch {
-            $this.LogInfo([LogSeverity]::Error, "$($_.Exception.Message)", [ExceptionFormatter]::Summarize($_))
-        }
+        return $fixed
     }
 
 }
