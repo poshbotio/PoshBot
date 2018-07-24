@@ -9,10 +9,11 @@ class TeamsBackend : Backend {
         'message'
     )
 
-    [string]$TeamId = $null
+    [string]$TeamId     = $null
     [string]$ServiceUrl = $null
-    [string]$BotId = $null
-    [string]$BotName = $null
+    [string]$BotId      = $null
+    [string]$BotName    = $null
+    [string]$TenantId   = $null
 
     [hashtable]$DMConverations = @{}
 
@@ -132,6 +133,8 @@ class TeamsBackend : Backend {
             # Redirect response to DM channel if told to
             if ($customResponse.DM) {
                 $conversationId = $this._CreateDMConversation($Response.OriginalMessage.RawMessage.from.id)
+                $activityId = $conversationId
+                $responseUrl = "$($baseUrl)v3/conversations/$conversationId/activities/$activityId"
             }
 
             switch -Regex ($customResponse.PSObject.TypeNames[0]) {
@@ -247,8 +250,8 @@ class TeamsBackend : Backend {
 
                     $body = $cardBody | ConvertTo-Json -Depth 15
                     Write-Verbose $body
-                    $body | Out-File -FilePath "$script:moduleBase/responses.json" -Append
-                    $this.LogDebug("Sending response back to Teams channel [$channelId]", $body)
+                    #$body | Out-File -FilePath "$script:moduleBase/responses.json" -Append
+                    $this.LogDebug("Sending response back to Teams conversation [$conversationId]", $body)
                     try {
                         $responseParams = @{
                             Uri         = $responseUrl
@@ -297,8 +300,8 @@ class TeamsBackend : Backend {
 
                     $body = $cardBody | ConvertTo-Json -Depth 15
                     Write-Verbose $body
-                    $body | Out-File -FilePath "$script:moduleBase/responses.json" -Append
-                    $this.LogDebug("Sending response back to Teams channel [$channelId]", $body)
+                    #$body | Out-File -FilePath "$script:moduleBase/responses.json" -Append
+                    $this.LogDebug("Sending response back to Teams channel [$conversationId]", $body)
                     try {
                         $responseParams = @{
                             Uri         = $responseUrl
@@ -334,7 +337,7 @@ class TeamsBackend : Backend {
                         $bytes = [System.Text.Encoding]::UTF8.GetBytes($customResponse.Path)
                         $uploadParams.originalBase64  = [System.Convert]::ToBase64String($bytes)
                         $uploadParams.thumbnailBase64 = [System.Convert]::ToBase64String($bytes)
-                        $this.LogDebug("Uploading [$($customResponse.Path)] to Teams channel [$channelId]")
+                        $this.LogDebug("Uploading [$($customResponse.Path)] to Teams conversation [$conversationId]")
                         $payLoad = $uploadParams | ConvertTo-Json
                         $this.LogDebug('JSON payload', $payLoad)
                         $attachmentUrl = "$($baseUrl)v3/conversations/$conversationId/attachments"
@@ -557,6 +560,12 @@ class TeamsBackend : Backend {
             }
         }
 
+        if ([string]::IsNullOrEmpty($this.TenantId)) {
+            if ($Message.channelData.tenant.id) {
+                $this.TenantId = $Message.channelData.tenant.id
+            }
+        }
+
         # $firstTime = $false
         # # The bot won't know what the Teams ID until we receive
         # # the first message after startup (dumb)
@@ -611,7 +620,7 @@ class TeamsBackend : Backend {
                     replyToId = $activityId
                 } | ConvertTo-Json
 
-                $this.LogDebug("Sending response back to Teams channel [$channelId]")
+                $this.LogDebug("Sending response back to Teams conversation [$conversationId]")
                 try {
                     $responseParams = @{
                         Uri         = $responseUrl
@@ -644,18 +653,20 @@ class TeamsBackend : Backend {
                     id = $this.BotId
                     name = $this.BotName
                 }
-                isGroup = $false
                 members = @(
                     @{
                         id = $UserId
-                        name = $this.UserIdToUsername($UserId)
                     }
                 )
-                topicName = ''
+                channelData = @{
+                    tenant = @{
+                        id = $this.TenantId
+                    }
+                }
             }
 
             $body = $conversationParams | ConvertTo-Json
-            $body | Out-File -FilePath "$script:moduleBase/create-dm.json" -Append
+            #$body | Out-File -FilePath "$script:moduleBase/create-dm.json" -Append
             $params = @{
                 Uri         = $newConversationUrl
                 Method      = 'Post'
@@ -665,6 +676,7 @@ class TeamsBackend : Backend {
             }
             $conversation = Invoke-RestMethod @params
             if ($conversation) {
+                $this.LogDebug("Created DM conversation [$($conversation.id)] with user [$UserId]")
                 return $conversation.id
             } else {
                 $this.LogInfo([LogSeverity]::Error, "$($_.Exception.Message)", [ExceptionFormatter]::Summarize($_))
