@@ -17,6 +17,8 @@ class TeamsBackend : Backend {
 
     [hashtable]$DMConverations = @{}
 
+    [hashtable]$FileUploadTracker = @{}
+
     TeamsBackend([TeamsConnectionConfig]$Config) {
         $conn = [TeamsConnection]::new($Config)
         $this.TeamId = $Config.TeamId
@@ -107,20 +109,18 @@ class TeamsBackend : Backend {
     # Send a message
     [void]SendMessage([Response]$Response) {
 
-        $baseUrl = $Response.OriginalMessage.RawMessage.serviceUrl
-        $conversationId = $Response.OriginalMessage.RawMessage.conversation.id
-        $activityId = $Response.OriginalMessage.RawMessage.id
-        $responseUrl = "$($baseUrl)v3/conversations/$conversationId/activities/$activityId"
-        $channelId = $Response.OriginalMessage.RawMessage.channelData.teamsChannelId
-        $headers = @{
-            Authorization = "Bearer $($this.Connection._AccessTokenInfo.access_token)"
-        }
-
+        $baseUrl        = $Response.OriginalMessage.RawMessage.serviceUrl
         $fromId         = $Response.OriginalMessage.RawMessage.from.id
         $fromName       = $Response.OriginalMessage.RawMessage.from.name
         $recipientId    = $Response.OriginalMessage.RawMessage.recipient.id
         $recipientName  = $Response.OriginalMessage.RawMessage.recipient.name
         $conversationId = $Response.OriginalMessage.RawMessage.conversation.id
+        $activityId     = $Response.OriginalMessage.RawMessage.id
+        $responseUrl    = "$($baseUrl)v3/conversations/$conversationId/activities/$activityId"
+        $channelId      = $Response.OriginalMessage.RawMessage.channelData.teamsChannelId
+        $headers = @{
+            Authorization = "Bearer $($this.Connection._AccessTokenInfo.access_token)"
+        }
 
         # Process any custom responses
         $this.LogDebug("[$($Response.Data.Count)] custom responses")
@@ -134,123 +134,169 @@ class TeamsBackend : Backend {
             if ($customResponse.DM) {
                 $conversationId = $this._CreateDMConversation($Response.OriginalMessage.RawMessage.from.id)
                 $activityId = $conversationId
-                $responseUrl = "$($baseUrl)v3/conversations/$conversationId/activities/$activityId"
+                $responseUrl = "$($baseUrl)v3/conversations/$conversationId/activities/"
             }
 
             switch -Regex ($customResponse.PSObject.TypeNames[0]) {
                 '(.*?)PoshBot\.Card\.Response' {
                     $this.LogDebug('Custom response is [PoshBot.Card.Response]')
 
-                    $cardBody = $this._GetCardStub()
-                    $cardBody.from.id         = $recipientId
-                    $cardBody.from.name       = $recipientName
-                    $cardBody.conversation.id = $conversationId
-                    $cardBody.recipient.id    = $fromId
-                    $cardBody.recipient.name  = $fromName
-                    $cardBody.replyToId       = $activityId
+                    $cardBody = @{
+                        type = 'message'
+                        from = @{
+                            id   = $fromId
+                            name = $fromName
+                        }
+                        conversation = @{
+                            id = $conversationId
+                        }
+                        recipient = @{
+                            id = $recipientId
+                            name = $recipientName
+                        }
+                        attachments = @(
+                            @{
+                                contentType = 'application/vnd.microsoft.teams.card.o365connector'
+                                content = @{
+                                    "@type" = 'MessageCard'
+                                    "@context" = 'http://schema.org/extensions'
+                                    themeColor = $customResponse.Color -replace '#', ''
+                                    sections = @(
+                                        @{
+
+                                        }
+                                    )
+                                }
+                            }
+                        )
+                        replyToId = $activityId
+                    }
+
+                    # $cardBody = $this._GetCardStub()
+                    # $cardBody.from.id         = $recipientId
+                    # $cardBody.from.name       = $recipientName
+                    # $cardBody.conversation.id = $conversationId
+                    # $cardBody.recipient.id    = $fromId
+                    # $cardBody.recipient.name  = $fromName
+                    # $cardBody.replyToId       = $activityId
 
                     # Thumbnail
                     if ($customResponse.ThumbnailUrl) {
-                        $cardBody.attachments[0].content.body[0].items[0].columns += @{
-                            type = 'Column'
-                            width = 'auto'
-                            items = @(
-                                @{
-                                    type = 'Image'
-                                    url = $customResponse.ThumbnailUrl
-                                    size = 'medium'
-                                }
-                            )
-                        }
+                        $cardBody.attachments[0].content.sections[0].activityImageType = 'article'
+                        $cardBody.attachments[0].content.sections[0].activityImage = $customResponse.ThumbnailUrl
+                    #     $cardBody.attachments[0].content.body[0].items[0].columns += @{
+                    #         type = 'Column'
+                    #         width = 'auto'
+                    #         items = @(
+                    #             @{
+                    #                 type = 'Image'
+                    #                 url = $customResponse.ThumbnailUrl
+                    #                 size = 'medium'
+                    #             }
+                    #         )
+                    #     }
                     }
 
-                    # Title
+                    # # Title
                     if ($customResponse.Title) {
+                        $cardBody.attachments[0].content.summary = $customResponse.Title
                         if ($customResponse.LinkUrl) {
-                            $customResponse.Title = "[$($customResponse.Title)]($($customResponse.LinkUrl))"
+                            $cardBody.attachments[0].content.title = "[$($customResponse.Title)]($($customResponse.LinkUrl))"
+                        } else {
+                            $cardBody.attachments[0].content.title = $customResponse.Title
                         }
-                        $cardBody.attachments[0].content.body[0].items[0].columns += @{
-                            type = 'Column'
-                            width = 'stretch'
-                            items = @(
-                                @{
-                                    type = 'TextBlock'
-                                    size = 'medium'
-                                    weight = 'bolder'
-                                    text = $customResponse.Title
-                                    color = 'default'
-                                }
-                            )
-                        }
+                    #     $cardBody.attachments[0].content.body[0].items[0].columns += @{
+                    #         type = 'Column'
+                    #         width = 'stretch'
+                    #         items = @(
+                    #             @{
+                    #                 type = 'TextBlock'
+                    #                 size = 'medium'
+                    #                 weight = 'bolder'
+                    #                 text = $customResponse.Title
+                    #                 color = 'default'
+                    #             }
+                    #         )
+                    #     }
                     }
 
                     # TextBlock
                     if ($customResponse.Text) {
-                        $cardText = $customResponse.Text
-                        if ($customResponse.AsCode) {
-                            $cardText = '```' + $cardText + '```'
-                        }
+                        $cardBody.attachments[0].content.sections[0].text = '`' + $customResponse.Text + '`'
 
-                        $cardBody.attachments[0].content.body[0].items[1].columns += @{
-                            type  = 'Column'
-                            width = 'stretch'
-                            items = @(
-                                @{
-                                    type = 'TextBlock'
-                                    text = $cardText
-                                    wrap = $true
-                                }
-                            )
-                        }
-                    }
-
-                    # Image
-                    if ($customResponse.ImageUrl) {
-                        $cardBody.attachments[0].content.body[0].items[1].columns += @{
-                            type  = 'Column'
-                            width = 'auto'
-                            items = @(
-                                type = 'Image'
-                                url  = $customResponse.ImageUrl
-                                size = 'auto'
-                            )
-                        }
+                    #     $cardBody.attachments[0].content.body[0].items[1].columns += @{
+                    #         type  = 'Column'
+                    #         width = 'stretch'
+                    #         items = @(
+                    #             @{
+                    #                 type = 'TextBlock'
+                    #                 text = $cardText
+                    #                 wrap = $true
+                    #             }
+                    #         )
+                    #     }
                     }
 
                     # Facts
                     if ($customResponse.Fields.Count -gt 0) {
+                        $cardBody.attachments[0].content.sections[0].facts = @()
                         foreach ($field in $customResponse.Fields.GetEnumerator()) {
-                            $cardBody.attachments[0].content.body[0].items[2].facts += @{
-                                title = $field.Name
+                            $cardBody.attachments[0].content.sections[0].facts += @{
+                                name = $field.Name
                                 value = $field.Value.ToString()
                             }
+                    #         $cardBody.attachments[0].content.body[0].items[2].facts += @{
+                    #             title = $field.Name
+                    #             value = $field.Value.ToString()
+                    #         }
                         }
+                    }
+
+                    # Prepend image if needed
+                    if ($customResponse.ImageUrl) {
+                        $cardBody.attachments[0].sections = @(
+                            @{
+                                heroImage = @{
+                                    image = $customResponse.ImageUrl
+                                }
+                            }
+                        ) + $cardBody.attachments[0].content.sections
+
+                    #     $cardBody.attachments[0].content.body[0].items[1].columns += @{
+                    #         type  = 'Column'
+                    #         width = 'auto'
+                    #         items = @(
+                    #             type = 'Image'
+                    #             url  = $customResponse.ImageUrl
+                    #             size = 'auto'
+                    #         )
+                    #     }
                     }
 
                     # Prepend Error or Warning TextBlock to the the card is response is marked as such
-                    if ($customResponse.Type -ne 'Normal') {
-                        $textBlock = @{
-                            type = "TextBlock"
-                            size = 'medium'
-                            weight = 'bolder'
-                        }
-                        if ($customResponse.Type -eq 'Warning') {
-                            $textBlock.text = 'Warning'
-                            $textBlock.color = 'warning'
-                        } elseIf ($customResponse.Type -eq 'Error') {
-                            $textBlock.text = 'Error'
-                            $textBlock.color = 'attention'
-                        }
+                    # if ($customResponse.Type -ne 'Normal') {
+                    #     $textBlock = @{
+                    #         type = "TextBlock"
+                    #         size = 'medium'
+                    #         weight = 'bolder'
+                    #     }
+                    #     if ($customResponse.Type -eq 'Warning') {
+                    #         $textBlock.text = 'Warning'
+                    #         $textBlock.color = 'warning'
+                    #     } elseIf ($customResponse.Type -eq 'Error') {
+                    #         $textBlock.text = 'Error'
+                    #         $textBlock.color = 'attention'
+                    #     }
 
-                        $cardBody.attachments[0].content.body[0].items = @(
-                            $textBlock
-                            $cardBody.attachments[0].content.body[0].items
-                        )
-                    }
+                    #     $cardBody.attachments[0].content.body[0].items = @(
+                    #         $textBlock
+                    #         $cardBody.attachments[0].content.body[0].items
+                    #     )
+                    # }
 
-                    $body = $cardBody | ConvertTo-Json -Depth 15
+                    $body = $cardBody | ConvertTo-Json -Depth 20
                     Write-Verbose $body
-                    #$body | Out-File -FilePath "$script:moduleBase/responses.json" -Append
+                    $body | Out-File -FilePath "$script:moduleBase/responses.json" -Append
                     $this.LogDebug("Sending response back to Teams conversation [$conversationId]", $body)
                     try {
                         $responseParams = @{
@@ -270,37 +316,68 @@ class TeamsBackend : Backend {
                 '(.*?)PoshBot\.Text\.Response' {
                     $this.LogDebug('Custom response is [PoshBot.Text.Response]')
 
-                    $cardBody = $this._GetCardStub()
-                    $cardBody.from.id         = $recipientId
-                    $cardBody.from.name       = $recipientName
-                    $cardBody.conversation.id = $conversationId
-                    $cardBody.recipient.id    = $fromId
-                    $cardBody.recipient.name  = $fromName
-                    $cardBody.replyToId       = $activityId
+                    # $cardBody = $this._GetCardStub()
+                    # $cardBody.from.id         = $recipientId
+                    # $cardBody.from.name       = $recipientName
+                    # $cardBody.conversation.id = $conversationId
+                    # $cardBody.recipient.id    = $fromId
+                    # $cardBody.recipient.name  = $fromName
+                    # $cardBody.replyToId       = $activityId
 
-                    # TextBlock
-                    if ($customResponse.Text) {
-                        $cardText = $customResponse.Text
-                        if ($customResponse.AsCode) {
-                            $cardText = '```' + $cardText + '```'
-                        }
-
-                        $cardBody.attachments[0].content.body[0].items[1].columns += @{
-                            type  = 'Column'
-                            width = 'stretch'
-                            items = @(
-                                @{
-                                    type = 'TextBlock'
-                                    text = $cardText
-                                    wrap = $true
-                                }
-                            )
-                        }
+                    $cardText = $customResponse.Text
+                    if ($customResponse.AsCode) {
+                        $cardText = '`' + $cardText + '`'
                     }
+
+                    $cardBody = @{
+                        type = 'message'
+                        from = @{
+                            id   = $fromId
+                            name = $fromName
+                        }
+                        conversation = @{
+                            id = $conversationId
+                        }
+                        recipient = @{
+                            id = $recipientId
+                            name = $recipientName
+                        }
+                        attachments = @(
+                            @{
+                                contentType = 'application/vnd.microsoft.teams.card.o365connector'
+                                content = @{
+                                    "@type" = 'MessageCard'
+                                    "@context" = 'http://schema.org/extensions'
+                                    text = $cardText
+                                }
+                            }
+                        )
+                        replyToId = $activityId
+                    }
+
+                    # # TextBlock
+                    # if ($customResponse.Text) {
+                    #     $cardText = $customResponse.Text
+                    #     if ($customResponse.AsCode) {
+                    #         $cardText = '```' + $cardText + '```'
+                    #     }
+
+                    #     $cardBody.attachments[0].content.body[0].items[1].columns += @{
+                    #         type  = 'Column'
+                    #         width = 'stretch'
+                    #         items = @(
+                    #             @{
+                    #                 type = 'TextBlock'
+                    #                 text = $cardText
+                    #                 wrap = $true
+                    #             }
+                    #         )
+                    #     }
+                    # }
 
                     $body = $cardBody | ConvertTo-Json -Depth 15
                     Write-Verbose $body
-                    #$body | Out-File -FilePath "$script:moduleBase/responses.json" -Append
+                    $body | Out-File -FilePath "$script:moduleBase/responses.json" -Append
                     $this.LogDebug("Sending response back to Teams channel [$conversationId]", $body)
                     try {
                         $responseParams = @{
@@ -319,38 +396,142 @@ class TeamsBackend : Backend {
                 }
                 '(.*?)PoshBot\.File\.Upload' {
                     $this.LogDebug('Custom response is [PoshBot.File.Upload]')
-                    $contentType = 'application/octet-stream'
-                    if (($null -eq $global:IsWindows) -or $global:IsWindows) {
 
-                    } else {
-                        if (Get-Command -Name file -CommandType Application) {
-                            $contentType =  & file --mime-type -b $customResponse.Path
+                    $jsonResponse = @{
+                        type = 'message'
+                        from = @{
+                            id = $recipientId
+                            name = $recipientName
                         }
-                    }
+                        conversation = @{
+                            id = $conversationId
+                            name = ''
+                        }
+                        recipient = @{
+                            id = $fromId
+                            name = $fromName
+                        }
+                        text = "I don't know how to upload files to Teams yet but I'm learning."
+                        replyToId = $activityId
+                    } | ConvertTo-Json
 
-                    $uploadParams = @{
-                        type           = $contentType
-                        name           = $customResponse.Title
-                    }
-
-                    if ((Test-Path $customResponse.Path -ErrorAction SilentlyContinue)) {
-                        $bytes = [System.Text.Encoding]::UTF8.GetBytes($customResponse.Path)
-                        $uploadParams.originalBase64  = [System.Convert]::ToBase64String($bytes)
-                        $uploadParams.thumbnailBase64 = [System.Convert]::ToBase64String($bytes)
-                        $this.LogDebug("Uploading [$($customResponse.Path)] to Teams conversation [$conversationId]")
-                        $payLoad = $uploadParams | ConvertTo-Json
-                        $this.LogDebug('JSON payload', $payLoad)
-                        $attachmentUrl = "$($baseUrl)v3/conversations/$conversationId/attachments"
-
+                    $jsonResponse | Out-File -FilePath "$script:moduleBase/responses.json" -Append
+                    $this.LogDebug("Sending response back to Teams conversation [$conversationId]")
+                    try {
                         $responseParams = @{
-                            Uri         = $attachmentUrl
+                            Uri         = $responseUrl
                             Method      = 'Post'
-                            Body        = $payLoad
+                            Body        = $jsonResponse
                             ContentType = 'application/json'
                             Headers     = $headers
                         }
                         $teamsResponse = Invoke-RestMethod @responseParams
+                    } catch {
+                        $this.LogInfo([LogSeverity]::Error, "$($_.Exception.Message)", [ExceptionFormatter]::Summarize($_))
                     }
+
+                    # # Get details about file to upload
+                    # $fileToUpload = @{
+                    #     Path      = $customResponse.Path
+                    #     Name      = Split-Path -Path $customResponse.Path -Leaf
+                    #     Size      = (Get-Item -Path $customResponse.Path).Length
+                    #     ConsentId = [guid]::NewGuid().ToString()
+                    # }
+                    # if (-not [string]::IsNullOrEmpty($customResponse.Title)) {
+                    #     $fileToUpload.Description = $customResponse.Title
+                    # } else {
+                    #     $fileToUpload.Description = $fileToUpload.Name
+                    # }
+
+                    # Teams doesn't support file uploads to group channels (lame)
+                    # Setup a private DM session with the user so we can send the
+                    # file consent card
+                    # $conversationId = $this._CreateDMConversation($Response.OriginalMessage.RawMessage.from.id)
+                    # $responseUrl = "$($baseUrl)v3/conversations/$conversationId/activities/"
+
+                    # $fileConsentRequest = @{
+                    #     type = 'message'
+                    #     from = @{
+                    #         id = $recipientId
+                    #         name = $recipientName
+                    #     }
+                    #     conversation = @{
+                    #         id = $conversationId
+                    #         name = ''
+                    #     }
+                    #     recipient = @{
+                    #         id = $fromId
+                    #         name = $fromName
+                    #     }
+                    #     replyToId = $activityId
+                    #     attachments = @(
+                    #         @{
+                    #             contentType = 'application/vnd.microsoft.teams.card.file.consent'
+                    #             name = $fileToUpload.Name
+                    #             content = @{
+                    #                 description = $fileToUpload.Description
+                    #                 sizeInBytes = $fileToUpload.Size
+                    #                 acceptContext = @{
+                    #                     consentId = $fileToUpload.ConsentId
+                    #                 }
+                    #                 declineContext = @{
+                    #                     consentId = $fileToUpload.ConsentId
+                    #                 }
+                    #             }
+                    #         }
+                    #     )
+                    # } | ConvertTo-Json -Depth 15
+
+                    # $fileConsentRequest | Out-File -FilePath "$script:moduleBase/file-requests.json" -Append
+                    # $this.LogDebug("Sending file upload request [$($fileToUpload.ConsentId)] to Teams conversation [$conversationId]")
+                    # try {
+                    #     $responseParams = @{
+                    #         Uri         = $responseUrl
+                    #         Method      = 'Post'
+                    #         Body        = $fileConsentRequest
+                    #         ContentType = 'application/json'
+                    #         Headers     = $headers
+                    #     }
+                    #     $teamsResponse = Invoke-RestMethod @responseParams
+
+                    #     $this.FileUploadTracker.Add($fileToUpload.ConsentId, $fileToUpload)
+
+                    # } catch {
+                    #     $this.LogInfo([LogSeverity]::Error, "$($_.Exception.Message)", [ExceptionFormatter]::Summarize($_))
+                    # }
+
+                    # $contentType = 'application/octet-stream'
+                    # if (($null -eq $global:IsWindows) -or $global:IsWindows) {
+
+                    # } else {
+                    #     if (Get-Command -Name file -CommandType Application) {
+                    #         $contentType =  & file --mime-type -b $customResponse.Path
+                    #     }
+                    # }
+
+                    # $uploadParams = @{
+                    #     type           = $contentType
+                    #     name           = $customResponse.Title
+                    # }
+
+                    # if ((Test-Path $customResponse.Path -ErrorAction SilentlyContinue)) {
+                    #     $bytes = [System.Text.Encoding]::UTF8.GetBytes($customResponse.Path)
+                    #     $uploadParams.originalBase64  = [System.Convert]::ToBase64String($bytes)
+                    #     $uploadParams.thumbnailBase64 = [System.Convert]::ToBase64String($bytes)
+                    #     $this.LogDebug("Uploading [$($customResponse.Path)] to Teams conversation [$conversationId]")
+                    #     $payLoad = $uploadParams | ConvertTo-Json
+                    #     $this.LogDebug('JSON payload', $payLoad)
+                    #     $attachmentUrl = "$($baseUrl)v3/conversations/$conversationId/attachments"
+
+                    #     $responseParams = @{
+                    #         Uri         = $attachmentUrl
+                    #         Method      = 'Post'
+                    #         Body        = $payLoad
+                    #         ContentType = 'application/json'
+                    #         Headers     = $headers
+                    #     }
+                    #     $teamsResponse = Invoke-RestMethod @responseParams
+                    # }
 
                     break
                 }
@@ -375,7 +556,7 @@ class TeamsBackend : Backend {
         # NOT IMPLEMENTED YET
     }
 
-    # Populate the list of users the Slack team
+    # Populate the list of users the team
     [void]LoadUsers() {
         if (-not [string]::IsNullOrEmpty($this.ServiceUrl)) {
             $this.LogDebug('Getting Teams users')
@@ -620,6 +801,7 @@ class TeamsBackend : Backend {
                     replyToId = $activityId
                 } | ConvertTo-Json
 
+                $jsonResponse | Out-File -FilePath "$script:moduleBase/responses.json" -Append
                 $this.LogDebug("Sending response back to Teams conversation [$conversationId]")
                 try {
                     $responseParams = @{
