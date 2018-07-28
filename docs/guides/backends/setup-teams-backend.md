@@ -94,6 +94,7 @@ Out-File -Encoding Ascii -FilePath $outputSbMsg -inputObject $request
 ```powershell
 Import-Module PoshBot
 $pbc = New-PoshBotConfiguration
+$pbc.BotAdmins = @('<AAD-USER-PRINCIPAL-NAME>')
 
 $backendConfig = @{
     Name                = 'TeamsBackend'
