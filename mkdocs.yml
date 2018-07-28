@@ -22,6 +22,8 @@ pages:
     - Plugin Configuration: guides/plugin-configuration.md
     - Middleware: guides/middleware.md
     - Run Poshbot as a Service: guides/run-poshbot-as-a-service.md
+    - Backends:
+      - Teams: guides/backends/setup-teams-backend.md
   - Tutorials:
     - Backend Development:
       - Backend Development: tutorials/backend-development/backend-development.md
