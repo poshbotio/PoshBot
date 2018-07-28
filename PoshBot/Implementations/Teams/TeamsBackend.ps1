@@ -3,7 +3,7 @@ class TeamsBackend : Backend {
 
     [bool]$LazyLoadUsers = $true
 
-    # The types of message that we care about from Slack
+    # The types of message that we care about from Teams
     # All othere will be ignored
     [string[]]$MessageTypes = @(
         'message'
@@ -29,9 +29,6 @@ class TeamsBackend : Backend {
     [void]Connect() {
         $this.LogInfo('Connecting to backend')
         $this.Connection.Connect()
-        #$this.BotId = $this.GetBotIdentity()
-        #$this.LoadUsers()
-        #$this.LoadRooms()
     }
 
     [Message[]]ReceiveMessage() {
@@ -48,7 +45,6 @@ class TeamsBackend : Backend {
                 foreach ($teamsMessage in $teamsMessages) {
 
                     $this.DelayedInit($teamsMessage)
-                    #$this.SetTeamId($teamsMessage)
 
                     # We only care about certain message types from Teams
                     if ($teamsMessage.type -in $this.MessageTypes) {
@@ -69,7 +65,7 @@ class TeamsBackend : Backend {
                         $msg.RawMessage = $teamsMessage
                         $this.LogDebug('Raw message', $teamsMessage)
 
-                        # When commands are directed to PoshBot, the bot must be "at" mentions.
+                        # When commands are directed to PoshBot, the bot must be "at" mentioned.
                         # This will show up in the text of the message received. We don't need it
                         # so strip it out.
                         if ($teamsMessage.text)    {
@@ -172,32 +168,13 @@ class TeamsBackend : Backend {
                         replyToId = $activityId
                     }
 
-                    # $cardBody = $this._GetCardStub()
-                    # $cardBody.from.id         = $recipientId
-                    # $cardBody.from.name       = $recipientName
-                    # $cardBody.conversation.id = $conversationId
-                    # $cardBody.recipient.id    = $fromId
-                    # $cardBody.recipient.name  = $fromName
-                    # $cardBody.replyToId       = $activityId
-
                     # Thumbnail
                     if ($customResponse.ThumbnailUrl) {
                         $cardBody.attachments[0].content.sections[0].activityImageType = 'article'
                         $cardBody.attachments[0].content.sections[0].activityImage = $customResponse.ThumbnailUrl
-                    #     $cardBody.attachments[0].content.body[0].items[0].columns += @{
-                    #         type = 'Column'
-                    #         width = 'auto'
-                    #         items = @(
-                    #             @{
-                    #                 type = 'Image'
-                    #                 url = $customResponse.ThumbnailUrl
-                    #                 size = 'medium'
-                    #             }
-                    #         )
-                    #     }
                     }
 
-                    # # Title
+                    # Title
                     if ($customResponse.Title) {
                         $cardBody.attachments[0].content.summary = $customResponse.Title
                         if ($customResponse.LinkUrl) {
@@ -205,36 +182,11 @@ class TeamsBackend : Backend {
                         } else {
                             $cardBody.attachments[0].content.title = $customResponse.Title
                         }
-                    #     $cardBody.attachments[0].content.body[0].items[0].columns += @{
-                    #         type = 'Column'
-                    #         width = 'stretch'
-                    #         items = @(
-                    #             @{
-                    #                 type = 'TextBlock'
-                    #                 size = 'medium'
-                    #                 weight = 'bolder'
-                    #                 text = $customResponse.Title
-                    #                 color = 'default'
-                    #             }
-                    #         )
-                    #     }
                     }
 
                     # TextBlock
                     if ($customResponse.Text) {
-                        $cardBody.attachments[0].content.sections[0].text = '`' + $customResponse.Text + '`'
-
-                    #     $cardBody.attachments[0].content.body[0].items[1].columns += @{
-                    #         type  = 'Column'
-                    #         width = 'stretch'
-                    #         items = @(
-                    #             @{
-                    #                 type = 'TextBlock'
-                    #                 text = $cardText
-                    #                 wrap = $true
-                    #             }
-                    #         )
-                    #     }
+                        $cardBody.attachments[0].content.sections[0].text = '```' + $customResponse.Text
                     }
 
                     # Facts
@@ -245,10 +197,6 @@ class TeamsBackend : Backend {
                                 name = $field.Name
                                 value = $field.Value.ToString()
                             }
-                    #         $cardBody.attachments[0].content.body[0].items[2].facts += @{
-                    #             title = $field.Name
-                    #             value = $field.Value.ToString()
-                    #         }
                         }
                     }
 
@@ -261,42 +209,11 @@ class TeamsBackend : Backend {
                                 }
                             }
                         ) + $cardBody.attachments[0].content.sections
-
-                    #     $cardBody.attachments[0].content.body[0].items[1].columns += @{
-                    #         type  = 'Column'
-                    #         width = 'auto'
-                    #         items = @(
-                    #             type = 'Image'
-                    #             url  = $customResponse.ImageUrl
-                    #             size = 'auto'
-                    #         )
-                    #     }
                     }
-
-                    # Prepend Error or Warning TextBlock to the the card is response is marked as such
-                    # if ($customResponse.Type -ne 'Normal') {
-                    #     $textBlock = @{
-                    #         type = "TextBlock"
-                    #         size = 'medium'
-                    #         weight = 'bolder'
-                    #     }
-                    #     if ($customResponse.Type -eq 'Warning') {
-                    #         $textBlock.text = 'Warning'
-                    #         $textBlock.color = 'warning'
-                    #     } elseIf ($customResponse.Type -eq 'Error') {
-                    #         $textBlock.text = 'Error'
-                    #         $textBlock.color = 'attention'
-                    #     }
-
-                    #     $cardBody.attachments[0].content.body[0].items = @(
-                    #         $textBlock
-                    #         $cardBody.attachments[0].content.body[0].items
-                    #     )
-                    # }
 
                     $body = $cardBody | ConvertTo-Json -Depth 20
                     Write-Verbose $body
-                    $body | Out-File -FilePath "$script:moduleBase/responses.json" -Append
+                    # $body | Out-File -FilePath "$script:moduleBase/responses.json" -Append
                     $this.LogDebug("Sending response back to Teams conversation [$conversationId]", $body)
                     try {
                         $responseParams = @{
@@ -316,17 +233,9 @@ class TeamsBackend : Backend {
                 '(.*?)PoshBot\.Text\.Response' {
                     $this.LogDebug('Custom response is [PoshBot.Text.Response]')
 
-                    # $cardBody = $this._GetCardStub()
-                    # $cardBody.from.id         = $recipientId
-                    # $cardBody.from.name       = $recipientName
-                    # $cardBody.conversation.id = $conversationId
-                    # $cardBody.recipient.id    = $fromId
-                    # $cardBody.recipient.name  = $fromName
-                    # $cardBody.replyToId       = $activityId
-
                     $cardText = $customResponse.Text
                     if ($customResponse.AsCode) {
-                        $cardText = '`' + $cardText + '`'
+                        $cardText = '```' + $cardText
                     }
 
                     $cardBody = @{
@@ -355,29 +264,9 @@ class TeamsBackend : Backend {
                         replyToId = $activityId
                     }
 
-                    # # TextBlock
-                    # if ($customResponse.Text) {
-                    #     $cardText = $customResponse.Text
-                    #     if ($customResponse.AsCode) {
-                    #         $cardText = '```' + $cardText + '```'
-                    #     }
-
-                    #     $cardBody.attachments[0].content.body[0].items[1].columns += @{
-                    #         type  = 'Column'
-                    #         width = 'stretch'
-                    #         items = @(
-                    #             @{
-                    #                 type = 'TextBlock'
-                    #                 text = $cardText
-                    #                 wrap = $true
-                    #             }
-                    #         )
-                    #     }
-                    # }
-
                     $body = $cardBody | ConvertTo-Json -Depth 15
                     Write-Verbose $body
-                    $body | Out-File -FilePath "$script:moduleBase/responses.json" -Append
+                    # $body | Out-File -FilePath "$script:moduleBase/responses.json" -Append
                     $this.LogDebug("Sending response back to Teams channel [$conversationId]", $body)
                     try {
                         $responseParams = @{
@@ -397,6 +286,8 @@ class TeamsBackend : Backend {
                 '(.*?)PoshBot\.File\.Upload' {
                     $this.LogDebug('Custom response is [PoshBot.File.Upload]')
 
+                    # Teams doesn't support generic file uploads yet :(
+                    # Send a message informing the user of this sad fact
                     $jsonResponse = @{
                         type = 'message'
                         from = @{
@@ -415,7 +306,7 @@ class TeamsBackend : Backend {
                         replyToId = $activityId
                     } | ConvertTo-Json
 
-                    $jsonResponse | Out-File -FilePath "$script:moduleBase/responses.json" -Append
+                    # $jsonResponse | Out-File -FilePath "$script:moduleBase/responses.json" -Append
                     $this.LogDebug("Sending response back to Teams conversation [$conversationId]")
                     try {
                         $responseParams = @{
@@ -540,7 +431,6 @@ class TeamsBackend : Backend {
 
         # Normal responses
         if ($Response.Text.Count -gt 0) {
-            #$Response.Text = $this._RepairText($Response.Text)
             $this.LogDebug("Sending response back to Teams channel [$($Response.To)]")
             $this.SendTeamsMessaage($Response)
         }
@@ -746,29 +636,6 @@ class TeamsBackend : Backend {
                 $this.TenantId = $Message.channelData.tenant.id
             }
         }
-
-        # $firstTime = $false
-        # # The bot won't know what the Teams ID until we receive
-        # # the first message after startup (dumb)
-        # # If this is the first time getting it
-        # # make sure to load user and channel info
-        # if ($this.TeamId -ne $Message.channelData.team.id) {
-        #     if ([string]::IsNullOrEmpty($this.TeamId)) {
-        #         $firstTime = $true
-        #     }
-        #     $this.TeamId = $Message.channelData.team.id
-        # }
-
-        # # The Service URL for responding back to Teams MAY change
-        # # so make sure we always not what it is
-        # if ($this.ServiceUrl -ne $Message.serviceUrl) {
-        #     $this.ServiceUrl = $Message.serviceUrl
-        # }
-
-        # if ($firstTime) {
-        #     #$this.LoadUsers()
-        #     $this.LoadRooms()
-        # }
     }
 
     hidden [void]SendTeamsMessaage([Response]$Response) {
@@ -801,7 +668,7 @@ class TeamsBackend : Backend {
                     replyToId = $activityId
                 } | ConvertTo-Json
 
-                $jsonResponse | Out-File -FilePath "$script:moduleBase/responses.json" -Append
+                # $jsonResponse | Out-File -FilePath "$script:moduleBase/responses.json" -Append
                 $this.LogDebug("Sending response back to Teams conversation [$conversationId]")
                 try {
                     $responseParams = @{
