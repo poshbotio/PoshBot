@@ -35,8 +35,19 @@ function New-PoshBotTeamsBackend {
         [hashtable[]]$Configuration
     )
 
+    begin {
+        $requiredProperties = @(
+            'BotName', 'TeamId', 'Credential', 'ServiceBusNamespace', 'QueueName', 'AccessKeyName', 'AccessKey'
+        )
+    }
+
     process {
         foreach ($item in $Configuration) {
+
+            # Validate required hashtable properties
+            if ($missingProperties = $requiredProperties.Where({$item.Keys -notcontains $_})) {
+                throw "The following required backend properties are not defined: $($missingProperties -join ', ')"
+            }
             Write-Verbose 'Creating new Teams backend instance'
 
             $connectionConfig = [TeamsConnectionConfig]::new()
