@@ -58,6 +58,7 @@ class TeamsBackend : Backend {
                         }
                         $this.LogDebug("Message type is [$($msg.Type)]")
 
+                        $msg.Id = $teamsMessage.id
                         if ($teamsMessage.recipient) {
                             $msg.To = $teamsMessage.recipient.id
                         }
@@ -72,17 +73,29 @@ class TeamsBackend : Backend {
                             $msg.Text = $teamsMessage.text.Replace("<at>$($this.Connection.Config.BotName)</at> ", '')
                         }
 
-                        if ($teamsMessage.channelData) { $msg.To   = $teamsMessage.channelData.clientActivityId }
                         if ($teamsMessage.from) {
-                            $msg.From = $teamsMessage.from.id
+                            $msg.From     = $teamsMessage.from.id
                             $msg.FromName = $teamsMessage.from.name
                         }
 
-                        # Resolve channel name
-                        # TODO
-
                         # Mark as DM
-                        # TODO
+                        # 'team' data is not passed in channel conversations
+                        # so we can use it to determine if message is in personal chat
+                        # https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/bots/bot-conversations/bots-conversations#teams-channel-data
+                        if (-not $teamsMessage.channelData.team) {
+                            $msg.IsDM = $true
+                            $msg.ToName = $this.Connection.Config.BotName
+                        } else {
+                            if ($msg.To) {
+                                $msg.ToName = $this.UserIdToUsername($msg.To)
+                            }
+                        }
+
+                        # Resolve channel name
+                        # Skip DM channels, they won't have names
+                        if (($teamsMessage.channelData.teamsChannelId) -and (-not $msg.IsDM)) {
+                            $msg.ToName = $this.ChannelIdToName($teamsMessage.channelData.teamsChannelId)
+                        }
 
                         # Get time of message
                         $msg.Time = [datetime]$teamsMessage.timestamp
