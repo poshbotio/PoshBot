@@ -1,17 +1,19 @@
 
 class MiddlewareHook {
     [string]$Name
-    [scriptblock]$ScriptBlock
+    [string]$Path
 
-    MiddlewareHook([string]$Name, [scriptblock]$ScriptBlock) {
+    MiddlewareHook([string]$Name, [string]$Path) {
         $this.Name = $Name
-        $this.ScriptBlock = $ScriptBlock
+        $this.Path = $Path
     }
 
     [CommandExecutionContext] Execute([CommandExecutionContext]$Context, [Bot]$Bot) {
         try {
+            $fileContent = Get-Content -Path $this.Path -Raw
+            $scriptBlock = [scriptblock]::Create($fileContent)
             $params = @{
-                ScriptBlock  = $this.ScriptBlock
+                scriptblock  = $scriptBlock
                 ArgumentList = @($Context, $Bot)
                 ErrorAction  = 'Stop'
             }
@@ -25,7 +27,7 @@ class MiddlewareHook {
     [hashtable]ToHash() {
         return @{
             Name = $this.Name
-            ScriptBlock = $this.ScriptBlock
+            Path = $this.Path
         }
     }
 }

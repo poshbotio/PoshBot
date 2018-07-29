@@ -13,7 +13,7 @@ schema: 2.0.0
 ## SYNTAX
 
 ```
-New-PoshBotMiddlewareHook [-Name] <String> [-ScriptBlock] <ScriptBlock> [<CommonParameters>]
+New-PoshBotMiddlewareHook [-Name] <String> [-Path] <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -45,11 +45,11 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -ScriptBlock
-{{Fill ScriptBlock Description}}
+### -Path
+{{Fill Path Description}}
 
 ```yaml
-Type: ScriptBlock
+Type: String
 Parameter Sets: (All)
 Aliases:
 

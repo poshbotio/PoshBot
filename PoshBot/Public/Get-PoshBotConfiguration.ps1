@@ -114,7 +114,7 @@ function Get-PoshBotConfiguration {
                                 'MiddlewareConfiguration' {
                                     foreach ($type in [enum]::GetNames([MiddlewareType])) {
                                         foreach ($item in $hash[$key].$type) {
-                                            $config.MiddlewareConfiguration.Add([MiddlewareHook]::new($item.Name, $item.ScriptBlock), $type)
+                                            $config.MiddlewareConfiguration.Add([MiddlewareHook]::new($item.Name, $item.Path), $type)
                                         }
                                     }
                                     break

@@ -688,7 +688,7 @@ class Bot : BaseLogger {
                     }
                 }
             } catch {
-                $this.LogInfo([LogSeverity]::Error, "[$($Type.ToString())] middleware [$($hook.Name)] raised an exception. Command context dropped.")
+                $this.LogInfo([LogSeverity]::Error, "[$($Type.ToString())] middleware [$($hook.Name)] raised an exception. Command context dropped.", [ExceptionFormatter]::Summarize($_))
                 return $null
             }
         }
