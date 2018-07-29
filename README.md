@@ -13,9 +13,18 @@ PoshBot is a MIT-licensed open source project. Ongoing development is made possi
 
 <p align="center">
     <a href="https://www.patreon.com/devblackops/memberships" target="_blank" title="Become a Patron">
-        <img style="height:50px" src="Media/become_a_patron_button.png" alt="Become a Patron">
+        <img style="height:35px" src="Media/become_a_patron_button.png" alt="Become a Patron">
     </a>
 </p>
+
+Want some in-depth guides? Check out [ChatOps the Easy Way](https://leanpub.com/chatops-the-easy-way) on [Leanpub](https://leanpub.com/)!
+
+<p align="center">
+    <a href="https://leanpub.com/chatops-the-easy-way" target="_blank" title="ChatOps the Easy Way">
+        <img src="https://s3.amazonaws.com/titlepages.leanpub.com/chatops-the-easy-way/medium?1530164567" alt="ChatOps the Easy Way">
+    </a>
+</p>
+
 
 # Introduction
 
@@ -24,9 +33,9 @@ It makes extensive use of classes introduced in PowerShell 5.0.
 PowerShell modules are loaded into PoshBot and instantly become available as bot commands.
 PoshBot currently supports connecting to Slack to provide you with awesome ChatOps goodness.
 
-<p align="center">
+<!-- <p align="center">
   <img style="height:250px;" src="https://raw.githubusercontent.com/poshbotio/PoshBot/master/Media/poshbot_logo_300_432.png" alt="PoshBot logo"/>
-</p>
+</p> -->
 
 ## What Can PoshBot Do?
 
