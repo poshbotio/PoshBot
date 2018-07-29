@@ -579,14 +579,12 @@ class PluginManager : BaseLogger {
 
                 # Set the command usage differently for [Command] and [Regex] trigger types
                 if ($cmd.TriggerType -eq [TriggerType]::Command) {
-                    # Reformat function syntax to show how the bot expects it to be entered
+                    # Remove unneeded parameters from command syntax
                     if ($cmdHelp) {
                         $helpSyntax = ($cmdHelp.syntax | Out-String).Trim() -split "`n" | Where-Object {$_ -ne "`r"}
-                        $helpSyntax = $helpSyntax -replace '( -([a-zA-Z]))', ' --$2'
-                        $helpSyntax = $helpSyntax -replace '(\[-([a-zA-Z]))', '[--$2'
                         $helpSyntax = $helpSyntax -replace '\[\<CommonParameters\>\]', ''
-                        $helpSyntax = $helpSyntax -replace '--Bot \<Object\> ', ''
-                        $helpSyntax = $helpSyntax -replace '\[--Bot\] \<Object\> ', '['
+                        $helpSyntax = $helpSyntax -replace '-Bot \<Object\> ', ''
+                        $helpSyntax = $helpSyntax -replace '\[-Bot\] \<Object\> ', '['
 
                         # Replace the function name in the help syntax with
                         # what PoshBot will call the command
