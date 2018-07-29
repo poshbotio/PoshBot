@@ -186,7 +186,8 @@ class TeamsBackend : Backend {
 
                     # TextBlock
                     if ($customResponse.Text) {
-                        $cardBody.attachments[0].content.sections[0].text = '```' + $customResponse.Text
+                        $cardBody.attachments[0].content.sections[0].text = '<pre>' + $customResponse.Text + '</pre>'
+                        $cardBody.attachments[0].content.sections[0].textFormat = 'markdown'
                     }
 
                     # Facts
@@ -202,11 +203,13 @@ class TeamsBackend : Backend {
 
                     # Prepend image if needed
                     if ($customResponse.ImageUrl) {
-                        $cardBody.attachments[0].sections = @(
+                        $cardBody.attachments[0].content.sections = @(
                             @{
-                                heroImage = @{
-                                    image = $customResponse.ImageUrl
-                                }
+                                images = @(
+                                    @{
+                                        image = $customResponse.ImageUrl
+                                    }
+                                )
                             }
                         ) + $cardBody.attachments[0].content.sections
                     }
@@ -233,9 +236,11 @@ class TeamsBackend : Backend {
                 '(.*?)PoshBot\.Text\.Response' {
                     $this.LogDebug('Custom response is [PoshBot.Text.Response]')
 
+                    $textFormat = 'plain'
                     $cardText = $customResponse.Text
                     if ($customResponse.AsCode) {
-                        $cardText = '```' + $cardText
+                        $textFormat = 'markdown'
+                        $cardText = '<pre>' + $cardText + '</pre>'
                     }
 
                     $cardBody = @{
@@ -251,16 +256,19 @@ class TeamsBackend : Backend {
                             id = $recipientId
                             name = $recipientName
                         }
-                        attachments = @(
-                            @{
-                                contentType = 'application/vnd.microsoft.teams.card.o365connector'
-                                content = @{
-                                    "@type" = 'MessageCard'
-                                    "@context" = 'http://schema.org/extensions'
-                                    text = $cardText
-                                }
-                            }
-                        )
+                        text = $cardText
+                        textFormat = $textFormat
+                        # attachments = @(
+                        #     @{
+                        #         contentType = 'application/vnd.microsoft.teams.card.o365connector'
+                        #         content = @{
+                        #             "@type" = 'MessageCard'
+                        #             "@context" = 'http://schema.org/extensions'
+                        #             text = $cardText
+                        #             textFormat = $textFormat
+                        #         }
+                        #     }
+                        # )
                         replyToId = $activityId
                     }
 
