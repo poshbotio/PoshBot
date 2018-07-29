@@ -10,9 +10,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-Support for custom `scriptblock` execution during the command processing life cycle has been added.
-It is now possible to execute custom logic pre/post receiving a message from the chat network, pre/post command execution, and pre/post command response.
-This execution hooks can be used for centralized authentication logic, custom command whitelisting and blacklisting, response sanitation, or any number of other uses.
+- Experimental support for Microsoft Teams backend. To connect to Teams, additional Azure resources are required which the Teams backend will connect to. Command and regex triggers are supported. Event triggers currently are not. In group conversations, you must '@' mention the bot followed by your text message otherwise the bot will not receive it. In one-on-one conversations with the bot, '@' mentioning is not needed. More information can be found [here](https://poshbot.readthedocs.io/en/latest/guides/backends/setup-teams-backend/).
+
+- Support for custom `scriptblock` execution during the command processing life cycle has been added.
+  It is now possible to execute custom logic pre/post receiving a message from the chat network, pre/post command execution, and pre/post command response.
+  These execution hooks can be used for centralized authentication logic, custom command whitelisting and blacklisting, response sanitation, or any number of other uses.
 
 ### Fixed
 
