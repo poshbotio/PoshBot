@@ -7,7 +7,6 @@ pages:
     - Quickstart: guides/quickstart.md
     - Message Processing Flow: guides/message-processing.md
     - Configuration: guides/configuration.md
-    - Backends: guides/backends.md
     - Plugins: guides/plugins.md
     - Triggers: guides/triggers.md
     - Scheduled Commands: guides/scheduled-commands.md
