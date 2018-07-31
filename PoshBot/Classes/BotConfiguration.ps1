@@ -57,6 +57,64 @@ class BotConfiguration {
         return [BotConfiguration]::Serialize($DeserializedObject)
     }
 
+    [hashtable] ToHash() {
+        $propertyNames = $this | Get-Member -MemberType Property | Select-Object -ExpandProperty Name
+        $hash = @{}
+
+        foreach ($property in $propertyNames) {
+            if ($this.$property | Get-Member -MemberType Method -Name ToHash) {
+                $hash.$property = $this.$property.ToHash()
+            } else {
+                $hash.$property = $this.$property
+            }
+        }
+
+        return $hash
+    }
+
+    [BotConfiguration] Serialize([hashtable]$Hash) {
+
+        $propertyNames = $this | Get-Member -MemberType Property | Select-Object -ExpandProperty Name
+
+        $bc = [BotConfiguration]::new()
+
+        foreach ($key in $Hash.keys) {
+            if ($key -in $propertyNames) {
+
+                $bc.Name                             = $hash.Name
+                $bc.ConfigurationDirectory           = $hash.ConfigurationDirectory
+                $bc.LogDirectory                     = $hash.LogDirectory
+                $bc.PluginDirectory                  = $hash.PluginDirectory
+                $bc.PluginRepository                 = $hash.PluginRepository
+                $bc.ModuleManifestsToLoad            = $hash.ModuleManifestsToLoad
+                $bc.LogLevel                         = $hash.LogLevel
+                $bc.MaxLogSizeMB                     = $hash.MaxLogSizeMB
+                $bc.MaxLogsToKeep                    = $hash.MaxLogsToKeep
+                $bc.LogCommandHistory                = $hash.LogCommandHistory
+                $bc.CommandHistoryMaxLogSizeMB       = $hash.CommandHistoryMaxLogSizeMB
+                $bc.CommandHistoryMaxLogsToKeep      = $hash.CommandHistoryMaxLogsToKeep
+                $bc.BackendConfiguration             = $hash.BackendConfiguration
+                $bc.PluginConfiguration              = $hash.PluginConfiguration
+                $bc.BotAdmins                        = $hash.BotAdmins
+                $bc.CommandPrefix                    = $hash.CommandPrefix
+                $bc.AlternateCommandPrefixes         = $hash.AlternateCommandPrefixes
+                $bc.AlternateCommandPrefixSeperators = $hash.AlternateCommandPrefixSeperators
+                $bc.SendCommandResponseToPrivate     = $hash.SendCommandResponseToPrivate
+                $bc.MuteUnknownCommand               = $hash.MuteUnknownCommand
+                $bc.AddCommandReactions              = $hash.AddCommandReactions
+                $bc.DisallowDMs                      = $hash.DisallowDMs
+                $bc.FormatEnumerationLimitOverride   = $hash.FormatEnumerationLimitOverride
+                $bc.ChannelRules                     = [ChannelRule]::Serialize($hash.ChannelRules)
+                $bc.ApprovalConfiguration            = [ApprovalConfiguration]::Serialize($hash.ApprovalConfiguration)
+                $bc.MiddlewareConfiguration          = [MiddlewareConfiguration]::Serialize($hash.MiddlewareConfiguration)
+            } else {
+                throw "Hash key [$key] is not a property in BotConfiguration"
+            }
+        }
+
+        return $bc
+    }
+
     static [BotConfiguration] Serialize([PSObject]$DeserializedObject) {
         $bc = [BotConfiguration]::new()
         $bc.Name                             = $DeserializedObject.Name
@@ -82,8 +140,9 @@ class BotConfiguration {
         $bc.AddCommandReactions              = $DeserializedObject.AddCommandReactions
         $bc.DisallowDMs                      = $DeserializedObject.DisallowDMs
         $bc.FormatEnumerationLimitOverride   = $DeserializedObject.FormatEnumerationLimitOverride
-        $bc.ChannelRules                     = [ChannelRule]::Serialize($DeserializedObject.ChannelRule)
+        $bc.ChannelRules                     = [ChannelRule]::Serialize($DeserializedObject.ChannelRules)
         $bc.ApprovalConfiguration            = [ApprovalConfiguration]::Serialize($DeserializedObject.ApprovalConfiguration)
+        $bc.MiddlewareConfiguration          = [MiddlewareConfiguration]::Serialize($DeserializedObject.MiddlewareConfiguration)
 
         return $bc
     }

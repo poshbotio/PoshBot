@@ -24,7 +24,7 @@ class ChannelRule {
         }
     }
 
-    static [ChannelRule] Serialize([PSObject]$DeserializedObject) {
+    static [ChannelRule] Serialize([hashtable]$DeserializedObject) {
         $cr = [ChannelRule]::new()
         $cr.Channel = $DeserializedObject.Channel
         $cr.IncludeCommands = $DeserializedObject.IncludeCommands

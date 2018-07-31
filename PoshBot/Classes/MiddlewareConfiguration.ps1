@@ -24,11 +24,21 @@ class MiddlewareConfiguration {
         $hash = @{}
         foreach ($type in [enum]::GetNames([MiddlewareType])) {
             $hash.Add(
-                $type,
-                ($this."$($type)Hooks".GetEnumerator() | ForEach-Object {$_.Value.ToHash()})
+                "$($type)Hooks",
+                $this."$($type)Hooks".GetEnumerator().foreach({$_.Value.ToHash()})
             )
         }
         return $hash
     }
-}
 
+    static [MiddlewareConfiguration] Serialize([hashtable]$DeserializedObject) {
+        $mc = [MiddlewareConfiguration]::new()
+        foreach ($type in [enum]::GetNames([MiddlewareType])) {
+            $DeserializedObject."$($type)Hooks".GetEnumerator().foreach({
+                $hook = [MiddlewareHook]::new($_.Name, $_.Path)
+                $mc."$($type)Hooks".Add($hook.Name, $hook) > $null
+            })
+        }
+        return $mc
+    }
+}
