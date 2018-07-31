@@ -92,8 +92,10 @@ pages:
       - New-PoshBotConfiguration: reference/functions/new-poshbotconfiguration.md
       - New-PoshBotFileUpload: reference/functions/New-PoshBotFileUpload.md
       - New-PoshBotInstance: reference/functions/new-poshbotinstance.md
+      - New-PoshBotMiddlewareHook: reference/functions/New-PoshBotMiddlewareHook.md
       - New-PoshBotScheduledTask: reference/functions/new-poshbotscheduledtask.md
       - New-PoshBotSlackBackend: reference/functions/new-poshbotslackbackend.md
+      - New-PoshBotTeamsBackend: reference/functions/New-PoshBotTeamsBackend.md
       - New-PoshBotTextResponse: reference/functions/new-poshbottextresponse.md
       - Remove-PoshBotStatefulData: reference/functions/Remove-PoshBotStatefulData.md
       - Save-PoshBotConfiguration: reference/functions/save-poshbotconfiguration.md
