@@ -1,6 +1,6 @@
 ---
 external help file: PoshBot-help.xml
-Module Name: poshbot
+Module Name: PoshBot
 online version:
 schema: 2.0.0
 ---
@@ -8,7 +8,7 @@ schema: 2.0.0
 # New-PoshBotMiddlewareHook
 
 ## SYNOPSIS
-{{Fill in the Synopsis}}
+Creates a PoshBot middleware hook object.
 
 ## SYNTAX
 
@@ -17,21 +17,28 @@ New-PoshBotMiddlewareHook [-Name] <String> [-Path] <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{Fill in the Description}}
+PoshBot can execute custom scripts during various stages of the command processing lifecycle.
+These scripts
+are defined using New-PoshBotMiddlewareHook and added to the bot configuration object under the MiddlewareConfiguration section.
+Hooks are added to the PreReceive, PostReceive, PreExecute, PostExecute, PreResponse, and PostResponse properties.
+Middleware gets executed in the order in which it is added under each property.
 
 ## EXAMPLES
 
-### Example 1
-```powershell
-PS C:\> {{ Add example code here }}
+### EXAMPLE 1
+```
+$userDropHook = New-PoshBotMiddlewareHook -Name 'dropuser' -Path 'c:/poshbot/middleware/dropuser.ps1'
 ```
 
-{{ Add example description here }}
+PS C:\\\> $config.MiddlewareConfiguration.Add($userDropHook, 'PreReceive')
+
+Creates a middleware hook called 'dropuser' and adds it to the 'PreReceive' middleware lifecycle stage.
 
 ## PARAMETERS
 
 ### -Name
-{{Fill Name Description}}
+The name of the middleware hook.
+Must be unique in each middleware lifecycle stage.
 
 ```yaml
 Type: String
@@ -46,7 +53,7 @@ Accept wildcard characters: False
 ```
 
 ### -Path
-{{Fill Path Description}}
+The file path the the PowerShell script to execute as a middleware hook.
 
 ```yaml
 Type: String
@@ -61,17 +68,13 @@ Accept wildcard characters: False
 ```
 
 ### CommonParameters
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable.
-For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
-### None
-
-
 ## OUTPUTS
 
-### System.Object
+### MiddlewareHook
 
 ## NOTES
 
