@@ -50,6 +50,15 @@ describe 'New-PoshBotTextResponse' {
         $resp.Fields | should be $fields
     }
 
+    it 'Has a valid [CustomData] field' {
+        $customData = @{
+            prop1 = 'val1'
+            prop2 = 'val2'
+        } | ConvertTo-Json
+        $resp = New-PoshBotCardResponse -Text 'abc' -CustomData $CustomData
+        $resp.CustomData | should be $CustomData
+    }
+
     it 'Sets color field properly' {
         $normal = New-PoshBotCardResponse -Text 'abc' -Type Normal
         $warning = New-PoshBotCardResponse -Text 'abc' -Type Warning
