@@ -1,5 +1,5 @@
 
-describe 'New-PoshBotTextResponse' {
+describe 'New-PoshBotCardResponse' {
 
     BeforeAll {
         $imgUrl = 'https://github.com/poshbotio/PoshBot/raw/master/Media/poshbot_logo_300_432.png'
