@@ -30,6 +30,9 @@ function New-PoshBotCardResponse {
         A hashtable to display as a table in the card response.
     .PARAMETER COLOR
         The hex color code to use for the card response. In Slack, this will be the color of the left border in the message attachment.
+    .PARAMETER CustomData
+        Any additional custom data you'd like to pass on. Useful for custom backends, in case you want to pass a specifically formatted response
+        in the Data stream of the responses received by the backend. Any data sent here will be skipped by the built-in backends provided with PoshBot itself.
     .EXAMPLE
         function Do-Something {
             [cmdletbinding()]
@@ -127,7 +130,9 @@ function New-PoshBotCardResponse {
                 throw [System.Management.Automation.ValidationMetadataException]$msg
             }
         })]
-        [string]$Color = '#D3D3D3'
+        [string]$Color = '#D3D3D3',
+
+        [object]$CustomData
     )
 
     $response = [ordered]@{
@@ -135,7 +140,7 @@ function New-PoshBotCardResponse {
         Type = $Type
         Text = $Text.Trim()
         Private = $PSBoundParameters.ContainsKey('Private')
-        DM = $PSBoundParameters.ContainsKey('DM')
+        DM = $PSBoundParameters['DM']
     }
     if ($PSBoundParameters.ContainsKey('Title')) {
         $response.Title = $Title
@@ -151,6 +156,9 @@ function New-PoshBotCardResponse {
     }
     if ($PSBoundParameters.ContainsKey('Fields')) {
         $response.Fields = $Fields
+    }
+    if ($PSBoundParameters.ContainsKey('CustomData')) {
+        $response.CustomData = $CustomData
     }
     if ($PSBoundParameters.ContainsKey('Color')) {
         $response.Color = $Color

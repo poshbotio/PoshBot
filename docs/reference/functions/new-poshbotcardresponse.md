@@ -15,7 +15,7 @@ Tells PoshBot to send a specially formatted response.
 ```
 New-PoshBotCardResponse [[-Type] <String>] [-DM] [[-Text] <String>] [[-Title] <String>]
  [[-ThumbnailUrl] <String>] [[-ImageUrl] <String>] [[-LinkUrl] <String>] [[-Fields] <Hashtable>]
- [[-Color] <String>] [<CommonParameters>]
+ [[-Color] <String>] [[-CustomData] <Object>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -218,8 +218,27 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -CustomData
+Any additional custom data you'd like to pass on.
+Useful for custom backends, in case you want to pass a specifically formatted response
+in the Data stream of the responses received by the backend.
+Any data sent here will be skipped by the built-in backends provided with PoshBot itself.
+
+```yaml
+Type: Object
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 9
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### CommonParameters
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable.
+For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
