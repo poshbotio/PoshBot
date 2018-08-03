@@ -77,14 +77,11 @@ class ScheduledMessage {
     }
 
     [bool]HasElapsed() {
-        if ($this.Stopwatch.ElapsedMilliseconds -gt $this.IntervalMS) {
-            $now = (Get-Date).ToUniversalTime()
-            if ($now -ge $this.StartAfter) {
-                $this.TimesExecuted += 1
-                return $true
-            } else{
-                return $false
-            }
+        $now = (Get-Date).ToUniversalTime()
+        if ($now -gt $this.StartAfter) {
+            $this.TimesExecuted += 1
+            $this.StartAfter = $this.StartAfter.AddMilliseconds($this.IntervalMS)
+            return $true
         } else {
             return $false
         }
