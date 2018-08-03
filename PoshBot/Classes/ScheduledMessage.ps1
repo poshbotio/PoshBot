@@ -80,7 +80,6 @@ class ScheduledMessage {
         $now = (Get-Date).ToUniversalTime()
         if ($now -gt $this.StartAfter) {
             $this.TimesExecuted += 1
-            $this.StartAfter = $this.StartAfter.AddMilliseconds($this.IntervalMS)
             return $true
         } else {
             return $false
@@ -95,9 +94,8 @@ class ScheduledMessage {
         $this.Enabled = $false
     }
 
-    [void]ResetTimer() {
-        $this.Stopwatch.Reset()
-        $this.Stopwatch.Start()
+    [void]RecalculateStartAfter() {
+        $this.StartAfter = $this.StartAfter.AddMilliseconds($this.IntervalMS)
     }
 
     [hashtable]ToHash() {
