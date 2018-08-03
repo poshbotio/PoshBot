@@ -82,7 +82,7 @@ function New-ScheduledCommand {
             $schedMsg = [ScheduledMessage]::new($Interval, $value, $botMsg, [datetime]$StartAfter)
         } else {
             $StartAfter = Get-Date
-            $schedMsg = [ScheduledMessage]::new($Interval, $value, $botMsg, [datetime]$StartAfter)
+            $schedMsg = [ScheduledMessage]::new($Interval, $value, $botMsg)
         }
     } elseIf ($PSCmdlet.ParameterSetName -eq 'once') {
         # This command will be executed once then removed from the scheduler
