@@ -96,11 +96,10 @@ InModuleScope PoshBot {
         }
 
         Context "Method: HasElapsed()" {
-            $ElapsedMessage = [ScheduledMessage]::new('Seconds', 1, $Message, (Get-Date).ToUniversalTime().AddHours(-5))
-            $ScheduledMessage = [ScheduledMessage]::new($Interval, $TimeValue, $Message, (Get-Date).ToUniversalTime().AddHours(5))
+            $ElapsedMessage = [ScheduledMessage]::new($Interval, $TimeValue, $Message, (Get-Date).AddHours(-5))
+            $ScheduledMessage = [ScheduledMessage]::new($Interval, $TimeValue, $Message, (Get-Date).AddHours(5))
 
             It 'Should return true when past the StartAfter DateTime' {
-                Start-Sleep -Seconds 3
                 $ElapsedMessage.HasElapsed() | Should BeTrue
             }
 
@@ -108,6 +107,50 @@ InModuleScope PoshBot {
                 $ScheduledMessage.HasElapsed() | Should Not BeTrue
             }
 
+            It 'TimesExecuted should be 1 after executing' {
+                $ElapsedMessage.TimesExecuted | Should be 1
+            }
+
+        }
+
+        Context "Method: Disable()" {
+            $ScheduledMessage = [ScheduledMessage]::new($Interval, $TimeValue, $Message, (Get-Date))
+
+            It 'Disables the instance when called' {
+                $ScheduledMessage.Disable()
+                $SceduleMessage.Enabled | Should Not BeTrue
+            }
+
+            It 'Does not throw an error when being called on an already-disabled instance' {
+                $ScheduledMessage.Disable()
+                $ScheduledMessage.Enabled | Should Not BeTrue
+            }
+        }
+
+        Context "Method: Enable()" {
+            $ScheduledMessage = [ScheduledMessage]::new($Interval, $TimeValue, $Message, (Get-Date))
+
+            It 'Enables the instance when called' {
+                $ScheduledMessage.Disable()
+                $ScheduledMessage.Enable()
+                $ScheduledMessage.Enabled | Should BeTrue
+            }
+
+            It 'Does not throw an error when being called on an already-enabled instance' {
+                $ScheduledMessage.Enable()
+                $ScheduledMessage.Enabled | Should BeTrue
+            }
+        }
+
+        Context "Method: RecalculateStartAfter()" {
+            $ScheduledMessage = [ScheduledMessage]::new($Interval, $TimeValue, $Message, (Get-Date))
+
+            It 'Should increase the StartAfter property by IntervalMS' {
+                $StartingValue = $ScheduledMessage.StartAfter
+                $ScheduledMessage.RecalculateStartAfter()
+
+                (New-TimeSpan $StartingValue $ScheduledMessage.StartAfter).TotalDays | Should Be 1
+            }
         }
 
     }
