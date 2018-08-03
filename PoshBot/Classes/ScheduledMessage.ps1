@@ -89,20 +89,10 @@ class ScheduledMessage {
 
     [void]Enable() {
         $this.Enabled = $true
-        $this.StartTimer()
     }
 
     [void]Disable() {
         $this.Enabled = $false
-        $this.StopTimer()
-    }
-
-    [void]StartTimer() {
-        $this.Stopwatch.Start()
-    }
-
-    [void]StopTimer() {
-        $this.Stopwatch.Stop()
     }
 
     [void]ResetTimer() {
