@@ -133,9 +133,6 @@ class Scheduler : BaseLogger {
         $existingMessage = $this.GetSchedule($ScheduledMessage.Id)
         $existingMessage.Init($ScheduledMessage.TimeInterval, $ScheduledMessage.TimeValue, $ScheduledMessage.Message, $ScheduledMessage.Enabled, $ScheduledMessage.StartAfter)
         $this.LogInfo("Scheduled message [$($ScheduledMessage.Id)] modified", $existingMessage)
-        if ($existingMessage.Enabled) {
-            $existingMessage.ResetTimer()
-        }
 
         $this.SaveState()
         return $existingMessage
