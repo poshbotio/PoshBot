@@ -102,7 +102,7 @@ class Scheduler : BaseLogger {
                     $_.Value.StopTimer()
                     $remove += $_.Value.Id
                 } else {
-                    $_.Value.ResetTimer()
+                    $_.Value.RecalculateStartAfter()
                 }
 
                 $newMsg = $_.Value.Message.Clone()
