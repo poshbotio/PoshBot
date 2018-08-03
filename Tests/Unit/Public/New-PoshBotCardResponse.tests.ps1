@@ -1,5 +1,5 @@
 
-describe 'New-PoshBotTextResponse' {
+describe 'New-PoshBotCardResponse' {
 
     BeforeAll {
         $imgUrl = 'https://github.com/poshbotio/PoshBot/raw/master/Media/poshbot_logo_300_432.png'
@@ -48,6 +48,15 @@ describe 'New-PoshBotTextResponse' {
         }
         $resp = New-PoshBotCardResponse -Text 'abc' -Fields $fields
         $resp.Fields | should be $fields
+    }
+
+    it 'Has a valid [CustomData] field' {
+        $customData = @{
+            prop1 = 'val1'
+            prop2 = 'val2'
+        } | ConvertTo-Json
+        $resp = New-PoshBotCardResponse -Text 'abc' -CustomData $CustomData
+        $resp.CustomData | should be $CustomData
     }
 
     it 'Sets color field properly' {
