@@ -1,7 +1,7 @@
 
 # Setting up Microsoft Teams Backend
 
-1. Deploy Azure Service Bus with the `Basic` tier
+1. Deploy Azure Service Bus with the `Standard` tier
 2. Create a Service Bus queue called `messages`
   * Set the following properties on the queue:
 
