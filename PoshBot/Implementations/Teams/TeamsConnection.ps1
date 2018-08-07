@@ -155,8 +155,8 @@ class TeamsConnection : Connection {
                     $receiver.CompleteAsync($msg.SystemProperties.LockToken) > $null
                     $payload = [System.Text.Encoding]::UTF8.GetString($msg.Body)
                     if (-not [string]::IsNullOrEmpty($payload)) {
-                        $payload
-                        #rMessages.Enqueue($payload)
+                        #$payload
+                        $ReceiverMessages.Enqueue($payload)
                     }
                 }
             }
