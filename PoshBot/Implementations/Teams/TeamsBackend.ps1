@@ -34,75 +34,79 @@ class TeamsBackend : Backend {
     [Message[]]ReceiveMessage() {
         $messages = New-Object -TypeName System.Collections.ArrayList
         try {
-            # Read the output stream from the receive job and get any messages since our last read
-            $jsonResult = $this.Connection.ReadReceiveJob()
+            # Read the output stream from the receive thread and get any messages since our last read
+            $jsonResults = $this.Connection.ReadReceiveThread()
 
-            if (-not [string]::IsNullOrEmpty($jsonResult)) {
-                $this.LogDebug('Received message', $jsonResult)
+            if (-not [string]::IsNullOrEmpty($jsonResults)) {
 
-                $teamsMessages = @($jsonResult | ConvertFrom-Json)
+                foreach ($jsonResult in $jsonResults) {
 
-                foreach ($teamsMessage in $teamsMessages) {
+                    $this.LogDebug('Received message', $jsonResult)
 
-                    $this.DelayedInit($teamsMessage)
+                    $teamsMessages = @($jsonResult | ConvertFrom-Json)
 
-                    # We only care about certain message types from Teams
-                    if ($teamsMessage.type -in $this.MessageTypes) {
-                        $msg = [Message]::new()
+                    foreach ($teamsMessage in $teamsMessages) {
 
-                        switch ($teamsMessage.type) {
-                            'message' {
-                                $msg.Type = [MessageType]::Message
-                                break
+                        $this.DelayedInit($teamsMessage)
+
+                        # We only care about certain message types from Teams
+                        if ($teamsMessage.type -in $this.MessageTypes) {
+                            $msg = [Message]::new()
+
+                            switch ($teamsMessage.type) {
+                                'message' {
+                                    $msg.Type = [MessageType]::Message
+                                    break
+                                }
                             }
-                        }
-                        $this.LogDebug("Message type is [$($msg.Type)]")
+                            $this.LogDebug("Message type is [$($msg.Type)]")
 
-                        $msg.Id = $teamsMessage.id
-                        if ($teamsMessage.recipient) {
-                            $msg.To = $teamsMessage.recipient.id
-                        }
+                            $msg.Id = $teamsMessage.id
+                            if ($teamsMessage.recipient) {
+                                $msg.To = $teamsMessage.recipient.id
+                            }
 
-                        $msg.RawMessage = $teamsMessage
-                        $this.LogDebug('Raw message', $teamsMessage)
+                            $msg.RawMessage = $teamsMessage
+                            $this.LogDebug('Raw message', $teamsMessage)
 
-                        # When commands are directed to PoshBot, the bot must be "at" mentioned.
-                        # This will show up in the text of the message received. We don't need it
-                        # so strip it out.
-                        if ($teamsMessage.text)    {
-                            $msg.Text = $teamsMessage.text.Replace("<at>$($this.Connection.Config.BotName)</at> ", '')
-                        }
+                            # When commands are directed to PoshBot, the bot must be "at" mentioned.
+                            # This will show up in the text of the message received. We don't need it
+                            # so strip it out.
+                            if ($teamsMessage.text)    {
+                                $msg.Text = $teamsMessage.text.Replace("<at>$($this.Connection.Config.BotName)</at> ", '')
+                            }
 
-                        if ($teamsMessage.from) {
-                            $msg.From     = $teamsMessage.from.id
-                            $msg.FromName = $teamsMessage.from.name
-                        }
+                            if ($teamsMessage.from) {
+                                $msg.From     = $teamsMessage.from.id
+                                $msg.FromName = $teamsMessage.from.name
+                            }
 
-                        # Mark as DM
-                        # 'team' data is not passed in channel conversations
-                        # so we can use it to determine if message is in personal chat
-                        # https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/bots/bot-conversations/bots-conversations#teams-channel-data
-                        if (-not $teamsMessage.channelData.team) {
-                            $msg.IsDM = $true
-                            $msg.ToName = $this.Connection.Config.BotName
+                            # Mark as DM
+                            # 'team' data is not passed in channel conversations
+                            # so we can use it to determine if message is in personal chat
+                            # https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/bots/bot-conversations/bots-conversations#teams-channel-data
+                            if (-not $teamsMessage.channelData.team) {
+                                $msg.IsDM = $true
+                                $msg.ToName = $this.Connection.Config.BotName
+                            } else {
+                                if ($msg.To) {
+                                    $msg.ToName = $this.UserIdToUsername($msg.To)
+                                }
+                            }
+
+                            # Resolve channel name
+                            # Skip DM channels, they won't have names
+                            if (($teamsMessage.channelData.teamsChannelId) -and (-not $msg.IsDM)) {
+                                $msg.ToName = $this.ChannelIdToName($teamsMessage.channelData.teamsChannelId)
+                            }
+
+                            # Get time of message
+                            $msg.Time = [datetime]$teamsMessage.timestamp
+
+                            $messages.Add($msg) > $null
                         } else {
-                            if ($msg.To) {
-                                $msg.ToName = $this.UserIdToUsername($msg.To)
-                            }
+                            $this.LogDebug("Message type is [$($teamsMessage.type)]. Ignoring")
                         }
-
-                        # Resolve channel name
-                        # Skip DM channels, they won't have names
-                        if (($teamsMessage.channelData.teamsChannelId) -and (-not $msg.IsDM)) {
-                            $msg.ToName = $this.ChannelIdToName($teamsMessage.channelData.teamsChannelId)
-                        }
-
-                        # Get time of message
-                        $msg.Time = [datetime]$teamsMessage.timestamp
-
-                        $messages.Add($msg) > $null
-                    } else {
-                        $this.LogDebug("Message type is [$($teamsMessage.type)]. Ignoring")
                     }
                 }
             }
