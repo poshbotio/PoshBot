@@ -20,8 +20,6 @@ class ScheduledMessage {
 
     [int]$TimesExecuted = 0
 
-    [System.Diagnostics.Stopwatch]$Stopwatch
-
     [DateTime]$StartAfter = (Get-Date).ToUniversalTime()
 
     ScheduledMessage([TimeInterval]$Interval, [int]$TimeValue, [Message]$Message, [bool]$Enabled, [DateTime]$StartAfter) {
@@ -45,7 +43,6 @@ class ScheduledMessage {
         $this.Enabled = $true
         $this.Once = $true
         $this.StartAfter = $StartAt.ToUniversalTime()
-        $this.Stopwatch = New-Object -TypeName System.Diagnostics.Stopwatch
     }
 
     [void]Init([TimeInterval]$Interval, [int]$TimeValue, [Message]$Message, [bool]$Enabled, [DateTime]$StartAfter) {
@@ -54,7 +51,6 @@ class ScheduledMessage {
         $this.Message = $Message
         $this.Enabled = $Enabled
         $this.StartAfter = $StartAfter.ToUniversalTime()
-        $this.Stopwatch = New-Object -TypeName System.Diagnostics.Stopwatch
 
         switch ($this.TimeInterval) {
             'Days' {
