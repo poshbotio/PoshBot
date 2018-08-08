@@ -223,7 +223,7 @@ class TeamsConnection : Connection {
 
         # Validate access token is still current and refresh
         # if expiration is less than half the token lifetime
-        if (($this._AccessTokenExpiration - [datetime]::Now).TotalSeconds -lt 3500) {
+        if (($this._AccessTokenExpiration - [datetime]::Now).TotalSeconds -lt 1800) {
             $this.LogDebug('Teams access token is expiring soon. Refreshing...')
             $this.Authenticate()
         }
