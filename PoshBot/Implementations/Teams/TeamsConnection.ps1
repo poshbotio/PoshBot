@@ -1,6 +1,4 @@
 
-
-
 class TeamsConnection : Connection {
 
     [object]$ReceiveJob = $null
@@ -16,6 +14,8 @@ class TeamsConnection : Connection {
     [object]$Handler = $null
 
     hidden [pscustomobject]$_AccessTokenInfo
+
+    hidden [datetime]$_AccessTokenExpiration
 
     [bool]$Connected
 
@@ -47,6 +47,7 @@ class TeamsConnection : Connection {
     # Authenticate with Teams and get token
     [void]Authenticate() {
         try {
+            $this.LogDebug('Getting Bot Framework access token')
             $authUrl = 'https://login.microsoftonline.com/botframework.com/oauth2/v2.0/token'
             $payload = @{
                 grant_type    = 'client_credentials'
@@ -55,9 +56,11 @@ class TeamsConnection : Connection {
                 scope         = 'https://api.botframework.com/.default'
             }
             $response = Invoke-RestMethod -Uri $authUrl -Method Post -Body $payload -Verbose:$false
+            $this._AccessTokenExpiration = ([datetime]::Now).AddSeconds($response.expires_in)
             $this._AccessTokenInfo = $response
         } catch {
             $this.LogInfo([LogSeverity]::Error, 'Error authenticating to Teams', [ExceptionFormatter]::Summarize($_))
+            throw $_
         }
     }
 
@@ -217,6 +220,13 @@ class TeamsConnection : Connection {
 
         # TODO
         # Read all the streams from the thread
+
+        # Validate access token is still current and refresh
+        # if expiration is less than half the token lifetime
+        if (($this._AccessTokenExpiration - [datetime]::Now).TotalSeconds -lt 3500) {
+            $this.LogDebug('Teams access token is expiring soon. Refreshing...')
+            $this.Authenticate()
+        }
 
         # The receive thread stopped for some reason. Reestablish the connection if it isn't running
         if ($this.PowerShell.InvocationStateInfo.State -ne 'Running') {
