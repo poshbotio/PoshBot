@@ -20,8 +20,6 @@ class ScheduledMessage {
 
     [int]$TimesExecuted = 0
 
-    [System.Diagnostics.Stopwatch]$Stopwatch
-
     [DateTime]$StartAfter = (Get-Date).ToUniversalTime()
 
     ScheduledMessage([TimeInterval]$Interval, [int]$TimeValue, [Message]$Message, [bool]$Enabled, [DateTime]$StartAfter) {
@@ -45,7 +43,6 @@ class ScheduledMessage {
         $this.Enabled = $true
         $this.Once = $true
         $this.StartAfter = $StartAt.ToUniversalTime()
-        $this.Stopwatch = New-Object -TypeName System.Diagnostics.Stopwatch
     }
 
     [void]Init([TimeInterval]$Interval, [int]$TimeValue, [Message]$Message, [bool]$Enabled, [DateTime]$StartAfter) {
@@ -54,7 +51,6 @@ class ScheduledMessage {
         $this.Message = $Message
         $this.Enabled = $Enabled
         $this.StartAfter = $StartAfter.ToUniversalTime()
-        $this.Stopwatch = New-Object -TypeName System.Diagnostics.Stopwatch
 
         switch ($this.TimeInterval) {
             'Days' {
@@ -77,14 +73,10 @@ class ScheduledMessage {
     }
 
     [bool]HasElapsed() {
-        if ($this.Stopwatch.ElapsedMilliseconds -gt $this.IntervalMS) {
-            $now = (Get-Date).ToUniversalTime()
-            if ($now -ge $this.StartAfter) {
-                $this.TimesExecuted += 1
-                return $true
-            } else{
-                return $false
-            }
+        $now = (Get-Date).ToUniversalTime()
+        if ($now -gt $this.StartAfter) {
+            $this.TimesExecuted += 1
+            return $true
         } else {
             return $false
         }
@@ -92,25 +84,14 @@ class ScheduledMessage {
 
     [void]Enable() {
         $this.Enabled = $true
-        $this.StartTimer()
     }
 
     [void]Disable() {
         $this.Enabled = $false
-        $this.StopTimer()
     }
 
-    [void]StartTimer() {
-        $this.Stopwatch.Start()
-    }
-
-    [void]StopTimer() {
-        $this.Stopwatch.Stop()
-    }
-
-    [void]ResetTimer() {
-        $this.Stopwatch.Reset()
-        $this.Stopwatch.Start()
+    [void]RecalculateStartAfter() {
+        $this.StartAfter = $this.StartAfter.AddMilliseconds($this.IntervalMS)
     }
 
     [hashtable]ToHash() {
