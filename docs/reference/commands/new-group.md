@@ -13,7 +13,7 @@ Create a new group.
 ## SYNTAX
 
 ```
-New-Group -Bot <Object> [-Name] <String> [[-Description] <String>] [<CommonParameters>]
+New-Group -Bot <Object> [-Name] <String[]> [[-Description] <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -27,6 +27,13 @@ New-Group -Bot <Object> [-Name] <String> [[-Description] <String>] [<CommonParam
 ```
 
 Create a new group called \[sevicedesk\].
+
+### EXAMPLE 2
+```
+!new-group -name foo, bar, baz
+```
+
+Create three new groups in one command
 
 ## PARAMETERS
 
@@ -46,10 +53,10 @@ Accept wildcard characters: False
 ```
 
 ### -Name
-The name of the group to create.
+The name of one or more groups to create.
 
 ```yaml
-Type: String
+Type: String[]
 Parameter Sets: (All)
 Aliases:
 

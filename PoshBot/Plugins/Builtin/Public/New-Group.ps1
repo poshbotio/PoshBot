@@ -4,13 +4,17 @@ function New-Group {
     .SYNOPSIS
         Create a new group.
     .PARAMETER Name
-        The name of the group to create.
+        The name of one or more groups to create.
     .PARAMETER Description
         A short description for the group.
     .EXAMPLE
         !new-group servicedesk 'Service desk users'
 
         Create a new group called [sevicedesk].
+    .EXAMPLE
+        !new-group -name foo, bar, baz
+
+        Create three new groups in one command
     #>
     [PoshBot.BotCommand(
         Aliases = ('ng', 'newgroup'),
@@ -22,21 +26,38 @@ function New-Group {
         $Bot,
 
         [parameter(Mandatory, Position = 0)]
-        [string]$Name,
+        [string[]]$Name,
 
         [parameter(Position = 1)]
         [string]$Description
     )
 
-    $group = [Group]::New($Name, $Bot.Logger)
-    if ($PSBoundParameters.ContainsKey('Description')) {
-        $group.Description = $Description
+    # Create group(s)
+    $notCreated = @()
+    foreach ($groupName in $Name) {
+        $group = [Group]::New($groupName, $Bot.Logger)
+        if ($PSBoundParameters.ContainsKey('Description')) {
+            $group.Description = $Description
+        }
+        $Bot.RoleManager.AddGroup($group)
+        if (-not ($Bot.RoleManager.GetGroup($groupName))) {
+            $notCreated += $groupName
+        }
     }
 
-    $Bot.RoleManager.AddGroup($group)
-    if ($g = $Bot.RoleManager.GetGroup($Name)) {
-        New-PoshBotCardResponse -Type Normal -Text "Group [$Name] created." -ThumbnailUrl $thumb.success
+    if ($notCreated.Count -eq 0) {
+        if ($Name.Count -gt 1) {
+            $successMessage = 'Groups [{0}] created.' -f ($Name -join ', ')
+        } else {
+            $successMessage = "Group [$Name] created"
+        }
+        New-PoshBotCardResponse -Type Normal -Text $successMessage -ThumbnailUrl $thumb.success
     } else {
-        New-PoshBotCardResponse -Type Warning -Text "Group [$Name] could not be created. Check logs for more information." -ThumbnailUrl $thumb.warning
+        if ($notCreated.Count -gt 1) {
+            $errMsg = "Groups [{0}] could not be created. Check logs for more information." -f ($notCreated -join ', ')
+        } else {
+            $errMsg = "Group [$notCreated] could not be created. Check logs for more information."
+        }
+        New-PoshBotCardResponse -Type Warning -Text $errMsg -ThumbnailUrl $thumb.warning
     }
 }

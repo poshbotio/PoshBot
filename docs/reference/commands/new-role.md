@@ -13,7 +13,7 @@ Create a new role.
 ## SYNTAX
 
 ```
-New-Role -Bot <Object> [-Name] <String> [[-Description] <String>] [<CommonParameters>]
+New-Role -Bot <Object> [-Name] <String[]> [[-Description] <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -25,6 +25,15 @@ New-Role -Bot <Object> [-Name] <String> [[-Description] <String>] [<CommonParame
 ```
 !rew-role 'itsm-modify' 'Can modify items in ITSM tool'
 ```
+
+Create a new role called called \[itsm-modify\].
+
+### EXAMPLE 2
+```
+!new-role -name foo, bar, baz
+```
+
+Create three new roles in one command.
 
 ## PARAMETERS
 
@@ -44,10 +53,10 @@ Accept wildcard characters: False
 ```
 
 ### -Name
-The name of the new role to create.
+The name of one or more roles to create.
 
 ```yaml
-Type: String
+Type: String[]
 Parameter Sets: (All)
 Aliases:
 
