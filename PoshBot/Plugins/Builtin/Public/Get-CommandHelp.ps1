@@ -115,7 +115,7 @@ function Get-CommandHelp {
     $result = $result | Sort-Object -Property FullCommandName
 
     if ($result) {
-        if ($result.Count -ge 1) {
+        if ($result.Count -gt 1) {
             $fields = @(
                 'FullCommandName'
                 @{l='Aliases';e={$_.Aliases -join ', '}}
