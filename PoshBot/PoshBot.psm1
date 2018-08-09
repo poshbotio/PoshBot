@@ -12,3 +12,7 @@ if (($null -eq $IsWindows) -or $IsWindows) {
 } else {
     $script:defaultPoshBotDir = (Join-Path -Path $env:HOME -ChildPath '.poshbot')
 }
+
+$PSDefaultParameterValues = @{
+    'ConvertTo-Json:Verbose' = $false
+}
