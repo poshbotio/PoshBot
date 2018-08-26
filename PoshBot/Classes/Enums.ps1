@@ -71,6 +71,7 @@ enum MessageType {
     ReactionRemoved
     StarAdded
     StarRemoved
+    CardClicked
 }
 
 enum MessageSubtype {
