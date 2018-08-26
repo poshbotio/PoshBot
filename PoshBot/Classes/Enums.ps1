@@ -62,6 +62,7 @@ enum ApprovalState {
 }
 
 enum MessageType {
+    CardClicked
     ChannelRenamed
     Message
     PinAdded
@@ -71,7 +72,6 @@ enum MessageType {
     ReactionRemoved
     StarAdded
     StarRemoved
-    CardClicked
 }
 
 enum MessageSubtype {
