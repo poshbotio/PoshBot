@@ -103,6 +103,7 @@ When one is found, the command will be executed.
 |-----------------|---------------|-------------|
 | Message         | ChannelJoined | A user joined a channel
 | Message         | ChannelLeft   | A user left a channel
+| CardClicked     | None          | A user clicked an interactive card
 | PinAdded        | None          | A user pinned an item
 | PinRemoved      | None          | A user unpinned an item
 | PresenceChange  | None          | A user's presence changed
