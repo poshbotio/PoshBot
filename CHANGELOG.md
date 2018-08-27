@@ -16,6 +16,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   It is now possible to execute custom logic pre/post receiving a message from the chat network, pre/post command execution, and pre/post command response.
   These execution hooks can be used for centralized authentication logic, custom command whitelisting and blacklisting, response sanitation, or any number of other uses.
 
+- The `CustomData` parameter has been added to New-PoshBotCardResponse.
+  This enables custom backends and plugins to send additional data in a PoshBot Card Response.
+
+- `CardClicked` event type has been added to the `MessageType` enum.
+  This enables custom backends that support `CardClicked` events in interactive cards to use this event type with Event-trigger based commands.
+
 ### Fixed
 
 - Start-PoshBot with -AsJob switch now works correctly.

@@ -62,6 +62,7 @@ enum ApprovalState {
 }
 
 enum MessageType {
+    CardClicked
     ChannelRenamed
     Message
     PinAdded
