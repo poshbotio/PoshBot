@@ -26,6 +26,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Start-PoshBot with -AsJob switch now works correctly.
 
+- When removing a plugin, the PowerShell module is now also unloaded.
+
 ## [0.10.2] 2018-05-04
 
 ### Fixed

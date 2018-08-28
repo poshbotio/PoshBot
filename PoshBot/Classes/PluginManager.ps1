@@ -199,6 +199,18 @@ class PluginManager : BaseLogger {
                     $this.LogInfo("Removing plugin [$($pv.Name)] version [$Version]")
                     $p.Remove($pv.Version.ToString())
                 }
+
+                # Unload the PS module
+                $unloadModuleParams = @{
+                    FullyQualifiedName = @{
+                        ModuleName    = $PluginName
+                        ModuleVersion = $Version
+                    }
+                    Verbose = $false
+                    Force   = $true
+                }
+                $this.LogDebug("Unloading module [$PluginName] version [$Version]")
+                Remove-Module @unloadModuleParams
             } else {
                 $msg = "Plugin [$PluginName] version [$Version] is not loaded in bot"
                 $this.LogInfo([LogSeverity]::Warning, $msg)
