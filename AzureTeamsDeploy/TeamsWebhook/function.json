@@ -1,0 +1,22 @@
+{
+  "bindings": [
+    {
+      "name": "req",
+      "type": "httpTrigger",
+      "direction": "in",
+      "methods": [
+        "post"
+      ],
+      "authLevel": "function"
+    },
+    {
+      "type": "serviceBus",
+      "connection": "poshbot-teams_RootManageSharedAccessKey_SERVICEBUS",
+      "name": "outputSbMsg",
+      "queueName": "messages",
+      "accessRights": "Send",
+      "direction": "out"
+    }
+  ],
+  "disabled": false
+}
