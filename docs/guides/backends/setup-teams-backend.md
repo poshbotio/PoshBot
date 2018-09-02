@@ -9,7 +9,6 @@
 |---------|-------|
 | Message time to live | 1 minute |
 | Lock duration        | 30 seconds |
-| Duplicate detection history | 10 minutes |
 | Maximum delivery count | 10 |
 | Maximum Size | 1GB |
 | Partitioning | false |
