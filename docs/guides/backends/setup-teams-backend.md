@@ -128,7 +128,7 @@ To do that, log into the Azure portal and retrieve it there.
 
 Navigate to the URL below in order to create a new bot in Bot Framework.
 
-https://dev.botframework.com/bots/new
+[https://dev.botframework.com/bots/new](https://dev.botframework.com/bots/new)
 
 Note that the **bot handle** is globally unique and can not be changed later.
 Copy this value down as it will be needed by the Teams backend in PoshBot.
