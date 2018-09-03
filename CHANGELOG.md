@@ -10,10 +10,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- Experimental support for Microsoft Teams backend. To connect to Teams, additional Azure resources are required which the Teams backend will connect to. Command and regex triggers are supported. Event triggers currently are not. In group conversations, you must '@' mention the bot followed by your text message otherwise the bot will not receive it. In one-on-one conversations with the bot, '@' mentioning is not needed. More information can be found [here](https://poshbot.readthedocs.io/en/latest/guides/backends/setup-teams-backend/).
+- Initial support for Microsoft Teams backend. To connect to Teams, additional Azure resources are required which the Teams backend will connect to. Command and regex triggers are supported. Event triggers currently are not. In group conversations, you must '@' mention the bot followed by your text message otherwise the bot will not receive it. In one-on-one conversations with the bot, '@' mentioning is not needed. More information can be found [here](https://poshbot.readthedocs.io/en/latest/guides/backends/setup-teams-backend/).
 
-- Support for custom `scriptblock` execution during the command processing life cycle has been added.
-  It is now possible to execute custom logic pre/post receiving a message from the chat network, pre/post command execution, and pre/post command response.
+- Support for custom middleware to be executed during the command processing life cycle has been added.
+  It is now possible to execute custom scripts pre/post receiving a message from the chat network, pre/post command execution, and pre/post command response.
   These execution hooks can be used for centralized authentication logic, custom command whitelisting and blacklisting, response sanitation, or any number of other uses.
 
 - The `CustomData` parameter has been added to New-PoshBotCardResponse.
@@ -22,11 +22,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `CardClicked` event type has been added to the `MessageType` enum.
   This enables custom backends that support `CardClicked` events in interactive cards to use this event type with Event-trigger based commands.
 
+- Enable multiple groups or roles to be created at once via the `New-Group` and `New-Role` builtin commands.
+
 ### Fixed
 
 - Start-PoshBot with -AsJob switch now works correctly.
 
 - When removing a plugin, the PowerShell module is now also unloaded.
+
+- [**#90**](https://github.com/poshbotio/PoshBot/pull/90) Fixed scheduling logic to fire commands at interval based on start time.
+
+- Fix Get-CommandHelp to display correct help when one item is returned.
+
+- Remove the PowerShell module when removing a plugin.
 
 ## [0.10.2] 2018-05-04
 
