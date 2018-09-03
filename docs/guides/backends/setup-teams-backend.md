@@ -151,38 +151,59 @@ Once added, you should see both Microsoft Teams and Web Chat as connected channe
 
 ## Test Bot Framework
 
-* Go to Test pane in Bot Framework and send a message.
+At this point you can test that Bot Framework, the Azure Function, and Service Bus queue are setup correctly by using the **test pane** in the Bot Framework portal.
 
-* Verify Azure Function received message by looking at function logs
+* Click on `Test` in the top right to open up the test pane
 
-* Verify message is submitted to Service Bus queue
+* Send a sample message
+
+* Verify that the Azure Function received the message by looking at function logs
+
+* Verify that the message was then submitted to Service Bus queue by inspecting the number of items in the queue from the Azure Portal.
+  You can also use the [Service Bus Explorer](https://github.com/paolosalvatori/ServiceBusExplorer) to look at the messages.
 
 ## Install App Studio in Teams
 
+You'll need to create a new bot in Microsoft Teams and the easies way to do that is with the [App Studio](https://docs.microsoft.com/en-us/microsoftteams/platform/get-started/get-started-app-studio).
+Download and install the App Studio into Teams and follow the guide to creating the bot manifest.
+
 ## Create a Bot Manifest using App Studio
+
+![Create bot manifest](./app-studio-edit-bot-manifest.png)
+
+Navigate to `Capabilities -> Bots` and enter the `App ID` you created in Bot Framework.
+The messaging endpoint should update to reflect the URL to your Azure Function.
+
+![Create bot manifest](./app-studio-bot-settings.png)
+
+Edit the bot settings and ensure `Personal` and `Team` are selected under `Scope`.
+
+![Edit bot scope](./app-studio-bot-scope.png)
+
+Export the bot manifest to a `.zip` files on your computer.
 
 ## Sideload the Bot Manifest in Teams
 
+In Teams, go to `Teams -> Manage Team`. Go to the **Apps** tab and select `Upload a custom app`. Select the manifest **.zip** you just downloaded.
+
+## Determine Your Teams ID
+
+PoshBot also needs to know your Teams ID so it can query it for the user roster.
+Without this, PoshBot cannot resolve User Principal Names to IDs and vice versa.
+
+To get your Teams ID, go to `Teams -> Get link to team`, and copy the ID.
+It will have `thread.skype` at the end.
+This ID is URL encoded so run the following PowerShell command to decode it.
+
+```powershell
+[System.Web.HttpUtility]::UrlDecode('<YOUR-ENCODED-TEAMS-ID>')
+```
+
 ## Create PoshBot Startup Script
 
-## Start PoshBot
+The following example script shows how to create a new Teams backend using the values created above.
 
-8. Install [App Studio](https://docs.microsoft.com/en-us/microsoftteams/platform/get-started/get-started-app-studio) in Teams
-
-9. Inside App Studio in Teams, go to `Manifest editor` tab and create a new app.
-  * Enter values for all required settings
-  * Navigate to `Capabilities -> Bots`
-    * Enter name for bot and the App ID you created in Bot Framework
-    * Make sure `Personal` and `Team` is selected under `Scope`
-    * Go to `Finish -> Test and distribute`
-      * Export the bot manifest .zip to your computer.
-
-10. Go to Teams -> Manage Team
-  * Go to Apps tab and select `Upload a custom app`. Select the manifest .zip you downloaded.
-
-11. Create Poshbot startup script that uses the values you just setup.
-
-### Example PoshBot startup script
+> Note that with the Teams backend, Azure Active Directory User Principle Names are used when defining the list of bot admins.
 
 ```powershell
 Import-Module PoshBot
@@ -203,7 +224,13 @@ $backendConfig = @{
     )
 }
 $backend = New-PoshBotTeamsBackend -Configuration $backendConfig
+```
 
+## Start PoshBot
+
+Once the backend has been created, create a new instance of PoshBot and start it.
+
+```powershell
 $bot = New-PoshBotInstance -Configuration $pbc -Backend $backend
 $bot | Start-PoshBot -Verbose
 ```
