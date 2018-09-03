@@ -113,7 +113,7 @@ task UpdateMarkdownHelp -Depends Compile {
 } -description 'Update markdown help files'
 
 task CreateExternalHelp -Depends CreateMarkdownHelp {
-    New-ExternalHelp "$projectRoot\docs\reference\functions" -OutputPath "$outputModVerDir\en-US" -Force
+    New-ExternalHelp "$projectRoot\docs\reference\functions" -OutputPath "$outputModVerDir\en-US" -Force > $null
 } -description 'Create module help from markdown files'
 
 Task RegenerateHelp -Depends UpdateMarkdownHelp, CreateExternalHelp
@@ -197,11 +197,15 @@ task Compile -depends Clean {
         Get-Content -Raw | Add-Content -Path $psm1 -Encoding UTF8
     Get-ChildItem -Path (Join-Path -Path $sut -ChildPath 'Public') -Recurse |
         Get-Content -Raw | Add-Content -Path $psm1 -Encoding UTF8
-    Get-ChildItem -Path (Join-Path -Path $sut -ChildPath 'Implementations') -File -Recurse -Filter '*.ps1' |
+    Get-ChildItem -Path (Join-Path -Path $sut -ChildPath 'Implementations') -File -Recurse -Filter '*.ps1' -Exclude '*ServiceBusReceiver*.ps1' |
         Get-Content -Raw | Add-Content -Path $psm1 -Encoding UTF8
 
+    # Copy over "lib" files.
+    # These are the Service Bus DLLs and scripts
     New-Item -Path $outputModVerDir/lib -ItemType Directory > $null
     Copy-Item -Path "$sut/lib/*" -Destination $outputModVerDir/lib -Recurse
+    Copy-Item -Path "$sut/Implementations/Teams/*netstandard*.ps1" -Destination $outputModVerDir/lib/linux
+    Copy-Item -Path "$sut/Implementations/Teams/*net45*.ps1"       -Destination $outputModVerDir/lib/windows
 
     # Copy over other items
     Copy-Item -Path $env:BHPSModuleManifest -Destination $outputModVerDir
@@ -213,7 +217,7 @@ task Compile -depends Clean {
     "    Created compiled module at [$modDir]"
 } -description 'Compiles module from source'
 
-task Build -depends Compile, CreateMarkdownHelp {
+task Build -depends Compile, CreateMarkdownHelp, CreateExternalHelp {
     # External help
     $helpXml = New-ExternalHelp "$projectRoot\docs\reference\functions" -OutputPath (Join-Path -Path $outputModVerDir -ChildPath 'en-US') -Force
     "    Module XML help created at [$helpXml]"

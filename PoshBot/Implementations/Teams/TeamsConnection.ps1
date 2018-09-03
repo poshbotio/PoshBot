@@ -92,79 +92,17 @@ class TeamsConnection : Connection {
                 [string]$AccessKey
             )
 
-            # Load Service Bus DLLs
-            try {
-                if ($PSVersionTable.PSEdition -eq 'Desktop') {
-                    $platform = 'windows'
-                    # [System.Reflection.Assembly]::LoadFrom((Resolve-Path "$ModulePath/lib/$platform/Microsoft.IdentityModel.Clients.ActiveDirectory.dll")) > $null
-                    # [System.Reflection.Assembly]::LoadFrom((Resolve-Path "$ModulePath/lib/$platform/Microsoft.ServiceBus.dll")) > $null
-                    Add-Type -Path "$ModulePath/lib/$platform/netstandard.dll"
-                    Add-Type -Path "$ModulePath/lib/$platform/System.Diagnostics.DiagnosticSource.dll"
-                    Add-Type -Path "$ModulePath/lib/$platform/Microsoft.Azure.Amqp.dll"
-                    Add-Type -Path "$ModulePath/lib/$platform/Microsoft.Azure.ServiceBus.dll"
-                } else {
-                    $platform = 'linux'
-                    Add-Type -Path "$ModulePath/lib/$platform/Microsoft.Azure.Amqp.dll"
-                    Add-Type -Path "$ModulePath/lib/$platform/Microsoft.Azure.ServiceBus.dll"
-                }
-            } catch {
-                throw $_
-            }
-
             $connectionString = "Endpoint=sb://{0}.servicebus.windows.net/;SharedAccessKeyName={1};SharedAccessKey={2}" -f $ServiceBusNamespace, $AccessKeyName, $AccessKey
             $receiveTimeout = [timespan]::new(0, 0, 0, 5)
 
-            # Create Service Bus receiver
-            # Full .Net uses a different SDK therefore the implemented differs a bit from the .Net core version
-            # if ($PSVersionTable.PSEdition -eq 'Desktop') {
-
-            #     $factory = [Microsoft.ServiceBus.Messaging.MessagingFactory]::CreateFromConnectionString($connectionString)
-            #     $receiver = $factory.CreateMessageReceiver($QueueName, [Microsoft.ServiceBus.Messaging.ReceiveMode]::PeekLock)
-            #     $bindingFlags = [Reflection.BindingFlags] 'Public,Instance'
-
-            #     # Receive messages and add to shared queue so the backend can read them
-            #     while (-not $receiver.IsClosed -and $ReceiverControl.ShouldRun) {
-            #         $msg = $receiver.ReceiveAsync($receiveTimeout).GetAwaiter().GetResult()
-            #         if ($msg) {
-            #             $receiver.CompleteAsync($msg.LockToken).GetAwaiter().GetResult() > $null
-
-            #             # https://social.msdn.microsoft.com/Forums/en-US/6800cf74-9497-4a85-b059-a22d5dc28227/how-to-call-azure-service-bus-generic-method-in-powershell-brokeredmessagegetbody?forum=servbus
-            #             $stream = $msg.GetType().GetMethod('GetBody', $bindingFlags, $null, @(), $null).MakeGenericMethod([System.IO.Stream]).Invoke($msg, $null)
-            #             $streamReader = [System.IO.StreamReader]::new($stream)
-            #             $payload = $streamReader.ReadToEnd()
-            #             $streamReader.Dispose()
-            #             $stream.Dispose()
-            #             if (-not [string]::IsNullOrEmpty($payload)) {
-            #                 $ReceiverMessages.Enqueue($payload) > $null
-            #             }
-            #         }
-            #     }
-            #     $receiver.Close()
-            # } else {
-
-            $receiver = [Microsoft.Azure.ServiceBus.Core.MessageReceiver]::new(
-                $connectionString,
-                $QueueName,
-                [Microsoft.Azure.ServiceBus.ReceiveMode]::PeekLock,
-                [Microsoft.Azure.ServiceBus.RetryPolicy]::Default,
-                0
-            )
-            $receiver.OperationTimeout = $receiveTimeout
-
-            # Receive messages and add to shared queue so the backend can read them
-            while (-not $receiver.IsClosedOrClosing -and $ReceiverControl.ShouldRun) {
-                $msg = $receiver.ReceiveAsync().GetAwaiter().GetResult()
-                if ($msg) {
-                    $receiver.CompleteAsync($msg.SystemProperties.LockToken) > $null
-                    $payload = [System.Text.Encoding]::UTF8.GetString($msg.Body)
-                    if (-not [string]::IsNullOrEmpty($payload)) {
-                        #$payload
-                        $ReceiverMessages.Enqueue($payload)
-                    }
-                }
+            # Honestly this is a pretty hacky way to go about using these
+            # Service Bus DLLs but we can only implement one method or the
+            # other without PSScriptAnalyzer freaking out about missing classes
+            if ($PSVersionTable.PSEdition -eq 'Desktop') {
+                . "$ModulePath/lib/windows/ServiceBusReceiver_net45.ps1"
+            } else {
+                . "$ModulePath/lib/linux/ServiceBusReceiver_netstandard.ps1"
             }
-            $receiver.CloseAsync().GetAwaiter().GetResult()
-            # }
         }
 
         try {
@@ -230,6 +168,15 @@ class TeamsConnection : Connection {
 
         # The receive thread stopped for some reason. Reestablish the connection if it isn't running
         if ($this.PowerShell.InvocationStateInfo.State -ne 'Running') {
+
+            # Log any errors from the background thread
+            if ($this.PowerShell.Streams.Error.Count -gt 0) {
+                $this.PowerShell.Streams.Error.Foreach({
+                    $this.LogInfo([LogSeverity]::Error, "$($_.Exception.Message)", [ExceptionFormatter]::Summarize($_))
+                })
+            }
+            $this.PowerShell.Streams.ClearStreams()
+
             $this.LogInfo([LogSeverity]::Warning, "Receive thread is [$($this.PowerShell.InvocationStateInfo.State)]. Attempting to reconnect...")
             Start-Sleep -Seconds 5
             $this.Connect()
