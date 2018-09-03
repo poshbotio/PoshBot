@@ -62,9 +62,6 @@ class Scheduler : BaseLogger {
     [void]ScheduleMessage([ScheduledMessage]$ScheduledMessage, [bool]$Save) {
         if (-not $this.Schedules.ContainsKey($ScheduledMessage.Id)) {
             $this.LogInfo("Scheduled message [$($ScheduledMessage.Id)]", $ScheduledMessage)
-            if ($ScheduledMessage.Enabled) {
-                $ScheduledMessage.StartTimer()
-            }
             $this.Schedules.Add($ScheduledMessage.Id, $ScheduledMessage)
         } else {
             $msg = "Id [$($ScheduledMessage.Id)] is already scheduled"
