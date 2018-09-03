@@ -210,7 +210,6 @@ task Compile -depends Clean {
     # Copy over other items
     Copy-Item -Path $env:BHPSModuleManifest -Destination $outputModVerDir
     Copy-Item -Path (Join-Path -Path $classDir -ChildPath 'PoshBotAttribute.ps1') -Destination $outputModVerDir
-    Copy-Item -Path (Join-Path -Path $sut -ChildPath 'LoadDLLs.ps1') -Destination $outputModVerDir
     Copy-Item -Path (Join-Path -Path $sut -ChildPath 'Plugins') -Destination $outputModVerDir -Recurse
     Copy-Item -Path (Join-Path -Path $sut -ChildPath 'Task') -Destination $outputModVerDir -Recurse
 
