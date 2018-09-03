@@ -195,6 +195,8 @@ To get your Teams ID, go to `Teams -> Get link to team`, and copy the ID.
 It will have `thread.skype` at the end.
 This ID is URL encoded so run the following PowerShell command to decode it.
 
+![Get Teams ID](./teams-id.png)
+
 ```powershell
 [System.Web.HttpUtility]::UrlDecode('<YOUR-ENCODED-TEAMS-ID>')
 ```
