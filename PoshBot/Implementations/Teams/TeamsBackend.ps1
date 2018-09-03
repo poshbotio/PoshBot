@@ -309,6 +309,7 @@ class TeamsBackend : Backend {
                     break
                 }
                 '(.*?)PoshBot\.File\.Upload' {
+                    # Teams documentation: https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/bots/bots-files
                     $this.LogDebug('Custom response is [PoshBot.File.Upload]')
 
                     # Teams doesn't support generic file uploads yet :(
