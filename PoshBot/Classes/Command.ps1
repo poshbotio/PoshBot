@@ -69,7 +69,7 @@ class Command : BaseLogger {
     # }
 
     # Execute the command in a PowerShell job and return the running job
-    [object]Invoke([ParsedCommand]$ParsedCommand, [bool]$InvokeAsJob = $this.AsJob) {
+    [object]Invoke([ParsedCommand]$ParsedCommand, [bool]$InvokeAsJob = $this.AsJob, [string]$Backend) {
 
         $outer = {
             [cmdletbinding()]
@@ -96,6 +96,7 @@ class Command : BaseLogger {
                 ConfigurationDirectory = $options.ConfigurationDirectory
                 ParsedCommand = $options.ParsedCommand | Select-Object -ExcludeProperty $parsedCommandExcludes
                 OriginalMessage = $options.OriginalMessage
+                BackendType = $options.BackendType
             }
 
             & $cmd @namedParameters @positionalParameters
@@ -108,6 +109,7 @@ class Command : BaseLogger {
             CallingUserInfo = $ParsedCommand.CallingUserInfo
             OriginalMessage = $ParsedCommand.OriginalMessage.ToHash()
             ConfigurationDirectory = $script:ConfigurationDirectory
+            BackendType = $Backend
         }
         if ($this.FunctionInfo) {
             $options.Function = $this.FunctionInfo

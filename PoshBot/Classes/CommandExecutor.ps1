@@ -103,7 +103,7 @@ class CommandExecutor : BaseLogger {
 
                     # Kick off job and add to job tracker
                     $cmdExecContext.IsJob = $true
-                    $cmdExecContext.Job = $cmdExecContext.Command.Invoke($cmdExecContext.ParsedCommand, $true)
+                    $cmdExecContext.Job = $cmdExecContext.Command.Invoke($cmdExecContext.ParsedCommand, $true,$this._bot.Backend.GetType().Name)
                     $this.LogDebug("Command [$($cmdExecContext.FullyQualifiedCommandName)] executing in job [$($cmdExecContext.Job.Id)]")
                     $cmdExecContext.Complete = $false
                 } else {
@@ -111,7 +111,7 @@ class CommandExecutor : BaseLogger {
                     # This should only be 'builtin' commands
                     try {
                         $cmdExecContext.IsJob = $false
-                        $hash = $cmdExecContext.Command.Invoke($cmdExecContext.ParsedCommand, $false)
+                        $hash = $cmdExecContext.Command.Invoke($cmdExecContext.ParsedCommand, $false,$this._bot.Backend.GetType().Name)
                         $cmdExecContext.Complete = $true
                         $cmdExecContext.Ended = (Get-Date).ToUniversalTime()
                         $cmdExecContext.Result.Errors = $hash.Error
