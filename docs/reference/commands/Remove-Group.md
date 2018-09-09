@@ -13,7 +13,7 @@ Remove a group.
 ## SYNTAX
 
 ```
-Remove-Group -Bot <Object> [-Name] <String> [<CommonParameters>]
+Remove-Group -Bot <Object> [-Name] <String[]> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -49,7 +49,7 @@ Accept wildcard characters: False
 The name of the group to remove.
 
 ```yaml
-Type: String
+Type: String[]
 Parameter Sets: (All)
 Aliases:
 

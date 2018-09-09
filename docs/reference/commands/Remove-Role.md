@@ -13,7 +13,7 @@ Remove a role.
 ## SYNTAX
 
 ```
-Remove-Role -Bot <Object> [-Name] <String> [<CommonParameters>]
+Remove-Role -Bot <Object> [-Name] <String[]> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -47,7 +47,7 @@ Accept wildcard characters: False
 The name of the role to remove.
 
 ```yaml
-Type: String
+Type: String[]
 Parameter Sets: (All)
 Aliases:
 
