@@ -1,7 +1,7 @@
 
 # Setting up Microsoft Teams Backend
 
-Because of the bot architecture in Microsoft Teams, there is a fair amount of work enable PoshBot to work with it.
+Because of the bot architecture in Microsoft Teams, there is a fair amount of work to enable PoshBot to work with it.
 When sending a message to a bot in Teams, it expects to be able to POST a JSON payload to a HTTPS endpoint.
 To avoid having to expose PoshBot on the internet while at the same time giving it access to your internal network for day-to-day ChatOps activities, an alternate method using an Azure Function and Service Bus is used.
 
