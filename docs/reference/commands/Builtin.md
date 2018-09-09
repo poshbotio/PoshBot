@@ -59,6 +59,9 @@ Locale: en-US
 ### [Get-Group](Get-Group.md)
 {{Manually Enter Get-Group Description Here}}
 
+### [Get-MyCommands](Get-MyCommands.md)
+{{Manually Enter Get-MyCommands Description Here}}
+
 ### [Get-PendingCommand](Get-PendingCommand.md)
 {{Manually Enter Get-PendingCommand Description Here}}
 
