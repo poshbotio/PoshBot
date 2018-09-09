@@ -32,16 +32,20 @@ function New-Group {
         [string]$Description
     )
 
-    # Create group(s)
     $notCreated = @()
     foreach ($groupName in $Name) {
-        $group = [Group]::New($groupName, $Bot.Logger)
-        if ($PSBoundParameters.ContainsKey('Description')) {
-            $group.Description = $Description
-        }
-        $Bot.RoleManager.AddGroup($group)
         if (-not ($Bot.RoleManager.GetGroup($groupName))) {
-            $notCreated += $groupName
+            # Create group
+            $group = [Group]::New($groupName, $Bot.Logger)
+            if ($PSBoundParameters.ContainsKey('Description')) {
+                $group.Description = $Description
+            }
+            $Bot.RoleManager.AddGroup($group)
+            if (-not ($Bot.RoleManager.GetGroup($groupName))) {
+                $notCreated += $groupName
+            }
+        } else {
+            New-PoshBotCardResponse -Type Warning -Text "Group [$groupName] already exists" -ThumbnailUrl $thumb.warning
         }
     }
 

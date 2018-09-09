@@ -32,16 +32,20 @@ function New-Role {
         [string]$Description
     )
 
-    # Create role(s)
     $notCreated = @()
     foreach ($roleName in $Name) {
-        $role = [Role]::New($roleName, $Bot.Logger)
-        if ($PSBoundParameters.ContainsKey('Description')) {
-            $role.Description = $Description
-        }
-        $Bot.RoleManager.AddRole($role)
-        if (-not ($Bot.RoleManager.GetGroup($roleName))) {
-            $notCreated += $roleName
+        if (-not ($Bot.RoleManager.GetRole($roleName))) {
+            # Create role
+            $role = [Role]::New($roleName, $Bot.Logger)
+            if ($PSBoundParameters.ContainsKey('Description')) {
+                $role.Description = $Description
+            }
+            $Bot.RoleManager.AddRole($role)
+            if (-not ($Bot.RoleManager.GetRole($roleName))) {
+                $notCreated += $roleName
+            }
+        } else {
+            New-PoshBotCardResponse -Type Warning -Text "Role [$roleName] already exists" -ThumbnailUrl $thumb.warning
         }
     }
 
