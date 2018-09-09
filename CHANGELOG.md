@@ -16,25 +16,28 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   It is now possible to execute custom scripts pre/post receiving a message from the chat network, pre/post command execution, and pre/post command response.
   These execution hooks can be used for centralized authentication logic, custom command whitelisting and blacklisting, response sanitation, or any number of other uses.
 
-- The `CustomData` parameter has been added to New-PoshBotCardResponse.
-  This enables custom backends and plugins to send additional data in a PoshBot Card Response.
+- [**#89**](https://github.com/poshbotio/PoshBot/pull/89) Add `CustomData` parameter to `New-PoshBotCardResponse`.
+  This enables custom backends and plugins to send additional data in a card response (via [@scrthq](https://github.com/scrthq)).
 
-- `CardClicked` event type has been added to the `MessageType` enum.
-  This enables custom backends that support `CardClicked` events in interactive cards to use this event type with Event-trigger based commands.
+- [**#99**](https://github.com/poshbotio/PoshBot/pull/99) Add `CardClicked` event type to `MessageType` enum.
+  This enables custom backends that support `CardClicked` events in interactive cards to use this event type with event-trigger based commands (via [@scrthq](https://github.com/scrthq)).
 
-- Enable multiple groups or roles to be created at once via the `New-Group` and `New-Role` builtin commands.
+- Enable multiple groups or roles to be created or removed at once via the `New-Group`, `New-Role`, `Remove-Group`, and `Remove-Role` builtin commands.
+
+- Added new builtin command `Get-MyCommands` which returns all loaded commands the calling user is authorized to execute.
+
+- [**#105**](https://github.com/poshbotio/PoshBot/pull/105) Add `BackendType` property to `$global:PoshBotContext` with a value of the type of backend that is configured in PoshBot.
+  This value can be used by plugin commands to change their behavior based on the type of backend (e.g., Slack, Teams, or GChat).
 
 ### Fixed
 
-- Start-PoshBot with -AsJob switch now works correctly.
+- `Start-PoshBot` with `-AsJob` switch now works correctly.
 
 - When removing a plugin, the PowerShell module is now also unloaded.
 
-- [**#90**](https://github.com/poshbotio/PoshBot/pull/90) Fixed scheduling logic to fire commands at interval based on start time.
+- [**#90**](https://github.com/poshbotio/PoshBot/pull/90) Fixed scheduling logic to fire commands at interval based on start time (via [@JasonNoonan](https://github.com/JasonNoonan))
 
-- Fix Get-CommandHelp to display correct help when one item is returned.
-
-- Remove the PowerShell module when removing a plugin.
+- Fix `Get-CommandHelp` to display correct help when one item is returned.
 
 ## [0.10.2] 2018-05-04
 
