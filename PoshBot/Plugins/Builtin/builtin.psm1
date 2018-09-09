@@ -1,11 +1,11 @@
 
 # Thumbnails for card responses
 $thumb = @{
-    rutrow = 'http://images4.fanpop.com/image/photos/17000000/Scooby-Doo-Where-Are-You-The-Original-Intro-scooby-doo-17020515-500-375.jpg'
-    don = 'http://p1cdn05.thewrap.com/images/2015/06/don-draper-shrug.jpg'
-    warning = 'http://hairmomentum.com/wp-content/uploads/2016/07/warning.png'
-    error = 'https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-128.png'
-    success = 'https://www.streamsports.com/images/icon_green_check_256.png'
+    rutrow  = 'https://raw.githubusercontent.com/poshbotio/PoshBot/master/Media/scooby_doo.jpg'
+    don     = 'https://raw.githubusercontent.com/poshbotio/PoshBot/master/Media/don_draper_shrug.jpg'
+    warning = 'https://raw.githubusercontent.com/poshbotio/PoshBot/master/Media/yellow_exclamation_point.png'
+    error   = 'https://raw.githubusercontent.com/poshbotio/PoshBot/master/Media/exclamation_point_128.png'
+    success = 'https://raw.githubusercontent.com/poshbotio/PoshBot/master/Media/green_check_256.png'
 }
 
 # Dot source functions
