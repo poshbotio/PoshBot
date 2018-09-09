@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.11.0] Unreleased
+## [0.11.0] 2019-09-09
 
 ### Added
 
@@ -27,7 +27,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added new builtin command `Get-MyCommands` which returns all loaded commands the calling user is authorized to execute.
 
 - [**#105**](https://github.com/poshbotio/PoshBot/pull/105) Add `BackendType` property to `$global:PoshBotContext` with a value of the type of backend that is configured in PoshBot.
-  This value can be used by plugin commands to change their behavior based on the type of backend (e.g., Slack, Teams, or GChat).
+  This value can be used by plugin commands to change their behavior based on the type of backend (e.g., Slack, Teams, or GChat) (via [@ChrisLGardner](https://github.com/ChrisLGardner)).
 
 ### Fixed
 
