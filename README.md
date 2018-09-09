@@ -119,21 +119,23 @@ Get-Command -Module PoshBot
 
 CommandType     Name                                               Version    Source
 -----------     ----                                               -------    ------
-Function        Get-PoshBot                                        0.10.1     PoshBot
-Function        Get-PoshBotConfiguration                           0.10.1     PoshBot
-Function        Get-PoshBotStatefulData                            0.10.1     PoshBot
-Function        New-PoshBotCardResponse                            0.10.1     PoshBot
-Function        New-PoshBotConfiguration                           0.10.1     PoshBot
-Function        New-PoshBotFileUpload                              0.10.1     PoshBot
-Function        New-PoshBotInstance                                0.10.1     PoshBot
-Function        New-PoshBotScheduledTask                           0.10.1     PoshBot
-Function        New-PoshBotSlackBackend                            0.10.1     PoshBot
-Function        New-PoshBotTextResponse                            0.10.1     PoshBot
-Function        Remove-PoshBotStatefulData                         0.10.1     PoshBot
-Function        Save-PoshBotConfiguration                          0.10.1     PoshBot
-Function        Set-PoshBotStatefulData                            0.10.1     PoshBot
-Function        Start-PoshBot                                      0.10.1     PoshBot
-Function        Stop-Poshbot                                       0.10.1     PoshBot
+Function        Get-PoshBot                                        0.11.0     PoshBot
+Function        Get-PoshBotConfiguration                           0.11.0     PoshBot
+Function        Get-PoshBotStatefulData                            0.11.0     PoshBot
+Function        New-PoshBotCardResponse                            0.11.0     PoshBot
+Function        New-PoshBotConfiguration                           0.11.0     PoshBot
+Function        New-PoshBotFileUpload                              0.11.0     PoshBot
+Function        New-PoshBotInstance                                0.11.0     PoshBot
+Function        New-PoshBotMiddlewareHook                          0.11.0     PoshBot
+Function        New-PoshBotScheduledTask                           0.11.0     PoshBot
+Function        New-PoshBotSlackBackend                            0.11.0     PoshBot
+Function        New-PoshBotTeamsBackend                            0.11.0     PoshBot
+Function        New-PoshBotTextResponse                            0.11.0     PoshBot
+Function        Remove-PoshBotStatefulData                         0.11.0     PoshBot
+Function        Save-PoshBotConfiguration                          0.11.0     PoshBot
+Function        Set-PoshBotStatefulData                            0.11.0     PoshBot
+Function        Start-PoshBot                                      0.11.0     PoshBot
+Function        Stop-Poshbot                                       0.11.0     PoshBot
 ```
 
 [appveyor-badge]: https://ci.appveyor.com/api/projects/status/9em7etgtlmeax7gl?svg=true
