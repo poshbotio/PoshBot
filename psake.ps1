@@ -120,7 +120,7 @@ Task RegenerateHelp -Depends UpdateMarkdownHelp, CreateExternalHelp
 
 Task Publish -Depends Test {
     "    Publishing version [$($manifest.ModuleVersion)] to PSGallery..."
-    Publish-Module -Path $outputModVerDir -NuGetApiKey $env:PSGalleryApiKey -Repository PSGallery
+    Publish-Module -Path $outputModVerDir -NuGetApiKey $env:PSGALLERY_API_KEY -Repository PSGallery
 }
 
 task Clean -depends Init {
