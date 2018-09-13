@@ -289,13 +289,12 @@ class Bot : BaseLogger {
     # Determine if message text is addressing the bot and should be
     # treated as a bot command
     [bool]IsBotCommand([Message]$Message) {
-        $parsedCommand = [CommandParser]::Parse($Message)
+        $firstWord = ($Message.Text -split ' ')[0]
         foreach ($prefix in $this._PossibleCommandPrefixes ) {
-        if ($parsedcommand.command -match "^$prefix") {
+            if ($firstWord -match "^$prefix") {
                 $this.LogDebug('Message is a bot command')
                 return $true
             }
-            else { $This.LogDebug("$($parsedcommand.command) didn't match $prefix")}
         }
         return $false
     }
