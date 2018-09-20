@@ -291,7 +291,7 @@ class Bot : BaseLogger {
      [bool]IsBotCommand([Message]$Message) {
         $parsedCommand = [CommandParser]::Parse($Message)
         foreach ($prefix in $this._PossibleCommandPrefixes ) {
-            if ($parsedCommand -match "^$prefix") {
+            if ($parsedCommand.command -match "^$prefix") {
                 $this.LogDebug('Message is a bot command')
                 return $true
             }
