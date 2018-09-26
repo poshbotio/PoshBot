@@ -464,7 +464,7 @@ class PluginManager : BaseLogger {
 
             # Get exported cmdlets/functions from the module and add them to the plugin
             # Adjust bot command behaviour based on metadata as appropriate
-            Import-Module -Name $manifestPath -Scope Local -Verbose:$false -WarningAction SilentlyContinue
+            Import-Module -Name $manifestPath -Scope Local -Verbose:$false -WarningAction SilentlyContinue -Force
             $moduleCommands = Microsoft.PowerShell.Core\Get-Command -Module $ModuleName -CommandType @('Cmdlet', 'Function') -Verbose:$false
             foreach ($command in $moduleCommands) {
 
