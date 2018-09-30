@@ -91,7 +91,10 @@ class ScheduledMessage {
     }
 
     [void]RecalculateStartAfter() {
-        $this.StartAfter = $this.StartAfter.AddMilliseconds($this.IntervalMS)
+        $currentDate = (Get-Date).ToUniversalTime()
+        $difference = (New-TimeSpan $this.StartAfter $currentDate)
+        $elapsedIntervals = [int][Math]::Ceiling($difference.TotalMilliseconds / $this.IntervalMS)
+        $this.StartAfter = $this.StartAfter.AddMilliseconds($this.IntervalMS * $elapsedIntervals)
     }
 
     [hashtable]ToHash() {
