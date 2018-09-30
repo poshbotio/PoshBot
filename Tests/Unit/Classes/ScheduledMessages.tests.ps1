@@ -152,7 +152,7 @@ InModuleScope PoshBot {
                 (New-TimeSpan $StartingValue $ScheduledMessage.StartAfter).TotalDays | Should Be 1
             }
 
-            It 'Should not schedule a run into the past' {
+            It 'Should not reschedule a run before the current time' {
                 $currentDate = (Get-Date).ToUniversalTime();
                 $startAfter = $currentDate.AddDays(-5);
                 $ScheduledMessage = [ScheduledMessage]::new($Interval, $TimeValue, $Message, $startAfter)
@@ -160,6 +160,15 @@ InModuleScope PoshBot {
                 $ScheduledMessage.RecalculateStartAfter();
 
                 $ScheduledMessage.StartAfter | Should Not BeLessThan $currentDate
+            }
+
+            It 'Should only move StartAfter value forward' {
+                $StartingValue = (Get-Date).AddDays($daysDifference).ToUniversalTime()
+                $ScheduledMessage = [ScheduledMessage]::new($Interval, $TimeValue, $Message, $StartingValue)
+
+                $ScheduledMessage.RecalculateStartAfter()
+
+                $ScheduledMessage.StartAfter | Should Be $StartingValue.AddDays(1)
             }
         }
 
