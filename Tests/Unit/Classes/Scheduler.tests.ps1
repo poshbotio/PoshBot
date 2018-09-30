@@ -57,6 +57,15 @@ InModuleScope PoshBot {
         $Logger = [MockLogger]::New()
         $Storage = [MockStorageProvider]::New($Logger)
 
+        $message = @{
+            Id = ''
+            Text = '!help'
+            To = ''
+            From = ''
+            Type = 'Message'
+            Subtype = 'None'
+          }
+
         $Schedule = @{
             sched_test = @{
                 StartAfter = (Get-Date).ToUniversalTime().AddDays(-5)
@@ -66,24 +75,35 @@ InModuleScope PoshBot {
                 Id = New-Guid
                 TimeInterval = 'Days'
                 Enabled = $True
-                Message = @{
-                  Id = ''
-                  Text = '!help'
-                  To = ''
-                  From = ''
-                  Type = 'Message'
-                  Subtype = 'None'
-                }
+                Message = $message
             }
         }
 
         $Storage.SaveConfig('schedules', $Schedule)
 
         Context 'Methods: LoadState()' {
-            It 'Schedules should not be loaded as triggered' {
+            It 'Should not load schedules as triggered' {
                 $scheduler = [Scheduler]::New($Storage, $Logger)
 
                 $scheduler.GetTriggeredMessages().Count | Should Be 0
+            }
+
+            It 'Should not advance schedules whose triggers are in the future' {
+                $futureSchedule = $Schedule['sched_test'].Clone()
+                $futureSchedule['message'] = $message
+                $futureSchedule['StartAfter'] = (Get-Date).ToUniversalTime().AddDays(5)
+
+                $originalStartAfter = $futureSchedule['StartAfter']
+
+                #Write-Error ($futureSchedule | ConvertTo-Json)
+
+                $Storage.SaveConfig('schedules', @{ sched_test = $futureSchedule })
+
+                $scheduler = [Scheduler]::New($Storage, $Logger)
+
+                #Write-Error ($scheduler.Schedules | ConvertTo-Json)
+
+                ($scheduler.Schedules."$($futureSchedule.Id)").StartAfter | Should Be $originalStartAfter
             }
         }
 
