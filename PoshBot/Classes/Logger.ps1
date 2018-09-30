@@ -27,6 +27,8 @@ class Logger {
         $this.Log([LogMessage]::new("Log level set to [$($this.LogLevel)]"))
     }
 
+    hidden Logger() { }
+
     # Create new log file or roll old log
     hidden [void]CreateLogFile() {
         if (Test-Path -Path $this.LogFile) {
