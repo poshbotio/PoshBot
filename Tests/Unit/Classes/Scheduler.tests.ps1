@@ -95,13 +95,9 @@ InModuleScope PoshBot {
 
                 $originalStartAfter = $futureSchedule['StartAfter']
 
-                #Write-Error ($futureSchedule | ConvertTo-Json)
-
                 $Storage.SaveConfig('schedules', @{ sched_test = $futureSchedule })
 
                 $scheduler = [Scheduler]::New($Storage, $Logger)
-
-                #Write-Error ($scheduler.Schedules | ConvertTo-Json)
 
                 ($scheduler.Schedules."$($futureSchedule.Id)").StartAfter | Should Be $originalStartAfter
             }
