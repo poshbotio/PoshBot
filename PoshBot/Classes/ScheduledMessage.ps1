@@ -94,6 +94,10 @@ class ScheduledMessage {
         $currentDate = (Get-Date).ToUniversalTime()
         $difference = (New-TimeSpan $this.StartAfter $currentDate)
         $elapsedIntervals = [int][Math]::Ceiling($difference.TotalMilliseconds / $this.IntervalMS)
+        #Always move forward at least one interval
+        if ($elapsedIntervals -lt 1) {
+            $elapsedIntervals = 1
+        }
         $this.StartAfter = $this.StartAfter.AddMilliseconds($this.IntervalMS * $elapsedIntervals)
     }
 
