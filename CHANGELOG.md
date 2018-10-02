@@ -6,6 +6,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.11.1] 2018-10-01
+
+### Fixed
+
+- Remove obsolete DLLs associated with the Teams backend and Azure Service Bus. These DLLs are not needed and attempting to load them was causing issues in Windows PowerShell.
+
+- [**#118**](https://github.com/poshbotio/PoshBot/pull/118) Force module import to pick up changes.
+  When importing a plugin, Use "Import-Module -Force" to make PowerShell re-import the module even if it is already loaded and the version has not changed. This fixes an issue during plugin development where functions are added or modified without bumping the version number. (via [@Tadas](https://github.com/Tadas))
+
 ## [0.11.0] 2018-09-09
 
 ### Added
