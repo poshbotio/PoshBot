@@ -1,5 +1,3 @@
-#requires -modules PoshBot
-
 [cmdletbinding()]
 param(
     [parameter(Mandatory)]
@@ -16,6 +14,5 @@ param(
     })]
     [string]$Path
 )
-
-Import-Module PoshBot -Force -ErrorAction Stop
+Import-Module "$PSScriptRoot\..\PoshBot.psd1" -Force -ErrorAction Stop
 Start-PoshBot -Path $Path

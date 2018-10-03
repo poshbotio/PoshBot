@@ -79,61 +79,57 @@ function New-PoshBotScheduledTask {
         [switch]$Force
     )
 
-    # Find the latest version of the module
-    if ($mod = Get-Module -Name PoshBot -ListAvailable -Verbose:$false | Sort-Object -Property Version | Select-Object -First 1) {
+    if ($Force -or (-not (Get-ScheduledTask -TaskName $Name -ErrorAction SilentlyContinue))) {
+        if ($PSCmdlet.ShouldProcess($Name, 'Created PoshBot scheduled task')) {
 
-        if ($Force -or (-not (Get-ScheduledTask -TaskName $Name -ErrorAction SilentlyContinue))) {
-            if ($PSCmdlet.ShouldProcess($Name, 'Created PoshBot scheduled task')) {
-
-                $taskParams = @{
-                    Description = $Description
-                }
-
-                # Determine path to module and scheduled task script
-                $modPath = $mod.ModuleBase
-                $startScript = Join-Path -Path $modPath -ChildPath '/Task/StartPoshBot.ps1'
-
-                # Scheduled task action
-                $arg = "& '$startScript' -Path '$Path'"
-                $actionParams = @{
-                    Execute = "$($env:SystemDrive)\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
-                    Argument = '-ExecutionPolicy ByPass -Command "' + $arg + '"'
-                    WorkingDirectory = $modPath
-                }
-                $taskParams.Action = New-ScheduledTaskAction @actionParams
-
-                # Scheduled task at logon trigger
-                $taskParams.Trigger = New-ScheduledTaskTrigger -AtStartup
-
-                # Scheduled task settings
-                $settingsParams = @{
-                    AllowStartIfOnBatteries = $true
-                    DontStopIfGoingOnBatteries = $true
-                    ExecutionTimeLimit = 0
-                    RestartCount = 999
-                    RestartInterval = (New-TimeSpan -Minutes 1)
-                }
-                $taskParams.Settings = New-ScheduledTaskSettingsSet @settingsParams
-
-                # Create / register the task
-                $registerParams = @{
-                    TaskName = $Name
-                    Force = $true
-                }
-                # Scheduled task principal
-                $registerParams.User = $Credential.UserName
-                $registerParams.Password = $Credential.GetNetworkCredential().Password
-                $task = New-ScheduledTask @taskParams
-                $newTask = Register-ScheduledTask -InputObject $task @registerParams
-                if ($PassThru) {
-                    $newTask
-                }
+            $taskParams = @{
+                Description = $Description
             }
-        } else {
-            Write-Error -Message "Existing task named [$Name] found. To overwrite, use the -Force"
+
+            # Determine path to scheduled task script
+            # Not adding '..\' to -ChildPath parameter because during module build
+            # this script will get merged into PoshBot.psm1 and \Task folder will be
+            # a direct child of $PSScriptRoot
+            $startScript = Resolve-Path -LiteralPath (Join-Path -Path $PSScriptRoot -ChildPath 'Task\StartPoshBot.ps1')
+
+            # Scheduled task action
+            $arg = "& '$startScript' -Path '$Path'"
+            $actionParams = @{
+                Execute = "$($env:SystemDrive)\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
+                Argument = '-ExecutionPolicy Bypass -NonInteractive -Command "' + $arg + '"'
+                WorkingDirectory = $PSScriptRoot
+            }
+            $taskParams.Action = New-ScheduledTaskAction @actionParams
+
+            # Scheduled task at logon trigger
+            $taskParams.Trigger = New-ScheduledTaskTrigger -AtStartup
+
+            # Scheduled task settings
+            $settingsParams = @{
+                AllowStartIfOnBatteries = $true
+                DontStopIfGoingOnBatteries = $true
+                ExecutionTimeLimit = 0
+                RestartCount = 999
+                RestartInterval = (New-TimeSpan -Minutes 1)
+            }
+            $taskParams.Settings = New-ScheduledTaskSettingsSet @settingsParams
+
+            # Create / register the task
+            $registerParams = @{
+                TaskName = $Name
+                Force = $true
+            }
+            # Scheduled task principal
+            $registerParams.User = $Credential.UserName
+            $registerParams.Password = $Credential.GetNetworkCredential().Password
+            $task = New-ScheduledTask @taskParams
+            $newTask = Register-ScheduledTask -InputObject $task @registerParams
+            if ($PassThru) {
+                $newTask
+            }
         }
     } else {
-        Write-Error -Message 'Unable to find PoshBot module! Can not scheduled the task'
+        Write-Error -Message "Existing task named [$Name] found. To overwrite, use the -Force"
     }
 }
 
