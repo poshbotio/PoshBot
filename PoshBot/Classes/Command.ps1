@@ -77,6 +77,8 @@ class Command : BaseLogger {
                 [hashtable]$Options
             )
 
+            Import-Module -Name $Options.PoshBotManifestPath -Force -Verbose:$false -WarningAction SilentlyContinue -ErrorAction Stop
+
             Import-Module -Name $Options.ManifestPath -Scope Local -Force -Verbose:$false -WarningAction SilentlyContinue
 
             $cmd = $Options.Function
@@ -110,6 +112,7 @@ class Command : BaseLogger {
             OriginalMessage = $ParsedCommand.OriginalMessage.ToHash()
             ConfigurationDirectory = $script:ConfigurationDirectory
             BackendType = $Backend
+            PoshBotManifestPath = (Join-Path -Path $script:moduleBase -ChildPath "PoshBot.psd1")
         }
         if ($this.FunctionInfo) {
             $options.Function = $this.FunctionInfo
