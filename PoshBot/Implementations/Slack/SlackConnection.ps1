@@ -62,7 +62,7 @@ class SlackConnection : Connection {
             until ($task.IsCompleted)
 
             # Receive messages and put on output stream so the backend can read them
-            $buffer = (New-Object System.Byte[] 4096)
+            [ArraySegment[byte]]$buffer = [byte[]]::new(4096)
             $ct = New-Object System.Threading.CancellationToken
             $taskResult = $null
             while ($webSocket.State -eq [System.Net.WebSockets.WebSocketState]::Open) {
