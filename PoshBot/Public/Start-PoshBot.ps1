@@ -103,12 +103,12 @@ function Start-PoshBot {
 
                         while ($true) {
                             try {
-                                if ($realConfig.BackendConfiguration.Name -eq 'Slack') {
+                                if ($realConfig.BackendConfiguration.Name -in @('Slack', 'SlackBackend')) {
                                     $backend = New-PoshBotSlackBackend -Configuration $realConfig.BackendConfiguration
-                                } elseIf ($realConfig.BackendConfiguration.Name -eq 'Teams') {
+                                } elseIf ($realConfig.BackendConfiguration.Name -in @('Teams', 'TeamsBackend')) {
                                     $backend = New-PoshBotTeamsBackend -Configuration $realConfig.BackendConfiguration
                                 } else {
-                                    Write-Error "Unable to determine backend type. Name property in BackendConfiguration should have a value of 'Slack' or 'Teams'"
+                                    Write-Error "Unable to determine backend type. Name property in BackendConfiguration should have a value of 'Slack', 'SlackBackend', 'Teams', or 'TeamsBackend'"
                                     break
                                 }
 
