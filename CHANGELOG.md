@@ -20,6 +20,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Match documentation and check for `SlackBackend` or `TeamsBackend` backend names when starting PoshBot as a PowerShell job.
 
+- Use CommandParser to strip out extra line breaks from a message received from Teams (via [@AndrewPla](https://github.com/AndrewPla))
+
+- Resolve ambiguous method signature error in Slack backend by using an `[ArraySegment[byte[]]` buffer in the `System.Net.WebSockets.ClientWebSocket.ReceiveAsync()` method.
+
 ## [0.11.1] 2018-10-01
 
 ### Fixed
