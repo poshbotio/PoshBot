@@ -6,6 +6,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.11.2] Unreleased
+
+### Fixed
+
+- When starting PoshBot using `Start-PoshBot -AsJob`, determine the correct backend instance to create by validating the passed in configuration against the names `Slack`, `SlackBackend`, `Teams`, and `TeamsBackend`.
+
 ## [0.11.1] 2018-10-01
 
 ### Fixed
