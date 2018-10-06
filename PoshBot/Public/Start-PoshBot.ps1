@@ -92,10 +92,11 @@ function Start-PoshBot {
                 $sb = {
                     param(
                         [parameter(Mandatory)]
-                        [hashtable]$Configuration
+                        [hashtable]$Configuration,
+                        [string]$PoshBotManifestPath
                     )
 
-                    Import-Module PoshBot -ErrorAction Stop
+                    Import-Module $PoshBotManifestPath -ErrorAction Stop
 
                     try {
                         $tempConfig = New-PoshBotConfiguration
@@ -127,8 +128,9 @@ function Start-PoshBot {
 
                 $instanceId = (New-Guid).ToString().Replace('-', '')
                 $jobName = "PoshBot_$instanceId"
+                $poshBotManifestPath = (Join-Path -Path $PSScriptRoot -ChildPath "PoshBot.psd1")
 
-                $job = Start-Job -ScriptBlock $sb -Name $jobName -ArgumentList $Configuration.ToHash()
+                $job = Start-Job -ScriptBlock $sb -Name $jobName -ArgumentList $Configuration.ToHash(),$poshBotManifestPath
 
                 # Track the bot instance
                 $botTracker = @{
