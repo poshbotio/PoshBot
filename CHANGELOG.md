@@ -8,9 +8,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [0.11.2] Unreleased
 
+### Changes
+
+- [**#122**](https://github.com/poshbotio/PoshBot/pull/122) Enable running multiple versions of PoshBot side-by-side. When PoshBot needs to load itself (via running PoshBot as a job, a scheduled task, or a plugin command), it now loads the exact version of PoshBot that is currently running instead of loading the latest version that happens to be in `$env:PSModulePath`. This enables multiple versions of PoshBot to be running and be self-contained. (via [@Tadas](https://github.com/Tadas))
+
 ### Fixed
 
 - When starting PoshBot using `Start-PoshBot -AsJob`, determine the correct backend instance to create by validating the passed in configuration against the names `Slack`, `SlackBackend`, `Teams`, and `TeamsBackend`.
+
+- ChannelRules in the bot configuration were not being serialized correctly if more than one hashtable entry was present.
+
+- Match documentation and check for `SlackBackend` or `TeamsBackend` backend names when starting PoshBot as a PowerShell job.
 
 ## [0.11.1] 2018-10-01
 
