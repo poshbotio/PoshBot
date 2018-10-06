@@ -12,7 +12,7 @@
 RootModule = 'PoshBot.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.11.1'
+ModuleVersion = '0.11.2'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
