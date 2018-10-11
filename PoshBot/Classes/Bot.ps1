@@ -227,7 +227,7 @@ class Bot : BaseLogger {
             # been encoded as &amp; on their way in get translated
             # back to the original
             if (-not [string]::IsNullOrEmpty($msg.Text)) {
-                $msg.Text = [System.Web.HttpUtility]::HtmlDecode($msg.Text)
+                $msg.Text = [System.Net.WebUtility]::HtmlDecode($msg.Text)
             }
 
             # Execute PreReceive middleware hooks
