@@ -520,8 +520,8 @@ class Bot : BaseLogger {
             $firstWord = ($Message.Text -split ' ')[0]
 
             foreach ($prefix in $this._PossibleCommandPrefixes) {
-                $prefix = [regex]::Escape($prefix)
-                if ($firstWord -match "^$prefix") {
+                $prefixEscaped = [regex]::Escape($prefix)
+                if ($firstWord -match "^$prefixEscaped") {
                     $Message.Text = $Message.Text.TrimStart($prefix).Trim()
                 }
             }
