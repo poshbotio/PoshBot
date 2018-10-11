@@ -143,13 +143,32 @@ InModuleScope PoshBot {
         }
 
         Context "Method: RecalculateStartAfter()" {
-            $ScheduledMessage = [ScheduledMessage]::new($Interval, $TimeValue, $Message, (Get-Date))
-
             It 'Should increase the StartAfter property by IntervalMS' {
+                $ScheduledMessage = [ScheduledMessage]::new($Interval, $TimeValue, $Message, (Get-Date))
+
                 $StartingValue = $ScheduledMessage.StartAfter
                 $ScheduledMessage.RecalculateStartAfter()
 
                 (New-TimeSpan $StartingValue $ScheduledMessage.StartAfter).TotalDays | Should Be 1
+            }
+
+            It 'Should not reschedule a run before the current time' {
+                $currentDate = (Get-Date).ToUniversalTime();
+                $startAfter = $currentDate.AddDays(-5);
+                $ScheduledMessage = [ScheduledMessage]::new($Interval, $TimeValue, $Message, $startAfter)
+
+                $ScheduledMessage.RecalculateStartAfter();
+
+                $ScheduledMessage.StartAfter | Should Not BeLessThan $currentDate
+            }
+
+            It 'Should only move StartAfter value forward' {
+                $StartingValue = (Get-Date).AddDays($daysDifference).ToUniversalTime()
+                $ScheduledMessage = [ScheduledMessage]::new($Interval, $TimeValue, $Message, $StartingValue)
+
+                $ScheduledMessage.RecalculateStartAfter()
+
+                $ScheduledMessage.StartAfter | Should Be $StartingValue.AddDays(1)
             }
         }
 
