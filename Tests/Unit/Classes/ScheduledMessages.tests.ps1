@@ -100,11 +100,11 @@ InModuleScope PoshBot {
             $ScheduledMessage = [ScheduledMessage]::new($Interval, $TimeValue, $Message, (Get-Date).AddHours(5))
 
             It 'Should return true when past the StartAfter DateTime' {
-                $ElapsedMessage.HasElapsed() | Should BeTrue
+                $ElapsedMessage.HasElapsed() | Should be $true
             }
 
             It 'Should return false when before the StartAfter DateTime' {
-                $ScheduledMessage.HasElapsed() | Should Not BeTrue
+                $ScheduledMessage.HasElapsed() | Should Not be $true
             }
 
             It 'TimesExecuted should be 1 after executing' {
@@ -118,12 +118,12 @@ InModuleScope PoshBot {
 
             It 'Disables the instance when called' {
                 $ScheduledMessage.Disable()
-                $SceduleMessage.Enabled | Should Not BeTrue
+                $SceduleMessage.Enabled | Should Not be $true
             }
 
             It 'Does not throw an error when being called on an already-disabled instance' {
                 $ScheduledMessage.Disable()
-                $ScheduledMessage.Enabled | Should Not BeTrue
+                $ScheduledMessage.Enabled | Should Not be $true
             }
         }
 
@@ -133,12 +133,12 @@ InModuleScope PoshBot {
             It 'Enables the instance when called' {
                 $ScheduledMessage.Disable()
                 $ScheduledMessage.Enable()
-                $ScheduledMessage.Enabled | Should BeTrue
+                $ScheduledMessage.Enabled | Should be $true
             }
 
             It 'Does not throw an error when being called on an already-enabled instance' {
                 $ScheduledMessage.Enable()
-                $ScheduledMessage.Enabled | Should BeTrue
+                $ScheduledMessage.Enabled | Should be $true
             }
         }
 
