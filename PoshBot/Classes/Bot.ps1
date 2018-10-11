@@ -32,8 +32,6 @@ class Bot : BaseLogger {
 
     hidden [System.Collections.Arraylist] $_PossibleCommandPrefixes = (New-Object System.Collections.ArrayList)
 
-    hidden [System.Collections.ArrayList] $_regexSpecialCharacters = @('[','\','^','$','.','|','?','*','+','(', ')','{', '}')
-
     hidden [MiddlewareConfiguration] $_Middleware
 
     hidden [bool]$LazyLoadComplete = $false
@@ -293,12 +291,7 @@ class Bot : BaseLogger {
      [bool]IsBotCommand([Message]$Message) {
         $parsedCommand = [CommandParser]::Parse($Message)
         foreach ($prefix in $this._PossibleCommandPrefixes ) {
-            if ($prefix -in $this._regexSpecialCharacters) {
-                $regexEscape = '\'
-            } else {
-                $regexEscape = $null
-            }
-            if ($parsedCommand.command -match "^$regexEscape$prefix") {
+            if ($parsedCommand.command -match "^$prefix") {
                 $this.LogDebug('Message is a bot command')
                 return $true
             }
@@ -526,12 +519,7 @@ class Bot : BaseLogger {
             $firstWord = ($Message.Text -split ' ')[0]
 
             foreach ($prefix in $this._PossibleCommandPrefixes) {
-                if ($prefix -in $this._regexSpecialCharacters) {
-                    $regexEscape = '\'
-                } else {
-                    $regexEscape = $null
-                }
-                if ($firstWord -match "^$regexEscape$prefix") {
+                if ($firstWord -match "^$prefix") {
                     $Message.Text = $Message.Text.TrimStart($prefix).Trim()
                 }
             }
