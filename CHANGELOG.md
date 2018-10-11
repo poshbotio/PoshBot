@@ -31,6 +31,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - [**#121**](https://github.com/poshbotio/PoshBot/pull/121) Prevent multiple executions of commands scheduled in the past. This fixes an issue where if the StartAfter value of a scheduled command was in the past, on bot startup the scheduled command would be executed however many intervals difference there was between the StartAfter value and the current time. (via [@AngleOSaxon](https://github.com/AngleOSaxon))
 
+- HTML decode the message text received from the backend. This ensures characters like '&' are converted back from their encoded version '\&amp;' that may have been received.
+
 ## [0.11.1] 2018-10-01
 
 ### Fixed

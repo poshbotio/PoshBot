@@ -222,6 +222,14 @@ class Bot : BaseLogger {
                 return
             }
 
+            # HTML decode message text
+            # This will ensure characters like '&' that MAY have
+            # been encoded as &amp; on their way in get translated
+            # back to the original
+            if (-not [string]::IsNullOrEmpty($msg.Text)) {
+                $msg.Text = [System.Web.HttpUtility]::HtmlDecode($msg.Text)
+            }
+
             # Execute PreReceive middleware hooks
             $cmdExecContext = [CommandExecutionContext]::new()
             $cmdExecContext.Started = (Get-Date).ToUniversalTime()
