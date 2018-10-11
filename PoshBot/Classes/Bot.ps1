@@ -291,6 +291,7 @@ class Bot : BaseLogger {
      [bool]IsBotCommand([Message]$Message) {
         $parsedCommand = [CommandParser]::Parse($Message)
         foreach ($prefix in $this._PossibleCommandPrefixes ) {
+            $prefix = [regex]::Escape($prefix)
             if ($parsedCommand.command -match "^$prefix") {
                 $this.LogDebug('Message is a bot command')
                 return $true
@@ -519,6 +520,7 @@ class Bot : BaseLogger {
             $firstWord = ($Message.Text -split ' ')[0]
 
             foreach ($prefix in $this._PossibleCommandPrefixes) {
+                $prefix = [regex]::Escape($prefix)
                 if ($firstWord -match "^$prefix") {
                     $Message.Text = $Message.Text.TrimStart($prefix).Trim()
                 }
