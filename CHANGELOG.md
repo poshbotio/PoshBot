@@ -27,6 +27,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - [**#125**](https://github.com/poshbotio/PoshBot/pull/125) Escape prefix character when evaluating messages.
   Any single character can be defined as the prefix character (default is "!") that indicates to PoshBot that the incoming message is a bot command. Some of these characters are also regex special characters and we need to escape them properly so when people indicate they want to use the '.' or '^' characters for example, they are treated a literal. (via [@Windos](https://github.com/Windos))
 
+- Fix bot crash when removing a scheduled command that was configured to only trigger once.
+
 ## [0.11.1] 2018-10-01
 
 ### Fixed

@@ -96,7 +96,6 @@ class Scheduler : BaseLogger {
 
                 # Check if one time command
                 if ($_.Value.Once) {
-                    $_.Value.StopTimer()
                     $remove += $_.Value.Id
                 } else {
                     $_.Value.RecalculateStartAfter()
