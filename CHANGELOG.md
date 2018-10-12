@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [0.11.2] Unreleased
 
+### Added
+
+- Specifying the contents of a file to upload, as well as its file name and type are now supported in `New-PoshBotFileUpload`.
+  This is in addition to the already supported feature of specifying a file path.
+
 ### Changes
 
 - [**#122**](https://github.com/poshbotio/PoshBot/pull/122) Enable running multiple versions of PoshBot side-by-side. When PoshBot needs to load itself (via running PoshBot as a job, a scheduled task, or a plugin command), it now loads the exact version of PoshBot that is currently running instead of loading the latest version that happens to be in `$env:PSModulePath`. This enables multiple versions of PoshBot to be running and be self-contained. (via [@Tadas](https://github.com/Tadas))

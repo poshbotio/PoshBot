@@ -453,32 +453,45 @@ class SlackBackend : Backend {
                 }
                 '(.*?)PoshBot\.File\.Upload' {
                     $this.LogDebug('Custom response is [PoshBot.File.Upload]')
+
                     $uploadParams = @{
                         Token = $this.Connection.Config.Credential.GetNetworkCredential().Password
                         Channel = $sendTo
-                        Path = $customResponse.Path
                     }
-                    if ((Test-Path $uploadParams.Path -ErrorAction SilentlyContinue)) {
-                        if (-not [string]::IsNullOrEmpty($customResponse.Title)) {
-                            $uploadParams.Title = $customResponse.Title
-                        } else {
-                            $uploadParams.Title = Split-Path -Path $customResponse.Path -Leaf
-                        }
-                        $this.LogDebug("Title is $($uploadParams.Title)")
 
-                        $this.LogDebug("Uploading [$($customResponse.Path)] to Slack channel [$sendTo]")
-                        Send-SlackFile @uploadParams -Verbose:$false
-                        if (-not $customResponse.KeepFile) {
-                            Remove-Item -LiteralPath $customResponse.Path -Force
+                    if ([string]::IsNullOrEmpty($customResponse.Path) -and (-not [string]::IsNullOrEmpty($customResponse.Content))) {
+                        $uploadParams.Content = $customResponse.Content
+                        if (-not [string]::IsNullOrEmpty($customResponse.FileType)) {
+                            $uploadParams.FileType = $customResponse.FileType
+                        }
+                        if (-not [string]::IsNullOrEmpty($customResponse.FileName)) {
+                            $uploadParams.FileName = $customResponse.FileName
                         }
                     } else {
-                        # Mark command as failed since we could't find the file to upload
-                        $this.RemoveReaction($Response.OriginalMessage, [ReactionType]::Success)
-                        $this.AddReaction($Response.OriginalMessage, [ReactionType]::Failure)
-                        $att = New-SlackMessageAttachment -Color '#FF0000' -Title 'Rut row' -Text "File [$($uploadParams.Path)] not found" -Fallback 'Rut row'
-                        $msg = $att | New-SlackMessage -Channel $sendTo -AsUser
-                        $this.LogDebug("Sending card response back to Slack channel [$sendTo]", $att)
-                        $null = $msg | Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Verbose:$false
+                        # Test if file exists and send error response if not found
+                        if (-not (Test-Path -Path $customResponse.Path -ErrorAction SilentlyContinue)) {
+                            # Mark command as failed since we could't find the file to upload
+                            $this.RemoveReaction($Response.OriginalMessage, [ReactionType]::Success)
+                            $this.AddReaction($Response.OriginalMessage, [ReactionType]::Failure)
+                            $att = New-SlackMessageAttachment -Color '#FF0000' -Title 'Rut row' -Text "File [$($uploadParams.Path)] not found" -Fallback 'Rut row'
+                            $msg = $att | New-SlackMessage -Channel $sendTo -AsUser
+                            $this.LogDebug("Sending card response back to Slack channel [$sendTo]", $att)
+                            $null = $msg | Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Verbose:$false
+                            break
+                        }
+
+                        $this.LogDebug("Uploading [$($customResponse.Path)] to Slack channel [$sendTo]")
+                        $uploadParams.Path = $customResponse.Path
+                        $uploadParams.Title = Split-Path -Path $customResponse.Path -Leaf
+                    }
+
+                    if (-not [string]::IsNullOrEmpty($customResponse.Title)) {
+                        $uploadParams.Title = $customResponse.Title
+                    }
+
+                    Send-SlackFile @uploadParams -Verbose:$false
+                    if (-not $customResponse.KeepFile -and -not [string]::IsNullOrEmpty($customResponse.Path)) {
+                        Remove-Item -LiteralPath $customResponse.Path -Force
                     }
                     break
                 }

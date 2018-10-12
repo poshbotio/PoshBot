@@ -2,7 +2,6 @@
 describe 'New-PoshBotFileUpload' {
 
     BeforeAll {
-        $readme = $env:bh
         $readme = Join-Path -Path $env:BHProjectPath -ChildPath 'readme.md'
     }
 
@@ -26,5 +25,27 @@ describe 'New-PoshBotFileUpload' {
         $badFile = Join-Path -Path $env:BHProjectPath -ChildPath "$($guid).txt"
         { New-PoshBotFileUpload -Path $badFile } | should throw
     }
+
+    it 'Sends file content and not path' {
+        $resp = New-PoshBotFileUpload -Content 'foo'
+        $resp.Path | should -be $null
+    }
+
+    it 'Has a valid [FileName] field when sending file content' {
+        $resp = New-PoshBotFileUpload -Content 'foo' -FileName 'foo.txt'
+        $resp.FileName | should -be 'foo.txt'
+    }
+
+    it 'Has a valid [FileType] field when sending file content' {
+        $resp = New-PoshBotFileUpload -Content 'foo' -FileType 'powershell'
+        $resp.FileType | should -be 'powershell'
+    }
+
+    it 'Sends file path and not content' {
+        $resp = New-PoshBotFileUpload -Path $readme
+        $resp.Content | should -be $null
+    }
+
+
 }
 

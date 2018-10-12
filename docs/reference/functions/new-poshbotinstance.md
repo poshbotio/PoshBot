@@ -157,13 +157,10 @@ For more information, see about_CommonParameters (http://go.microsoft.com/fwlink
 ## INPUTS
 
 ### String
-
 ### BotConfiguration
-
 ## OUTPUTS
 
 ### Bot
-
 ## NOTES
 
 ## RELATED LINKS
