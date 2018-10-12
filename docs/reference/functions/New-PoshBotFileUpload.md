@@ -22,6 +22,12 @@ New-PoshBotFileUpload [-Path] <String[]> [-Title <String>] [-DM] [-KeepFile] [<C
 New-PoshBotFileUpload [-LiteralPath] <String[]> [-Title <String>] [-DM] [-KeepFile] [<CommonParameters>]
 ```
 
+### Content
+```
+New-PoshBotFileUpload -Content <String> [-FileType <String>] [-FileName <String>] [-Title <String>] [-DM]
+ [-KeepFile] [<CommonParameters>]
+```
+
 ## DESCRIPTION
 Returns a custom object back to PoshBot telling it to upload the given file to the chat network.
 The custom object
@@ -133,6 +139,51 @@ Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
 
+### -Content
+The content of the file to send.
+
+```yaml
+Type: String
+Parameter Sets: Content
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -FileType
+If specified, override the file type determined by the filename.
+
+```yaml
+Type: String
+Parameter Sets: Content
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -FileName
+{{Fill FileName Description}}
+
+```yaml
+Type: String
+Parameter Sets: Content
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Title
 The title for the uploaded file.
 
@@ -186,11 +237,9 @@ For more information, see about_CommonParameters (http://go.microsoft.com/fwlink
 ## INPUTS
 
 ### String
-
 ## OUTPUTS
 
 ### PSCustomObject
-
 ## NOTES
 
 ## RELATED LINKS
