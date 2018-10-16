@@ -6,6 +6,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.11.3] Unreleased
+
+### Changes
+
+- Reference `$global:PoshBotContext` instead of `PoshBotContext` so it's clear what variable we're using.
+
 ## [0.11.2] 2018-10-11
 
 ### Added

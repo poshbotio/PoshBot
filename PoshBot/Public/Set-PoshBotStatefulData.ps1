@@ -55,11 +55,11 @@ function Set-PoshBotStatefulData {
         }
 
         if($Scope -eq 'Module') {
-            $FileName = "$($PoshBotContext.Plugin).state"
+            $FileName = "$($global:PoshBotContext.Plugin).state"
         } else {
             $FileName = "PoshbotGlobal.state"
         }
-        $Path = Join-Path $PoshBotContext.ConfigurationDirectory $FileName
+        $Path = Join-Path $global:PoshBotContext.ConfigurationDirectory $FileName
 
         if(-not (Test-Path $Path)) {
             $ToWrite = [pscustomobject]@{
