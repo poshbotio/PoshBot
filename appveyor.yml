@@ -1,13 +1,22 @@
 environment:
   matrix:
+    # Server 2016
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       PowerShellEdition: PowerShellCore
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      PowerShellEdition: WindowsPowerShell
+
+    # Server 2012 R2
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+      PowerShellEdition: PowerShellCore
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+      PowerShellEdition: WindowsPowerShell
+
+    # Ubuntu
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
       PowerShellEdition: PowerShellCore
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
       PowerShellEdition: PowerShellCore
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-      PowerShellEdition: WindowsPowerShell
 
 version: 0.10.1.{build}
 skip_commits:
