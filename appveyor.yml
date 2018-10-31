@@ -2,6 +2,10 @@ environment:
   matrix:
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       PowerShellEdition: PowerShellCore
+    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
+      PowerShellEdition: PowerShellCore
+    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
+      PowerShellEdition: PowerShellCore
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       PowerShellEdition: WindowsPowerShell
 
