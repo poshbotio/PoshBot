@@ -17,16 +17,6 @@ class PluginDisabled : PluginException {
     PluginDisabled([string]$Message) : base($Message) {}
 }
 
-# Represents a fully qualified module command
-class ModuleCommand {
-    [string]$Module
-    [string]$Command
-
-    [string]ToString() {
-        return "$($this.Module)\$($this.Command)"
-    }
-}
-
 class Plugin : BaseLogger {
 
     # Unique name for the plugin
