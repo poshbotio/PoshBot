@@ -1,11 +1,9 @@
 
 # PoshBot
 
-[![AppVeyor Build Status][appveyor-badge]][appveyor-build]
-[![Azure Pipelines Build Status][azure-pipeline-badge]][azure-pipeline-build]
-[![Documentation Status][docs-badge]][docs]
-[![PowerShell Gallery][psgallery-badge]][psgallery]
-[![License][license-badge]][license]
+| AppVeyor | Azure Pipelines | Documentation | PS Gallery | License
+|----------|--------|--------------------|------------|-----------|
+[![AppVeyor Build Status][appveyor-badge]][appveyor-build] | [![Azure Pipelines Build Status][azure-pipeline-badge]][azure-pipeline-build] | [![Documentation Status][docs-badge]][docs] | [![PowerShell Gallery][psgallery-badge]][psgallery] | [![License][license-badge]][license]
 <!-- [![Patreon](https://img.shields.io/badge/patreon-donate-yellow.svg)](https://www.patreon.com/devblackops/memberships) -->
 
 <h2 align="center">Supporting PoshBot</h2>
