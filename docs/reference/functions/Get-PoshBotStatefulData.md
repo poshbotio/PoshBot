@@ -71,7 +71,7 @@ Accept wildcard characters: False
 
 ### -Scope
 Get stateful data from this scope:
-    Module: Data scoped to this plugin 
+    Module: Data scoped to this plugin
     Global: Data available to any Poshbot plugin
 
 ```yaml
