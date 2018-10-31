@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Reference `$global:PoshBotContext` instead of `PoshBotContext` so it's clear what variable we're using.
 
+### Fixed
+
+- [**#129**](https://github.com/poshbotio/PoshBot/pull/129) To avoid serialization issues when executing a command in the PS job, use the module-qualified command name instead of the function/cmdlet object returned from Get-Command. (via [@Tadas](https://github.com/Tadas))
+
 ## [0.11.2] 2018-10-11
 
 ### Added
