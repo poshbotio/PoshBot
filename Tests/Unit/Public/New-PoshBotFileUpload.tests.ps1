@@ -2,7 +2,7 @@
 describe 'New-PoshBotFileUpload' {
 
     BeforeAll {
-        $readme = Join-Path -Path $env:BHProjectPath -ChildPath 'readme.md'
+        $readme = Join-Path -Path $env:BHProjectPath -ChildPath 'README.md'
     }
 
     it 'Returns a [PoshBot.File.Upload] object' {
@@ -16,8 +16,8 @@ describe 'New-PoshBotFileUpload' {
     }
 
     it 'Has a valid [Title] field' {
-        $resp = New-PoshBotFileUpload -Path $readme -DM -Title 'readme.md'
-        $resp.Title | should be 'readme.md'
+        $resp = New-PoshBotFileUpload -Path $readme -DM -Title 'README.md'
+        $resp.Title | should be 'README.md'
     }
 
     it 'Validates file exists' {

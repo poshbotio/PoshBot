@@ -1,7 +1,8 @@
 
 # PoshBot
 
-[![Build status][appveyor-badge]][appveyor-build]
+[![AppVeyor Build Status][appveyor-badge]][appveyor-build]
+[![Azure Pipelines Build Status][azure-pipeline-badge]][azure-pipeline-build]
 [![Documentation Status][docs-badge]][docs]
 [![PowerShell Gallery][psgallery-badge]][psgallery]
 [![License][license-badge]][license]
@@ -140,10 +141,12 @@ Function        Stop-Poshbot                                       0.11.0     Po
 
 [appveyor-badge]: https://ci.appveyor.com/api/projects/status/9em7etgtlmeax7gl?svg=true
 [appveyor-build]: https://ci.appveyor.com/project/devblackops/poshbot
+[azure-pipeline-badge]: https://dev.azure.com/devblackops/PoshBot/_apis/build/status/PoshBot-CI
+[azure-pipeline-build]: https://dev.azure.com/devblackops/PoshBot/_build/latest?definitionId=3
+(https://dev.azure.com/dotnet/ReactiveUI/_build/latest?definitionId=11)
 [docs-badge]: https://readthedocs.org/projects/poshbot/badge/?version=latest
 [docs]: http://poshbot.readthedocs.io/en/latest/
 [psgallery-badge]: https://img.shields.io/powershellgallery/dt/poshbot.svg
 [psgallery]: https://www.powershellgallery.com/packages/poshbot
 [license-badge]: https://img.shields.io/github/license/poshbotio/poshbot.svg
 [license]: https://www.powershellgallery.com/packages/poshbot
-
