@@ -230,6 +230,7 @@ task Build-Docker {
     $version = $manifest.ModuleVersion.ToString()
     $dockerImages = @(
         'ubuntu16.04'
+        #'nano'
     )
 
     Push-Location
