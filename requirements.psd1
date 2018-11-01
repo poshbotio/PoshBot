@@ -1,4 +1,3 @@
-
 @{
     PSDependOptions = @{
         Target = 'CurrentUser'
