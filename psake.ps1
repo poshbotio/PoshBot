@@ -213,6 +213,10 @@ task Compile -depends Clean {
     Copy-Item -Path (Join-Path -Path $sut -ChildPath 'Plugins') -Destination $outputModVerDir -Recurse
     Copy-Item -Path (Join-Path -Path $sut -ChildPath 'Task') -Destination $outputModVerDir -Recurse
 
+    # Fix case of PSM1 and PSD1
+    Rename-Item -Path $outputModVerDir/poshbot.psd1 -NewName PoshBot.psd1
+    Rename-Item -Path $outputModVerDir/poshbot.psm1 -NewName PoshBot.psm1
+
     "    Created compiled module at [$modDir]"
 } -description 'Compiles module from source'
 
@@ -222,12 +226,21 @@ task Build -depends Compile, CreateMarkdownHelp, CreateExternalHelp {
     "    Module XML help created at [$helpXml]"
 }
 
-task Build-Docker -depends Test {
+task Build-Docker {
+    $version = $manifest.ModuleVersion.ToString()
+    $dockerImages = @(
+        'ubuntu16.04'
+    )
+
     Push-Location
     Set-Location -Path $projectRoot
-    $version = $manifest.ModuleVersion.ToString()
-    exec {
-        & docker build -t poshbotio/poshbot-nano-slack:latest -t poshbotio/poshbot-nano-slack:$version --label version=$version .
+    $dockerImages | Foreach-Object {
+        $dockerFilePath = Join-Path $projectRoot -ChildPath 'docker' -AdditionalChildPath @($_, 'Dockerfile')
+        #Set-Location -Path $dockerFilePath
+        "Building docker image: $_"
+        exec {
+            & docker build -t "poshbotio/poshbot-$_`:latest" -t "poshbotio/poshbot-$_`:$version" --label version=$version -f $dockerFilePath .
+        }
     }
     Pop-Location
 } -description 'Create Docker container'
