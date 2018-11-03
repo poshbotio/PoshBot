@@ -308,6 +308,7 @@ function New-PoshBotConfiguration {
     $config.DisallowDMs = ($DisallowDMs -eq $true)
     $config.FormatEnumerationLimitOverride = $FormatEnumerationLimitOverride
     if ($ChannelRules.Count -ge 1) {
+        $config.ChannelRules = $null
         foreach ($item in $ChannelRules) {
             $config.ChannelRules += [ChannelRule]::new($item.Channel, $item.IncludeCommands, $item.ExcludeCommands)
         }
