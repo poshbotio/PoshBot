@@ -327,6 +327,21 @@ class Bot : BaseLogger {
         # error that we couldn't find the command
         $isBotCommand = $this.IsBotCommand($Message)
 
+        #LUISMODIFICATION : CHECK IF THE BOT NAME OR ID IS IN THE MESSAGE
+        $HandleThisMessage = $false
+
+        if ($Message.To -eq $this.Configuration.BotID) {
+            $HandleThisMessage = $true
+        }
+        else {
+            foreach ($BotName in $this.Configuration.AlternateCommandPrefixes) {
+                if ($Message.Text -like "*$($BotName)*") {
+                    #Handle the message if it targets Arlette
+                    $HandleThisMessage = $true
+                }
+            }
+        }
+
         $cmdSearch = $true
         if (-not $isBotCommand) {
             $cmdSearch = $false
@@ -336,14 +351,30 @@ class Bot : BaseLogger {
             $Message = $this.TrimPrefix($Message)
         }
 
-        $parsedCommand = [CommandParser]::Parse($Message)
+        #LUISMODIFICATION : PARSE MESSAGE WITH ALTERNATECOMMANDPREFIXES
+        $parsedCommand = [CommandParser]::Parse($Message, $this.Configuration.AlternateCommandPrefixes)
         $this.LogDebug('Parsed bot command', $parsedCommand)
 
         # Attempt to populate the parsed command with full user info from the backend
         $parsedCommand.CallingUserInfo = $this.Backend.GetUserInfo($parsedCommand.From)
 
-        # Match parsed command to a command in the plugin manager
+         # Match parsed command to a command in the plugin manager
         $pluginCmd = $this.PluginManager.MatchCommand($parsedCommand, $cmdSearch)
+
+        #LUISMODIFICATION : use the default LUIS command if the bot is mentionned above, recharge $plugincmd
+
+        if ($HandleThisMessage) {
+            if (!$pluginCmd ) {
+                $parsedCommand.Command = $this.Configuration.LuisCommand
+                            [string[]]$NewParamArray = "$($parsedCommand.CommandString)"
+                $parsedCommand.PositionalParameters = $NewParamArray
+                $cmdSearch = $true
+            }
+
+            $pluginCmd = $this.PluginManager.MatchCommand($parsedCommand, $cmdSearch)
+        }
+
+       
         if ($pluginCmd) {
 
             # Create the command execution context

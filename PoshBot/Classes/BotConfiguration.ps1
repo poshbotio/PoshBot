@@ -3,6 +3,12 @@ class BotConfiguration {
 
     [string]$Name = 'PoshBot'
 
+    #LUISMODIFICATION: Add Default LUIS command and BOTID
+
+    [string]$LuisCommand = "stp"
+
+    [string]$BotId
+
     [string]$ConfigurationDirectory = $script:defaultPoshBotDir
 
     [string]$LogDirectory = $script:defaultPoshBotDir
@@ -80,7 +86,9 @@ class BotConfiguration {
 
         foreach ($key in $Hash.keys) {
             if ($key -in $propertyNames) {
-
+                
+                #LUISMODIFICATION: ADD LuisCommand
+                $bc.LuisCommand                      = $hash.LuisCommand
                 $bc.Name                             = $hash.Name
                 $bc.ConfigurationDirectory           = $hash.ConfigurationDirectory
                 $bc.LogDirectory                     = $hash.LogDirectory
