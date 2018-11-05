@@ -9,7 +9,7 @@
         [string[]]$Arguments
     )
     
-    $uri = 'https://westeurope.api.cognitive.microsoft.com/luis/v2.0/apps/7e40073d-60c0-4b93-9c38-2ffef36acb29?subscription-key=b3c5250e74d64fb588fbf16c968a5358&timezoneOffset=60&q='
+    $uri = 'LUIS_URI_HERE'
     $q = $Arguments -join ' '
 
     #New-PoshBotTextResponse -Text "query: $q" -AsCode
