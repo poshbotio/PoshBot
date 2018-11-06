@@ -15,6 +15,11 @@ properties {
 
     $dotnetFramework = 'netstandard2.0'
     $release = 'release'
+
+    $dockerImages = @(
+        'ubuntu16.04'
+        #'nano'
+    )
 }
 
 task default -depends Test
@@ -228,10 +233,6 @@ task Build -depends Compile, CreateMarkdownHelp, CreateExternalHelp {
 
 task Build-Docker {
     $version = $manifest.ModuleVersion.ToString()
-    $dockerImages = @(
-        'ubuntu16.04'
-        #'nano'
-    )
 
     Push-Location
     Set-Location -Path $projectRoot
@@ -240,7 +241,7 @@ task Build-Docker {
         #Set-Location -Path $dockerFilePath
         "Building docker image: $_"
         exec {
-            & docker build -t "poshbotio/poshbot-$_`:latest" -t "poshbotio/poshbot-$_`:$version" --label version=$version -f $dockerFilePath .
+            & docker build -t "devblackops/poshbot-$_`:latest" -t "devblackops/poshbot-$_`:$version" --label version=$version -f $dockerFilePath .
         }
     }
     Pop-Location
@@ -252,8 +253,15 @@ task Publish-Docker -depends Build-Docker {
     exec {
         docker login
     }
-    exec {
-        docker push poshbotio/poshbot-nano-slack:latest
-        docker push poshbotio/poshbot-nano-slack:$version
+
+    $dockerImages | Foreach-Object {
+        $imageName = "devblackops/poshbot-$_`:$version"
+        "Publishing docker image: $imageName"
+        exec {
+            docker push $imageName
+        }
     }
+
+    # docker push poshbotio/poshbot-nano-slack:latest
+    # docker push poshbotio/poshbot-nano-slack:$version
 }
