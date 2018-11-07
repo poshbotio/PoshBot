@@ -18,7 +18,7 @@ properties {
 
     $dockerImages = @(
         'ubuntu16.04'
-        #'nano'
+        #'nano1803'
     )
 }
 
@@ -233,29 +233,29 @@ task Build -depends Compile, CreateMarkdownHelp, CreateExternalHelp {
 
 task Build-Docker {
     $version = $manifest.ModuleVersion.ToString()
-
     Push-Location
     Set-Location -Path $projectRoot
     $dockerImages | Foreach-Object {
         $dockerFilePath = Join-Path $projectRoot -ChildPath 'docker' -AdditionalChildPath @($_, 'Dockerfile')
-        #Set-Location -Path $dockerFilePath
-        "Building docker image: $_"
+        $tag = "$_-$version"
+        $imageName = "poshbotio/poshbot`:$tag"
+        "Building docker image: $imageName"
         exec {
-            & docker build -t "devblackops/poshbot-$_`:latest" -t "devblackops/poshbot-$_`:$version" --label version=$version -f $dockerFilePath .
+            & docker build -t $imageName --label version=$version -f $dockerFilePath .
         }
     }
     Pop-Location
 } -description 'Create Docker container'
 
 task Publish-Docker -depends Build-Docker {
-    "    Publishing Docker image [$($manifest.ModuleVersion)] to Docker Hub..."
     $version = $manifest.ModuleVersion.ToString()
     exec {
         docker login
     }
 
     $dockerImages | Foreach-Object {
-        $imageName = "devblackops/poshbot-$_`:$version"
+        $tag = "$_-$version"
+        $imageName = "poshbotio/poshbot`:$tag"
         "Publishing docker image: $imageName"
         exec {
             docker push $imageName

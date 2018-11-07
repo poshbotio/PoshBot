@@ -1,4 +1,4 @@
-FROM microsoft/powershell:nanoserver as base
+FROM microsoft/powershell:nanoserver-1803 as base
 SHELL ["pwsh", "-Command", "$ErrorActionPreference = 'Stop'; $VerbosePreference = 'Continue'; $ProgressPreference = 'SilentlyContinue';"]
 RUN Set-PSRepository -Name PSGallery -InstallationPolicy Trusted; \
     Install-Module Configuration -RequiredVersion 1.3.1 -Repository PSGallery -SkipPublisherCheck -Force; \
@@ -6,12 +6,10 @@ RUN Set-PSRepository -Name PSGallery -InstallationPolicy Trusted; \
 
 FROM base as src
 LABEL maintainer="devblackops"
-LABEL description="PoshBot container for Slack"
+LABEL description="PoshBot container for Nano Server"
 LABEL vendor="poshbotio"
 COPY ["/out/poshbot", "C:/Program Files/PowerShell/Modules/PoshBot/"]
 COPY ["/docker/docker_entrypoint.ps1", "c:/poshbot/docker_entrypoint.ps1"]
-WORKDIR c:/poshbot_data/
-RUN mkdir plugins
 WORKDIR c:/poshbot/
 VOLUME ["c:/poshbot_data"]
 USER ContainerAdministrator
