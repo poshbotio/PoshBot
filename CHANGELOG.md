@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - [**#129**](https://github.com/poshbotio/PoshBot/pull/129) To avoid serialization issues when executing a command in the PS job, use the module-qualified command name instead of the function/cmdlet object returned from Get-Command. (via [@Tadas](https://github.com/Tadas))
 
+- [**#132**](https://github.com/poshbotio/PoshBot/pull/132) By default, the `ChannelRules` property of the `[BotConfiguration]` object has a single rule that allows all commands in all channels.
+This is so that when creating a new configuration object with `New-PoshBotConfiguration` and specifying no addition parameters, we have a working configuration.
+When creating a new bot configuration object AND passing it one or more channels rules, we should zero out the array as it is implied by passing in channel rules that the rules should be exactly what was passed in and not IN ADDITION to the default one. (via [@DWOF](https://github.com/DWOF))
+
 ## [0.11.2] 2018-10-11
 
 ### Added
