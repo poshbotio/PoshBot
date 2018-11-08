@@ -18,12 +18,12 @@ environment:
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
       PowerShellEdition: PowerShellCore
 
-version: 0.10.1.{build}
+version: 0.11.3.{build}
 skip_commits:
   message: /updated readme.*|update readme.*s/
 build: off
 
 #Kick off the CI/CD pipeline
 test_script:
-  - ps:   if ($env:PowerShellEdition -eq 'WindowsPowerShell') { . .\build.ps1 -Task Test }
-  - pwsh: if ($env:PowerShellEdition -eq 'PowerShellCore')    { . .\build.ps1 -Task Test }
+  - ps:   if ($env:PowerShellEdition -eq 'WindowsPowerShell') { . .\build.ps1 -Task Test -Bootstrap }
+  - pwsh: if ($env:PowerShellEdition -eq 'PowerShellCore')    { . .\build.ps1 -Task Test -Bootstrap }
