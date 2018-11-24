@@ -188,17 +188,17 @@ class SlackBackend : Backend {
         $messages = New-Object -TypeName System.Collections.ArrayList
         try {
             # Read the output stream from the receive job and get any messages since our last read
-            $jsonResult = $this.Connection.ReadReceiveJob()
+            [string[]]$jsonResults = $this.Connection.ReadReceiveJob()
 
-            if ($null -ne $jsonResult -and $jsonResult -ne [string]::Empty) {
-                #Write-Debug -Message "[SlackBackend:ReceiveMessage] Received `n$jsonResult"
-                $this.LogDebug('Received message', $jsonResult)
+            foreach ($jsonResult in $jsonResults) {
+                if ($null -ne $jsonResult -and $jsonResult -ne [string]::Empty) {
+                    #Write-Debug -Message "[SlackBackend:ReceiveMessage] Received `n$jsonResult"
+                    $this.LogDebug('Received message', $jsonResult)
 
-                # Strip out Slack's URI formatting
-                $jsonResult = $this._SanitizeURIs($jsonResult)
+                    # Strip out Slack's URI formatting
+                    $jsonResult = $this._SanitizeURIs($jsonResult)
 
-                $slackMessages = @($jsonResult | ConvertFrom-Json)
-                foreach ($slackMessage in $slackMessages) {
+                    $slackMessage = @($jsonResult | ConvertFrom-Json)
 
                     # Slack will sometimes send back ephemeral messages from user [SlackBot]. Ignore these
                     # These are messages like notifing that a message won't be unfurled because it's already
@@ -341,6 +341,7 @@ class SlackBackend : Backend {
                     } else {
                         $this.LogDebug("Message type is [$($slackMessage.Type)]. Ignoring")
                     }
+                    
                 }
             }
         } catch {
