@@ -6,6 +6,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.11.4] Unreleased
+
+### Fixed
+
+- [**#134**](https://github.com/poshbotio/PoshBot/pull/134) Fix missing messages in Slack backend (via [@Pilosite](https://github.com/Pilosite))
+
 ## [0.11.3] 2018-11-06
 
 ### Changes
