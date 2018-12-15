@@ -100,7 +100,7 @@ class SlackConnection : Connection {
     }
 
     # Read all available data from the job
-    [string]ReadReceiveJob() {
+    [string[]]ReadReceiveJob() {
         # Read stream info from the job so we can log them
         $infoStream = $this.ReceiveJob.ChildJobs[0].Information.ReadAll()
         $warningStream = $this.ReceiveJob.ChildJobs[0].Warning.ReadAll()
@@ -131,7 +131,8 @@ class SlackConnection : Connection {
         }
 
         if ($this.ReceiveJob.HasMoreData) {
-            return $this.ReceiveJob.ChildJobs[0].Output.ReadAll()
+            [string[]]$jobResult = $this.ReceiveJob.ChildJobs[0].Output.ReadAll()
+            return $jobResult
         } else {
             return $null
         }
