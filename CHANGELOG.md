@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- [**#138**](https://github.com/poshbotio/PoshBot/issues/138) Enforce TLS 1.2
 - [**#134**](https://github.com/poshbotio/PoshBot/pull/134) Fix missing messages in Slack backend (via [@Pilosite](https://github.com/Pilosite))
 - [**#133**](https://github.com/poshbotio/PoshBot/issues/133) Fix references to middleware hooks when converting to/from hashtable
 

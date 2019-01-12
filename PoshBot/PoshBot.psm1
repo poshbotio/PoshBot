@@ -16,3 +16,6 @@ $script:defaultPoshBotDir = (Join-Path -Path $homeDir -ChildPath '.poshbot')
 $PSDefaultParameterValues = @{
     'ConvertTo-Json:Verbose' = $false
 }
+
+# Enforce TLS 1.2
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
