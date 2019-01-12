@@ -219,8 +219,8 @@ task Compile -depends Clean {
     Copy-Item -Path (Join-Path -Path $sut -ChildPath 'Task') -Destination $outputModVerDir -Recurse
 
     # Fix case of PSM1 and PSD1
-    Rename-Item -Path $outputModVerDir/poshbot.psd1 -NewName PoshBot.psd1
-    Rename-Item -Path $outputModVerDir/poshbot.psm1 -NewName PoshBot.psm1
+    Rename-Item -Path $outputModVerDir/poshbot.psd1 -NewName PoshBot.psd1 -ErrorAction Ignore
+    Rename-Item -Path $outputModVerDir/poshbot.psm1 -NewName PoshBot.psm1 -ErrorAction Ignore
 
     "    Created compiled module at [$modDir]"
 } -description 'Compiles module from source'
