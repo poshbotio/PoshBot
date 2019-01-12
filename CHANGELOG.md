@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - [**#134**](https://github.com/poshbotio/PoshBot/pull/134) Fix missing messages in Slack backend (via [@Pilosite](https://github.com/Pilosite))
+- [**#133**](https://github.com/poshbotio/PoshBot/issues/133) Fix references to middleware hooks when converting to/from hashtable
 
 ## [0.11.3] 2018-11-06
 
