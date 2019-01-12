@@ -11,5 +11,6 @@
     Configuration    = 'latest'
     Pester           = 'latest'
     PSScriptAnalyzer = 'latest'
-    PSSlack          = 'Latest'
+    PSSlack          = 'latest'
+    platyPS          = 'latest'
 }
