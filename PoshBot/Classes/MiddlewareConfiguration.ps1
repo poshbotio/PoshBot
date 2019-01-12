@@ -24,7 +24,7 @@ class MiddlewareConfiguration {
         $hash = @{}
         foreach ($type in [enum]::GetNames([MiddlewareType])) {
             $hash.Add(
-                "$($type)Hooks",
+                $type,
                 $this."$($type)Hooks".GetEnumerator().foreach({$_.Value.ToHash()})
             )
         }
@@ -34,7 +34,7 @@ class MiddlewareConfiguration {
     static [MiddlewareConfiguration] Serialize([hashtable]$DeserializedObject) {
         $mc = [MiddlewareConfiguration]::new()
         foreach ($type in [enum]::GetNames([MiddlewareType])) {
-            $DeserializedObject."$($type)Hooks".GetEnumerator().foreach({
+            $DeserializedObject.$type.GetEnumerator().foreach({
                 $hook = [MiddlewareHook]::new($_.Name, $_.Path)
                 $mc."$($type)Hooks".Add($hook.Name, $hook) > $null
             })
