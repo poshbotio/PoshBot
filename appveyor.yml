@@ -25,5 +25,15 @@ build: off
 
 #Kick off the CI/CD pipeline
 test_script:
-  - ps:   if ($env:PowerShellEdition -eq 'WindowsPowerShell') { . .\build.ps1 -Task Test -Bootstrap }
+  #- ps:   if ($env:PowerShellEdition -eq 'WindowsPowerShell') { . .\build.ps1 -Task Test -Bootstrap }
   - pwsh: if ($env:PowerShellEdition -eq 'PowerShellCore')    { . .\build.ps1 -Task Test -Bootstrap }
+
+for:
+  -
+    matrix:
+      only:
+        - environment:
+          APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+          PowerShellEdition: WindowsPowerShell
+    test_script:
+      - ps: if ($env:PowerShellEdition -eq 'WindowsPowerShell') { . .\build.ps1 -Task Test -Bootstrap }
