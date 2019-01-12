@@ -1,11 +1,15 @@
 @{
-    PSDependOptions = @{
+    PSDependOptions  = @{
         Target = 'CurrentUser'
     }
-    'psake' = @{
+    psake            = @{
         Version = '4.7.4'
     }
-    'BuildHelpers' = @{
+    BuildHelpers     = @{
         Version = '2.0.0'
     }
+    Configuration    = 'latest'
+    Pester           = 'latest'
+    PSScriptAnalyzer = 'latest'
+    PSSlack          = 'Latest'
 }
