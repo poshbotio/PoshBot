@@ -146,11 +146,9 @@ For more information, see about_CommonParameters (http://go.microsoft.com/fwlink
 ## INPUTS
 
 ### BotConfiguration
-
 ## OUTPUTS
 
 ### System.IO.FileInfo
-
 ## NOTES
 
 ## RELATED LINKS

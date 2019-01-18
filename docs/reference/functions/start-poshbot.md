@@ -153,15 +153,11 @@ For more information, see about_CommonParameters (http://go.microsoft.com/fwlink
 ## INPUTS
 
 ### Bot
-
 ### BotConfiguration
-
 ### String
-
 ## OUTPUTS
 
 ### PSCustomObject
-
 ## NOTES
 
 ## RELATED LINKS

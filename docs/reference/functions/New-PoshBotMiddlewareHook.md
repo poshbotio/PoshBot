@@ -76,7 +76,6 @@ For more information, see about_CommonParameters (http://go.microsoft.com/fwlink
 ## OUTPUTS
 
 ### MiddlewareHook
-
 ## NOTES
 
 ## RELATED LINKS
