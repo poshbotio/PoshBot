@@ -1,9 +1,9 @@
 
 # PoshBot
 
-| AppVeyor | Azure Pipelines | Documentation | PS Gallery | License
-|----------|--------|--------------------|------------|-----------|
-[![AppVeyor Build Status][appveyor-badge]][appveyor-build] | [![Azure Pipelines Build Status][azure-pipeline-badge]][azure-pipeline-build] | [![Documentation Status][docs-badge]][docs] | [![PowerShell Gallery][psgallery-badge]][psgallery] | [![License][license-badge]][license]
+| Azure Pipelines | Documentation | PS Gallery | License
+|--------|--------------------|------------|-----------|
+[![Azure Pipelines Build Status][azure-pipeline-badge]][azure-pipeline-build] | [![Documentation Status][docs-badge]][docs] | [![PowerShell Gallery][psgallery-badge]][psgallery] | [![License][license-badge]][license]
 <!-- [![Patreon](https://img.shields.io/badge/patreon-donate-yellow.svg)](https://www.patreon.com/devblackops/memberships) -->
 
 <h2 align="center">Supporting PoshBot</h2>
@@ -55,9 +55,9 @@ See [Building PoshBot](./building.md) for documentation on how to build PoshBot 
 
 Detailed changes for each release are documented in the [release notes](https://github.com/poshbotio/poshbot/releases).
 
-## [YouTube] PoshBot Demo at the Portland User Group on 2017-05-31
+## [YouTube] PowerShell Summit 2018 - Invoke-ChatOps: Level up and change your culture with chat and PowerShell
 
-[![Alt text](https://img.youtube.com/vi/36fkyKYq43c/0.jpg)](https://www.youtube.com/watch?v=36fkyKYq43cV)
+[![Alt text](https://i.ytimg.com/vi/Mrs49IdnSHc/hqdefault.jpg?sqp=-oaymwEZCNACELwBSFXyq4qpAwsIARUAAIhCGAFwAQ==&rs=AOn4CLDdWnuXllwxfDRO_LGa0h_h_VGPPQ)](https://youtu.be/Mrs49IdnSHc)
 
 ## Quickstart
 
@@ -118,27 +118,25 @@ Get-Command -Module PoshBot
 
 CommandType     Name                                               Version    Source
 -----------     ----                                               -------    ------
-Function        Get-PoshBot                                        0.11.0     PoshBot
-Function        Get-PoshBotConfiguration                           0.11.0     PoshBot
-Function        Get-PoshBotStatefulData                            0.11.0     PoshBot
-Function        New-PoshBotCardResponse                            0.11.0     PoshBot
-Function        New-PoshBotConfiguration                           0.11.0     PoshBot
-Function        New-PoshBotFileUpload                              0.11.0     PoshBot
-Function        New-PoshBotInstance                                0.11.0     PoshBot
-Function        New-PoshBotMiddlewareHook                          0.11.0     PoshBot
-Function        New-PoshBotScheduledTask                           0.11.0     PoshBot
-Function        New-PoshBotSlackBackend                            0.11.0     PoshBot
-Function        New-PoshBotTeamsBackend                            0.11.0     PoshBot
-Function        New-PoshBotTextResponse                            0.11.0     PoshBot
-Function        Remove-PoshBotStatefulData                         0.11.0     PoshBot
-Function        Save-PoshBotConfiguration                          0.11.0     PoshBot
-Function        Set-PoshBotStatefulData                            0.11.0     PoshBot
-Function        Start-PoshBot                                      0.11.0     PoshBot
-Function        Stop-Poshbot                                       0.11.0     PoshBot
+Function        Get-PoshBot                                        0.11.4     poshbot
+Function        Get-PoshBotConfiguration                           0.11.4     poshbot
+Function        Get-PoshBotStatefulData                            0.11.4     poshbot
+Function        New-PoshBotCardResponse                            0.11.4     poshbot
+Function        New-PoshBotConfiguration                           0.11.4     poshbot
+Function        New-PoshBotFileUpload                              0.11.4     poshbot
+Function        New-PoshBotInstance                                0.11.4     poshbot
+Function        New-PoshBotMiddlewareHook                          0.11.4     poshbot
+Function        New-PoshBotScheduledTask                           0.11.4     poshbot
+Function        New-PoshBotSlackBackend                            0.11.4     poshbot
+Function        New-PoshBotTeamsBackend                            0.11.4     poshbot
+Function        New-PoshBotTextResponse                            0.11.4     poshbot
+Function        Remove-PoshBotStatefulData                         0.11.4     poshbot
+Function        Save-PoshBotConfiguration                          0.11.4     poshbot
+Function        Set-PoshBotStatefulData                            0.11.4     poshbot
+Function        Start-PoshBot                                      0.11.4     poshbot
+Function        Stop-Poshbot                                       0.11.4     poshbot
 ```
 
-[appveyor-badge]: https://ci.appveyor.com/api/projects/status/9em7etgtlmeax7gl?svg=true
-[appveyor-build]: https://ci.appveyor.com/project/devblackops/poshbot
 [azure-pipeline-badge]: https://dev.azure.com/devblackops/PoshBot/_apis/build/status/PoshBot-CI
 [azure-pipeline-build]: https://dev.azure.com/devblackops/PoshBot/_build/latest?definitionId=3
 (https://dev.azure.com/dotnet/ReactiveUI/_build/latest?definitionId=11)
