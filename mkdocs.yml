@@ -25,7 +25,7 @@ pages:
       - Teams: guides/backends/setup-teams-backend.md
   - Tutorials:
     - Backend Development:
-      - Backend Development: tutorials/backend-development/backend-development.md
+      - Overview: tutorials/backend-development/overview.md
       - Generic Classes:
         - Backend: tutorials/backend-development/backend-class.md
         - Connection: tutorials/backend-development/connection-class.md
