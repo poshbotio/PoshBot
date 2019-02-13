@@ -26,6 +26,12 @@ pages:
   - Tutorials:
     - Backend Development:
       - Backend Development: tutorials/backend-development/backend-development.md
+      - Generic Classes:
+        - Backend: tutorials/backend-development/backend-class.md
+        - Connection: tutorials/backend-development/connection-class.md
+        - Message: tutorials/backend-development/message-class.md
+        - Person: tutorials/backend-development/person-class.md
+        - Room: tutorials/backend-development/room-class.md
     - Plugin Development:
       - Simple: tutorials/plugin-development/simple.md
       - Advanced:
