@@ -101,6 +101,14 @@ az functionapp create --resource-group <RESOURCE-GROUP-NAME> --name <FUNCTION-AP
   --deployment-source-url "https://github.com/poshbotio/TeamsWebhook"
 ```
 
+Since we're deploying a PowerShell-based Azure Function, we need to ensure we're using **v1** Functions and not **v2**.
+This will no longer be needed once **v2** PowerShell Functions are supported.
+
+```
+az functionapp config appsettings set --resource-group <RESOURCE-GROUP-NAME> \
+  --name <FUNCTION-APP-NAME> --settings FUNCTIONS_EXTENSION_VERSION="~1"
+```
+
 Create an application setting for the Service Bus connection string.
 
 ```
