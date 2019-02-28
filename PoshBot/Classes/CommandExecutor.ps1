@@ -306,10 +306,13 @@ class CommandExecutor : BaseLogger {
             foreach ($approvalConfig in $this._bot.Configuration.ApprovalConfiguration.Commands) {
                 if ($Context.FullyQualifiedCommandName -like $approvalConfig.Expression) {
 
-                    $approvalGroups = $this._bot.RoleManager.GetUserGroups($Context.ParsedCommand.From)
+                    $approvalGroups = $this._bot.RoleManager.GetUserGroups($Context.ParsedCommand.From).Name
+                    if (-not $approvalGroups) {
+                        $approvalGroups = @()
+                    }
                     $compareParams = @{
                         ReferenceObject = $this.GetApprovalGroups($Context)
-                        DifferenceObject = $approvalGroups.Name
+                        DifferenceObject = $approvalGroups
                         PassThru = $true
                         IncludeEqual = $true
                         ExcludeDifferent = $true
