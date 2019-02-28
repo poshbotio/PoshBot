@@ -6,6 +6,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.11.5] 2019-02-27
+
+### Fixed
+
+- [**#154**](https://github.com/poshbotio/PoshBot/pull/154) Fix command approval logic (via [@dreznicek](https://github.com/dreznicek))
+- Fixed crash when a command required approval yet the calling user was not part of any groups
+
 ## [0.11.4] 2019-01-17
 
 ### Fixed
