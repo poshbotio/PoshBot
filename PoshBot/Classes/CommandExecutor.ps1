@@ -317,19 +317,18 @@ class CommandExecutor : BaseLogger {
                     $inApprovalGroup = (Compare-Object @compareParams).Count -gt 0
 
                     $Context.ApprovalState = [ApprovalState]::Pending
-                    $this.LogDebug("Execution context ID [$($Context.Id)] needs approval from group(s) [$($approvalGroups.Name -join ', ')]")
+                    $this.LogDebug("Execution context ID [$($Context.Id)] needs approval from group(s) [$(($compareParams.ReferenceObject) -join ', ')]")
 
-                    if ($approvalConfig.PeerApproval) {
-                        $this.LogDebug("Execution context ID [$($Context.Id)] needs peer approval")
-                    }
-
-                    if ($approvalConfig.PeerApproval -and $inApprovalGroup) {
+                    if ($inApprovalGroup) {
+                        if ($approvalConfig.PeerApproval) {
+                            $this.LogDebug("Execution context ID [$($Context.Id)] needs peer approval")
+                        } else {
+                            $this.LogInfo("Peer Approval not needed to execute context ID [$($Context.Id)]")
+                        }
+                        return $approvalConfig.PeerApproval
+                    } else {
                         $this.LogInfo("Approval needed to execute context ID [$($Context.Id)]")
                         return $true
-                    } else {
-                        $this.LogInfo("Approval not needed to execute context ID [$($Context.Id)]")
-                        $Context.ApprovalState = [ApprovalState]::Approved
-                        return $false
                     }
                 }
             }
