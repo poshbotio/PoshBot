@@ -36,7 +36,7 @@ function New-Group {
     foreach ($groupName in $Name) {
         if (-not ($Bot.RoleManager.GetGroup($groupName))) {
             # Create group
-            $group = [Group]::New($groupName, $Bot.Logger)
+            $group = [Group]::new($groupName, $Bot.Logger)
             if ($PSBoundParameters.ContainsKey('Description')) {
                 $group.Description = $Description
             }
