@@ -15,6 +15,11 @@ properties {
 
     $dotnetFramework = 'netstandard2.0'
     $release = 'release'
+
+    $dockerImages = @(
+        'ubuntu16.04'
+        #'nano1803'
+    )
 }
 
 task default -depends Test
@@ -24,13 +29,6 @@ task Init {
     "Build System Details:"
     Get-Item ENV:BH*
     "`n"
-
-    'Configuration', 'Pester', 'platyPS', 'PSScriptAnalyzer', 'PSSlack' | Foreach-Object {
-        if (-not (Get-Module -Name $_ -ListAvailable -Verbose:$false -ErrorAction SilentlyContinue)) {
-            Install-Module -Name $_ -Repository PSGallery -Scope CurrentUser -AllowClobber -Confirm:$false -ErrorAction Stop
-        }
-        Import-Module -Name $_ -Verbose:$false -Force -ErrorAction Stop
-    }
 } -description 'Initialize build environment'
 
 task Test -Depends Init, Analyze, Pester -description 'Run test suite'
@@ -213,6 +211,10 @@ task Compile -depends Clean {
     Copy-Item -Path (Join-Path -Path $sut -ChildPath 'Plugins') -Destination $outputModVerDir -Recurse
     Copy-Item -Path (Join-Path -Path $sut -ChildPath 'Task') -Destination $outputModVerDir -Recurse
 
+    # Fix case of PSM1 and PSD1
+    Rename-Item -Path $outputModVerDir/poshbot.psd1 -NewName PoshBot.psd1 -ErrorAction Ignore
+    Rename-Item -Path $outputModVerDir/poshbot.psm1 -NewName PoshBot.psm1 -ErrorAction Ignore
+
     "    Created compiled module at [$modDir]"
 } -description 'Compiles module from source'
 
@@ -222,24 +224,37 @@ task Build -depends Compile, CreateMarkdownHelp, CreateExternalHelp {
     "    Module XML help created at [$helpXml]"
 }
 
-task Build-Docker -depends Test {
+task Build-Docker {
+    $version = $manifest.ModuleVersion.ToString()
     Push-Location
     Set-Location -Path $projectRoot
-    $version = $manifest.ModuleVersion.ToString()
-    exec {
-        & docker build -t poshbotio/poshbot-nano-slack:latest -t poshbotio/poshbot-nano-slack:$version --label version=$version .
+    $dockerImages | Foreach-Object {
+        $dockerFilePath = Join-Path $projectRoot -ChildPath 'docker' -AdditionalChildPath @($_, 'Dockerfile')
+        $tag = "$_-$version"
+        $imageName = "poshbotio/poshbot`:$tag"
+        "Building docker image: $imageName"
+        exec {
+            & docker build -t $imageName --label version=$version -f $dockerFilePath .
+        }
     }
     Pop-Location
 } -description 'Create Docker container'
 
 task Publish-Docker -depends Build-Docker {
-    "    Publishing Docker image [$($manifest.ModuleVersion)] to Docker Hub..."
     $version = $manifest.ModuleVersion.ToString()
     exec {
         docker login
     }
-    exec {
-        docker push poshbotio/poshbot-nano-slack:latest
-        docker push poshbotio/poshbot-nano-slack:$version
+
+    $dockerImages | Foreach-Object {
+        $tag = "$_-$version"
+        $imageName = "poshbotio/poshbot`:$tag"
+        "Publishing docker image: $imageName"
+        exec {
+            docker push $imageName
+        }
     }
+
+    # docker push poshbotio/poshbot-nano-slack:latest
+    # docker push poshbotio/poshbot-nano-slack:$version
 }

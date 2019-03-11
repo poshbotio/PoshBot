@@ -62,7 +62,7 @@ class SlackConnection : Connection {
             until ($task.IsCompleted)
 
             # Receive messages and put on output stream so the backend can read them
-            $buffer = (New-Object System.Byte[] 4096)
+            [ArraySegment[byte]]$buffer = [byte[]]::new(4096)
             $ct = New-Object System.Threading.CancellationToken
             $taskResult = $null
             while ($webSocket.State -eq [System.Net.WebSockets.WebSocketState]::Open) {
@@ -100,7 +100,7 @@ class SlackConnection : Connection {
     }
 
     # Read all available data from the job
-    [string]ReadReceiveJob() {
+    [string[]]ReadReceiveJob() {
         # Read stream info from the job so we can log them
         $infoStream = $this.ReceiveJob.ChildJobs[0].Information.ReadAll()
         $warningStream = $this.ReceiveJob.ChildJobs[0].Warning.ReadAll()
@@ -131,7 +131,8 @@ class SlackConnection : Connection {
         }
 
         if ($this.ReceiveJob.HasMoreData) {
-            return $this.ReceiveJob.ChildJobs[0].Output.ReadAll()
+            [string[]]$jobResult = $this.ReceiveJob.ChildJobs[0].Output.ReadAll()
+            return $jobResult
         } else {
             return $null
         }

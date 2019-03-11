@@ -132,7 +132,7 @@ function Get-CommandHelp {
             }
             if ($HelpParams.Keys.Count -gt 0) {
                 $fullVersionName = "$($result.FullCommandName)`:$($result.Version)"
-                $manString = Get-Help $Bot.PluginManager.Commands[$fullVersionName].ModuleCommand @HelpParams | Out-String
+                $manString = Get-Help $Bot.PluginManager.Commands[$fullVersionName].ModuleQualifiedCommand @HelpParams | Out-String
                 $result | Add-Member -MemberType NoteProperty -Name Manual -Value "`n$manString"
             }
             $respParams.Text = ($result | Format-List | Out-String -Width 150).Trim()

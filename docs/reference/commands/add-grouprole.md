@@ -23,7 +23,7 @@ Add-GroupRole -Bot <Object> [-Group] <String> [-Role] <String> [<CommonParameter
 
 ### EXAMPLE 1
 ```
-!remove-grouprole --group servicedesk --role itsm-modify
+!add-grouprole -group servicedesk -role itsm-modify
 ```
 
 ## PARAMETERS

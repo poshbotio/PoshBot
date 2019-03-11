@@ -222,6 +222,14 @@ class Bot : BaseLogger {
                 return
             }
 
+            # HTML decode message text
+            # This will ensure characters like '&' that MAY have
+            # been encoded as &amp; on their way in get translated
+            # back to the original
+            if (-not [string]::IsNullOrEmpty($msg.Text)) {
+                $msg.Text = [System.Net.WebUtility]::HtmlDecode($msg.Text)
+            }
+
             # Execute PreReceive middleware hooks
             $cmdExecContext = [CommandExecutionContext]::new()
             $cmdExecContext.Started = (Get-Date).ToUniversalTime()
@@ -288,9 +296,10 @@ class Bot : BaseLogger {
 
     # Determine if message text is addressing the bot and should be
     # treated as a bot command
-    [bool]IsBotCommand([Message]$Message) {
-        $firstWord = ($Message.Text -split ' ')[0]
+     [bool]IsBotCommand([Message]$Message) {
+        $firstWord = ($Message.Text -split ' ')[0].Trim()
         foreach ($prefix in $this._PossibleCommandPrefixes ) {
+            $prefix = [regex]::Escape($prefix)
             if ($firstWord -match "^$prefix") {
                 $this.LogDebug('Message is a bot command')
                 return $true
@@ -515,11 +524,10 @@ class Bot : BaseLogger {
     # as we won't need them anymore.
     [Message]TrimPrefix([Message]$Message) {
         if (-not [string]::IsNullOrEmpty($Message.Text)) {
-            $Message.Text = $Message.Text.Trim()
-            $firstWord = ($Message.Text -split ' ')[0]
-
+            $firstWord = ($Message.Text -split ' ')[0].Trim()
             foreach ($prefix in $this._PossibleCommandPrefixes) {
-                if ($firstWord -match "^$prefix") {
+                $prefixEscaped = [regex]::Escape($prefix)
+                if ($firstWord -match "^$prefixEscaped") {
                     $Message.Text = $Message.Text.TrimStart($prefix).Trim()
                 }
             }

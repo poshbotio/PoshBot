@@ -47,4 +47,6 @@ PoshBot is a MIT-licensed open source project. Ongoing development is made possi
 
 <!--10 start-->
 <h2 align="center">Backers via Patreon</h2>
+
+- Alexander May
 <!--10 end-->

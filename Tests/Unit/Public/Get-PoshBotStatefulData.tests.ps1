@@ -5,12 +5,16 @@ InModuleScope PoshBot {
             $PSDefaultParameterValues = @{
                 'Get-PoshBotStatefulData:Verbose' = $false
             }
+
+            # Define internal variables
+            $global:PoshBotContext = [pscustomobject]@{
+                Plugin                 = 'TestPlugin'
+                ConfigurationDirectory = (Join-Path $env:BHProjectPath Tests)
+            }
         }
 
-        # Define internal variables
-        $poshbotcontext = [pscustomobject]@{
-            Plugin = 'TestPlugin'
-            ConfigurationDirectory = (Join-Path $env:BHProjectPath Tests)
+        AfterAll {
+            Remove-Variable -Name PoshBotContext -Scope Global -Force
         }
 
         it 'Returns nothing if no file exists' {
@@ -19,8 +23,8 @@ InModuleScope PoshBot {
         }
 
         # Create stateful files
-        $globalfile = Join-Path $poshbotcontext.ConfigurationDirectory "PoshbotGlobal.state"
-        $modulefile = Join-Path $poshbotcontext.ConfigurationDirectory "$($poshbotcontext.Plugin).state"
+        $globalfile = Join-Path $global:PoshBotContext.ConfigurationDirectory 'PoshbotGlobal.state'
+        $modulefile = Join-Path $global:PoshBotContext.ConfigurationDirectory "$($poshbotcontext.Plugin).state"
         [pscustomobject]@{
             a = 'g'
             b = $true

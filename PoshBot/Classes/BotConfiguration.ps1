@@ -104,7 +104,7 @@ class BotConfiguration {
                 $bc.AddCommandReactions              = $hash.AddCommandReactions
                 $bc.DisallowDMs                      = $hash.DisallowDMs
                 $bc.FormatEnumerationLimitOverride   = $hash.FormatEnumerationLimitOverride
-                $bc.ChannelRules                     = [ChannelRule]::Serialize($hash.ChannelRules)
+                $bc.ChannelRules                     = $hash.ChannelRules.ForEach({[ChannelRule]::Serialize($_)})
                 $bc.ApprovalConfiguration            = [ApprovalConfiguration]::Serialize($hash.ApprovalConfiguration)
                 $bc.MiddlewareConfiguration          = [MiddlewareConfiguration]::Serialize($hash.MiddlewareConfiguration)
             } else {
@@ -140,7 +140,7 @@ class BotConfiguration {
         $bc.AddCommandReactions              = $DeserializedObject.AddCommandReactions
         $bc.DisallowDMs                      = $DeserializedObject.DisallowDMs
         $bc.FormatEnumerationLimitOverride   = $DeserializedObject.FormatEnumerationLimitOverride
-        $bc.ChannelRules                     = [ChannelRule]::Serialize($DeserializedObject.ChannelRules)
+        $bc.ChannelRules                     = $DeserializedObject.ChannelRules.Foreach({[ChannelRule]::Serialize($_)})
         $bc.ApprovalConfiguration            = [ApprovalConfiguration]::Serialize($DeserializedObject.ApprovalConfiguration)
         $bc.MiddlewareConfiguration          = [MiddlewareConfiguration]::Serialize($DeserializedObject.MiddlewareConfiguration)
 

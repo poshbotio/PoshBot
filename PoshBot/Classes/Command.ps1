@@ -50,7 +50,7 @@ class Command : BaseLogger {
     [bool]$AsJob = $true
 
     # Fully qualified name of a cmdlet or function in a module to execute
-    [string]$ModuleCommand
+    [string]$ModuleQualifiedCommand
 
     [string]$ManifestPath
 
@@ -77,9 +77,10 @@ class Command : BaseLogger {
                 [hashtable]$Options
             )
 
+            Import-Module -Name $Options.PoshBotManifestPath -Force -Verbose:$false -WarningAction SilentlyContinue -ErrorAction Stop
+
             Import-Module -Name $Options.ManifestPath -Scope Local -Force -Verbose:$false -WarningAction SilentlyContinue
 
-            $cmd = $Options.Function
             $namedParameters = $Options.NamedParameters
             $positionalParameters = $Options.PositionalParameters
 
@@ -99,7 +100,7 @@ class Command : BaseLogger {
                 BackendType = $options.BackendType
             }
 
-            & $cmd @namedParameters @positionalParameters
+            & $Options.ModuleQualifiedCommand @namedParameters @positionalParameters
         }
 
         [string]$sb = [string]::Empty
@@ -110,13 +111,13 @@ class Command : BaseLogger {
             OriginalMessage = $ParsedCommand.OriginalMessage.ToHash()
             ConfigurationDirectory = $script:ConfigurationDirectory
             BackendType = $Backend
+            PoshBotManifestPath = (Join-Path -Path $script:moduleBase -ChildPath "PoshBot.psd1")
+            ModuleQualifiedCommand = $this.ModuleQualifiedCommand
         }
         if ($this.FunctionInfo) {
             $options.Function = $this.FunctionInfo
-            $fqCommand = "$($this.FunctionInfo.Module.name)\$($this.FunctionInfo.name)"
         } elseIf ($this.CmdletInfo) {
             $options.Function = $this.CmdletInfo
-            $fqCommand = "$($this.CmdletInfo.Module.name)\$($this.CmdletInfo.name)"
         }
 
         # Add named/positional parameters
@@ -124,7 +125,7 @@ class Command : BaseLogger {
         $options.PositionalParameters = $ParsedCommand.PositionalParameters
 
         if ($InvokeAsJob) {
-            $this.LogDebug("Executing command [$fqCommand] as job")
+            $this.LogDebug("Executing command [$($this.ModuleQualifiedCommand)] as job")
             $fdt = Get-Date -Format FileDateTimeUniversal
             $jobName = "$($this.Name)_$fdt"
             $jobParams = @{
@@ -134,7 +135,7 @@ class Command : BaseLogger {
             }
             return (Start-Job @jobParams)
         } else {
-            $this.LogDebug("Executing command [$fqCommand] in current PS session")
+            $this.LogDebug("Executing command [$($this.ModuleQualifiedCommand)] in current PS session")
             $errors = $null
             $information = $null
             $warning = $null

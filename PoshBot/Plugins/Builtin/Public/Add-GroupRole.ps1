@@ -8,7 +8,7 @@ function Add-GroupRole {
     .PARAMETER Role
         The name of the role to add to a group.
     .EXAMPLE
-        !remove-grouprole --group servicedesk --role itsm-modify
+        !add-grouprole -group servicedesk -role itsm-modify
     #>
     [PoshBot.BotCommand(
         Permissions = 'manage-groups'

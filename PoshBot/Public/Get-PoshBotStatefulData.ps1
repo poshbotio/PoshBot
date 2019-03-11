@@ -13,7 +13,7 @@ function Get-PoshBotStatefulData {
         If specified, return only the value of the specified property Name
     .PARAMETER Scope
         Get stateful data from this scope:
-            Module: Data scoped to this plugin 
+            Module: Data scoped to this plugin
             Global: Data available to any Poshbot plugin
     .EXAMPLE
         $ModuleData = Get-PoshBotStatefulData
@@ -41,11 +41,11 @@ function Get-PoshBotStatefulData {
     )
     process {
         if($Scope -eq 'Module') {
-            $FileName = "$($PoshBotContext.Plugin).state"
+            $FileName = "$($global:PoshBotContext.Plugin).state"
         } else {
             $FileName = "PoshbotGlobal.state"
         }
-        $Path = Join-Path $PoshBotContext.ConfigurationDirectory $FileName
+        $Path = Join-Path $global:PoshBotContext.ConfigurationDirectory $FileName
 
         if(-not (Test-Path $Path)) {
             Write-Verbose "Requested stateful data file not found: [$Path]"

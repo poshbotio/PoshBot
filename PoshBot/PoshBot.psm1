@@ -7,12 +7,15 @@ $script:pathSeperator = [IO.Path]::PathSeparator
 $script:moduleBase = $PSScriptRoot
 
 if (($null -eq $IsWindows) -or $IsWindows) {
-    $script:defaultPoshBotDir = (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot')
-    Add-Type -Path "$script:moduleBase/lib/windows/netstandard.dll"
+    $homeDir = $env:USERPROFILE
 } else {
-    $script:defaultPoshBotDir = (Join-Path -Path $env:HOME -ChildPath '.poshbot')
+    $homeDir = $env:HOME
 }
+$script:defaultPoshBotDir = (Join-Path -Path $homeDir -ChildPath '.poshbot')
 
 $PSDefaultParameterValues = @{
     'ConvertTo-Json:Verbose' = $false
 }
+
+# Enforce TLS 1.2
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12

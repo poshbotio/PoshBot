@@ -6,6 +6,69 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.11.4] 2019-01-17
+
+### Fixed
+
+- [**#138**](https://github.com/poshbotio/PoshBot/issues/138) Enforce TLS 1.2
+- [**#134**](https://github.com/poshbotio/PoshBot/pull/134) Fix missing messages in Slack backend (via [@Pilosite](https://github.com/Pilosite))
+- [**#133**](https://github.com/poshbotio/PoshBot/issues/133) Fix references to middleware hooks when converting to/from hashtable
+
+## [0.11.3] 2018-11-06
+
+### Changes
+
+- Reference `$global:PoshBotContext` instead of `PoshBotContext` so it's clear what variable we're using.
+
+### Fixed
+
+- [**#129**](https://github.com/poshbotio/PoshBot/pull/129) To avoid serialization issues when executing a command in the PS job, use the module-qualified command name instead of the function/cmdlet object returned from Get-Command. (via [@Tadas](https://github.com/Tadas))
+
+- [**#132**](https://github.com/poshbotio/PoshBot/pull/132) By default, the `ChannelRules` property of the `[BotConfiguration]` object has a single rule that allows all commands in all channels.
+This is so that when creating a new configuration object with `New-PoshBotConfiguration` and specifying no addition parameters, we have a working configuration.
+When creating a new bot configuration object AND passing it one or more channels rules, we should zero out the array as it is implied by passing in channel rules that the rules should be exactly what was passed in and not IN ADDITION to the default one. (via [@DWOF](https://github.com/DWOF))
+
+## [0.11.2] 2018-10-11
+
+### Added
+
+- Specifying the contents of a file to upload, as well as its file name and type are now supported in `New-PoshBotFileUpload`.
+  This is in addition to the already supported feature of specifying a file path.
+
+### Changes
+
+- [**#122**](https://github.com/poshbotio/PoshBot/pull/122) Enable running multiple versions of PoshBot side-by-side. When PoshBot needs to load itself (via running PoshBot as a job, a scheduled task, or a plugin command), it now loads the exact version of PoshBot that is currently running instead of loading the latest version that happens to be in `$env:PSModulePath`. This enables multiple versions of PoshBot to be running and be self-contained. (via [@Tadas](https://github.com/Tadas))
+
+### Fixed
+
+- When starting PoshBot using `Start-PoshBot -AsJob`, determine the correct backend instance to create by validating the passed in configuration against the names `Slack`, `SlackBackend`, `Teams`, and `TeamsBackend`.
+
+- ChannelRules in the bot configuration were not being serialized correctly if more than one hashtable entry was present.
+
+- Match documentation and check for `SlackBackend` or `TeamsBackend` backend names when starting PoshBot as a PowerShell job.
+
+- [**#111**](https://github.com/poshbotio/PoshBot/pull/111) Use CommandParser to strip out extra line breaks from a message received from Teams (via [@AndrewPla](https://github.com/AndrewPla))
+
+- Resolve ambiguous method signature error in Slack backend by using an `[ArraySegment[byte[]]` buffer in the `System.Net.WebSockets.ClientWebSocket.ReceiveAsync()` method.
+
+- [**#125**](https://github.com/poshbotio/PoshBot/pull/125) Escape prefix character when evaluating messages.
+  Any single character can be defined as the prefix character (default is "!") that indicates to PoshBot that the incoming message is a bot command. Some of these characters are also regex special characters and we need to escape them properly so when people indicate they want to use the '.' or '^' characters for example, they are treated a literal. (via [@Windos](https://github.com/Windos))
+
+- Fix bot crash when removing a scheduled command that was configured to only trigger once.
+
+- [**#121**](https://github.com/poshbotio/PoshBot/pull/121) Prevent multiple executions of commands scheduled in the past. This fixes an issue where if the StartAfter value of a scheduled command was in the past, on bot startup the scheduled command would be executed however many intervals difference there was between the StartAfter value and the current time. (via [@AngleOSaxon](https://github.com/AngleOSaxon))
+
+- HTML decode the message text received from the backend. This ensures characters like '&' are converted back from their encoded version '\&amp;' that may have been received.
+
+## [0.11.1] 2018-10-01
+
+### Fixed
+
+- Remove obsolete DLLs associated with the Teams backend and Azure Service Bus. These DLLs are not needed and attempting to load them was causing issues in Windows PowerShell.
+
+- [**#118**](https://github.com/poshbotio/PoshBot/pull/118) Force module import to pick up changes.
+  When importing a plugin, Use "Import-Module -Force" to make PowerShell re-import the module even if it is already loaded and the version has not changed. This fixes an issue during plugin development where functions are added or modified without bumping the version number. (via [@Tadas](https://github.com/Tadas))
+
 ## [0.11.0] 2018-09-09
 
 ### Added
