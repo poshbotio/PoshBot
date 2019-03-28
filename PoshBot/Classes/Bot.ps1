@@ -299,14 +299,15 @@ class Bot : BaseLogger {
      [bool]IsBotCommand([Message]$Message) {
         $firstWord = ($Message.Text -split ' ')[0].Trim()
         foreach ($prefix in $this._PossibleCommandPrefixes ) {
+            if($prefix -ne '*'){
             $prefix = [regex]::Escape($prefix)
+            }
             if ($firstWord -match "^$prefix") {
                 $this.LogDebug('Message is a bot command')
                 return $true
             }
         }
         return $false
-    }
 
     # Pull message(s) off queue and pass to handler
     [void]ProcessMessageQueue() {
@@ -526,7 +527,11 @@ class Bot : BaseLogger {
         if (-not [string]::IsNullOrEmpty($Message.Text)) {
             $firstWord = ($Message.Text -split ' ')[0].Trim()
             foreach ($prefix in $this._PossibleCommandPrefixes) {
-                $prefixEscaped = [regex]::Escape($prefix)
+                If($prefix -ne '*'){
+                    $prefixEscaped = [regex]::Escape($prefix)
+                }Else{
+                    $prefixEscaped = $prefix
+                }
                 if ($firstWord -match "^$prefixEscaped") {
                     $Message.Text = $Message.Text.TrimStart($prefix).Trim()
                 }
