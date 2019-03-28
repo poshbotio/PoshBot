@@ -73,7 +73,7 @@ class TeamsBackend : Backend {
                             # This will show up in the text of the message received. We don't need it
                             # so strip it out.
                             if ($teamsMessage.text)    {
-                                $msg.Text = $teamsMessage.text.Replace("<at>$($this.Connection.Config.BotName)</at> ", '')
+                                $msg.Text = $teamsMessage.text.Replace("<at>$($this.Connection.Config.BotName)</at> ", '').Replace('\?\?$','')
                             }
 
                             if ($teamsMessage.from) {
