@@ -308,7 +308,7 @@ class Bot : BaseLogger {
             }
         }
         return $false
-
+    }
     # Pull message(s) off queue and pass to handler
     [void]ProcessMessageQueue() {
         while ($this.MessageQueue.Count -ne 0) {
