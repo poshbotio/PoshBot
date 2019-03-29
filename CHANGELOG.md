@@ -6,6 +6,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.11.6] Unreleased
+
+### Fixed
+
+- Strip extra newlines (\n) from messages received from Teams backend.
+
 ## [0.11.5] 2019-02-27
 
 ### Fixed
