@@ -299,7 +299,14 @@ class Bot : BaseLogger {
      [bool]IsBotCommand([Message]$Message) {
         $firstWord = ($Message.Text -split ' ')[0].Trim()
         foreach ($prefix in $this._PossibleCommandPrefixes ) {
-            $prefix = [regex]::Escape($prefix)
+            # If we've elected for a $null prefix, don't escape it
+            # as [regex]::Escape() converts null chars into a space (' ')
+            if ([char]$null -eq $prefix) {
+                $prefix = ''
+            } else {
+                $prefix = [regex]::Escape($prefix)
+            }
+
             if ($firstWord -match "^$prefix") {
                 $this.LogDebug('Message is a bot command')
                 return $true

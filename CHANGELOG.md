@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Strip extra newlines (\n) from messages received from Teams backend.
+- Allow a `$null` command prefix. This is useful in backends like Teams that require you to @mention the bot (e.g. `@poshbot !status`).
+  This change removes the need for a command prefix as you are already specifying a bot command by @mentioning it.
+  The following syntax is now possible: `@poshbot status`
 
 ## [0.11.5] 2019-02-27
 
