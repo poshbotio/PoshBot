@@ -6,7 +6,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.11.6] Unreleased
+## [0.11.6] 2019-04-02
+
+### Added
+
+- [**#161**](https://github.com/poshbotio/PoshBot/pull/161) In Teams, send a `typing...` indicator when in private conversations with the bot.
+  This mimics the behavior in Slack when it adds a `gear` icon to the message to
+  indicate the bot has received the command and is processing it.
+  Currently Teams only supports this functionality in private conversations with the bot. (via [@AndrewPla](https://github.com/AndrewPla))
 
 ### Fixed
 
