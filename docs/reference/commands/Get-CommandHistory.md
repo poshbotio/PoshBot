@@ -28,7 +28,7 @@ Get-CommandHistory -Bot <Object> [[-Id] <String>] [[-Count] <Int32>] [<CommonPar
 ```
 
 ## DESCRIPTION
-{{Fill in the Description}}
+{{ Fill in the Description }}
 
 ## EXAMPLES
 
@@ -56,7 +56,7 @@ Get details about command exeuction Id \[5d337f17-bdc7-4f51-af0f-2629ac8224ce\].
 ## PARAMETERS
 
 ### -Bot
-{{Fill Bot Description}}
+{{ Fill Bot Description }}
 
 ```yaml
 Type: Object
@@ -116,8 +116,7 @@ Accept wildcard characters: False
 ```
 
 ### CommonParameters
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable.
-For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 

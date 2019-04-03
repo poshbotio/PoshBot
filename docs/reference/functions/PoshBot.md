@@ -1,64 +1,64 @@
 ---
 Module Name: poshbot
 Module Guid: 7bfb126c-b432-4921-989a-9802f525693f
-Download Help Link: {{Please enter FwLink manually}}
-Help Version: {{Please enter version of help manually (X.X.X.X) format}}
+Download Help Link: {{ Update Download Link }}
+Help Version: {{ Please enter version of help manually (X.X.X.X) format }}
 Locale: en-US
 ---
 
 # poshbot Module
 ## Description
-{{Manually Enter Description Here}}
+{{ Fill in the Description }}
 
 ## poshbot Cmdlets
 ### [Get-PoshBot](Get-PoshBot.md)
-{{Manually Enter Get-PoshBot Description Here}}
+{{ Fill in the Description }}
 
 ### [Get-PoshBotConfiguration](Get-PoshBotConfiguration.md)
-{{Manually Enter Get-PoshBotConfiguration Description Here}}
+{{ Fill in the Description }}
 
 ### [Get-PoshBotStatefulData](Get-PoshBotStatefulData.md)
-{{Manually Enter Get-PoshBotStatefulData Description Here}}
+{{ Fill in the Description }}
 
 ### [New-PoshBotCardResponse](New-PoshBotCardResponse.md)
-{{Manually Enter New-PoshBotCardResponse Description Here}}
+{{ Fill in the Description }}
 
 ### [New-PoshBotConfiguration](New-PoshBotConfiguration.md)
-{{Manually Enter New-PoshBotConfiguration Description Here}}
+{{ Fill in the Description }}
 
 ### [New-PoshBotFileUpload](New-PoshBotFileUpload.md)
-{{Manually Enter New-PoshBotFileUpload Description Here}}
+{{ Fill in the Description }}
 
 ### [New-PoshBotInstance](New-PoshBotInstance.md)
-{{Manually Enter New-PoshBotInstance Description Here}}
+{{ Fill in the Description }}
 
 ### [New-PoshBotMiddlewareHook](New-PoshBotMiddlewareHook.md)
-{{Manually Enter New-PoshBotMiddlewareHook Description Here}}
+{{ Fill in the Description }}
 
 ### [New-PoshBotScheduledTask](New-PoshBotScheduledTask.md)
-{{Manually Enter New-PoshBotScheduledTask Description Here}}
+{{ Fill in the Description }}
 
 ### [New-PoshBotSlackBackend](New-PoshBotSlackBackend.md)
-{{Manually Enter New-PoshBotSlackBackend Description Here}}
+{{ Fill in the Description }}
 
 ### [New-PoshBotTeamsBackend](New-PoshBotTeamsBackend.md)
-{{Manually Enter New-PoshBotTeamsBackend Description Here}}
+{{ Fill in the Description }}
 
 ### [New-PoshBotTextResponse](New-PoshBotTextResponse.md)
-{{Manually Enter New-PoshBotTextResponse Description Here}}
+{{ Fill in the Description }}
 
 ### [Remove-PoshBotStatefulData](Remove-PoshBotStatefulData.md)
-{{Manually Enter Remove-PoshBotStatefulData Description Here}}
+{{ Fill in the Description }}
 
 ### [Save-PoshBotConfiguration](Save-PoshBotConfiguration.md)
-{{Manually Enter Save-PoshBotConfiguration Description Here}}
+{{ Fill in the Description }}
 
 ### [Set-PoshBotStatefulData](Set-PoshBotStatefulData.md)
-{{Manually Enter Set-PoshBotStatefulData Description Here}}
+{{ Fill in the Description }}
 
 ### [Start-PoshBot](Start-PoshBot.md)
-{{Manually Enter Start-PoshBot Description Here}}
+{{ Fill in the Description }}
 
 ### [Stop-Poshbot](Stop-Poshbot.md)
-{{Manually Enter Stop-Poshbot Description Here}}
+{{ Fill in the Description }}
 
