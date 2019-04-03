@@ -463,8 +463,72 @@ class TeamsBackend : Backend {
     }
 
     # Add a reaction to an existing chat message
+    # Currently only supports sending a 'typing' indicator to DMConverations
     [void]AddReaction([Message]$Message, [ReactionType]$Type, [string]$Reaction) {
-        # NOT IMPLEMENTED YET
+
+        $baseUrl = $Message.RawMessage.serviceUrl
+        $fromId = $Message.rawmessage.from.id
+        $fromName = $Message.RawMessage.from.name
+        $recipientId = $Message.RawMessage.recipient.id
+        $recipientName = $Message.RawMessage.recipient.name
+        $conversationId = $Message.RawMessage.conversation.id
+        $activityId = $Message.RawMessage.id
+        $responseUrl = "$($baseUrl)v3/conversations/$conversationId/activities/$activityId"
+        $channelId = $Message.RawMessage.channelData.teamsChannelId
+
+        $headers = @{
+            Authorization = "Bearer $($this.Connection._AccessTokenInfo.access_token)"
+        }
+
+        $conversationType = $Message.RawMessage.Conversation.ConversationType
+        $isGroup = $Message.RawMessage.Conversation.isGroup
+
+
+        # Currently only DMs work, but the documentation doesn't indicate that
+        if ($Message.isDM) {
+            $conversationId = $this._CreateDMConversation($fromId)
+            $activityId = $conversationId
+            $responseUrl = "$($baseUrl)v3/conversations/$conversationId/activities/"
+        }
+
+        if ($Type -eq [ReactionType]::Processing) {
+
+            $cardBody = @{
+                type         = 'typing'
+                from         = @{
+                    id   = $fromId
+                    name = $fromName
+                }
+                conversation = @{
+                    id   = $conversationId
+                    name = ''
+                }
+                recipient    = @{
+                    id   = $recipientId
+                    name = $recipientName
+                }
+                replyToId    = $activityId
+                channelId    = $channelId
+            }
+
+            $body = $cardBody | ConvertTo-Json -Depth 15
+            Write-Verbose $body
+
+            $this.LogDebug("Sending typing indicator to Teams conversation [$conversationId]", $body)
+
+            try {
+                $responseParams = @{
+                    Uri         = $responseUrl
+                    Method      = 'Post'
+                    Body        = $body
+                    ContentType = 'application/json'
+                    Headers     = $headers
+                }
+                $teamsResponse = Invoke-RestMethod @responseParams
+            } catch {
+                $this.LogInfo([LogSeverity]::Error, "$($_.Exception.Message)", [ExceptionFormatter]::Summarize($_))
+            }
+        }
     }
 
     # Remove a reaction from an existing chat message
