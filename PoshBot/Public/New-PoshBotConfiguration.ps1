@@ -277,6 +277,7 @@ function New-PoshBotConfiguration {
         [MiddlewareHook[]]$PreReceiveMiddlewareHooks   = @(),
         [MiddlewareHook[]]$PostReceiveMiddlewareHooks  = @(),
         [MiddlewareHook[]]$PreExecuteMiddlewareHooks   = @(),
+        [MiddlewareHook[]]$PostExecuteMiddlewareHooks  = @(),
         [MiddlewareHook[]]$PreResponseMiddlewareHooks  = @(),
         [MiddlewareHook[]]$PostResponseMiddlewareHooks = @()
     )

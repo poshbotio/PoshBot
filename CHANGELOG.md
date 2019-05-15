@@ -6,6 +6,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.11.7] Unreleased
+
+### Fixed
+
+- Added missing parameter `$PreExecuteMiddlewareHooks` to `New-PoshBotConfiguration`
+
 ## [0.11.6] 2019-04-02
 
 ### Added
