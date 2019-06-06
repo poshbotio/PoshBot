@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Added missing parameter `$PreExecuteMiddlewareHooks` to `New-PoshBotConfiguration`
 
+### Changed
+
+- Pinned modules `Configuration` to `1.3.1` and `PSSlack` to `1.0.0`
+
 ## [0.11.6] 2019-04-02
 
 ### Added

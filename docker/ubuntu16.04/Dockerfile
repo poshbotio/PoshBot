@@ -2,8 +2,8 @@
 FROM mcr.microsoft.com/powershell:ubuntu-16.04 as base
 SHELL ["pwsh", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 RUN Set-PSRepository -Name PSGallery -InstallationPolicy Trusted; \
-    Install-Module Configuration -RequiredVersion 1.3.1 -Repository PSGallery -Verbose:$false; \
-    Install-Module PSSlack -RequiredVersion 0.1.2 -Repository PSGallery -Verbose:$false;
+    Install-Module Configuration -RequiredVersion 1.3.1 -Repository PSGallery -Scope AllUsers -Verbose; \
+    Install-Module PSSlack -RequiredVersion 1.0.0 -Repository PSGallery -Scope AllUsers -Verbose;
 
 FROM base as src
 LABEL maintainer="devblackops"
@@ -13,5 +13,6 @@ COPY ["/out/poshbot", "/opt/microsoft/powershell/6/Modules/PoshBot/"]
 COPY ["/docker/docker_entrypoint.ps1", "/poshbot/docker_entrypoint.ps1"]
 WORKDIR /poshbot/
 VOLUME ["/poshbot_data"]
+VOLUME ["/root/.local/share/powershell/Modules"]
 SHELL ["pwsh", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 CMD ["pwsh", "docker_entrypoint.ps1"]
