@@ -47,6 +47,10 @@ class BotConfiguration {
 
     [int]$FormatEnumerationLimitOverride = -1
 
+    [bool]$NoPluginManagement = $false
+
+    [bool]$NoAccessManagement = $false
+
     [ChannelRule[]]$ChannelRules = @([ChannelRule]::new())
 
     [ApprovalConfiguration]$ApprovalConfiguration = [ApprovalConfiguration]::new()
@@ -104,6 +108,8 @@ class BotConfiguration {
                 $bc.AddCommandReactions              = $hash.AddCommandReactions
                 $bc.DisallowDMs                      = $hash.DisallowDMs
                 $bc.FormatEnumerationLimitOverride   = $hash.FormatEnumerationLimitOverride
+                $bc.NoPluginManagement               = $hash.NoPluginManagement
+                $bc.NoAccessManagement               = $hash.NoAccessManagement
                 $bc.ChannelRules                     = $hash.ChannelRules.ForEach({[ChannelRule]::Serialize($_)})
                 $bc.ApprovalConfiguration            = [ApprovalConfiguration]::Serialize($hash.ApprovalConfiguration)
                 $bc.MiddlewareConfiguration          = [MiddlewareConfiguration]::Serialize($hash.MiddlewareConfiguration)
@@ -140,6 +146,8 @@ class BotConfiguration {
         $bc.AddCommandReactions              = $DeserializedObject.AddCommandReactions
         $bc.DisallowDMs                      = $DeserializedObject.DisallowDMs
         $bc.FormatEnumerationLimitOverride   = $DeserializedObject.FormatEnumerationLimitOverride
+        $bc.NoAccessManagement               = $DeserializedObject.NoAccessManagement
+        $bc.NoPluginManagement               = $DeserializedObject.NoPluginManagement
         $bc.ChannelRules                     = $DeserializedObject.ChannelRules.Foreach({[ChannelRule]::Serialize($_)})
         $bc.ApprovalConfiguration            = [ApprovalConfiguration]::Serialize($DeserializedObject.ApprovalConfiguration)
         $bc.MiddlewareConfiguration          = [MiddlewareConfiguration]::Serialize($DeserializedObject.MiddlewareConfiguration)

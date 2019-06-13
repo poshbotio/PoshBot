@@ -179,6 +179,12 @@ function New-PoshBotConfiguration {
     .PARAMETER PostResponseMiddlewareHooks
         Array of middleware scriptblocks that will run after command responses have been sent to the backend implementation.
         This middleware runs after all processing is complete for a command and is a good spot for additional custom logging.
+    .PARAMETER NoPluginManagement
+        Disable plugin management from PoshBot itself
+        This ensures only the plugins configured at load time can run
+    .PARAMETER NoAccessManagement
+        Disable access management from PoshBot itself
+        This ensures only the RBAC configured at load time are in place
     .EXAMPLE
         PS C:\> New-PoshBotConfiguration -Name Cherry2000 -AlternateCommandPrefixes @('Cherry', 'Sam')
 
@@ -272,6 +278,8 @@ function New-PoshBotConfiguration {
         [int]$ApprovalExpireMinutes = 30,
         [switch]$DisallowDMs,
         [int]$FormatEnumerationLimitOverride = -1,
+        [bool]$NoPluginManagement = $false,
+        [bool]$NoAccessManagement = $false,
         [hashtable[]]$ApprovalCommandConfigurations = @(),
         [hashtable[]]$ChannelRules = @(),
         [MiddlewareHook[]]$PreReceiveMiddlewareHooks   = @(),
@@ -308,6 +316,8 @@ function New-PoshBotConfiguration {
     $config.ApprovalConfiguration.ExpireMinutes = $ApprovalExpireMinutes
     $config.DisallowDMs = ($DisallowDMs -eq $true)
     $config.FormatEnumerationLimitOverride = $FormatEnumerationLimitOverride
+    $config.NoPluginManagement = $NoPluginManagement
+    $config.NoAccessManagement = $NoAccessManagement
     if ($ChannelRules.Count -ge 1) {
         $config.ChannelRules = $null
         foreach ($item in $ChannelRules) {

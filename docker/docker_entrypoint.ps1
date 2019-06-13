@@ -130,6 +130,14 @@ $configurationSettings = @{
         EnvVariable  = 'POSHBOT_FORMAT_ENUMERATION_LIMIT'
         DefaultValue = -1
     }
+    NoPluginManagement = @{
+        EnvVariable  = 'POSHBOT_NO_PLUGIN_MANAGEMENT'
+        DefaultValue = -1
+    }
+    NoAccessManagement = @{
+        EnvVariable  = 'POSHBOT_NO_ACCESS_MANAGEMENT'
+        DefaultValue = -1
+    }
     ConfigDir = @{
         EnvVariable  = 'POSHBOT_CONF_DIR'
         DefaultValue = "$rootDrive/poshbot_data"
@@ -176,6 +184,8 @@ if (-not (Test-Path -Path $configPSD1)) {
         CommandHistoryMaxLogsToKeep      = $runtimeSettings.CommandHistoryMaxLogsToKeep
         BotAdmins                        = $runtimeSettings.BotAdmins
         CommandPrefix                    = $runtimeSettings.CommandPrefix
+        NoPluginManagement               = $runtimeSettings.NoPluginManagement
+        NoAccessManagement               = $runtimeSettings.NoAccessManagement
         AlternateCommandPrefixes         = $runtimeSettings.AlternateCommandPrefixes
         AlternateCommandPrefixSeperators = $runtimeSettings.AlternateCommandPrefixSeperators
         MuteUnknownCommand               = $runTimeSettings.MuteUnknownCommand
@@ -256,7 +266,8 @@ if (-not (Test-Path -Path $configPSD1)) {
     #$pbc.ModuleManifestsToLoad            = Get-FromEnv -Name 'POSHBOT_MANIFESTS_TO_LOAD'        -Default $pbc.ModuleManifestsToLoad
     $pbc.AlternateCommandPrefixSeperators = Get-FromEnv -Name 'POSHBOT_ALT_CMD_PREFIX_SEP'       -Default $pbc.AlternateCommandPrefixSeperators
     $pbc.SendCommandResponseToPrivate     = Get-FromEnv -Name 'POSHBOT_SEND_CMD_RESP_TO_PRIV'    -Default $pbc.SendCommandResponseToPrivate
-
+    $pbc.NoPluginManagement               = Get-FromEnv -Name 'POSHBOT_NO_PLUGIN_MANAGEMENT'     -Default $pbc.NoPluginManagement
+    $pbc.NoAccessManagement               = Get-FromEnv -Name 'POSHBOT_NO_ACCESS_MANAGEMENT'     -Default $pbc.NoAccessManagement
     $slackToken = Get-FromEnv -Name 'SLACK_TOKEN' -Default ''
     if (-not [string]::IsNullOrEmpty($slackToken)) {
         $pbc.BackendConfiguration = @{
