@@ -208,6 +208,20 @@ class SlackBackend : Backend {
                         continue
                     }
 
+                    # For issue https://github.com/poshbotio/PoshBot/issues/170
+                    # Also need to ignore Threaded Msgs,
+                    # As pointed out by @ramblingCookieMonster we should be able to detect a threaded msg from 'parent_user_id' property
+                    if($slackMessage.parent_user_id -and $slackMessage.parent_user_id.length -ge 1)
+                    {
+                        $this.LogDebug('Msg has [parent_user_id]. Threaded Message.')
+                        # If we change the slack message type to threaded message
+                        # Then it will _no longer exist_ in the messageTypes
+                        # And therefore should not be processed
+                        # And we get nice debugging message at the end
+                        $slackMessage.Type = 'ThreadedMessage'
+                        continue
+                    }
+
                     # We only care about certain message types from Slack
                     if ($slackMessage.Type -in $this.MessageTypes) {
                         $msg = [Message]::new()
@@ -341,7 +355,7 @@ class SlackBackend : Backend {
                     } else {
                         $this.LogDebug("Message type is [$($slackMessage.Type)]. Ignoring")
                     }
-                    
+
                 }
             }
         } catch {
