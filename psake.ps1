@@ -234,7 +234,7 @@ task Build-Docker {
         $imageName = "poshbotio/poshbot`:$tag"
         "Building docker image: $imageName"
         exec {
-            & docker build -t $imageName --label version=$version -f $dockerFilePath .
+            & docker build -t $imageName -t "poshbotio/poshbot:latest" --label version=$version -f $dockerFilePath .
         }
     }
     Pop-Location
@@ -252,6 +252,7 @@ task Publish-Docker -depends Build-Docker {
         "Publishing docker image: $imageName"
         exec {
             docker push $imageName
+            docker push "poshbotio/poshbot:latest"
         }
     }
 
