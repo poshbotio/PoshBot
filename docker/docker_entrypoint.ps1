@@ -130,10 +130,10 @@ $configurationSettings = @{
         EnvVariable  = 'POSHBOT_FORMAT_ENUMERATION_LIMIT'
         DefaultValue = -1
     }
-    ConfigDir = @{
-        EnvVariable  = 'POSHBOT_CONF_DIR'
-        DefaultValue = "$rootDrive/poshbot_data"
-    }
+    # ConfigDir = @{
+    #     EnvVariable  = 'POSHBOT_CONF_DIR'
+    #     DefaultValue = "$rootDrive/poshbot_data"
+    # }
     BackendType = @{
         EnvVariable  = 'POSHBOT_BACKEND'
         DefaultValue = 'SlackBackend'
@@ -145,6 +145,7 @@ Import-Module -Name PoshBot -ErrorAction Stop -Verbose:$false
 # Create runtime settings by attempting to retrieve values for
 # configuration settings from environment variables
 # Use default value if environment variable is not defined
+Write-Verbose 'Runtime settings:'
 $runTimeSettings = @{}
 $configurationSettings.GetEnumerator().ForEach({
     $runTimeSettings.($_.Name) = Get-FromEnv -Name $_.Value.EnvVariable -Default $_.Value.DefaultValue
@@ -233,22 +234,22 @@ if (-not (Test-Path -Path $configPSD1)) {
         }
     }
 
-    $pbc = New-PoshBotConfiguration @configParams -Verbose
+    $pbc = New-PoshBotConfiguration @configParams
     # if (-not (Test-Path -Path $runTimeSettings.ConfigDir)) {
     #     New-Item -Path $runTimeSettings.ConfigDir -ItemType Directory -Force > $null
     # }
-    # $config | Save-PoshBotConfiguration -Path $configPSD1 -Force -Verbose
+    #$config | Save-PoshBotConfiguration -Path $configPSD1 -Force
     # $pbc = Get-PoshBotConfiguration -Path $configPSD1 -Verbose
 } else {
     # There was a previous configuraiton
     # Merge any values from env vars into config
     $pbc = Get-PoshBotConfiguration -Path $configPSD1
     $pbc.Name                             = Get-FromEnv -Name 'POSHBOT_NAME'                     -Default $pbc.Name
-    $pbc.ConfigurationDirectory           = Get-FromEnv -Name 'POSHBOT_CONF_DIR'                 -Default $pbc.ConfigurationDirectory
+    $pbc.ConfigurationDirectory           = Get-FromEnv -Name 'POSHBOT_CONFIG_DIRECTORY'         -Default $pbc.ConfigurationDirectory
     $pbc.CommandPrefix                    = Get-FromEnv -Name 'POSHBOT_CMD_PREFIX'               -Default $pbc.CommandPrefix
     $pbc.PluginRepository                 = Get-FromEnv -Name 'POSHBOT_PLUGIN_REPOSITORIES'      -Default $pbc.PluginRepository
     $pbc.LogDirectory                     = Get-FromEnv -Name 'POSHBOT_LOG_DIR'                  -Default $pbc.LogDirectory
-    $pbc.BotAdmins                        = Get-FromEnv -Name 'BOT_ADMINS'                       -Default $pbc.BotAdmins
+    $pbc.BotAdmins                        = Get-FromEnv -Name 'POSHBOT_ADMINS'                   -Default $pbc.BotAdmins
     $pbc.LogLevel                         = Get-FromEnv -Name 'POSHBOT_LOG_LEVEL'                -Default $pbc.LogLevel
     $pbc.AlternateCommandPrefixes         = Get-FromEnv -Name 'POSHBOT_ALT_CMD_PREFIXES'         -Default $pbc.AlternateCommandPrefixes
     $pbc.PluginDirectory                  = Get-FromEnv -Name 'POSHBOT_PLUGIN_DIR'               -Default $pbc.PluginDirectory
@@ -257,13 +258,15 @@ if (-not (Test-Path -Path $configPSD1)) {
     $pbc.AlternateCommandPrefixSeperators = Get-FromEnv -Name 'POSHBOT_ALT_CMD_PREFIX_SEP'       -Default $pbc.AlternateCommandPrefixSeperators
     $pbc.SendCommandResponseToPrivate     = Get-FromEnv -Name 'POSHBOT_SEND_CMD_RESP_TO_PRIV'    -Default $pbc.SendCommandResponseToPrivate
 
-    $slackToken = Get-FromEnv -Name 'SLACK_TOKEN' -Default ''
+    $slackToken = Get-FromEnv -Name 'POSHBOT_SLACK_TOKEN' -Default ''
     if (-not [string]::IsNullOrEmpty($slackToken)) {
         $pbc.BackendConfiguration = @{
             Token = $slackToken
             Name  = 'SlackBackend'
         }
     }
+
+    #$pbc | Save-PoshBotConfiguration -Path $configPSD1 -Force
 }
 
 # Create backend based on configured backend type (Slack, Teams)
