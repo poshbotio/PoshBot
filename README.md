@@ -11,7 +11,7 @@
 PoshBot is a MIT-licensed open source project. Ongoing development is made possible thanks to the support of backers. If you'd like to become a backer or sponsor, you can do so on Patreon.
 
 <p align="center">
-    <a href="https://www.patreon.com/devblackops/memberships" target="_blank" title="Become a Patron">
+    <a href="https://www.patreon.com/bePatron?u=10352866" target="_blank" title="Become a Patron">
         <img style="height:35px" src="Media/become_a_patron_button.png" alt="Become a Patron">
     </a>
 </p>
