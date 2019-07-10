@@ -49,4 +49,7 @@ PoshBot is a MIT-licensed open source project. Ongoing development is made possi
 <h2 align="center">Backers via Patreon</h2>
 
 - Alexander May
+- [Chris Gardner](https://github.com/ChrisLGardner)
+- [Francois-Xavier Cat](https://github.com/lazywinadmin)
+- [Gary Ewan Park](https://github.com/gep13)
 <!--10 end-->
