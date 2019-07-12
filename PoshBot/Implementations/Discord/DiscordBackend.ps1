@@ -1,0 +1,862 @@
+
+enum DiscordMsgSendType {
+    WebRequest
+    RestMethod
+}
+
+class DiscordBackend : Backend {
+
+    [string]$BaseUrl = 'https://discordapp.com/api'
+
+    [string]$GuildId
+
+    hidden [hashtable]$_headers = @{}
+
+    hidden [datetime]$_lastTimeMessageSent = [datetime]::UtcNow
+
+    [string[]]$MessageTypes = @(
+        'CHANNEL_CREATE'
+        'CHANNEL_DELETE'
+        'CHANNEL_UPDATE'
+        'MESSAGE_CREATE'
+        'MESSAGE_DELETE'
+        'MESSAGE_UPDATE'
+        'MESSAGE_REACTION_ADD'
+        'MESSAGE_REACTION_REMOVE'
+        'PRESENSE_UPDATE'
+    )
+
+    # Plain text responses in Discord can only be 2000 characters
+    # We'll chunk up responses if they are bigger than this number
+    [int]$MaxMessageLength = 1800
+
+    DiscordBackend ([string]$Token, [string]$ClientId, [string]$GuildId) {
+        $config            = [ConnectionConfig]::new()
+        $secToken          = $Token | ConvertTo-SecureString -AsPlainText -Force
+        $config.Credential = New-Object System.Management.Automation.PSCredential($ClientId, $secToken)
+        $this.GuildId      = $GuildId
+        $conn              = [DiscordConnection]::New()
+        $conn.Config       = $config
+        $this.Connection   = $conn
+    }
+
+    # Connect to Discord
+    [void]Connect() {
+        $this.LogInfo('Connecting to backend')
+        $this.LogInfo('Listening for the following message types. All others will be ignored', $this.MessageTypes)
+        $this.Connection.Connect()
+        $this.BotId = $this.GetBotIdentity()
+        $this._headers = @{
+            Authorization  = "Bot $($this.Connection.Config.Credential.GetNetworkCredential().password)"
+            'User-Agent'   = 'PoshBot'
+            'Content-Type' = 'application/json'
+        }
+        $this.LoadUsers()
+        $this.LoadRooms()
+    }
+
+    # Receive a message from the connection
+    [Message[]]ReceiveMessage() {
+        $messages = [System.Collections.Generic.List[Message]]::new()
+
+        # Read the output stream from the receive job and get any messages since our last read
+        [string[]]$jsonResults = $this.Connection.ReadReceiveJob()
+        foreach ($jsonResult in $jsonResults) {
+            $this.LogDebug('Received message', $jsonResult)
+
+            # We only care about certain message types from Discord
+            $discordMsg = ConvertFrom-Json $jsonResult -Depth 10
+            if ($discordMsg.t -in $this.MessageTypes) {
+                $msg = [Message]::new()
+                $msg.Id = $discordMsg.d.id
+                switch ($discordMsg.t) {
+                    'CHANNEL_UPDATE' {
+                        $msg.Type = [MessageType]::ChannelRenamed
+                        break
+                    }
+                    'MESSAGE_CREATE' {
+                        $msg.Type = [MessageType]::Message
+                        break
+                    }
+                    'MESSAGE_DELETE' {
+                    }
+                    'MESSAGE_UPDATE' {
+                        $msg.Type = [MessageType]::Message
+                        break
+                    }
+                    'MESSAGE_REACTION_ADD' {
+                        $msg.Type = [MessageType]::ReactionAdded
+                        $msg.Id   = $discordMsg.message_id
+                        $msg.From = $discordMsg.d.user_id
+                        break
+                    }
+                    'MESSAGE_REACTION_REMOVE' {
+                        $msg.Type = [MessageType]::ReactionRemoved
+                        $msg.Id   = $discordMsg.message_id
+                        $msg.From = $discordMsg.d.user_id
+                        break
+                    }
+                    'PRESENSE_UPDATE' {
+                        $msg.Type = [MessageType]::PresenceChange
+                        break
+                    }
+                    default {
+                        $this.LogDebug("Unknown message type: [$($discordMsg.t)]")
+                    }
+                }
+                $this.LogDebug("Message type is [$($msg.Type)`:$($msg.Subtype)]")
+                $msg.RawMessage = $jsonResult
+                if ($discordMsg.d.content)    { $msg.Text = $discordMsg.d.content }
+                if ($discordMsg.d.channel_id) { $msg.To   = $discordMsg.d.channel_id }
+                if ($discordMsg.d.author.id)  { $msg.From = $discordMsg.d.author.id }
+
+                # Resolve From name
+                if ($msg.From) {
+                    if ($discordMsg.d.author.username) {
+                        $msg.FromName = $discordMsg.d.author.username
+                    } else {
+                        $msg.FromName = $this.UserIdToUsername($msg.From)
+                    }
+                }
+
+                # Resolve channel name
+                if ($msg.To) {
+                    $msg.ToName = $this.ChannelIdToName($msg.To)
+                }
+
+                # Mark as DM
+                if ($msg.To -match '^D') {
+                    $msg.IsDM = $true
+                }
+
+                # Get time of message
+                if ($discordMsg.d.timestamp) {
+                    $msg.Time = ([datetime]$discordMsg.d.timestamp).ToUniversalTime()
+                } else {
+                    $msg.Time = (Get-Date).ToUniversalTime()
+                }
+
+                # ** Important safety tip, don't cross the streams **
+                # Only return messages that didn't come from the bot
+                # else we'd cause a feedback loop with the bot processing
+                # it's own responses
+                if (-not $this.MsgFromBot($msg.From)) {
+                    $messages.Add($msg)
+                } else {
+                    $this.LogInfo('Message is from bot. Ignoring')
+                }
+            } else {
+                $this.LogDebug("Message type is [$($discordMsg.t)]. Ignoring")
+            }
+        }
+
+        return $messages
+    }
+
+    # Send a message back to Discord
+    [void]SendMessage([Response]$Response) {
+
+        $this.LogDebug("[$($Response.Data.Count)] custom responses")
+        foreach ($customResponse in $Response.Data) {
+            [string]$sendTo = $Response.To
+
+            # TODO Figure out DMs for Discord
+            # if ($customResponse.DM) {
+            #     $sendTo = "@$($this.UserIdToUsername($Response.MessageFrom))"
+            # }
+            switch -Regex ($customResponse.PSObject.TypeNames[0]) {
+                '(.*?)PoshBot\.Card\.Response' {
+                    $this.LogDebug('Custom response is [PoshBot.Card.Response]')
+                    $chunks = $this._ChunkString($customResponse.Text)
+
+                    $colorHex = $customResponse.Color.TrimStart('#')
+                    $colorInt = $this._ConvertColorCode($colorHex)
+
+                    $embed = @{}
+                    $firstChunk = $true
+                    foreach ($chunk in $chunks) {
+
+                        # Only send thse in the first chunk
+                        if ($firstChunk) {
+                            $embed['color'] = $colorInt
+
+                            if ($customResponse.Title -and $firstChunk) {
+                                $embed['title'] = $customResponse.Title
+                            }
+                            if ($customResponse.ImageUrl -and $firstChunk) {
+                                $embed['image'] = @{
+                                    url = $customResponse.ImageUrl
+                                }
+                            }
+                            if ($customResponse.ThumbnailUrl -and $firstChunk) {
+                                $embed['thumbnail'] = @{
+                                    url = $customResponse.ThumbnailUrl
+                                }
+                            }
+                            if ($customResponse.LinkUrl -and $firstChunk) {
+                                # TODO
+                                # Does Discord have a concept of a Title link like Slack?
+                            }
+
+
+                            if ($customResponse.Fields.Count -gt 0 -and $firstChunk) {
+                                $embed['fields'] = $customResponse.Fields.GetEnumerator().ForEach({
+                                    # HACK ALERT!!!
+                                    # Discord doesn't like field values that are empty strings or just whitespace.
+                                    # We still want the field to show up for the end user but also show that there isn't a value.
+                                    # We do what we gotta do. ¯\_(ツ)_/¯
+                                    $fixedValue = if ([string]::IsNullOrWhiteSpace($_.value)) {
+                                        '<no value>'
+                                    } else {
+                                        $_.value
+                                    }
+                                    @{
+                                        name   = $_.name
+                                        value  = $fixedValue
+                                        inline = $true
+                                    }
+                                })
+                            }
+
+
+                        }
+
+                        if (-not [string]::IsNullOrEmpty($chunk) -and $chunk -ne "`r`n") {
+                            $text = '```' + $chunk + '```'
+                            $embed['description'] = $text
+                        } else {
+                            #$text = [string]::Empty
+                        }
+
+                        $json = @{
+                            #content = $text
+                            tts     = $false
+                            embed   = $embed
+                        #} | ConvertTo-Json -Compress -Depth 20
+                        } | ConvertTo-Json -Depth 20
+                        Write-Host $json
+
+                        try {
+                            $this.LogDebug("Sending card response back to Discord channel [$sendTo]", $json)
+                            $msgPostUrl = '{0}/channels/{1}/messages' -f $this.baseUrl, $sendTo
+
+                            $discordResponse = $this._SendDiscordMsg(
+                                @{
+                                    Uri         = $msgPostUrl
+                                    Method      = 'Post'
+                                    Body        = $json
+                                    ContentType = 'application/json'
+                                    Headers     = $this._headers
+                                },
+                                [DiscordMsgSendType]::RestMethod
+                            )
+                            #$discordResponse = Invoke-RestMethod -Uri $msgPostUrl -Method Post -Body $json -ContentType 'application/json' -Headers $this._headers -Verbose:$false
+
+                            # Sleep between chunk sends to not be rate limited
+                            # if ($chunks.Count -gt 1) {
+                            #     Start-Sleep -Milliseconds 250
+                            # }
+                        } catch {
+                            $this.LogInfo([LogSeverity]::Error, 'Received error while sending response back to Discord', [ExceptionFormatter]::Summarize($_))
+                        }
+                        $firstChunk = $false
+                    }
+                    break
+                }
+                '(.*?)PoshBot\.Text\.Response' {
+                    $this.LogDebug('Custom response is [PoshBot.Text.Response]')
+                    $chunks = $this._ChunkString($customResponse.Text)
+                    foreach ($chunk in $chunks) {
+                        if ($customResponse.AsCode) {
+                            $text = '```' + $chunk + '```'
+                        } else {
+                            $text = $chunk
+                        }
+                        $this.LogDebug("Sending text response back to Discord channel [$sendTo]", $text)
+                        $json = @{
+                            content = $text
+                            tts     = $false
+                            embed   = @{}
+                        } | ConvertTo-Json
+                        $msgPostUrl = '{0}/channels/{1}/messages' -f $this.baseUrl, $sendTo
+                        try {
+                            $this._SendDiscordMsg(
+                                @{
+                                    Uri         = $msgPostUrl
+                                    Method      = 'Post'
+                                    Body        = $json
+                                    ContentType = 'application/json'
+                                    Headers     = $this._headers
+                                },
+                                [DiscordMsgSendType]::RestMethod
+                            )
+                            #$discordResponse = Invoke-RestMethod -Uri $msgPostUrl -Method Post -Body $json -ContentType 'application/json' -Headers $this._headers -Verbose:$false
+                        } catch {
+                            $this.LogInfo([LogSeverity]::Error, 'Received error while sending response back to Discord', [ExceptionFormatter]::Summarize($_))
+                        }
+
+                        # Sleep between chunk sends to not be rate limited
+                        # if ($chunks.Count -gt 1) {
+                        #     Start-Sleep -Milliseconds 250
+                        # }
+                    }
+                    break
+                }
+                '(.*?)PoshBot\.File\.Upload' {
+                    $this.LogDebug('Custom response is [PoshBot.File.Upload]')
+
+                    $msgPostUrl = '{0}/channels/{1}/messages' -f $this.baseUrl, $sendTo
+                    $form    = @{}
+                    $payload = @{
+                        tts = $false
+                    }
+                    if ([string]::IsNullOrEmpty($customResponse.Path) -and (-not [string]::IsNullOrEmpty($customResponse.Content))) {
+                        $payload['content'] = $customResponse.Content
+                    } else {
+                        # Test if file exists and send error response if not found
+                        if (-not (Test-Path -Path $customResponse.Path -ErrorAction SilentlyContinue)) {
+                            # Mark command as failed since we could't find the file to upload
+                            $this.RemoveReaction($Response.OriginalMessage, [ReactionType]::Success)
+                            $this.AddReaction($Response.OriginalMessage, [ReactionType]::Failure)
+                            $this.LogDebug([LogSeverity]::Error, "File [$($customResponse.Path)] does not exist.")
+
+                            # Send failure message
+                            $embed = @{
+                                color = $this._ConvertColorCode('#FF0000')
+                                title = 'Unknown File'
+                                description = "Could not access file [$($customResponse.Path)]"
+                            }
+                            $json = @{
+                                #content = $text
+                                tts     = $false
+                                embed   = $embed
+                            } | ConvertTo-Json -Compress -Depth 20
+                            $this.LogDebug("Sending card response back to Discord channel [$sendTo]", $json)
+                            $discordResponse = $this._SendDiscordMsg(
+                                @{
+                                    Uri         = $msgPostUrl
+                                    Method      = 'Post'
+                                    Body        = $json
+                                    ContentType = 'application/json'
+                                    Headers     = $this._headers
+                                },
+                                [DiscordMsgSendType]::RestMethod
+                            )
+                            #$discordResponse = Invoke-RestMethod -Uri $msgPostUrl -Method Post -Body $json -ContentType 'application/json' -Headers $this._headers -Verbose:$false
+                            break
+                        } else {
+                            $form['file'] = Get-Item $customResponse.Path
+                        }
+
+                        $this.LogDebug("Uploading [$($customResponse.Path)] to Slack channel [$sendTo]")
+                    }
+
+                    if (-not [string]::IsNullOrEmpty($customResponse.Title)) {
+                        $payload.title = $customResponse.Title
+                    }
+
+                    $form['payload_json'] = ConvertTo-Json $payload
+                    $this._SendDiscordMsg(
+                        @{
+                            Uri         = $msgPostUrl
+                            Method      = Post
+                            ContentType = 'multipart/form-data'
+                            Headers     = $this._headers
+                            Form        = $form
+                        },
+                        [DiscordMsgSendType]::RestMethod
+                    )
+                    #Invoke-RestMethod -Uri $msgPostUrl -Method Post -ContentType 'multipart/form-data' -Headers $this._headers -Form $form -Verbose:$false
+                    break
+                }
+            }
+        }
+
+        if ($Response.Text.Count -gt 0) {
+            foreach ($text in $Response.Text) {
+                $this.LogDebug("Sending response back to Discord channel [$($Response.To)]", $text)
+                $json = @{
+                    content = $text
+                    tts     = $false
+                } | ConvertTo-Json -Compress
+                $msgPostUrl = '{0}/channels/{1}/messages' -f $this.baseUrl, $Response.To
+                try {
+                    $discordResponse = $this._SendDiscordMsg(
+                        @{
+                            Uri         = $msgPostUrl
+                            Method      = 'Post'
+                            Body        = $json
+                            ContentType = 'application/json'
+                            Headers     = $this._headers
+                        },
+                        [DiscordMsgSendType]::RestMethod
+                    )
+                    #$discordResponse = Invoke-RestMethod -Uri $msgPostUrl -Method Post -Body $json -ContentType 'application/json' -Headers $this._headers -Verbose:$false
+                } catch {
+                    $this.LogInfo([LogSeverity]::Error, 'Received error while sending response back to Discord', [ExceptionFormatter]::Summarize($_))
+                }
+            }
+        }
+    }
+
+    # Add a reaction to an existing chat message
+    [void]AddReaction([Message]$Message, [ReactionType]$Type, [string]$Reaction) {
+        if ($Type -eq [ReactionType]::Custom) {
+            $emoji = $Reaction
+        } else {
+            $emoji = $this._ResolveEmoji($Type)
+        }
+
+        $uri = '{0}/channels/{1}/messages/{2}/reactions/{3}/@me' -f $this.baseUrl, $Message.To, $Message.Id, $emoji
+        try {
+            $this.LogDebug("Adding reaction [$emoji] to message Id [$($Message.Id)]")
+            $this._SendDiscordMsg(
+                @{
+                    Uri             = $uri
+                    Method          = 'Put'
+                    Headers         = $this._headers
+                },
+                [DiscordMsgSendType]::WebRequest
+            )
+            #Invoke-WebRequest -Uri $uri -Method Put -Headers $this._headers -UseBasicParsing -Verbose:$false
+        } catch {
+            # Are we being rate limited?
+            # if ($_.Exception.Response.StatusCode.value__ -eq 429) {
+            #     $this.LogInfo([LogSeverity]::Warning, 'Received rate limit warning from Discord. Waiting 500ms...')
+            #     Start-Sleep -Milliseconds 500
+            #     Invoke-WebRequest -Uri $uri -Method Put -Headers $this._headers -UseBasicParsing -Verbose:$false
+            # } else {
+            #     $this.LogInfo([LogSeverity]::Error, 'Error adding reaction to message', [ExceptionFormatter]::Summarize($_))
+            # }
+            $this.LogInfo([LogSeverity]::Error, 'Error adding reaction to message', [ExceptionFormatter]::Summarize($_))
+        }
+
+    }
+
+    # Remove a reaction from an existing chat message
+    [void]RemoveReaction([Message]$Message, [ReactionType]$Type, [string]$Reaction) {
+        if ($Type -eq [ReactionType]::Custom) {
+            $emoji = $Reaction
+        } else {
+            $emoji = $this._ResolveEmoji($Type)
+        }
+
+        $uri = '{0}/channels/{1}/messages/{2}/reactions/{3}/@me' -f $this.baseUrl, $Message.To, $Message.Id, $emoji
+        try {
+            $this.LogDebug("Removing reaction [$emoji] from message Id [$($Message.Id)]")
+            $this._SendDiscordMsg(
+                @{
+                    Uri             = $uri
+                    Method          = 'Delete'
+                    Headers         = $this._headers
+                },
+                [DiscordMsgSendType]::WebRequest
+            )
+            # Invoke-WebRequest -Uri $uri -Method Delete -Headers $this._headers -UseBasicParsing -Verbose:$false
+        } catch {
+            # Are we being rate limited?
+            # if ($_.Exception.Response.StatusCode.value__ -eq 429) {
+            #     $this.LogInfo([LogSeverity]::Warning, 'Received rate limit warning from Discord. Waiting 500ms...')
+            #     Start-Sleep -Milliseconds 500
+            #     Invoke-WebRequest -Uri $uri -Method Delete -Headers $this._headers -UseBasicParsing -Verbose:$false
+            # } else {
+            #     $this.LogInfo([LogSeverity]::Error, 'Error removing reaction from message', [ExceptionFormatter]::Summarize($_))
+            # }
+            $this.LogInfo([LogSeverity]::Error, 'Error removing reaction from message', [ExceptionFormatter]::Summarize($_))
+        }
+    }
+
+    # Resolve a channel name to an Id
+    [string]ResolveChannelId([string]$ChannelName) {
+        if ($ChannelName -match '^#') {
+            $ChannelName = $ChannelName.TrimStart('#')
+        }
+        $channelId = $this.Rooms.Where({$_.name -eq $ChannelName})[0].id
+        if (-not $ChannelId) {
+            $channelId = $this.Rooms({$_id -eq $ChannelName})[0].id
+        }
+        $this.LogDebug("Resolved channel [$ChannelName] to [$channelId]")
+        return $channelId
+    }
+
+    # Populate the list of users the Discord guild
+    [void]LoadUsers() {
+        $this.LogDebug('Getting Discord users')
+        $membersUrl = "$($this.baseUrl)/guilds/$($this.GuildId)/members"
+        $allUsers = $this._SendDiscordMsg(
+            @{
+                Uri     = $membersUrl
+                Headers = $this._headers
+            },
+            [DiscordMsgSendType]::RestMethod
+        )
+        #$allUsers   = Invoke-RestMethod -Uri $membersUrl -Headers $this._headers -Verbose:$false
+        $botUser    = [pscustomobject]@{
+            user = $this._SendDiscordMsg(
+                @{
+                    Uri     = "$($this.baseUrl)/users/@me"
+                    Headers = $this._headers
+                },
+                [DiscordMsgSendType]::RestMethod
+            )
+            #user = Invoke-RestMethod -Uri "$($this.baseUrl)/users/@me" -Headers $this._headers -Verbose:$false
+        }
+        $allUsers += $botUser
+
+        $this.LogDebug("[$($allUsers.Count)] users returned")
+
+        $allUsers.ForEach({
+            if (-not $this.Users.ContainsKey($_.user.id.ToString())) {
+                $this.LogDebug("Adding user [$($_.user.id.ToString()):$($_.user.username)]")
+                $user                   = [DiscordUser]::new()
+                $user.Id                = $_.user.id.ToString()
+                $user.Nickname          = $_.user.username
+                $user.Discriminator     = $_.user.discriminator
+                $user.Avatar            = $_.user.avatar
+                $user.IsBot             = [bool]$_.user.bot
+                $user.IsMfaEnabled      = [bool]$_.user.bot
+                $user.Locale            = $_.user.locale
+                $user.IsVerified        = $_.user.verified
+                $user.Email             = $_.user.email
+                $user.Flags             = $_.user.flags
+                $user.PremiumType       = $_.user.premium_type
+                $this.Users[$_.user.id] = $user
+            }
+        })
+
+        foreach ($key in $this.Users.Keys) {
+            if ($key -notin ($allUsers.user | Select-Object -ExpandProperty id)) {
+                $this.LogDebug("Removing outdated user [$key]")
+                $this.Users.Remove($key)
+            }
+        }
+    }
+
+    # Populate the list of channels in the Discord guild
+    [void]LoadRooms() {
+        $this.LogDebug('Getting Discord channels')
+        $channelsUrl = "$($this.baseUrl)/guilds/$($this.GuildId)/channels"
+        $allChannels = $this._SendDiscordMsg(
+            @{
+                Uri     = $channelsUrl
+                Headers = $this._headers
+            },
+            [DiscordMsgSendType]::RestMethod
+        )
+        #$allChannels = Invoke-RestMethod -Uri $channelsUrl -Headers $this._headers -Verbose:$false
+        $this.LogDebug("[$($allChannels.Count)] channels returned")
+
+        $allChannels.Where({[DiscordChannelType]$_.type -eq [DiscordChannelType]::GUILD_TEXT}).ForEach({
+            $channel      = [DiscordChannel]::new()
+            $channel.Id   = $_.id
+            $channel.Type = [DiscordChannelType]$_.type
+            $channel.Name = $_.name
+            $channel.nsfw = $_.nsfw
+            $this.LogDebug("Adding channel: $($_.ID):$($_.Name)")
+            $this.Rooms[$_.ID] = $channel
+        })
+
+        foreach ($key in $this.Rooms.Keys) {
+            if ($key -notin $allChannels.ID) {
+                $this.LogDebug("Removing outdated channel [$key]")
+                $this.Rooms.Remove($key)
+            }
+        }
+    }
+
+    [void]LoadRoom([string]$ChannelId) {
+        if (-not $this.Rooms.ContainsKey($ChannelId)) {
+            $channelsUrl = "$($this.baseUrl)/channels/$ChannelId"
+            try {
+                #$channel = Invoke-RestMethod -Uri $channelsUrl -Headers $this._headers -Verbose:$false
+                $channel = $this._SendDiscordMsg(
+                    @{
+                        Uri     = $channelsUrl
+                        Headers = $this._headers
+                    },
+                    [DiscordMsgSendType]::RestMethod
+                )
+                $discordChannel      = [DiscordChannel]::new()
+                $discordChannel.Id   = $channel.id
+                $discordChannel.Name = 'DM' # Discord DM channels don't have names
+                $discordChannel.Type = [DiscordChannelType]$channel.type
+                $this.LogDebug("Adding channel: [$($channel.id)]")
+                $this.Rooms[$channel.id] = $discordChannel
+            } catch {
+                $this.LogInfo([LogSeverity]::Error, "Unable to resolve channel [$ChannelId]", [ExceptionFormatter]::Summarize($_))
+            }
+        }
+    }
+
+    # Get the bot identity Id
+    [string]GetBotIdentity() {
+        $id = $this.Connection.Config.Credential.UserName
+        $this.LogVerbose("Bot identity is [$id]")
+        return $id
+    }
+
+    # Determine if incoming message was from the bot
+    [bool]MsgFromBot([string]$From) {
+        $frombot = ($this.BotId -eq $From)
+        if ($fromBot) {
+            $this.LogDebug("Message is from bot [From: $From == Bot: $($this.BotId)]. Ignoring")
+        } else {
+            $this.LogDebug("Message is not from bot [From: $From <> Bot: $($this.BotId)]")
+        }
+        return $fromBot
+    }
+
+    # Get a user by their Id
+    [DiscordUser]GetUser([string]$UserId) {
+        $user = $this.Users[$UserId]
+
+        if (-not $user) {
+            $this.LogDebug([LogSeverity]::Warning, "User [$UserId] not found. Refreshing users")
+            $this.LoadUsers()
+            $user = $this.Users[$UserId]
+        }
+
+        if ($user) {
+            $this.LogDebug("Resolved user [$UserId]", $user)
+        } else {
+            $this.LogDebug([LogSeverity]::Warning, "Could not resolve user [$UserId]")
+        }
+        return $user
+    }
+
+    # Get a user Id by their name
+    [string]UsernameToUserId([string]$Username) {
+        $Username = $Username.TrimStart('@')
+        $user = $this.Users.Values.Where({$_.Nickname -eq $Username})
+        $id = $null
+        if ($user) {
+            $id = $user.Id
+        } else {
+            # User each doesn't exist or is not in the local cache
+            # Refresh it and try again
+            $this.LogDebug([LogSeverity]::Warning, "User [$Username] not found. Refreshing users")
+            $this.LoadUsers()
+            $user = $this.Users.Values | Where-Object {$_.Nickname -eq $Username}
+            if (-not $user) {
+                $id = $null
+            } else {
+                $id = $user.Id
+            }
+        }
+        if ($id) {
+            $this.LogDebug("Resolved [$Username] to [$id]")
+        } else {
+            $this.LogDebug([LogSeverity]::Warning, "Could not resolve user [$Username]")
+        }
+        return $id
+    }
+
+    # Get a user name by their Id
+    [string]UserIdToUsername([string]$UserId) {
+        $name = $null
+        if ($this.Users.ContainsKey($UserId)) {
+            $name = $this.Users[$UserId].Nickname
+        } else {
+            $this.LogDebug([LogSeverity]::Warning, "User [$UserId] not found. Refreshing users")
+            $this.LoadUsers()
+            $name = $this.Users[$UserId].Nickname
+        }
+        if ($name) {
+            $this.LogDebug("Resolved [$UserId] to [$name]")
+        } else {
+            $this.LogDebug([LogSeverity]::Warning, "Could not resolve user [$UserId]")
+        }
+        return $name
+    }
+
+    # Get the channel name by Id
+    [string]ChannelIdToName([string]$ChannelId) {
+        $name = $null
+        if ($this.Rooms.ContainsKey($ChannelId)) {
+            $name = $this.Rooms[$ChannelId].Name
+        } else {
+            $this.LogDebug([LogSeverity]::Warning, "Channel [$ChannelId] not found. Refreshing channels")
+            $this.LoadRooms()
+            $this.LoadRoom($ChannelId)
+            $name = $this.Rooms[$ChannelId].Name
+        }
+        if ($name) {
+            $this.LogDebug("Resolved [$ChannelId] to [$name]")
+        } else {
+            $this.LogDebug([LogSeverity]::Warning, "Could not resolve channel [$ChannelId]")
+        }
+        return $name
+    }
+
+    # Get all user info by their ID
+    [hashtable]GetUserInfo([string]$UserId) {
+        if (-not [string]::IsNullOrEmpty($UserId)) {
+            $user = $null
+            if ($this.Users.ContainsKey($UserId)) {
+                $user = $this.Users[$UserId]
+            } else {
+                $this.LogDebug([LogSeverity]::Warning, "User [$UserId] not found. Refreshing users")
+                $this.LoadUsers()
+                $user = $this.Users[$UserId]
+            }
+
+            if ($user) {
+                $this.LogDebug("Resolved [$UserId] to [$($user.Nickname)]")
+                return $user.ToHash()
+            } else {
+                $this.LogDebug([LogSeverity]::Warning, "Could not resolve channel [$UserId]")
+                return $null
+            }
+        } else {
+            return $null
+        }
+    }
+
+    # TODO
+    # May not be needed. Inspect how Discord handles this
+    # Remove extra characters that Discord decorates urls with
+    hidden [string] _SanitizeURIs([string]$Text) {
+        $sanitizedText = $Text -replace '<([^\|>]+)\|([^\|>]+)>', '$2'
+        $sanitizedText = $sanitizedText -replace '<(http([^>]+))>', '$1'
+        return $sanitizedText
+    }
+
+    # Break apart a string by number of characters
+    # This isn't a very efficient method but it splits the message cleanly on
+    # whole lines and produces better output
+    hidden [Collections.Generic.List[string[]]] _ChunkString([string]$Text) {
+        $array              = $Text -split [environment]::NewLine
+        $chunks             = [Collections.Generic.List[string[]]]::new()
+        $currentChunk       = ''
+        $currentChunkLength = 0
+
+        foreach ($line in $array) {
+            if (-not ($currentChunkLength + $line.Length -ge $this.MaxMessageLength)) {
+                $currentChunkLength += $line.Length
+                $currentChunk += $line + "`r`n"
+            } else {
+                $chunks += $currentChunk
+                $currentChunk = ''
+                $currentChunkLength = 0
+            }
+        }
+        $chunks += $currentChunk
+
+        return $chunks
+    }
+
+    # TODO
+    # Validate what the Discord emoji names for these are
+    # Resolve a reaction type to an emoji
+    hidden [string]_ResolveEmoji([ReactionType]$Type) {
+        $emoji = [string]::Empty
+        Switch ($Type) {
+            'Success'        { return "`u{2705}" } # :white_check_mark:
+            'Failure'        { return "`u{2757}" } # :exclamation:
+            'Processing'     { return "`u{2699}" } # :gear:
+            'Warning'        { return "`u{26A0}" } # :warning:
+            'ApprovalNeeded' { return "`u{1F510}"} # :closed_lock_with_key:
+            'Cancelled'      { return "`u{26D4}" } # :no_entry:
+            'Denied'         { return "`u{1F6AB}"} # :no_entry_sign:
+        }
+        return $emoji
+    }
+
+    # TODO
+    # See how Discord sends back @ mentions
+    # Translate formatted @mentions like <@U4AM3SYI8> into @devblackops
+    hidden [string]_ProcessMentions([string]$Text) {
+        $processed = $Text
+
+        $mentions = $processed | Select-String -Pattern '(?<name><@[^>]*>*)' -AllMatches | ForEach-Object {
+            $_.Matches | ForEach-Object {
+                [pscustomobject]@{
+                    FormattedId = $_.Value
+                    UnformattedId = $_.Value.TrimStart('<@').TrimEnd('>')
+                }
+            }
+        }
+        $mentions | ForEach-Object {
+            if ($name = $this.UserIdToUsername($_.UnformattedId)) {
+                $processed = $processed -replace $_.FormattedId, "@$name"
+                $this.LogDebug($processed)
+            } else {
+                $this.LogDebug([LogSeverity]::Warning, "Unable to translate @mention [$($_.FormattedId)] into a username")
+            }
+        }
+
+        return $processed
+    }
+
+    hidden [int]_ConvertColorCode([string]$RGB) {
+        try {
+            $value = [Convert]::ToInt32("0x$RGB", 16)
+        } catch {
+            $value = [Convert]::ToInt32("0xFF0000", 16)
+        }
+        return $value
+    }
+
+    # Send a message back to Discord
+    # Delay the messages if we need to so we're not rate limited
+    hidden [object]_SendDiscordMsg([hashtable]$Params, [DiscordMsgSendType]$Type ) {
+        $lastMsgSendDiff = ([datetime]::UtcNow - $this._lastTimeMessageSent).Milliseconds
+        if ($lastMsgSendDiff -lt 350) {
+            Start-Sleep -Milliseconds (350 - $lastMsgSendDiff)
+        }
+
+        $this._lastTimeMessageSent = [datetime]::UtcNow
+
+        $Params['Verbose'] = $false
+        if ($Type -eq [DiscordMsgSendType]::WebRequest) {
+            $Params['UseBasicParsing'] = $true
+            return Invoke-WebRequest @params
+        } else {
+            return Invoke-RestMethod @params
+        }
+    }
+}
+
+function New-PoshBotDiscordBackend {
+    <#
+    .SYNOPSIS
+        Create a new instance of a Discord backend
+    .DESCRIPTION
+        Create a new instance of a Discord backend
+    .PARAMETER Configuration
+        The hashtable containing backend-specific properties on how to create the Discord backend instance.
+    .EXAMPLE
+        PS C:\> $backendConfig = @{Name = 'DiscordBackend'; Token = '<DISCORD-BOT-TOKEN-TOKEN>'}
+        PS C:\> $backend = New-PoshBotDiscordBackend -Configuration $backendConfig
+
+        Create a Discord backend using the specified bot token
+    .INPUTS
+        Hashtable
+    .OUTPUTS
+        DiscordBackend
+    #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Scope='Function', Target='*')]
+    [cmdletbinding()]
+    param(
+        [parameter(Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [Alias('BackendConfiguration')]
+        [hashtable[]]$Configuration
+    )
+
+    process {
+        foreach ($item in $Configuration) {
+            if (-not $item.Token) {
+                throw 'Missing required configuration properties ClientID, GuildId, or Token.'
+            } else {
+                Write-Verbose 'Creating new Discord backend instance'
+                $backend = [DiscordBackend]::new($item.Token, $item.ClientId, $item.GuildId)
+                if ($item.Name) {
+                    $backend.Name = $item.Name
+                }
+                $backend
+            }
+        }
+    }
+}
+
+Export-ModuleMember -Function 'New-PoshBotDiscordBackend'
