@@ -12,7 +12,7 @@
 RootModule = 'PoshBot.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.11.8'
+ModuleVersion = '0.12.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -81,6 +81,7 @@ FunctionsToExport = @(
     'New-PoshBotAce'
     'New-PoshBotBackend'
     'New-PoshBotConfiguration'
+    'New-PoshBotDiscordBackend'
     'New-PoshBotFileUpload'
     'New-PoshBotInstance'
     'New-PoshBotMiddlewareHook'
