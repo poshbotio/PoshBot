@@ -14,6 +14,8 @@ class DiscordBackend : Backend {
 
     hidden [datetime]$_lastTimeMessageSent = [datetime]::UtcNow
 
+    hidden [Collections.Queue]$_sendQueue = [Collections.Queue]::new()
+
     [string[]]$MessageTypes = @(
         'CHANNEL_CREATE'
         'CHANNEL_DELETE'
@@ -359,7 +361,7 @@ class DiscordBackend : Backend {
                     $this._SendDiscordMsg(
                         @{
                             Uri         = $msgPostUrl
-                            Method      = Post
+                            Method      = 'Post'
                             ContentType = 'multipart/form-data'
                             Headers     = $this._headers
                             Form        = $form
@@ -801,17 +803,23 @@ class DiscordBackend : Backend {
     # Delay the messages if we need to so we're not rate limited
     hidden [object]_SendDiscordMsg([hashtable]$Params, [DiscordMsgSendType]$Type ) {
         $lastMsgSendDiff = ([datetime]::UtcNow - $this._lastTimeMessageSent).Milliseconds
-        if ($lastMsgSendDiff -lt 350) {
-            Start-Sleep -Milliseconds (350 - $lastMsgSendDiff)
+        if ($lastMsgSendDiff -lt 500) {
+            Start-Sleep -Milliseconds (500 - $lastMsgSendDiff)
         }
 
-        $this._lastTimeMessageSent = [datetime]::UtcNow
+        $sendMsg = @{
+            Type   = $Type
+            Params = $Params
+        }
+        $this._sendQueue.Enqueue($sendMsg)
 
         $Params['Verbose'] = $false
         if ($Type -eq [DiscordMsgSendType]::WebRequest) {
             $Params['UseBasicParsing'] = $true
+            $this._lastTimeMessageSent = [datetime]::UtcNow
             return Invoke-WebRequest @params
         } else {
+            $this._lastTimeMessageSent = [datetime]::UtcNow
             return Invoke-RestMethod @params
         }
     }
