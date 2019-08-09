@@ -341,7 +341,7 @@ class SlackBackend : Backend {
                     } else {
                         $this.LogDebug("Message type is [$($slackMessage.Type)]. Ignoring")
                     }
-                    
+
                 }
             }
         } catch {
@@ -546,7 +546,7 @@ class SlackBackend : Backend {
             $this.LogDebug("Removing reaction [$emoji] from message Id [$($Message.RawMessage.ts)]")
             $resp = Send-SlackApi -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Method 'reactions.remove' -Body $body -Verbose:$false
             if (-not $resp.ok) {
-                $this.LogInfo([LogSeverity]::Error, 'Error removing reaction to message', $resp)
+                $this.LogInfo([LogSeverity]::Error, 'Error removing reaction from message', $resp)
             }
         }
     }
@@ -761,9 +761,26 @@ class SlackBackend : Backend {
     }
 
     # Break apart a string by number of characters
-    hidden [System.Collections.ArrayList] _ChunkString([string]$Text) {
-        $chunks = [regex]::Split($Text, "(?<=\G.{$($this.MaxMessageLength)})", [System.Text.RegularExpressions.RegexOptions]::Singleline)
-        $this.LogDebug("Split response into [$($chunks.Count)] chunks")
+    # This isn't a very efficient method but it splits the message cleanly on
+    # whole lines and produces better output
+    hidden [Collections.Generic.List[string[]]] _ChunkString([string]$Text) {
+        $array              = $Text -split [environment]::NewLine
+        $chunks             = [Collections.Generic.List[string[]]]::new()
+        $currentChunk       = ''
+        $currentChunkLength = 0
+
+        foreach ($line in $array) {
+            if (-not ($currentChunkLength + $line.Length -ge $this.MaxMessageLength)) {
+                $currentChunkLength += $line.Length
+                $currentChunk += $line + "`r`n"
+            } else {
+                $chunks += $currentChunk
+                $currentChunk = ''
+                $currentChunkLength = 0
+            }
+        }
+        $chunks += $currentChunk
+
         return $chunks
     }
 
