@@ -6,15 +6,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.11.7] Unreleased
+## [0.11.7] 2019-08-09
 
 ### Fixed
 
 - Added missing parameter `$PreExecuteMiddlewareHooks` to `New-PoshBotConfiguration`
+- Channels rules should now work correctly with private channels in Slack
+- Retrieving channels from Slack now uses paging to return ALL unarchived channels
 
 ### Changed
 
-- Pinned modules `Configuration` to `1.3.1` and `PSSlack` to `1.0.0`
+- Pinned modules `Configuration` to `1.3.1` and `PSSlack` to `1.0.1`
 
 ## [0.11.6] 2019-04-02
 
