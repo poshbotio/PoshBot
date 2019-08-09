@@ -606,26 +606,32 @@ class SlackBackend : Backend {
     # Populate the list of channels in the Slack team
     [void]LoadRooms() {
         $this.LogDebug('Getting Slack channels')
-        $allChannels = Get-SlackChannel -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -ExcludeArchived -Verbose:$false
+        $getChannelParams = @{
+            Token           = $this.Connection.Config.Credential.GetNetworkCredential().Password
+            ExcludeArchived = $true
+            Verbose         = $false
+            Paging          = $true
+        }
+        $allChannels = Get-SlackChannel @getChannelParams
         $this.LogDebug("[$($allChannels.Count)] channels returned")
 
-        $allChannels | ForEach-Object {
+        $allChannels.ForEach({
             $channel = [SlackChannel]::new()
-            $channel.Id = $_.ID
-            $channel.Name = $_.Name
-            $channel.Topic = $_.Topic
-            $channel.Purpose = $_.Purpose
-            $channel.Created = $_.Created
-            $channel.Creator = $_.Creator
-            $channel.IsArchived = $_.IsArchived
-            $channel.IsGeneral = $_.IsGeneral
+            $channel.Id          = $_.ID
+            $channel.Name        = $_.Name
+            $channel.Topic       = $_.Topic
+            $channel.Purpose     = $_.Purpose
+            $channel.Created     = $_.Created
+            $channel.Creator     = $_.Creator
+            $channel.IsArchived  = $_.IsArchived
+            $channel.IsGeneral   = $_.IsGeneral
             $channel.MemberCount = $_.MemberCount
             foreach ($member in $_.Members) {
                 $channel.Members.Add($member, $null)
             }
             $this.LogDebug("Adding channel: $($_.ID):$($_.Name)")
             $this.Rooms[$_.ID] = $channel
-        }
+        })
 
         foreach ($key in $this.Rooms.Keys) {
             if ($key -notin $allChannels.ID) {
