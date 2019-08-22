@@ -16,7 +16,7 @@ If you'd like to become a sponsor, you can do so through [GitHub Sponsors](https
 <h4 align="center">Silver Sponsors</h4>
 
 <div align="center">
-<a href="https://chocolatey.org/" target="_blank" rel="noopener noreferrer"><img src="Media/sponsors/chocolatey_logo_long.png" height="60px"></a>
+<a href="https://chocolatey.org/" target="_blank" rel="noopener noreferrer"><img src="Media/sponsors/chocolatey_logo_long.png" height="70px"></a>
 </div>
 
 ---
