@@ -10,7 +10,8 @@
 
 <h2 align="center">Supporting PoshBot</h2>
 
-PoshBot is a MIT-licensed open source project. Ongoing development is made possible thanks to the support of sponsors. If you'd like to become a sponsor, you can do so on with [GitHub Sponsors](https://github.com/users/devblackops/sponsorship) or [Patreon](https://www.patreon.com/bePatron?u=10352866).
+PoshBot is a MIT-licensed open source project. Ongoing development is made possible thanks to the support of sponsors.
+If you'd like to become a sponsor, you can do so through [GitHub Sponsors](https://github.com/users/devblackops/sponsorship) or [Patreon](https://www.patreon.com/bePatron?u=10352866).
 
 <h4 align="center">Silver Sponsors</h4>
 
