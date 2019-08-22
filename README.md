@@ -12,20 +12,23 @@
 
 PoshBot is a MIT-licensed open source project. Ongoing development is made possible thanks to the support of sponsors. If you'd like to become a sponsor, you can do so on with [GitHub Sponsors](https://github.com/users/devblackops/sponsorship) or [Patreon](https://www.patreon.com/bePatron?u=10352866).
 
+<div align="center">
+    <a href="https://github.com/users/devblackops/sponsorship" target="_blank" title="GitHub Sponsors">
+        <img style="height:50px" src="Media/github_sponsor_button.png" alt="GitHub Sponsors">
+    </a>
+    <br>
+    <a href="https://www.patreon.com/bePatron?u=10352866" target="_blank" title="Become a Patron">
+        <img style="height:30px" src="Media/become_a_patron_button.png" alt="Become a Patron">
+    </a>
+</div>
+
 <h4 align="center">Silver Sponsors</h4>
 
 <div align="center">
 <a href="https://chocolatey.org/" target="_blank" rel="noopener noreferrer"><img src="Media/sponsors/chocolatey_logo_long.png" height="60px"></a>
 </div>
 
-<p align="center">
-    <a href="https://www.patreon.com/bePatron?u=10352866" target="_blank" title="Become a Patron">
-        <img style="height:30px; margin-bottom:10px" src="Media/become_a_patron_button.png" alt="Become a Patron">
-    </a>
-    <a href="https://github.com/users/devblackops/sponsorship" target="_blank" title="GitHub Sponsors">
-        <img style="height:50px" src="Media/github_sponsor_button.png" alt="GitHub Sponsors">
-    </a>
-</p>
+
 
 ---
 
