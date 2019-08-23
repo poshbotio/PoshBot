@@ -6,6 +6,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.11.8] Unreleased
+
+### Fixed
+
+- Commands will no longer be re-executed if a user replies to the original command with a threaded message
+
 ## [0.11.7] 2019-08-09
 
 ### Fixed

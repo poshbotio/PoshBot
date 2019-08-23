@@ -208,6 +208,16 @@ class SlackBackend : Backend {
                         continue
                     }
 
+                    # Ignore "message_replied" subtypes
+                    # These are message Slack sends to update the client that the original message has a new reply.
+                    # That reply is sent is another message.
+                    # We do this because if the original message that this reply is to is a bot command, the command
+                    # will be executed again so we....need to not do that :)
+                    if ($slackMessage.subtype -eq 'message_replied') {
+                        $this.LogDebug('SubType is [message_replied]. Ignoring')
+                        continue
+                    }
+
                     # We only care about certain message types from Slack
                     if ($slackMessage.Type -in $this.MessageTypes) {
                         $msg = [Message]::new()
