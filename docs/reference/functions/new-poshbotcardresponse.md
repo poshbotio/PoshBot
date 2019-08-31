@@ -14,7 +14,7 @@ Tells PoshBot to send a specially formatted response.
 
 ```
 New-PoshBotCardResponse [[-Type] <String>] [-DM] [[-Text] <String>] [[-Title] <String>]
- [[-ThumbnailUrl] <String>] [[-ImageUrl] <String>] [[-LinkUrl] <String>] [[-Fields] <Hashtable>]
+ [[-ThumbnailUrl] <String>] [[-ImageUrl] <String>] [[-LinkUrl] <String>] [[-Fields] <IDictionary>]
  [[-Color] <String>] [[-CustomData] <Object>] [<CommonParameters>]
 ```
 
@@ -191,7 +191,7 @@ Accept wildcard characters: False
 A hashtable to display as a table in the card response.
 
 ```yaml
-Type: Hashtable
+Type: IDictionary
 Parameter Sets: (All)
 Aliases:
 

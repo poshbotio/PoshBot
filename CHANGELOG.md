@@ -6,11 +6,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.11.8] Unreleased
+## [0.11.8] 2019-08-30
 
 ### Fixed
 
 - Commands will no longer be re-executed if a user replies to the original command with a threaded message
+- The formatting of large message responses to Slack has been fixed
+- New-PoshBotCardResponse now accepts any object of type `System.Collections.IDictionary` instead of always casting to `System.Collections.Hashtable`. This will preserve the ordering of keys if the supplied object supports it.
 
 ## [0.11.7] 2019-08-09
 

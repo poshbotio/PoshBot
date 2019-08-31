@@ -120,7 +120,7 @@ function New-PoshBotCardResponse {
         })]
         [string]$LinkUrl,
 
-        [hashtable]$Fields,
+        [System.Collections.IDictionary]$Fields,
 
         [ValidateScript({
             if ($_ -match '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$') {
