@@ -18,7 +18,7 @@ class SlackBackend : Backend {
         'star_removed'
     )
 
-    [int]$MaxMessageLength = 4000
+    [int]$MaxMessageLength = 3900
 
     # Import some color defs.
     hidden [hashtable]$_PSSlackColorMap = @{
@@ -779,23 +779,29 @@ class SlackBackend : Backend {
     # Break apart a string by number of characters
     # This isn't a very efficient method but it splits the message cleanly on
     # whole lines and produces better output
-    hidden [Collections.Generic.List[string[]]] _ChunkString([string]$Text) {
-        $array              = $Text -split [environment]::NewLine
-        $chunks             = [Collections.Generic.List[string[]]]::new()
-        $currentChunk       = ''
+    hidden [Collections.Generic.List[string]] _ChunkString([string]$Text) {
+
+        # Don't bother chunking an empty string
+        if ([string]::IsNullOrEmpty($Text)) {
+            return $text
+        }
+
+        $chunks             = [Collections.Generic.List[string]]::new()
         $currentChunkLength = 0
+        $currentChunk       = ''
+        $array              = $Text -split [Environment]::NewLine
 
         foreach ($line in $array) {
-            if (-not ($currentChunkLength + $line.Length -ge $this.MaxMessageLength)) {
+            if (($currentChunkLength + $line.Length) -lt $this.MaxMessageLength) {
                 $currentChunkLength += $line.Length
-                $currentChunk += $line + "`r`n"
+                $currentChunk += ($line + [Environment]::NewLine)
             } else {
-                $chunks += $currentChunk
-                $currentChunk = ''
-                $currentChunkLength = 0
+                $chunks.Add($currentChunk + [Environment]::NewLine)
+                $currentChunk = ($line + [Environment]::NewLine)
+                $currentChunkLength = $line.Length
             }
         }
-        $chunks += $currentChunk
+        $chunks.Add($currentChunk)
 
         return $chunks
     }
