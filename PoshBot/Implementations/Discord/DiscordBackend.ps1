@@ -831,10 +831,15 @@ function New-PoshBotDiscordBackend {
     .PARAMETER Configuration
         The hashtable containing backend-specific properties on how to create the Discord backend instance.
     .EXAMPLE
-        PS C:\> $backendConfig = @{Name = 'DiscordBackend'; Token = '<DISCORD-BOT-TOKEN-TOKEN>'}
+        PS C:\> $backendConfig = @{
+            Name = 'DiscordBackend'
+            Token = '<DISCORD-BOT-TOKEN-TOKEN>'
+            ClientId = '<DISCORD-CLIENT-ID>'
+            GuildId = '<DISCORD-GUILD-ID>'
+        }
         PS C:\> $backend = New-PoshBotDiscordBackend -Configuration $backendConfig
 
-        Create a Discord backend using the specified bot token
+        Create a Discord backend using the specified connection information.
     .INPUTS
         Hashtable
     .OUTPUTS
@@ -850,7 +855,7 @@ function New-PoshBotDiscordBackend {
 
     process {
         foreach ($item in $Configuration) {
-            if (-not $item.Token) {
+            if (-not $item.Token -or -not $item.ClientId -or -not $item.GuildId) {
                 throw 'Missing required configuration properties ClientID, GuildId, or Token.'
             } else {
                 Write-Verbose 'Creating new Discord backend instance'
