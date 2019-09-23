@@ -168,10 +168,18 @@ class DiscordBackend : Backend {
         foreach ($customResponse in $Response.Data) {
             [string]$sendTo = $Response.To
 
-            # TODO Figure out DMs for Discord
-            # if ($customResponse.DM) {
-            #     $sendTo = "@$($this.UserIdToUsername($Response.MessageFrom))"
-            # }
+            # Setup a DM channel with the user if
+            # The response dictates it
+            if ($customResponse.DM) {
+                $dmChannel = $this._CreateDmChannel($Response.MessageFrom)
+                if ($dmChannel) {
+                    $sendTo = $dmChannel.id
+                } else {
+                    $this.LogInfo([LogSeverity]::Error, "Unable to send response to DM channel")
+                    return
+                }
+            }
+
             switch -Regex ($customResponse.PSObject.TypeNames[0]) {
                 '(.*?)PoshBot\.Card\.Response' {
                     $this.LogDebug('Custom response is [PoshBot.Card.Response]')
@@ -828,6 +836,31 @@ class DiscordBackend : Backend {
             $this._lastTimeMessageSent = [datetime]::UtcNow
             return Invoke-RestMethod @params
         }
+    }
+
+    # Create a DM channel with a user
+    hidden [pscustomobject]_CreateDmChannel([string]$UserId) {
+        $json = @{
+            recipient_id = $UserId
+        } | ConvertTo-Json -Compress
+        $channelPostUrl = '{0}/users/@me/channels' -f $this.baseUrl
+        $dmChannel = $null
+        try {
+            $dmChannel = $this._SendDiscordMsg(
+                @{
+                    Uri         = $channelPostUrl
+                    Method      = 'Post'
+                    Body        = $json
+                    ContentType = 'application/json'
+                    Headers     = $this._headers
+                },
+                [DiscordMsgSendType]::RestMethod
+            )
+            $this.LogDebug("DM channel [$($dmChannel.id)] created", $dmChannel)
+        } catch {
+            $this.LogInfo([LogSeverity]::Error, "Received error while creating DM channel with user [$UserId]", [ExceptionFormatter]::Summarize($_))
+        }
+        return $dmChannel
     }
 }
 
