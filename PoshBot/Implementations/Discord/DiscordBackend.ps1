@@ -192,7 +192,7 @@ class DiscordBackend : Backend {
                     $firstChunk = $true
                     foreach ($chunk in $chunks) {
 
-                        # Only send thse in the first chunk
+                        # Only send these in the first chunk
                         if ($firstChunk) {
                             $embed['color'] = $colorInt
 
@@ -233,8 +233,6 @@ class DiscordBackend : Backend {
                                     }
                                 })
                             }
-
-
                         }
 
                         if (-not [string]::IsNullOrEmpty($chunk) -and $chunk -ne "`r`n") {
@@ -245,12 +243,9 @@ class DiscordBackend : Backend {
                         }
 
                         $json = @{
-                            #content = $text
                             tts     = $false
                             embed   = $embed
-                        #} | ConvertTo-Json -Compress -Depth 20
                         } | ConvertTo-Json -Depth 20
-                        Write-Host $json
 
                         try {
                             $this.LogDebug("Sending card response back to Discord channel [$sendTo]", $json)
@@ -266,12 +261,6 @@ class DiscordBackend : Backend {
                                 },
                                 [DiscordMsgSendType]::RestMethod
                             )
-                            #$discordResponse = Invoke-RestMethod -Uri $msgPostUrl -Method Post -Body $json -ContentType 'application/json' -Headers $this._headers -Verbose:$false
-
-                            # Sleep between chunk sends to not be rate limited
-                            # if ($chunks.Count -gt 1) {
-                            #     Start-Sleep -Milliseconds 250
-                            # }
                         } catch {
                             $this.LogInfo([LogSeverity]::Error, 'Received error while sending response back to Discord', [ExceptionFormatter]::Summarize($_))
                         }
@@ -306,15 +295,9 @@ class DiscordBackend : Backend {
                                 },
                                 [DiscordMsgSendType]::RestMethod
                             )
-                            #$discordResponse = Invoke-RestMethod -Uri $msgPostUrl -Method Post -Body $json -ContentType 'application/json' -Headers $this._headers -Verbose:$false
                         } catch {
                             $this.LogInfo([LogSeverity]::Error, 'Received error while sending response back to Discord', [ExceptionFormatter]::Summarize($_))
                         }
-
-                        # Sleep between chunk sends to not be rate limited
-                        # if ($chunks.Count -gt 1) {
-                        #     Start-Sleep -Milliseconds 250
-                        # }
                     }
                     break
                 }
@@ -358,13 +341,12 @@ class DiscordBackend : Backend {
                                 },
                                 [DiscordMsgSendType]::RestMethod
                             )
-                            #$discordResponse = Invoke-RestMethod -Uri $msgPostUrl -Method Post -Body $json -ContentType 'application/json' -Headers $this._headers -Verbose:$false
                             break
                         } else {
                             $form['file'] = Get-Item $customResponse.Path
                         }
 
-                        $this.LogDebug("Uploading [$($customResponse.Path)] to Slack channel [$sendTo]")
+                        $this.LogDebug("Uploading [$($customResponse.Path)] to Discord channel [$sendTo]")
                     }
 
                     if (-not [string]::IsNullOrEmpty($customResponse.Title)) {
@@ -382,7 +364,6 @@ class DiscordBackend : Backend {
                         },
                         [DiscordMsgSendType]::RestMethod
                     )
-                    #Invoke-RestMethod -Uri $msgPostUrl -Method Post -ContentType 'multipart/form-data' -Headers $this._headers -Form $form -Verbose:$false
                     break
                 }
             }
@@ -407,7 +388,6 @@ class DiscordBackend : Backend {
                         },
                         [DiscordMsgSendType]::RestMethod
                     )
-                    #$discordResponse = Invoke-RestMethod -Uri $msgPostUrl -Method Post -Body $json -ContentType 'application/json' -Headers $this._headers -Verbose:$false
                 } catch {
                     $this.LogInfo([LogSeverity]::Error, 'Received error while sending response back to Discord', [ExceptionFormatter]::Summarize($_))
                 }
@@ -434,16 +414,7 @@ class DiscordBackend : Backend {
                 },
                 [DiscordMsgSendType]::WebRequest
             )
-            #Invoke-WebRequest -Uri $uri -Method Put -Headers $this._headers -UseBasicParsing -Verbose:$false
         } catch {
-            # Are we being rate limited?
-            # if ($_.Exception.Response.StatusCode.value__ -eq 429) {
-            #     $this.LogInfo([LogSeverity]::Warning, 'Received rate limit warning from Discord. Waiting 500ms...')
-            #     Start-Sleep -Milliseconds 500
-            #     Invoke-WebRequest -Uri $uri -Method Put -Headers $this._headers -UseBasicParsing -Verbose:$false
-            # } else {
-            #     $this.LogInfo([LogSeverity]::Error, 'Error adding reaction to message', [ExceptionFormatter]::Summarize($_))
-            # }
             $this.LogInfo([LogSeverity]::Error, 'Error adding reaction to message', [ExceptionFormatter]::Summarize($_))
         }
 
@@ -468,16 +439,7 @@ class DiscordBackend : Backend {
                 },
                 [DiscordMsgSendType]::WebRequest
             )
-            # Invoke-WebRequest -Uri $uri -Method Delete -Headers $this._headers -UseBasicParsing -Verbose:$false
         } catch {
-            # Are we being rate limited?
-            # if ($_.Exception.Response.StatusCode.value__ -eq 429) {
-            #     $this.LogInfo([LogSeverity]::Warning, 'Received rate limit warning from Discord. Waiting 500ms...')
-            #     Start-Sleep -Milliseconds 500
-            #     Invoke-WebRequest -Uri $uri -Method Delete -Headers $this._headers -UseBasicParsing -Verbose:$false
-            # } else {
-            #     $this.LogInfo([LogSeverity]::Error, 'Error removing reaction from message', [ExceptionFormatter]::Summarize($_))
-            # }
             $this.LogInfo([LogSeverity]::Error, 'Error removing reaction from message', [ExceptionFormatter]::Summarize($_))
         }
     }
@@ -506,8 +468,7 @@ class DiscordBackend : Backend {
             },
             [DiscordMsgSendType]::RestMethod
         )
-        #$allUsers   = Invoke-RestMethod -Uri $membersUrl -Headers $this._headers -Verbose:$false
-        $botUser    = [pscustomobject]@{
+        $botUser = [pscustomobject]@{
             user = $this._SendDiscordMsg(
                 @{
                     Uri     = "$($this.baseUrl)/users/@me"
@@ -515,7 +476,6 @@ class DiscordBackend : Backend {
                 },
                 [DiscordMsgSendType]::RestMethod
             )
-            #user = Invoke-RestMethod -Uri "$($this.baseUrl)/users/@me" -Headers $this._headers -Verbose:$false
         }
         $allUsers += $botUser
 
@@ -559,7 +519,6 @@ class DiscordBackend : Backend {
             },
             [DiscordMsgSendType]::RestMethod
         )
-        #$allChannels = Invoke-RestMethod -Uri $channelsUrl -Headers $this._headers -Verbose:$false
         $this.LogDebug("[$($allChannels.Count)] channels returned")
 
         $allChannels.Where({[DiscordChannelType]$_.type -eq [DiscordChannelType]::GUILD_TEXT}).ForEach({
@@ -584,7 +543,6 @@ class DiscordBackend : Backend {
         if (-not $this.Rooms.ContainsKey($ChannelId)) {
             $channelsUrl = "$($this.baseUrl)/channels/$ChannelId"
             try {
-                #$channel = Invoke-RestMethod -Uri $channelsUrl -Headers $this._headers -Verbose:$false
                 $channel = $this._SendDiscordMsg(
                     @{
                         Uri     = $channelsUrl
