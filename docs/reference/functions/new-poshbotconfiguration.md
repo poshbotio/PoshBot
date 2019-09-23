@@ -24,8 +24,8 @@ New-PoshBotConfiguration [[-Name] <String>] [[-ConfigurationDirectory] <String>]
  [-DisallowDMs] [[-FormatEnumerationLimitOverride] <Int32>] [[-ApprovalCommandConfigurations] <Hashtable[]>]
  [[-ChannelRules] <Hashtable[]>] [[-PreReceiveMiddlewareHooks] <MiddlewareHook[]>]
  [[-PostReceiveMiddlewareHooks] <MiddlewareHook[]>] [[-PreExecuteMiddlewareHooks] <MiddlewareHook[]>]
- [[-PreResponseMiddlewareHooks] <MiddlewareHook[]>] [[-PostResponseMiddlewareHooks] <MiddlewareHook[]>]
- [<CommonParameters>]
+ [[-PostExecuteMiddlewareHooks] <MiddlewareHook[]>] [[-PreResponseMiddlewareHooks] <MiddlewareHook[]>]
+ [[-PostResponseMiddlewareHooks] <MiddlewareHook[]>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -659,6 +659,22 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -PostExecuteMiddlewareHooks
+Array of middleware scriptblocks that will run after PoshBot commands have been executed.
+This middleware is a good spot for custom logging solutions to write command history to a custom location.
+
+```yaml
+Type: MiddlewareHook[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 29
+Default value: @()
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -PreResponseMiddlewareHooks
 Array of middleware scriptblocks that will run before command responses are sent to the backend implementation.
 This middleware is a good spot for modifying or sanitizing responses before they are sent to the chat network.
@@ -669,7 +685,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 29
+Position: 30
 Default value: @()
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -685,14 +701,14 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 30
+Position: 31
 Default value: @()
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### CommonParameters
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
