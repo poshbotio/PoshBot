@@ -26,6 +26,9 @@ Locale: en-US
 ### [New-PoshBotConfiguration](New-PoshBotConfiguration.md)
 {{ Fill in the Description }}
 
+### [New-PoshBotDiscordBackend](New-PoshBotDiscordBackend.md)
+{{ Fill in the Description }}
+
 ### [New-PoshBotFileUpload](New-PoshBotFileUpload.md)
 {{ Fill in the Description }}
 
