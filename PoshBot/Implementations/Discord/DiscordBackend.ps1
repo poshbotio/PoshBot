@@ -138,6 +138,12 @@ class DiscordBackend : Backend {
                     $msg.Time = (Get-Date).ToUniversalTime()
                 }
 
+                # Discord displays @mentions like '@devblackops' but internally in the message
+                # it is <@519392344089559040>
+                # Fix that so we actually see the @username
+                $processed = $this._ProcessMentions($msg.Text)
+                $msg.Text = $processed
+
                 # ** Important safety tip, don't cross the streams **
                 # Only return messages that didn't come from the bot
                 # else we'd cause a feedback loop with the bot processing
@@ -766,11 +772,11 @@ class DiscordBackend : Backend {
 
     # TODO
     # See how Discord sends back @ mentions
-    # Translate formatted @mentions like <@U4AM3SYI8> into @devblackops
+    # Translate formatted @mentions like <@519392344089559040> into @devblackops
     hidden [string]_ProcessMentions([string]$Text) {
         $processed = $Text
 
-        $mentions = $processed | Select-String -Pattern '(?<name><@[^>]*>*)' -AllMatches | ForEach-Object {
+        $mentions = $processed | Select-String -Pattern '(<@\d+>)' -AllMatches | ForEach-Object {
             $_.Matches | ForEach-Object {
                 [pscustomobject]@{
                     FormattedId = $_.Value
