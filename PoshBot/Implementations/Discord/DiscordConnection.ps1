@@ -71,7 +71,7 @@ class DiscordConnection : Connection {
             [int]$heartbeatSequence     = 0
 
             # Connect to websocket
-            [ArraySegment[byte]]$buffer = [byte[]]::new(1024)
+            $buffer = [Net.WebSockets.WebSocket]::CreateClientBuffer(1024,1024)
             $cts = [Threading.CancellationTokenSource]::new()
             $task = $webSocket.ConnectAsync($Url, $cts.Token)
             do { Start-Sleep -Milliseconds 100 }
