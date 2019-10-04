@@ -76,7 +76,7 @@ class DiscordConnection : Connection {
             do { Start-Sleep -Milliseconds 100 }
             until ($task.IsCompleted)
 
-            [ArraySegment[byte]]$buffer = [byte[]]::new(4096)
+            [ArraySegment[byte]]$buffer = [byte[]]::new(16384)
             $ct = [Threading.CancellationToken]::new($false)
             $taskResult = $null
 
@@ -151,8 +151,18 @@ class DiscordConnection : Connection {
 
                 if (-not [string]::IsNullOrEmpty($jsonResult)) {
                     Write-Debug "Recv-Msg: $jsonResult"
-                    $msgs = ConvertFrom-Json -InputObject $jsonResult -Depth 50
-
+                    $jsonParams = @{
+                        InputObject = $jsonResult
+                    }
+                    if ($global:PSVersionTable.PSVersion.Major -ge 6) {
+                        $jsonParams['Depth'] = 50
+                    }
+                    try {
+                        $msgs = ConvertFrom-Json @jsonParams
+                    }
+                    catch {
+                        throw $_
+                    }
                     foreach ($msg in $msgs) {
                         switch ([DiscordOpCode]$msg.op) {
                             ([DiscordOpCode]::Dispatch) {
@@ -261,6 +271,9 @@ class DiscordConnection : Connection {
         # The receive job stopped for some reason. Reestablish the connection if the job isn't running
         if ($this.ReceiveJob.State -ne 'Running') {
             $this.LogInfo([LogSeverity]::Warning, "Receive job state is [$($this.ReceiveJob.State)]. Attempting to reconnect...")
+            if ($this.ReceiveJob.State -eq 'Failed') {
+                $this.LogInfo([LogSeverity]::Warning, "Failure message: $($this.ReceiveJob | Receive-Job *>&1)")
+            }
             Start-Sleep -Seconds 5
             $this.Connect()
         }

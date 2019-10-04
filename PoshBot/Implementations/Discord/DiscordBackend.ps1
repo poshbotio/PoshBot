@@ -67,7 +67,13 @@ class DiscordBackend : Backend {
             $this.LogDebug('Received message', $jsonResult)
 
             # We only care about certain message types from Discord
-            $discordMsg = ConvertFrom-Json $jsonResult -Depth 10
+            $jsonParams = @{
+                InputObject = $jsonResult
+            }
+            if ($global:PSVersionTable.PSVersion.Major -ge 6) {
+                $jsonParams['Depth'] = 10
+            }
+            $discordMsg = ConvertFrom-Json @jsonParams
             if ($discordMsg.t -in $this.MessageTypes) {
                 $msg = [Message]::new()
                 $msg.Id = $discordMsg.d.id
@@ -460,7 +466,7 @@ class DiscordBackend : Backend {
     # Populate the list of users the Discord guild
     [void]LoadUsers() {
         $this.LogDebug('Getting Discord users')
-        $membersUrl = "$($this.baseUrl)/guilds/$($this.GuildId)/members"
+        $membersUrl = "$($this.baseUrl)/guilds/$($this.GuildId)/members?limit=1000"
         $allUsers = $this._SendDiscordMsg(
             @{
                 Uri     = $membersUrl
@@ -468,6 +474,23 @@ class DiscordBackend : Backend {
             },
             [DiscordMsgSendType]::RestMethod
         )
+        if ($allUsers.Count -ge 1000) {
+            $i = 0
+            do {
+                $i++
+                $moreUsers = $this._SendDiscordMsg(
+                    @{
+                        Uri     = ($membersUrl + "&after$(1000 * $i - 1)")
+                        Headers = $this._headers
+                    },
+                    [DiscordMsgSendType]::RestMethod
+                )
+                if ($moreUsers) {
+                    $allUsers += $moreUsers
+                }
+            }
+            until ($moreUsers -lt 1000)
+        }
         $botUser = [pscustomobject]@{
             user = $this._SendDiscordMsg(
                 @{
@@ -725,13 +748,13 @@ class DiscordBackend : Backend {
     hidden [string]_ResolveEmoji([ReactionType]$Type) {
         $emoji = [string]::Empty
         Switch ($Type) {
-            'Success'        { return "`u{2705}" } # :white_check_mark:
-            'Failure'        { return "`u{2757}" } # :exclamation:
-            'Processing'     { return "`u{2699}" } # :gear:
-            'Warning'        { return "`u{26A0}" } # :warning:
-            'ApprovalNeeded' { return "`u{1F510}"} # :closed_lock_with_key:
-            'Cancelled'      { return "`u{26D4}" } # :no_entry:
-            'Denied'         { return "`u{1F6AB}"} # :no_entry_sign:
+            'Success'        { return "$([char]0x2705)" } # :white_check_mark:
+            'Failure'        { return "$([char]0x2757)" } # :exclamation:
+            'Processing'     { return "$([char]0x2699)" } # :gear:
+            'Warning'        { return "$([char]0x26A0)" } # :warning:
+            'ApprovalNeeded' { return "$([regex]::Unescape("\uD83D\uDD10"))"} # :closed_lock_with_key:
+            'Cancelled'      { return "$([char]0x26D4)" } # :no_entry:
+            'Denied'         { return "$([regex]::Unescape("\uD83D\uDEAB"))"} # :no_entry_sign:
         }
         return $emoji
     }
