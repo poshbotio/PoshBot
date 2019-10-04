@@ -1,16 +1,16 @@
 ---
-Module Name: poshbot
+Module Name: PoshBot
 Module Guid: 7bfb126c-b432-4921-989a-9802f525693f
 Download Help Link: {{ Update Download Link }}
 Help Version: {{ Please enter version of help manually (X.X.X.X) format }}
 Locale: en-US
 ---
 
-# poshbot Module
+# PoshBot Module
 ## Description
 {{ Fill in the Description }}
 
-## poshbot Cmdlets
+## PoshBot Cmdlets
 ### [Get-PoshBot](Get-PoshBot.md)
 {{ Fill in the Description }}
 
