@@ -162,7 +162,6 @@ class DiscordConnection : Connection {
                         $msgs = ConvertFrom-Json @jsonParams
                     }
                     catch {
-                        "$jsonResult`n`n" | Add-Content 'E:\Scripts\PoshBot\Discord\Recv-Msg_Json.json'
                         throw $Error[0]
                     }
                     foreach ($msg in $msgs) {
