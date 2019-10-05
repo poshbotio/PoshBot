@@ -3,6 +3,7 @@
 param(
     # Build task(s) to execute
     [parameter(ParameterSetName = 'task', Position = 0)]
+    [ValidateSet('default','Init','Test','Analyze','Pester','Build','Compile','Clean','Publish','Build-Docker','Publish-Docker','RegenerateHelp','UpdateMarkdownHelp','CreateExternalHelp')]
     [string[]]$Task = 'default',
 
     # Bootstrap dependencies

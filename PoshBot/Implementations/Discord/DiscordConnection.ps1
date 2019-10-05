@@ -71,12 +71,13 @@ class DiscordConnection : Connection {
             [int]$heartbeatSequence     = 0
 
             # Connect to websocket
+            $buffer = [Net.WebSockets.WebSocket]::CreateClientBuffer(1024,1024)
             $cts = [Threading.CancellationTokenSource]::new()
             $task = $webSocket.ConnectAsync($Url, $cts.Token)
             do { Start-Sleep -Milliseconds 100 }
             until ($task.IsCompleted)
 
-            [ArraySegment[byte]]$buffer = [byte[]]::new(4096)
+            #[ArraySegment[byte]]$buffer = [byte[]]::new(100000)
             $ct = [Threading.CancellationToken]::new($false)
             $taskResult = $null
 
@@ -135,24 +136,34 @@ class DiscordConnection : Connection {
 
             # Maintain websocket connection and put received messages on the output stream
             function Recv-Msg {
+                $jsonResult = ""
                 do {
                     $taskResult = $webSocket.ReceiveAsync($buffer, $ct)
                     while (-not $taskResult.IsCompleted) {
                         if ($stopWatch.ElapsedMilliseconds -ge $heartbeatInterval) {
                             Send-Heartbeat
                         }
-
                         [Threading.Thread]::Sleep(10)
                     }
+                    $jsonResult += [Text.Encoding]::UTF8.GetString($buffer, 0, $taskResult.Result.Count)
                 } until (
-                    $taskResult.Result.Count -lt 4096
+                    $taskResult.Result.EndOfMessage
                 )
-                $jsonResult = [Text.Encoding]::UTF8.GetString($buffer, 0, $taskResult.Result.Count)
 
                 if (-not [string]::IsNullOrEmpty($jsonResult)) {
                     Write-Debug "Recv-Msg: $jsonResult"
-                    $msgs = ConvertFrom-Json -InputObject $jsonResult -Depth 50
-
+                    $jsonParams = @{
+                        InputObject = $jsonResult
+                    }
+                    if ($global:PSVersionTable.PSVersion.Major -ge 6) {
+                        $jsonParams['Depth'] = 50
+                    }
+                    try {
+                        $msgs = ConvertFrom-Json @jsonParams
+                    }
+                    catch {
+                        throw $Error[0]
+                    }
                     foreach ($msg in $msgs) {
                         switch ([DiscordOpCode]$msg.op) {
                             ([DiscordOpCode]::Dispatch) {
@@ -261,6 +272,9 @@ class DiscordConnection : Connection {
         # The receive job stopped for some reason. Reestablish the connection if the job isn't running
         if ($this.ReceiveJob.State -ne 'Running') {
             $this.LogInfo([LogSeverity]::Warning, "Receive job state is [$($this.ReceiveJob.State)]. Attempting to reconnect...")
+            <# if ($this.ReceiveJob.State -eq 'Failed') {
+                $this.LogInfo([LogSeverity]::Warning, "Failure message: $($this.ReceiveJob | Receive-Job *>&1)")
+            } #>
             Start-Sleep -Seconds 5
             $this.Connect()
         }

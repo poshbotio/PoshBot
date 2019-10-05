@@ -1,5 +1,5 @@
 site_name: PoshBot Docs
-repo_url: https://github.com/devblackops/PoshBot
+repo_url: https://github.com/poshbotio/PoshBot
 theme: readthedocs
 pages:
   - Home: index.md
@@ -23,6 +23,7 @@ pages:
     - Run Poshbot as a Service: guides/run-poshbot-as-a-service.md
     - Backends:
       - Teams: guides/backends/setup-teams-backend.md
+      - Discord: guides/backends/setup-discord-backend.md
   - Tutorials:
     - Backend Development:
       - Overview: tutorials/backend-development/overview.md
