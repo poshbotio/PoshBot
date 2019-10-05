@@ -8,14 +8,6 @@ The Discord backend works similar to Slack's; messages are received from Discord
     * If you haven’t created one yet, go to [Discordapp.com](https://discordapp.com/) and create one.
     * If you do have one, log in to your account and open up the server in which you want your bot to live.
 
-* [Setting up the Discord Backend](#setting-up-the-discord-backend)
-    * [Prerequisites](#prerequisites)
-    * [Create an Application on Discord](#create-an-application-on-discord)
-    * [Authorize your Bot](#authorize-your-bot)
-    * [Find your Guild ID (Server ID)](#find-your-guild-id-server-id)
-    * [Create PoshBot Startup Script](#create-poshbot-startup-script)
-    * [Start PoshBot](#start-poshbot)
-
 ## Create an Application on Discord
 
 First, you will need to create an application on Discord. Open a text editor to copy some information down as you follow these steps:
