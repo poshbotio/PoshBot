@@ -6,6 +6,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.12.0] Unreleased
+
+### Added
+
+- PoshBot now has native support for using Discord as a backend! Special thanks to [@michaeltlombardi](https://github.com/michaeltlombardi) for kicking off the initial work and to [@scrthq](https://github.com/scrthq) for helping to fix some bugs and creating the documentation.
+
 ## [0.11.8] 2019-08-30
 
 ### Fixed
