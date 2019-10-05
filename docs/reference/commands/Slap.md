@@ -26,6 +26,11 @@ Slap -Bot <Object> [-User] <String> [[-Object] <String>] [<CommonParameters>]
 !slap --user jaap
 ```
 
+### EXAMPLE 2
+```
+!slap jaap foamfinger
+```
+
 ## PARAMETERS
 
 ### -Bot
