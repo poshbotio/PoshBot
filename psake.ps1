@@ -34,8 +34,8 @@ task Init {
 task Test -Depends Init, Analyze, Pester -description 'Run test suite'
 
 task Analyze -Depends Build {
-    $analysis = Invoke-ScriptAnalyzer -Path $outputModVerDir -Verbose:$false
-    $errors = $analysis | Where-Object {$_.Severity -eq 'Error'}
+    $analysis = Invoke-ScriptAnalyzer -Path $outputModVerDir -Settings ./ScriptAnalyzerSettings.psd1 -Verbose:$false
+    $errors   = $analysis | Where-Object {$_.Severity -eq 'Error'}
     $warnings = $analysis | Where-Object {$_.Severity -eq 'Warning'}
 
     if (($errors.Count -eq 0) -and ($warnings.Count -eq 0)) {
@@ -124,18 +124,18 @@ Task Publish -Depends Test {
 task Clean -depends Init {
     Remove-Module -Name $env:BHProjectName -Force -ErrorAction SilentlyContinue
 
-    if (Test-Path -Path $outputDir) {
-        Get-ChildItem -Path $outputDir -Recurse | Remove-Item -Force -Recurse
+    if (Test-Path -Path $outputModVerDir) {
+        Get-ChildItem -Path $outputModVerDir -Recurse | Remove-Item -Force -Recurse
     } else {
-        New-Item -Path $outputDir -ItemType Directory > $null
+        New-Item -Path $outputModVerDir -ItemType Directory -Force > $null
     }
-    "    Cleaned previous output directory [$outputDir]"
+    "    Cleaned previous output directory [$outputModVerDir]"
 } -description 'Cleans module output directory'
 
 task Compile -depends Clean {
     # Create module output directory
-    $modDir = New-Item -Path $outputModDir -ItemType Directory
-    New-Item -Path $outputModVerDir -ItemType Directory > $null
+    $modDir = New-Item -Path $outputModDir -ItemType Directory -Force
+    New-Item -Path $outputModVerDir -Force -ItemType Directory > $null
 
     # Append items to psm1
     Write-Verbose -Message 'Creating psm1...'
