@@ -26,7 +26,7 @@ function Slap {
             item = 'large trout'
             thumbnail = 'https://upload.wikimedia.org/wikipedia/commons/1/16/Rainbow_trout_transparent.png'
         }
-        foamfinger = @{
+        finger = @{
             item = 'giant foam finger'
             thumbnail = 'https://images.vexels.com/media/users/3/153013/isolated/preview/517c07f5ff433028345e10b138870119-american-foam-finger-design-element-by-vexels.png'
         }
@@ -34,9 +34,13 @@ function Slap {
             item = 'mechanical keyboard'
             thumbnail = 'https://cdn.pixabay.com/photo/2013/07/13/11/50/computer-158770_960_720.png'
         }
-        foamsword = @{
+        sword = @{
             item = 'foam sword'
             thumbnail = 'https://upload.wikimedia.org/wikipedia/commons/2/2b/Foamswordofrecall.png'
+        }
+        noodles = @{
+            item = 'pile of noodles'
+            thumbnail = 'http://pngimg.com/uploads/noodle/noodle_PNG33.png'
         }
     }
     $choice = if ($PSBoundParameters.ContainsKey('Object') -and $objects.ContainsKey($Object)) {
