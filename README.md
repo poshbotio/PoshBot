@@ -1,9 +1,9 @@
 
 # PoshBot
 
-| Azure Pipelines | Documentation | PS Gallery | License
-|--------|--------------------|------------|-----------|
-[![Azure Pipelines Build Status][azure-pipeline-badge]][azure-pipeline-build] | [![Documentation Status][docs-badge]][docs] | [![PowerShell Gallery][psgallery-badge]][psgallery] | [![License][license-badge]][license]
+| Azure Pipelines | GitHub Actions | Documentation | PS Gallery | License |
+|-----------------|----------------|---------------|------------|---------|
+[![Azure Pipelines Build Status][azure-pipeline-badge]][azure-pipeline-build] | [![GitHub Actions Status][github-actions-badge]][github-actions-build] | [![Documentation Status][docs-badge]][docs] | [![PowerShell Gallery][psgallery-badge]][psgallery] | [![License][license-badge]][license]
 <!-- [![Patreon](https://img.shields.io/badge/patreon-donate-yellow.svg)](https://www.patreon.com/devblackops/memberships) -->
 
 ---
@@ -123,28 +123,30 @@ Get-Command -Module PoshBot
 
 CommandType     Name                                               Version    Source
 -----------     ----                                               -------    ------
-Function        Get-PoshBot                                        0.11.4     poshbot
-Function        Get-PoshBotConfiguration                           0.11.4     poshbot
-Function        Get-PoshBotStatefulData                            0.11.4     poshbot
-Function        New-PoshBotCardResponse                            0.11.4     poshbot
-Function        New-PoshBotConfiguration                           0.11.4     poshbot
-Function        New-PoshBotFileUpload                              0.11.4     poshbot
-Function        New-PoshBotInstance                                0.11.4     poshbot
-Function        New-PoshBotMiddlewareHook                          0.11.4     poshbot
-Function        New-PoshBotScheduledTask                           0.11.4     poshbot
-Function        New-PoshBotSlackBackend                            0.11.4     poshbot
-Function        New-PoshBotTeamsBackend                            0.11.4     poshbot
-Function        New-PoshBotTextResponse                            0.11.4     poshbot
-Function        Remove-PoshBotStatefulData                         0.11.4     poshbot
-Function        Save-PoshBotConfiguration                          0.11.4     poshbot
-Function        Set-PoshBotStatefulData                            0.11.4     poshbot
-Function        Start-PoshBot                                      0.11.4     poshbot
-Function        Stop-Poshbot                                       0.11.4     poshbot
+Function        Get-PoshBot                                        0.12.0     poshbot
+Function        Get-PoshBotConfiguration                           0.12.0     poshbot
+Function        Get-PoshBotStatefulData                            0.12.0     poshbot
+Function        New-PoshBotCardResponse                            0.12.0     poshbot
+Function        New-PoshBotConfiguration                           0.12.0     poshbot
+Function        New-PoshBotDiscordBackend                          0.12.0     poshbot
+Function        New-PoshBotFileUpload                              0.12.0     poshbot
+Function        New-PoshBotInstance                                0.12.0     poshbot
+Function        New-PoshBotMiddlewareHook                          0.12.0     poshbot
+Function        New-PoshBotScheduledTask                           0.12.0     poshbot
+Function        New-PoshBotSlackBackend                            0.12.0     poshbot
+Function        New-PoshBotTeamsBackend                            0.12.0     poshbot
+Function        New-PoshBotTextResponse                            0.12.0     poshbot
+Function        Remove-PoshBotStatefulData                         0.12.0     poshbot
+Function        Save-PoshBotConfiguration                          0.12.0     poshbot
+Function        Set-PoshBotStatefulData                            0.12.0     poshbot
+Function        Start-PoshBot                                      0.12.0     poshbot
+Function        Stop-Poshbot                                       0.12.0     poshbot
 ```
 
 [azure-pipeline-badge]: https://dev.azure.com/devblackops/PoshBot/_apis/build/status/PoshBot-CI
 [azure-pipeline-build]: https://dev.azure.com/devblackops/PoshBot/_build/latest?definitionId=3
-(https://dev.azure.com/dotnet/ReactiveUI/_build/latest?definitionId=11)
+[github-actions-badge]: https://github.com/poshbotio/PoshBot/workflows/CI/badge.svg
+[github-actions-build]: https://github.com/poshbotio/PoshBot/actions
 [docs-badge]: https://readthedocs.org/projects/poshbot/badge/?version=latest
 [docs]: http://poshbot.readthedocs.io/en/latest/
 [psgallery-badge]: https://img.shields.io/powershellgallery/dt/poshbot.svg
