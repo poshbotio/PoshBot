@@ -1,10 +1,9 @@
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingConvertToSecureStringWithPlainText', '', Scope='Class', Target='*')]
-
 enum DiscordMsgSendType {
     WebRequest
     RestMethod
 }
 
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingConvertToSecureStringWithPlainText', '', Scope='Class', Target='*')]
 class DiscordBackend : Backend {
 
     [string]$BaseUrl = 'https://discordapp.com/api'

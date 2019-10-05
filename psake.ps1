@@ -43,13 +43,13 @@ task Analyze -Depends Build {
     }
 
     if (@($errors).Count -gt 0) {
+        $errors | Format-Table -AutoSize
         Write-Error -Message 'One or more Script Analyzer errors were found. Build cannot continue!'
-        $errors | Format-Table
     }
 
     if (@($warnings).Count -gt 0) {
+        $warnings | Format-Table -AutoSize
         Write-Warning -Message 'One or more Script Analyzer warnings were found. These should be corrected.'
-        $warnings | Format-Table
     }
 } -description 'Run PSScriptAnalyzer'
 
