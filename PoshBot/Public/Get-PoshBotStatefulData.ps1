@@ -30,6 +30,7 @@ function Get-PoshBotStatefulData {
     .LINK
         Start-PoshBot
     #>
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidGlobalVars', '', Scope='Function', Target='*')]
     [cmdletbinding()]
     param(
         [string]$Name = '*',

@@ -691,7 +691,6 @@ class PluginManager : BaseLogger {
     }
 
     [hashtable]GetPluginConfig([string]$PluginName, [string]$Version) {
-        $config = @{}
         if ($pluginConfig = $this._Storage.GetConfig('plugins')) {
             if ($thisPluginConfig = $pluginConfig[$PluginName]) {
                 if (-not [string]::IsNullOrEmpty($Version)) {

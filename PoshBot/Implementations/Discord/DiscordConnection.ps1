@@ -82,6 +82,7 @@ class DiscordConnection : Connection {
             $taskResult = $null
 
             function New-DiscordPayload {
+                [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Scope='Function', Target='*')]
                 [OutputType([string])]
                 [cmdletbinding()]
                 param(
@@ -113,7 +114,7 @@ class DiscordConnection : Connection {
                 $heartbeat = New-DiscordPayload -Opcode 'Heartbeat' -Data $heartbeatSequence
                 [ArraySegment[byte]]$bytes = [Text.Encoding]::UTF8.GetBytes($heartbeat)
                 Write-Debug "Sending heartbeat: [$heartbeatSequence]"
-                $sendResult = $WebSocket.SendAsync($bytes, [Net.WebSockets.WebSocketMessageType]::Text, $true, $ct).GetAwaiter().GetResult()
+                $WebSocket.SendAsync($bytes, [Net.WebSockets.WebSocketMessageType]::Text, $true, $ct).GetAwaiter().GetResult() > $null
                 $script:heartbeatSequence += 1
                 $stopWatch.Restart()
             }
@@ -131,11 +132,11 @@ class DiscordConnection : Connection {
                 $id = New-DiscordPayload -Opcode 'Identify' -Data $data
                 [ArraySegment[byte]]$bytes = [Text.Encoding]::UTF8.GetBytes($id)
                 Write-Debug 'Sending Identify packet'
-                $sendResult = $WebSocket.SendAsync($bytes, [Net.WebSockets.WebSocketMessageType]::Text, $true, $ct).GetAwaiter().GetResult()
+                $WebSocket.SendAsync($bytes, [Net.WebSockets.WebSocketMessageType]::Text, $true, $ct).GetAwaiter().GetResult() > $null
             }
 
             # Maintain websocket connection and put received messages on the output stream
-            function Recv-Msg {
+            function Receive-Msg {
                 $jsonResult = ""
                 do {
                     $taskResult = $webSocket.ReceiveAsync($buffer, $ct)
@@ -151,7 +152,7 @@ class DiscordConnection : Connection {
                 )
 
                 if (-not [string]::IsNullOrEmpty($jsonResult)) {
-                    Write-Debug "Recv-Msg: $jsonResult"
+                    Write-Debug "Receive-Msg: $jsonResult"
                     $jsonParams = @{
                         InputObject = $jsonResult
                     }
@@ -215,7 +216,7 @@ class DiscordConnection : Connection {
             $stopWatch.Start()
             $firstHeartbeat = $true
             while ($webSocket.State -eq [Net.WebSockets.WebSocketState]::Open) {
-                Recv-Msg
+                Receive-Msg
             }
 
             $socketStatus = [pscustomobject]@{

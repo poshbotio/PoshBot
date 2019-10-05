@@ -257,7 +257,7 @@ class DiscordBackend : Backend {
                             $this.LogDebug("Sending card response back to Discord channel [$sendTo]", $json)
                             $msgPostUrl = '{0}/channels/{1}/messages' -f $this.baseUrl, $sendTo
 
-                            $discordResponse = $this._SendDiscordMsg(
+                            $this._SendDiscordMsg(
                                 @{
                                     Uri         = $msgPostUrl
                                     Method      = 'Post'
@@ -337,7 +337,7 @@ class DiscordBackend : Backend {
                                 embed   = $embed
                             } | ConvertTo-Json -Compress -Depth 20
                             $this.LogDebug("Sending card response back to Discord channel [$sendTo]", $json)
-                            $discordResponse = $this._SendDiscordMsg(
+                            $this._SendDiscordMsg(
                                 @{
                                     Uri         = $msgPostUrl
                                     Method      = 'Post'
@@ -384,7 +384,7 @@ class DiscordBackend : Backend {
                 } | ConvertTo-Json -Compress
                 $msgPostUrl = '{0}/channels/{1}/messages' -f $this.baseUrl, $Response.To
                 try {
-                    $discordResponse = $this._SendDiscordMsg(
+                    $this._SendDiscordMsg(
                         @{
                             Uri         = $msgPostUrl
                             Method      = 'Post'

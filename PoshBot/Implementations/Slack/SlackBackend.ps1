@@ -444,7 +444,7 @@ class SlackBackend : Backend {
                         $att = New-SlackMessageAttachment @attParams
                         $msg = $att | New-SlackMessage -Channel $sendTo -AsUser
                         $this.LogDebug("Sending card response back to Slack channel [$sendTo]", $att)
-                        $slackResponse = $msg | Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Verbose:$false
+                        $msg | Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Verbose:$false > $null
                     }
                     break
                 }
@@ -458,7 +458,7 @@ class SlackBackend : Backend {
                             $t = $chunk
                         }
                         $this.LogDebug("Sending text response back to Slack channel [$sendTo]", $t)
-                        $slackResponse = Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Channel $sendTo -Text $t -Verbose:$false -AsUser
+                        Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Channel $sendTo -Text $t -Verbose:$false -AsUser > $null
                     }
                     break
                 }
@@ -512,7 +512,7 @@ class SlackBackend : Backend {
         if ($Response.Text.Count -gt 0) {
             foreach ($t in $Response.Text) {
                 $this.LogDebug("Sending response back to Slack channel [$($Response.To)]", $t)
-                $slackResponse = Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Channel $Response.To -Text $t -Verbose:$false -AsUser
+                Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Channel $Response.To -Text $t -Verbose:$false -AsUser > $null
             }
         }
     }
