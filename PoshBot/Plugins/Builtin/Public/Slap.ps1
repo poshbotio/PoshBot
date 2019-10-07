@@ -1,9 +1,11 @@
 function Slap {
     <#
     .SYNOPSIS
-        Slap a user with a large trout
+        Slap a user with an object
     .PARAMETER User
         The user that will be slapped
+    .PARAMETER Object
+        The object to slap the user with. Defaults to a random object.
     .EXAMPLE
         !slap --user jaap
 
@@ -39,7 +41,7 @@ function Slap {
             thumbnail = 'https://upload.wikimedia.org/wikipedia/commons/2/2b/Foamswordofrecall.png'
         }
         noodles = @{
-            item = 'pile of noodles'
+            item = 'pile of wet noodles'
             thumbnail = 'http://pngimg.com/uploads/noodle/noodle_PNG33.png'
         }
     }
