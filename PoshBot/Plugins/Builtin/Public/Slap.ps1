@@ -9,8 +9,12 @@ function Slap {
     .EXAMPLE
         !slap --user jaap
 
+        Slaps Jaap with a random object
+
     .EXAMPLE
-        !slap jaap foamfinger
+        !slap jaap finger
+
+        Slaps Jaap with a giant foam finger
     #>
     [cmdletbinding()]
     param(
