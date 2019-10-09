@@ -92,9 +92,9 @@ function New-ScheduledCommand {
         $Bot.Scheduler.ScheduleMessage($schedMsg)
 
         if ($PSCmdlet.ParameterSetName -eq 'repeat') {
-            New-PoshBotCardResponse -Type Normal -Text "Command [$Command] scheduled at interval [$Value $($Interval.ToLower())]." -ThumbnailUrl $thumb.success
+            New-PoshBotCardResponse -Type Normal -Text "Command [$Command] with ID [$($schedMsg.Id)] scheduled at interval [$Value $($Interval.ToLower())]." -ThumbnailUrl $thumb.success
         } elseIf ($PSCmdlet.ParameterSetName -eq 'once') {
-            New-PoshBotCardResponse -Type Normal -Text "Command [$Command] scheduled for one time at [$([datetime]$StartAfter)]." -ThumbnailUrl $thumb.success
+            New-PoshBotCardResponse -Type Normal -Text "Command [$Command] with ID [$($schedMsg.Id)] scheduled for one time at [$([datetime]$StartAfter)]." -ThumbnailUrl $thumb.success
         }
     } catch {
         New-PoshBotCardResponse -Type Error -Text $_.ToString() -ThumbnailUrl $thumb.error

@@ -4,7 +4,7 @@
 # chat network like a normal message
 class ScheduledMessage {
 
-    [string]$Id = (New-Guid).ToString() -Replace '-', ''
+    [string]$Id = (New-Guid).Guid.Split('-')[0]
 
     [TimeInterval]$TimeInterval
 
