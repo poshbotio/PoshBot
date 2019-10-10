@@ -14,7 +14,13 @@ class DiscordBackend : Backend {
 
     hidden [datetime]$_lastTimeMessageSent = [datetime]::UtcNow
 
-    hidden [Collections.Queue]$_sendQueue = [Collections.Queue]::new()
+    hidden [hashtable]$_rateLimit = @{
+        MaxRetries = 3
+        Limit      = 5
+        Remaining  = 5
+        Reset      = 0
+        ResetAfter = 0
+    }
 
     [string[]]$MessageTypes = @(
         'CHANNEL_CREATE'
@@ -262,10 +268,7 @@ class DiscordBackend : Backend {
                                     Uri         = $msgPostUrl
                                     Method      = 'Post'
                                     Body        = $json
-                                    ContentType = 'application/json'
-                                    Headers     = $this._headers
-                                },
-                                [DiscordMsgSendType]::RestMethod
+                                }
                             )
                         } catch {
                             $this.LogInfo([LogSeverity]::Error, 'Received error while sending response back to Discord', [ExceptionFormatter]::Summarize($_))
@@ -296,10 +299,7 @@ class DiscordBackend : Backend {
                                     Uri         = $msgPostUrl
                                     Method      = 'Post'
                                     Body        = $json
-                                    ContentType = 'application/json'
-                                    Headers     = $this._headers
-                                },
-                                [DiscordMsgSendType]::RestMethod
+                                }
                             )
                         } catch {
                             $this.LogInfo([LogSeverity]::Error, 'Received error while sending response back to Discord', [ExceptionFormatter]::Summarize($_))
@@ -342,10 +342,7 @@ class DiscordBackend : Backend {
                                     Uri         = $msgPostUrl
                                     Method      = 'Post'
                                     Body        = $json
-                                    ContentType = 'application/json'
-                                    Headers     = $this._headers
-                                },
-                                [DiscordMsgSendType]::RestMethod
+                                }
                             )
                             break
                         } else {
@@ -365,10 +362,8 @@ class DiscordBackend : Backend {
                             Uri         = $msgPostUrl
                             Method      = 'Post'
                             ContentType = 'multipart/form-data'
-                            Headers     = $this._headers
                             Form        = $form
-                        },
-                        [DiscordMsgSendType]::RestMethod
+                        }
                     )
                     break
                 }
@@ -389,10 +384,7 @@ class DiscordBackend : Backend {
                             Uri         = $msgPostUrl
                             Method      = 'Post'
                             Body        = $json
-                            ContentType = 'application/json'
-                            Headers     = $this._headers
-                        },
-                        [DiscordMsgSendType]::RestMethod
+                        }
                     )
                 } catch {
                     $this.LogInfo([LogSeverity]::Error, 'Received error while sending response back to Discord', [ExceptionFormatter]::Summarize($_))
@@ -417,8 +409,7 @@ class DiscordBackend : Backend {
                     Uri             = $uri
                     Method          = 'Put'
                     Headers         = $this._headers
-                },
-                [DiscordMsgSendType]::WebRequest
+                }
             )
         } catch {
             $this.LogInfo([LogSeverity]::Error, 'Error adding reaction to message', [ExceptionFormatter]::Summarize($_))
@@ -442,8 +433,7 @@ class DiscordBackend : Backend {
                     Uri             = $uri
                     Method          = 'Delete'
                     Headers         = $this._headers
-                },
-                [DiscordMsgSendType]::WebRequest
+                }
             )
         } catch {
             $this.LogInfo([LogSeverity]::Error, 'Error removing reaction from message', [ExceptionFormatter]::Summarize($_))
@@ -471,8 +461,7 @@ class DiscordBackend : Backend {
             @{
                 Uri     = $membersUrl
                 Headers = $this._headers
-            },
-            [DiscordMsgSendType]::RestMethod
+            }
         )
         if ($allUsers.Count -ge 1000) {
             $i = 0
@@ -482,8 +471,7 @@ class DiscordBackend : Backend {
                     @{
                         Uri     = ($membersUrl + "&after$(1000 * $i - 1)")
                         Headers = $this._headers
-                    },
-                    [DiscordMsgSendType]::RestMethod
+                    }
                 )
                 if ($moreUsers) {
                     $allUsers += $moreUsers
@@ -496,8 +484,7 @@ class DiscordBackend : Backend {
                 @{
                     Uri     = "$($this.baseUrl)/users/@me"
                     Headers = $this._headers
-                },
-                [DiscordMsgSendType]::RestMethod
+                }
             )
         }
         $allUsers += $botUser
@@ -539,8 +526,7 @@ class DiscordBackend : Backend {
             @{
                 Uri     = $channelsUrl
                 Headers = $this._headers
-            },
-            [DiscordMsgSendType]::RestMethod
+            }
         )
         $this.LogDebug("[$($allChannels.Count)] channels returned")
 
@@ -570,8 +556,7 @@ class DiscordBackend : Backend {
                     @{
                         Uri     = $channelsUrl
                         Headers = $this._headers
-                    },
-                    [DiscordMsgSendType]::RestMethod
+                    }
                 )
                 $discordChannel      = [DiscordChannel]::new()
                 $discordChannel.Id   = $channel.id
@@ -795,28 +780,89 @@ class DiscordBackend : Backend {
     }
 
     # Send a message back to Discord
-    # Delay the messages if we need to so we're not rate limited
-    hidden [object]_SendDiscordMsg([hashtable]$Params, [DiscordMsgSendType]$Type ) {
-        $lastMsgSendDiff = ([datetime]::UtcNow - $this._lastTimeMessageSent).Milliseconds
-        if ($lastMsgSendDiff -lt 500) {
-            Start-Sleep -Milliseconds (500 - $lastMsgSendDiff)
-        }
+    # Track rate limiting and delay sending if needed
+    # Doc: https://discordapp.com/developers/docs/topics/rate-limits
+    # Rate limiting logic inspired from Mark Kraus and PSRAW:  https://github.com/markekraus/PSRAW/blob/staging/PSRAW/Public/API/Invoke-RedditRequest.ps1
+    hidden [object]_SendDiscordMsg([hashtable]$Params) {
 
-        $sendMsg = @{
-            Type   = $Type
-            Params = $Params
-        }
-        $this._sendQueue.Enqueue($sendMsg)
+        if (-not $Params['ContentType']) {$Params['ContentType'] = 'application/json'}
+        $Params['Verbose']                          = $false
+        $Params['UseBasicParsing']                  = $true
+        $Params['Headers']                          = $this._headers
+        $Params['Headers']['X-RateLimit-Precision'] = 'millisecond'
 
-        $Params['Verbose'] = $false
-        if ($Type -eq [DiscordMsgSendType]::WebRequest) {
-            $Params['UseBasicParsing'] = $true
-            $this._lastTimeMessageSent = [datetime]::UtcNow
-            return Invoke-WebRequest @params
-        } else {
-            $this._lastTimeMessageSent = [datetime]::UtcNow
-            return Invoke-RestMethod @params
+        $this._WaitRateLimit()
+
+        $succeeded      = $false
+        $attempts       = 0
+        $responseObject = $null
+        $response       = $null
+        do {
+            try {
+                $response  = Invoke-WebRequest @Params
+                $succeeded = $true
+
+                $contentType = $this._GetHttpResponseContentType($response)
+                if ($contentType -eq 'application/json') {
+                    $responseObject = $response.Content | ConvertFrom-Json
+                } else {
+                    $this.LogInfo([LogSeverity]::Error, 'Unhandled content-type. Response will be raw.')
+                    $responseObject = $response.Content
+                }
+            } catch {
+                $exResponse   = $_.Exception.Response
+                $responseBody = $_.ErrorDetails.Message
+                if ($null -ne $exResponse -and $exResponse.GetType().FullName -like 'System.Net.HttpWebResponse') {
+                    $stream          = $exResponse.GetResponseStream()
+                    $stream.Position = 0
+                    $streamReader    = [System.IO.StreamReader]::new($stream)
+                    $responseBody    = $streamReader.ReadToEnd()
+                }
+                $errorMessage = "Unable to query URI '{0}': {1}: {2}" -f (
+                    $Params.Uri,
+                    $_.Exception.Message,
+                    $responseBody
+                )
+                $this.LogInfo([LogSeverity]::Error, $errorMessage)
+
+                # 429 - rate limit?
+                if ($exResponse.StatusCode -eq 429) {
+                    $rateLimitMsg = $responseBody | ConvertFrom-Json
+                    $this.LogInfo([LogSeverity]::Warning, $responseBody)
+                    [Threading.Thread]::Sleep($rateLimitMsg.retry_after)
+                    $attempts++
+                }
+
+                $this.LogDebug("Attempted [$attempts] of [$($this._rateLimit.MaxRetries)]")
+            }
+            $this._UpdateRateLimit($response)
+        } until ($succeeded -or ($attempts -eq $this._rateLimit.MaxRetries))
+
+        return $responseObject
+    }
+
+    # Pause briefly if we're rate limited
+    hidden [void]_WaitRateLimit() {
+        if ($this._rateLimit.Remaining -eq 0) {
+            $this.LogInfo([LogSeverity]::Warning, "Rate limit reached. Sleeping [$($this._rateLimit.ResetAfter)] milliseconds")
+            [Threading.Thread]::Sleep($this._rateLimit.ResetAfter)
         }
+    }
+
+    # Update our internal rate limit tracking from the response headers Discord sends back
+    hidden [void]_UpdateRateLimit([Microsoft.PowerShell.Commands.WebResponseObject]$Response) {
+        $this._rateLimit.Limit      = $Response.Headers.'X-RateLimit-Limit'       | Select-Object -First 1
+        $this._rateLimit.Remaining  = $Response.Headers.'X-RateLimit-Remaining'   | Select-Object -First 1
+        $this._rateLimit.Reset      = $Response.Headers.'X-RateLimit-Reset'       | Select-Object -First 1
+        $this._rateLimit.ResetAfter = $Response.Headers.'X-RateLimit-Reset-After' | Select-Object -First 1
+    }
+
+    # Return the content type of the HTTP response
+    hidden [string]_GetHttpResponseContentType([Microsoft.PowerShell.Commands.WebResponseObject]$Response) {
+        return @(
+            $Response.BaseResponse.Content.Headers.ContentType.MediaType
+            $Response.BaseResponse.ContentType
+        ).Where({-not [string]::IsNullOrEmpty($_)}, 'First', 1)
     }
 
     # Create a DM channel with a user
@@ -832,10 +878,7 @@ class DiscordBackend : Backend {
                     Uri         = $channelPostUrl
                     Method      = 'Post'
                     Body        = $json
-                    ContentType = 'application/json'
-                    Headers     = $this._headers
-                },
-                [DiscordMsgSendType]::RestMethod
+                }
             )
             $this.LogDebug("DM channel [$($dmChannel.id)] created", $dmChannel)
         } catch {
