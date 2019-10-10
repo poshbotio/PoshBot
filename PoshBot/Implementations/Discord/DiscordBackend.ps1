@@ -265,9 +265,9 @@ class DiscordBackend : Backend {
 
                             $this._SendDiscordMsg(
                                 @{
-                                    Uri         = $msgPostUrl
-                                    Method      = 'Post'
-                                    Body        = $json
+                                    Uri    = $msgPostUrl
+                                    Method = 'Post'
+                                    Body   = $json
                                 }
                             )
                         } catch {
@@ -296,9 +296,9 @@ class DiscordBackend : Backend {
                         try {
                             $this._SendDiscordMsg(
                                 @{
-                                    Uri         = $msgPostUrl
-                                    Method      = 'Post'
-                                    Body        = $json
+                                    Uri    = $msgPostUrl
+                                    Method = 'Post'
+                                    Body   = $json
                                 }
                             )
                         } catch {
@@ -339,9 +339,9 @@ class DiscordBackend : Backend {
                             $this.LogDebug("Sending card response back to Discord channel [$sendTo]", $json)
                             $this._SendDiscordMsg(
                                 @{
-                                    Uri         = $msgPostUrl
-                                    Method      = 'Post'
-                                    Body        = $json
+                                    Uri    = $msgPostUrl
+                                    Method = 'Post'
+                                    Body   = $json
                                 }
                             )
                             break
@@ -381,9 +381,9 @@ class DiscordBackend : Backend {
                 try {
                     $this._SendDiscordMsg(
                         @{
-                            Uri         = $msgPostUrl
-                            Method      = 'Post'
-                            Body        = $json
+                            Uri    = $msgPostUrl
+                            Method = 'Post'
+                            Body   = $json
                         }
                     )
                 } catch {
@@ -406,9 +406,8 @@ class DiscordBackend : Backend {
             $this.LogDebug("Adding reaction [$emoji] to message Id [$($Message.Id)]")
             $this._SendDiscordMsg(
                 @{
-                    Uri             = $uri
-                    Method          = 'Put'
-                    Headers         = $this._headers
+                    Uri    = $uri
+                    Method = 'Put'
                 }
             )
         } catch {
@@ -430,9 +429,8 @@ class DiscordBackend : Backend {
             $this.LogDebug("Removing reaction [$emoji] from message Id [$($Message.Id)]")
             $this._SendDiscordMsg(
                 @{
-                    Uri             = $uri
-                    Method          = 'Delete'
-                    Headers         = $this._headers
+                    Uri    = $uri
+                    Method = 'Delete'
                 }
             )
         } catch {
@@ -459,8 +457,7 @@ class DiscordBackend : Backend {
         $membersUrl = "$($this.baseUrl)/guilds/$($this.GuildId)/members?limit=1000"
         $allUsers = $this._SendDiscordMsg(
             @{
-                Uri     = $membersUrl
-                Headers = $this._headers
+                Uri = $membersUrl
             }
         )
         if ($allUsers.Count -ge 1000) {
@@ -469,8 +466,7 @@ class DiscordBackend : Backend {
             do {
                 $moreUsers = $this._SendDiscordMsg(
                     @{
-                        Uri     = ($membersUrl + "&after=$lastUserId")
-                        Headers = $this._headers
+                        Uri = ($membersUrl + "&after=$lastUserId")
                     }
                 )
                 if ($moreUsers) {
@@ -481,8 +477,7 @@ class DiscordBackend : Backend {
         $botUser = [pscustomobject]@{
             user = $this._SendDiscordMsg(
                 @{
-                    Uri     = "$($this.baseUrl)/users/@me"
-                    Headers = $this._headers
+                    Uri = "$($this.baseUrl)/users/@me"
                 }
             )
         }
@@ -523,8 +518,7 @@ class DiscordBackend : Backend {
         $channelsUrl = "$($this.baseUrl)/guilds/$($this.GuildId)/channels"
         $allChannels = $this._SendDiscordMsg(
             @{
-                Uri     = $channelsUrl
-                Headers = $this._headers
+                Uri = $channelsUrl
             }
         )
         $this.LogDebug("[$($allChannels.Count)] channels returned")
@@ -553,8 +547,7 @@ class DiscordBackend : Backend {
             try {
                 $channel = $this._SendDiscordMsg(
                     @{
-                        Uri     = $channelsUrl
-                        Headers = $this._headers
+                        Uri = $channelsUrl
                     }
                 )
                 $discordChannel      = [DiscordChannel]::new()
@@ -870,9 +863,9 @@ class DiscordBackend : Backend {
         try {
             $dmChannel = $this._SendDiscordMsg(
                 @{
-                    Uri         = $channelPostUrl
-                    Method      = 'Post'
-                    Body        = $json
+                    Uri    = $channelPostUrl
+                    Method = 'Post'
+                    Body   = $json
                 }
             )
             $this.LogDebug("DM channel [$($dmChannel.id)] created", $dmChannel)
