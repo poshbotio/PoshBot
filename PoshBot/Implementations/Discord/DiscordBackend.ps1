@@ -464,20 +464,19 @@ class DiscordBackend : Backend {
             }
         )
         if ($allUsers.Count -ge 1000) {
-            $i = 0
+            $lastUserId = $allUsers.user.id | Sort-Object | Select-Object -Last 1
+            $this.LogDebug("Paged response returned [$($allUsers.Count)] users. Getting users after ID [$lastUserId]")
             do {
-                $i++
                 $moreUsers = $this._SendDiscordMsg(
                     @{
-                        Uri     = ($membersUrl + "&after$(1000 * $i - 1)")
+                        Uri     = ($membersUrl + "&after=$lastUserId")
                         Headers = $this._headers
                     }
                 )
                 if ($moreUsers) {
                     $allUsers += $moreUsers
                 }
-            }
-            until ($moreUsers -lt 1000)
+            } until ($moreUsers.Count -lt 1000)
         }
         $botUser = [pscustomobject]@{
             user = $this._SendDiscordMsg(
@@ -727,8 +726,6 @@ class DiscordBackend : Backend {
         return $chunks
     }
 
-    # TODO
-    # Validate what the Discord emoji names for these are
     # Resolve a reaction type to an emoji
     hidden [string]_ResolveEmoji([ReactionType]$Type) {
         $emoji = [string]::Empty
@@ -744,8 +741,6 @@ class DiscordBackend : Backend {
         return $emoji
     }
 
-    # TODO
-    # See how Discord sends back @ mentions
     # Translate formatted @mentions like <@519392344089559040> into @devblackops
     hidden [string]_ProcessMentions([string]$Text) {
         $processed = $Text
