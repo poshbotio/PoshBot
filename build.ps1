@@ -1,3 +1,4 @@
+#Requires -Module @{ModuleName = 'psake' ; RequiredVersion = '4.9.0'}
 #Requires -Module @{ModuleName = 'BuildHelpers' ; RequiredVersion = '2.0.11'}
 #Requires -Module @{ModuleName = 'platyPS' ; RequiredVersion = '0.14.0';}
 #Requires -Module @{ModuleName = 'Pester' ; RequiredVersion = '4.8.1';}
