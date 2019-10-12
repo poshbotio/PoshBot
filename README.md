@@ -1,20 +1,25 @@
 
 # PoshBot
 
-| Azure Pipelines | Documentation | PS Gallery | License
-|--------|--------------------|------------|-----------|
-[![Azure Pipelines Build Status][azure-pipeline-badge]][azure-pipeline-build] | [![Documentation Status][docs-badge]][docs] | [![PowerShell Gallery][psgallery-badge]][psgallery] | [![License][license-badge]][license]
+| Azure Pipelines | GitHub Actions | Documentation | PS Gallery | License |
+|-----------------|----------------|---------------|------------|---------|
+[![Azure Pipelines Build Status][azure-pipeline-badge]][azure-pipeline-build] | [![GitHub Actions Status][github-actions-badge]][github-actions-build] | [![Documentation Status][docs-badge]][docs] | [![PowerShell Gallery][psgallery-badge]][psgallery] | [![License][license-badge]][license]
 <!-- [![Patreon](https://img.shields.io/badge/patreon-donate-yellow.svg)](https://www.patreon.com/devblackops/memberships) -->
+
+---
 
 <h2 align="center">Supporting PoshBot</h2>
 
-PoshBot is a MIT-licensed open source project. Ongoing development is made possible thanks to the support of backers. If you'd like to become a backer or sponsor, you can do so on Patreon.
+PoshBot is a MIT-licensed open source project. Ongoing development is made possible thanks to the support of sponsors.
+If you'd like to become a sponsor, you can do so through [GitHub Sponsors](https://github.com/users/devblackops/sponsorship) or [Patreon](https://www.patreon.com/bePatron?u=10352866).
 
-<p align="center">
-    <a href="https://www.patreon.com/devblackops/memberships" target="_blank" title="Become a Patron">
-        <img style="height:35px" src="Media/become_a_patron_button.png" alt="Become a Patron">
-    </a>
-</p>
+<h4 align="center">Silver Sponsors</h4>
+
+<div align="center">
+<a href="https://chocolatey.org/" target="_blank" rel="noopener noreferrer"><img src="Media/sponsors/chocolatey_logo_long.png" height="70px"></a>
+</div>
+
+---
 
 Want some in-depth guides? Check out [ChatOps the Easy Way](https://leanpub.com/chatops-the-easy-way) on [Leanpub](https://leanpub.com/)!
 
@@ -118,28 +123,30 @@ Get-Command -Module PoshBot
 
 CommandType     Name                                               Version    Source
 -----------     ----                                               -------    ------
-Function        Get-PoshBot                                        0.11.4     poshbot
-Function        Get-PoshBotConfiguration                           0.11.4     poshbot
-Function        Get-PoshBotStatefulData                            0.11.4     poshbot
-Function        New-PoshBotCardResponse                            0.11.4     poshbot
-Function        New-PoshBotConfiguration                           0.11.4     poshbot
-Function        New-PoshBotFileUpload                              0.11.4     poshbot
-Function        New-PoshBotInstance                                0.11.4     poshbot
-Function        New-PoshBotMiddlewareHook                          0.11.4     poshbot
-Function        New-PoshBotScheduledTask                           0.11.4     poshbot
-Function        New-PoshBotSlackBackend                            0.11.4     poshbot
-Function        New-PoshBotTeamsBackend                            0.11.4     poshbot
-Function        New-PoshBotTextResponse                            0.11.4     poshbot
-Function        Remove-PoshBotStatefulData                         0.11.4     poshbot
-Function        Save-PoshBotConfiguration                          0.11.4     poshbot
-Function        Set-PoshBotStatefulData                            0.11.4     poshbot
-Function        Start-PoshBot                                      0.11.4     poshbot
-Function        Stop-Poshbot                                       0.11.4     poshbot
+Function        Get-PoshBot                                        0.12.0     poshbot
+Function        Get-PoshBotConfiguration                           0.12.0     poshbot
+Function        Get-PoshBotStatefulData                            0.12.0     poshbot
+Function        New-PoshBotCardResponse                            0.12.0     poshbot
+Function        New-PoshBotConfiguration                           0.12.0     poshbot
+Function        New-PoshBotDiscordBackend                          0.12.0     poshbot
+Function        New-PoshBotFileUpload                              0.12.0     poshbot
+Function        New-PoshBotInstance                                0.12.0     poshbot
+Function        New-PoshBotMiddlewareHook                          0.12.0     poshbot
+Function        New-PoshBotScheduledTask                           0.12.0     poshbot
+Function        New-PoshBotSlackBackend                            0.12.0     poshbot
+Function        New-PoshBotTeamsBackend                            0.12.0     poshbot
+Function        New-PoshBotTextResponse                            0.12.0     poshbot
+Function        Remove-PoshBotStatefulData                         0.12.0     poshbot
+Function        Save-PoshBotConfiguration                          0.12.0     poshbot
+Function        Set-PoshBotStatefulData                            0.12.0     poshbot
+Function        Start-PoshBot                                      0.12.0     poshbot
+Function        Stop-Poshbot                                       0.12.0     poshbot
 ```
 
 [azure-pipeline-badge]: https://dev.azure.com/devblackops/PoshBot/_apis/build/status/PoshBot-CI
 [azure-pipeline-build]: https://dev.azure.com/devblackops/PoshBot/_build/latest?definitionId=3
-(https://dev.azure.com/dotnet/ReactiveUI/_build/latest?definitionId=11)
+[github-actions-badge]: https://github.com/poshbotio/PoshBot/workflows/CI/badge.svg
+[github-actions-build]: https://github.com/poshbotio/PoshBot/actions
 [docs-badge]: https://readthedocs.org/projects/poshbot/badge/?version=latest
 [docs]: http://poshbot.readthedocs.io/en/latest/
 [psgallery-badge]: https://img.shields.io/powershellgallery/dt/poshbot.svg

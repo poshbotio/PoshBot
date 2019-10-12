@@ -130,7 +130,6 @@ class TeamsBackend : Backend {
         $conversationId = $Response.OriginalMessage.RawMessage.conversation.id
         $activityId     = $Response.OriginalMessage.RawMessage.id
         $responseUrl    = "$($baseUrl)v3/conversations/$conversationId/activities/$activityId"
-        $channelId      = $Response.OriginalMessage.RawMessage.channelData.teamsChannelId
         $headers = @{
             Authorization = "Bearer $($this.Connection._AccessTokenInfo.access_token)"
         }
@@ -243,7 +242,7 @@ class TeamsBackend : Backend {
                             ContentType = 'application/json'
                             Headers     = $headers
                         }
-                        $teamsResponse = Invoke-RestMethod @responseParams
+                        Invoke-RestMethod @responseParams
                     } catch {
                         $this.LogInfo([LogSeverity]::Error, "$($_.Exception.Message)", [ExceptionFormatter]::Summarize($_))
                     }
@@ -301,7 +300,7 @@ class TeamsBackend : Backend {
                             ContentType = 'application/json'
                             Headers     = $headers
                         }
-                        $teamsResponse = Invoke-RestMethod @responseParams
+                        Invoke-RestMethod @responseParams
                     } catch {
                         $this.LogInfo([LogSeverity]::Error, "$($_.Exception.Message)", [ExceptionFormatter]::Summarize($_))
                     }
@@ -342,7 +341,7 @@ class TeamsBackend : Backend {
                             ContentType = 'application/json'
                             Headers     = $headers
                         }
-                        $teamsResponse = Invoke-RestMethod @responseParams
+                        Invoke-RestMethod @responseParams
                     } catch {
                         $this.LogInfo([LogSeverity]::Error, "$($_.Exception.Message)", [ExceptionFormatter]::Summarize($_))
                     }
@@ -480,10 +479,6 @@ class TeamsBackend : Backend {
             Authorization = "Bearer $($this.Connection._AccessTokenInfo.access_token)"
         }
 
-        $conversationType = $Message.RawMessage.Conversation.ConversationType
-        $isGroup = $Message.RawMessage.Conversation.isGroup
-
-
         # Currently only DMs work, but the documentation doesn't indicate that
         if ($Message.isDM) {
             $conversationId = $this._CreateDMConversation($fromId)
@@ -492,7 +487,6 @@ class TeamsBackend : Backend {
         }
 
         if ($Type -eq [ReactionType]::Processing) {
-
             $cardBody = @{
                 type         = 'typing'
                 from         = @{
@@ -524,7 +518,7 @@ class TeamsBackend : Backend {
                     ContentType = 'application/json'
                     Headers     = $headers
                 }
-                $teamsResponse = Invoke-RestMethod @responseParams
+                Invoke-RestMethod @responseParams
             } catch {
                 $this.LogInfo([LogSeverity]::Error, "$($_.Exception.Message)", [ExceptionFormatter]::Summarize($_))
             }
@@ -733,7 +727,6 @@ class TeamsBackend : Backend {
         $conversationId = $Response.OriginalMessage.RawMessage.conversation.id
         $activityId     = $Response.OriginalMessage.RawMessage.id
         $responseUrl    = "$($baseUrl)v3/conversations/$conversationId/activities/$activityId"
-        $channelId      = $Response.OriginalMessage.RawMessage.channelData.teamsChannelId
         $headers = @{
             Authorization = "Bearer $($this.Connection._AccessTokenInfo.access_token)"
         }
@@ -768,7 +761,7 @@ class TeamsBackend : Backend {
                         ContentType = 'application/json'
                         Headers     = $headers
                     }
-                    $teamsResponse = Invoke-RestMethod @responseParams
+                    Invoke-RestMethod @responseParams
                 } catch {
                     $this.LogInfo([LogSeverity]::Error, "$($_.Exception.Message)", [ExceptionFormatter]::Summarize($_))
                 }

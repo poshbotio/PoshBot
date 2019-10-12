@@ -28,6 +28,7 @@ function Remove-PoshBotStatefulData {
     .LINK
         Start-PoshBot
     #>
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidGlobalVars', '', Scope='Function', Target='*')]
     [cmdletbinding(SupportsShouldProcess)]
     param(
         [parameter(Mandatory)]

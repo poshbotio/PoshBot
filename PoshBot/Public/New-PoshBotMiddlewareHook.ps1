@@ -20,6 +20,7 @@ function New-PoshBotMiddlewareHook {
     .OUTPUTS
         MiddlewareHook
     #>
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Scope='Function', Target='*')]
     [cmdletbinding()]
     param(
         [parameter(mandatory)]

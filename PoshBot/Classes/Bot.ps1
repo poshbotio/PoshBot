@@ -135,6 +135,7 @@ class Bot : BaseLogger {
     }
 
     # Start the bot
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidGlobalVars', '', Scope='Function', Target='*')]
     [void]Start() {
         $this._Stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
         $this.LogInfo('Start your engines')

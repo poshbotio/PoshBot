@@ -64,6 +64,7 @@ class TeamsConnection : Connection {
         }
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '', Scope='Function', Target='*')]
     [void]StartReceiveThread() {
 
         # Service Bus receive script
@@ -201,7 +202,7 @@ class TeamsConnection : Connection {
     [void]Disconnect() {
         $this.LogInfo('Stopping Service Bus receiver')
         $this.ReceiverControl.ShouldRun = $false
-        $result = $this.PowerShell.EndInvoke($this.Handler)
+        $this.PowerShell.EndInvoke($this.Handler)
         $this.PowerShell.Dispose()
         $this.Connected = $false
         $this.Status = [ConnectionStatus]::Disconnected

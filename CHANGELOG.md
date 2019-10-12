@@ -6,15 +6,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.11.7] Unreleased
+## [0.12.0] Unreleased
+
+### Added
+
+- PoshBot now has native support for using Discord as a backend! Special thanks to [@michaeltlombardi](https://github.com/michaeltlombardi) for kicking off the initial work and to [@scrthq](https://github.com/scrthq) for helping to fix some bugs and creating the documentation.
+
+## [0.11.8] 2019-08-30
+
+### Fixed
+
+- Commands will no longer be re-executed if a user replies to the original command with a threaded message
+- The formatting of large message responses to Slack has been fixed
+- New-PoshBotCardResponse now accepts any object of type `System.Collections.IDictionary` instead of always casting to `System.Collections.Hashtable`. This will preserve the ordering of keys if the supplied object supports it.
+
+## [0.11.7] 2019-08-09
 
 ### Fixed
 
 - Added missing parameter `$PreExecuteMiddlewareHooks` to `New-PoshBotConfiguration`
+- Channels rules should now work correctly with private channels in Slack
+- Retrieving channels from Slack now uses paging to return ALL unarchived channels
 
 ### Changed
 
-- Pinned modules `Configuration` to `1.3.1` and `PSSlack` to `1.0.0`
+- Pinned modules `Configuration` to `1.3.1` and `PSSlack` to `1.0.1`
 
 ## [0.11.6] 2019-04-02
 

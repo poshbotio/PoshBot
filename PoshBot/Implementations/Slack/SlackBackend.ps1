@@ -18,7 +18,7 @@ class SlackBackend : Backend {
         'star_removed'
     )
 
-    [int]$MaxMessageLength = 4000
+    [int]$MaxMessageLength = 3900
 
     # Import some color defs.
     hidden [hashtable]$_PSSlackColorMap = @{
@@ -208,6 +208,16 @@ class SlackBackend : Backend {
                         continue
                     }
 
+                    # Ignore "message_replied" subtypes
+                    # These are message Slack sends to update the client that the original message has a new reply.
+                    # That reply is sent is another message.
+                    # We do this because if the original message that this reply is to is a bot command, the command
+                    # will be executed again so we....need to not do that :)
+                    if ($slackMessage.subtype -eq 'message_replied') {
+                        $this.LogDebug('SubType is [message_replied]. Ignoring')
+                        continue
+                    }
+
                     # We only care about certain message types from Slack
                     if ($slackMessage.Type -in $this.MessageTypes) {
                         $msg = [Message]::new()
@@ -341,7 +351,7 @@ class SlackBackend : Backend {
                     } else {
                         $this.LogDebug("Message type is [$($slackMessage.Type)]. Ignoring")
                     }
-                    
+
                 }
             }
         } catch {
@@ -434,7 +444,7 @@ class SlackBackend : Backend {
                         $att = New-SlackMessageAttachment @attParams
                         $msg = $att | New-SlackMessage -Channel $sendTo -AsUser
                         $this.LogDebug("Sending card response back to Slack channel [$sendTo]", $att)
-                        $slackResponse = $msg | Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Verbose:$false
+                        $msg | Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Verbose:$false > $null
                     }
                     break
                 }
@@ -448,7 +458,7 @@ class SlackBackend : Backend {
                             $t = $chunk
                         }
                         $this.LogDebug("Sending text response back to Slack channel [$sendTo]", $t)
-                        $slackResponse = Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Channel $sendTo -Text $t -Verbose:$false -AsUser
+                        Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Channel $sendTo -Text $t -Verbose:$false -AsUser > $null
                     }
                     break
                 }
@@ -502,7 +512,7 @@ class SlackBackend : Backend {
         if ($Response.Text.Count -gt 0) {
             foreach ($t in $Response.Text) {
                 $this.LogDebug("Sending response back to Slack channel [$($Response.To)]", $t)
-                $slackResponse = Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Channel $Response.To -Text $t -Verbose:$false -AsUser
+                Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Channel $Response.To -Text $t -Verbose:$false -AsUser > $null
             }
         }
     }
@@ -546,7 +556,7 @@ class SlackBackend : Backend {
             $this.LogDebug("Removing reaction [$emoji] from message Id [$($Message.RawMessage.ts)]")
             $resp = Send-SlackApi -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Method 'reactions.remove' -Body $body -Verbose:$false
             if (-not $resp.ok) {
-                $this.LogInfo([LogSeverity]::Error, 'Error removing reaction to message', $resp)
+                $this.LogInfo([LogSeverity]::Error, 'Error removing reaction from message', $resp)
             }
         }
     }
@@ -606,26 +616,32 @@ class SlackBackend : Backend {
     # Populate the list of channels in the Slack team
     [void]LoadRooms() {
         $this.LogDebug('Getting Slack channels')
-        $allChannels = Get-SlackChannel -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -ExcludeArchived -Verbose:$false
+        $getChannelParams = @{
+            Token           = $this.Connection.Config.Credential.GetNetworkCredential().Password
+            ExcludeArchived = $true
+            Verbose         = $false
+            Paging          = $true
+        }
+        $allChannels = Get-SlackChannel @getChannelParams
         $this.LogDebug("[$($allChannels.Count)] channels returned")
 
-        $allChannels | ForEach-Object {
+        $allChannels.ForEach({
             $channel = [SlackChannel]::new()
-            $channel.Id = $_.ID
-            $channel.Name = $_.Name
-            $channel.Topic = $_.Topic
-            $channel.Purpose = $_.Purpose
-            $channel.Created = $_.Created
-            $channel.Creator = $_.Creator
-            $channel.IsArchived = $_.IsArchived
-            $channel.IsGeneral = $_.IsGeneral
+            $channel.Id          = $_.ID
+            $channel.Name        = $_.Name
+            $channel.Topic       = $_.Topic
+            $channel.Purpose     = $_.Purpose
+            $channel.Created     = $_.Created
+            $channel.Creator     = $_.Creator
+            $channel.IsArchived  = $_.IsArchived
+            $channel.IsGeneral   = $_.IsGeneral
             $channel.MemberCount = $_.MemberCount
             foreach ($member in $_.Members) {
                 $channel.Members.Add($member, $null)
             }
             $this.LogDebug("Adding channel: $($_.ID):$($_.Name)")
             $this.Rooms[$_.ID] = $channel
-        }
+        })
 
         foreach ($key in $this.Rooms.Keys) {
             if ($key -notin $allChannels.ID) {
@@ -761,9 +777,32 @@ class SlackBackend : Backend {
     }
 
     # Break apart a string by number of characters
-    hidden [System.Collections.ArrayList] _ChunkString([string]$Text) {
-        $chunks = [regex]::Split($Text, "(?<=\G.{$($this.MaxMessageLength)})", [System.Text.RegularExpressions.RegexOptions]::Singleline)
-        $this.LogDebug("Split response into [$($chunks.Count)] chunks")
+    # This isn't a very efficient method but it splits the message cleanly on
+    # whole lines and produces better output
+    hidden [Collections.Generic.List[string]] _ChunkString([string]$Text) {
+
+        # Don't bother chunking an empty string
+        if ([string]::IsNullOrEmpty($Text)) {
+            return $text
+        }
+
+        $chunks             = [Collections.Generic.List[string]]::new()
+        $currentChunkLength = 0
+        $currentChunk       = ''
+        $array              = $Text -split [Environment]::NewLine
+
+        foreach ($line in $array) {
+            if (($currentChunkLength + $line.Length) -lt $this.MaxMessageLength) {
+                $currentChunkLength += $line.Length
+                $currentChunk += ($line + [Environment]::NewLine)
+            } else {
+                $chunks.Add($currentChunk + [Environment]::NewLine)
+                $currentChunk = ($line + [Environment]::NewLine)
+                $currentChunkLength = $line.Length
+            }
+        }
+        $chunks.Add($currentChunk)
+
         return $chunks
     }
 
