@@ -13,7 +13,7 @@ Slap a user with a large trout
 ## SYNTAX
 
 ```
-Slap -Bot <Object> [-User] <String> [<CommonParameters>]
+Slap -Bot <Object> [-User] <String> [[-Object] <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -24,6 +24,11 @@ Slap -Bot <Object> [-User] <String> [<CommonParameters>]
 ### EXAMPLE 1
 ```
 !slap --user jaap
+```
+
+### EXAMPLE 2
+```
+!slap jaap foamfinger
 ```
 
 ## PARAMETERS
@@ -53,6 +58,21 @@ Aliases:
 
 Required: True
 Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Object
+{{ Fill Object Description }}
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 2
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
