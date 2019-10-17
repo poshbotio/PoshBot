@@ -8,7 +8,7 @@ schema: 2.0.0
 # Slap
 
 ## SYNOPSIS
-Slap a user with a large trout
+Slap a user with an object
 
 ## SYNTAX
 
@@ -26,10 +26,14 @@ Slap -Bot <Object> [-User] <String> [[-Object] <String>] [<CommonParameters>]
 !slap --user jaap
 ```
 
+Slaps Jaap with a random object
+
 ### EXAMPLE 2
 ```
-!slap jaap foamfinger
+!slap jaap finger
 ```
+
+Slaps Jaap with a giant foam finger
 
 ## PARAMETERS
 
@@ -64,7 +68,8 @@ Accept wildcard characters: False
 ```
 
 ### -Object
-{{ Fill Object Description }}
+The object to slap the user with.
+Defaults to a random object.
 
 ```yaml
 Type: String
