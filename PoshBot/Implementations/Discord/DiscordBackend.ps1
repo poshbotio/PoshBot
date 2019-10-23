@@ -14,7 +14,7 @@ class DiscordBackend : Backend {
 
     hidden [datetime]$_lastTimeMessageSent = [datetime]::UtcNow
 
-    hidden [hashtable]$_rateLimit = @{
+    hidden [pscustomobject]$_rateLimit = [pscustomobject]@{
         MaxRetries = 3
         Limit      = 5
         Remaining  = 5
@@ -787,6 +787,7 @@ class DiscordBackend : Backend {
         $response       = $null
         do {
             try {
+                # $params | ConvertTo-Json | Out-File ~\.poshbot\msgs.json -Append
                 $response  = Invoke-WebRequest @Params
                 $succeeded = $true
 
@@ -818,9 +819,9 @@ class DiscordBackend : Backend {
                     $rateLimitMsg = $responseBody | ConvertFrom-Json
                     $this.LogInfo([LogSeverity]::Warning, $responseBody)
                     [Threading.Thread]::Sleep($rateLimitMsg.retry_after)
-                    $attempts++
                 }
 
+                $attempts++
                 $this.LogDebug("Attempted [$attempts] of [$($this._rateLimit.MaxRetries)]")
             }
             $this._UpdateRateLimit($response)
@@ -832,17 +833,26 @@ class DiscordBackend : Backend {
     # Pause briefly if we're rate limited
     hidden [void]_WaitRateLimit() {
         if ($this._rateLimit.Remaining -eq 0) {
-            $this.LogInfo([LogSeverity]::Warning, "Rate limit reached. Sleeping [$($this._rateLimit.ResetAfter)] milliseconds")
+            $this.LogDebug([LogSeverity]::Warning, "Rate limit reached. Sleeping [$($this._rateLimit.ResetAfter)] milliseconds")
             [Threading.Thread]::Sleep($this._rateLimit.ResetAfter)
         }
     }
 
     # Update our internal rate limit tracking from the response headers Discord sends back
     hidden [void]_UpdateRateLimit([Microsoft.PowerShell.Commands.WebResponseObject]$Response) {
-        $this._rateLimit.Limit      = $Response.Headers.'X-RateLimit-Limit'       | Select-Object -First 1
-        $this._rateLimit.Remaining  = $Response.Headers.'X-RateLimit-Remaining'   | Select-Object -First 1
-        $this._rateLimit.Reset      = $Response.Headers.'X-RateLimit-Reset'       | Select-Object -First 1
-        $this._rateLimit.ResetAfter = $Response.Headers.'X-RateLimit-Reset-After' | Select-Object -First 1
+        $this.LogDebug('Updating rate limit', $Response.Headers)
+        if ($Response.Headers.'X-RateLimit-Limit') {
+            $this._rateLimit.Limit = [int]($Response.Headers.'X-RateLimit-Limit' | Select-Object -First 1)
+        }
+        if ($Response.Headers.'X-RateLimit-Remaining') {
+            $this._rateLimit.Remaining = [int]($Response.Headers.'X-RateLimit-Remaining' | Select-Object -First 1)
+        }
+        if ($Response.Headers.'X-RateLimit-Reset') {
+            $this._rateLimit.Reset = [int]($Response.Headers.'X-RateLimit-Reset' | Select-Object -First 1)
+        }
+        if ($Response.Headers.'X-RateLimit-Reset-After') {
+            $this._rateLimit.ResetAfter = [int]([double]($Response.Headers.'X-RateLimit-Reset-After' | Select-Object -First 1) * 1000) # Convert something like ".250" into 250ms
+        }
     }
 
     # Return the content type of the HTTP response
