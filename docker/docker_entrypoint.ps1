@@ -158,7 +158,7 @@ if ($env:POSHBOT_PLUGIN_REPOSITORIES)       { $runTimeSettings.PluginRepository 
 #if ($env:POSHBOT_MODULE_MANIFESTS_TO_LOAD)  { $runTimeSettings.ModuleManifestsToLoad            = $runTimeSettings.ModuleManifestsToLoad    -split ';' }
 if ($env:POSHBOT_ALT_CMD_PREFIX_SEP)        { $runTimeSettings.AlternateCommandPrefixSeperators = ($runTimeSettings.AlternateCommandPrefixSeperators -split ';').ToCharArray }
 
-$configPSD1 = Join-Path -Path $runTimeSettings.ConfigDir -ChildPath 'PoshBot.psd1'
+$configPSD1 = Join-Path -Path $runTimeSettings.ConfigurationDirectory -ChildPath 'PoshBot.psd1'
 if (-not (Test-Path -Path $configPSD1)) {
 
     # Create the initial configuration minus the backend
@@ -183,54 +183,77 @@ if (-not (Test-Path -Path $configPSD1)) {
     }
 
     # Create PoshBot config for the first time
-    if ($runTimeSettings.BackendType -eq 'SlackBackend') {
-        # POSHBOT_SLACK_TOKEN and POSHBOT_ADMINS environment variables are REQUIRED.
-        # If they where not passed in then bail.
-        $slackToken = Get-FromEnv -Name 'POSHBOT_SLACK_TOKEN' -Default ''
-        if ([string]::IsNullOrEmpty($slackToken) -or $runtimeSettings.BotAdmins.Count -eq 0) {
-            throw 'POSHBOT_SLACK_TOKEN and POSHBOT_ADMINS environment variables are required if there is not a preexisting bot configuration to load. Please specify your Slack token and initial list of bot administrators.'
-            exit 1
+    switch ($runTimeSettings.BackendType) {
+        {$_ -in 'Slack', 'SlackBackend'} {
+            # POSHBOT_SLACK_TOKEN and POSHBOT_ADMINS environment variables are REQUIRED.
+            # If they where not passed in then bail.
+            $slackToken = Get-FromEnv -Name 'POSHBOT_SLACK_TOKEN' -Default ''
+            if ([string]::IsNullOrEmpty($slackToken) -or $runtimeSettings.BotAdmins.Count -eq 0) {
+                throw 'POSHBOT_SLACK_TOKEN and POSHBOT_ADMINS environment variables are required if there is not a preexisting bot configuration to load. Please specify your Slack token and initial list of bot administrators.'
+                exit 1
+            }
+            $configParams.BackendConfiguration = @{
+                Token = $slackToken
+                Name  = 'SlackBackend'
+            }
         }
-        $configParams.BackendConfiguration = @{
-            Token = $slackToken
-            Name  = 'SlackBackend'
-        }
-    } elseif ($runTimeSettings.BackendType -eq 'TeamsBackend') {
-        # Validate require environment variables for a Teams backend
-        $botName                 = Get-FromEnv -Name 'POSHBOT_TEAMS_BOT_NAME'                   -Default ''
-        $teamsId                 = Get-FromEnv -Name 'POSHBOT_TEAMS_ID'                         -Default ''
-        $serviceBusNamespace     = Get-FromEnv -Name 'POSHBOT_TEAMS_SERVICEBUS_NAMESPACE'       -Default ''
-        $serviceBusQueueName     = Get-FromEnv -Name 'POSHBOT_TEAMS_SERVICEBUS_QUEUE_NAME'      -Default ''
-        $serviceBusAccessKeyName = Get-FromEnv -Name 'POSHBOT_TEAMS_SERVICEBUS_ACCESS_KEY_NAME' -Default ''
-        $serviceBusAccessKey     = Get-FromEnv -Name 'POSHBOT_TEAMS_SERVICEBUS_ACCESS_KEY'      -Default ''
-        $botFrameworkId          = Get-FromEnv -Name 'POSHBOT_BOT_FRAMEWORK_ID'                 -Default ''
-        $botFrameworkPassword    = Get-FromEnv -Name 'POSHBOT_BOT_FRAMEWORK_PASSWORD'           -Default ''
+        {$_ -in 'Teams', 'TeamsBackend'} {
+            # Validate require environment variables for a Teams backend
+            $botName                 = Get-FromEnv -Name 'POSHBOT_TEAMS_BOT_NAME'                   -Default ''
+            $teamsId                 = Get-FromEnv -Name 'POSHBOT_TEAMS_ID'                         -Default ''
+            $serviceBusNamespace     = Get-FromEnv -Name 'POSHBOT_TEAMS_SERVICEBUS_NAMESPACE'       -Default ''
+            $serviceBusQueueName     = Get-FromEnv -Name 'POSHBOT_TEAMS_SERVICEBUS_QUEUE_NAME'      -Default ''
+            $serviceBusAccessKeyName = Get-FromEnv -Name 'POSHBOT_TEAMS_SERVICEBUS_ACCESS_KEY_NAME' -Default ''
+            $serviceBusAccessKey     = Get-FromEnv -Name 'POSHBOT_TEAMS_SERVICEBUS_ACCESS_KEY'      -Default ''
+            $botFrameworkId          = Get-FromEnv -Name 'POSHBOT_BOT_FRAMEWORK_ID'                 -Default ''
+            $botFrameworkPassword    = Get-FromEnv -Name 'POSHBOT_BOT_FRAMEWORK_PASSWORD'           -Default ''
 
-        if ($runtimeSettings.BotAdmins.Count -eq 0 -or
-            [string]::IsNullOrEmpty($botName) -or
-            [string]::IsNullOrEmpty($teamsId) -or
-            [string]::IsNullOrEmpty($serviceBusNamespace) -or
-            [string]::IsNullOrEmpty($serviceBusQueueName) -or
-            [string]::IsNullOrEmpty($serviceBusAccessKeyName) -or
-            [string]::IsNullOrEmpty($serviceBusAccessKey) -or
-            [string]::IsNullOrEmpty($botFrameworkId) -or
-            [string]::IsNullOrEmpty($botFrameworkPassword)) {
+            if ($runtimeSettings.BotAdmins.Count -eq 0 -or
+                [string]::IsNullOrEmpty($botName) -or
+                [string]::IsNullOrEmpty($teamsId) -or
+                [string]::IsNullOrEmpty($serviceBusNamespace) -or
+                [string]::IsNullOrEmpty($serviceBusQueueName) -or
+                [string]::IsNullOrEmpty($serviceBusAccessKeyName) -or
+                [string]::IsNullOrEmpty($serviceBusAccessKey) -or
+                [string]::IsNullOrEmpty($botFrameworkId) -or
+                [string]::IsNullOrEmpty($botFrameworkPassword)) {
 
-            throw 'POSHBOT_SLACK_TOKEN and POSHBOT_ADMINS environment variables are required if there is not a preexisting bot configuration to load. Please specify your Slack token and initial list of bot administrators.'
-            exit 1
+                throw 'POSHBOT_SLACK_TOKEN and POSHBOT_ADMINS environment variables are required if there is not a preexisting bot configuration to load. Please specify your Slack token and initial list of bot administrators.'
+                exit 1
+            }
+            $configParams.BackendConfiguration = @{
+                Name                = 'TeamsBackend'
+                BotName             = $botName
+                TeamId              = $teamsId
+                ServiceBusNamespace = $serviceBusNamespace
+                QueueName           = $serviceBusQueueName
+                AccessKeyName       = $serviceBusAccessKeyName
+                AccessKey           = $serviceBusAccessKey | ConvertTo-SecureString -AsPlainText -Force
+                Credential          = [pscredential]::new(
+                    $botFrameworkId,
+                    ($botFrameworkPassword | ConvertTo-SecureString -AsPlainText -Force)
+                )
+            }
         }
-        $configParams.BackendConfiguration = @{
-            Name                = 'TeamsBackend'
-            BotName             = $botName
-            TeamId              = $teamsId
-            ServiceBusNamespace = $serviceBusNamespace
-            QueueName           = $serviceBusQueueName
-            AccessKeyName       = $serviceBusAccessKeyName
-            AccessKey           = $serviceBusAccessKey | ConvertTo-SecureString -AsPlainText -Force
-            Credential          = [pscredential]::new(
-                $botFrameworkId,
-                ($botFrameworkPassword | ConvertTo-SecureString -AsPlainText -Force)
-            )
+        {$_ -in 'Discord', 'DiscordBackend'} {
+            # Validate require environment variables for a Discord backend
+            $token    = Get-FromEnv -Name 'POSHBOT_DISCORD_TOKEN'     -Default ''
+            $clientId = Get-FromEnv -Name 'POSHBOT_DISCORD_CLIENT_ID' -Default ''
+            $guildId  = Get-FromEnv -Name 'POSHBOT_DISCORD_GUILD_ID'  -Default ''
+            if ($runtimeSettings.BotAdmins.Count -eq 0 -or
+                [string]::IsNullOrEmpty($token) -or
+                [string]::IsNullOrEmpty($clientId) -or
+                [string]::IsNullOrEmpty($guildId)) {
+
+                throw 'POSHBOT_DISCORD_TOKEN, POSHBOT_DISCORD_CLIENT_ID, POSHBOT_DISCORD_GUILD_ID, and POSHBOT_ADMINS environment variables are required if there is not a preexisting bot configuration to load. Please specify the required backend configuration and initial list of bot administrators.'
+                exit 1
+            }
+            $configParams.BackendConfiguration = @{
+                Name     = 'DiscordBackend'
+                Token    = $token
+                ClientId = $clientId
+                GuildId  = $guildId
+            }
         }
     }
 
@@ -274,8 +297,10 @@ if ($runTimeSettings.BackendType -in @('Slack', 'SlackBackend')) {
     $backend = New-PoshBotSlackBackend -Configuration $pbc.BackendConfiguration
 } elseIf ($runTimeSettings.BackendType -in @('Teams', 'TeamsBackend')) {
     $backend = New-PoshBotTeamsBackend -Configuration $pbc.BackendConfiguration
+} elseIf ($runTimeSettings.BackendType -in @('Discord', 'DiscordBackend')) {
+    $backend = New-PoshBotDiscordBackend -Configuration $pbc.BackendConfiguration
 } else {
-    throw "Unable to determine backend type. Name property in BackendConfiguration should have a value of 'Slack', 'SlackBackend', 'Teams', or 'TeamsBackend'"
+    throw "Unable to determine backend type. Name property in BackendConfiguration should be one of the following: 'Slack', 'SlackBackend', 'Teams', 'TeamsBackend', 'Discord', 'DiscordBackend'"
     exit 1
 }
 
