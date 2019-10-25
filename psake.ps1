@@ -16,10 +16,13 @@ properties {
     $dotnetFramework = 'netstandard2.0'
     $release = 'release'
 
-    $dockerImages = @(
-        'ubuntu16.04'
-        #'nano1803'
-    )
+    $imageName = 'alpine3.8'
+    # $dockerImages = @(
+    #     'alpine3.8'
+    #     'ubuntu16.04'
+    #     'ubuntu18.04'
+    #     #'nano1803'
+    # )
 }
 
 task default -depends Test
@@ -228,14 +231,12 @@ task Build-Docker {
     $version = $manifest.ModuleVersion.ToString()
     Push-Location
     Set-Location -Path $projectRoot
-    $dockerImages | Foreach-Object {
-        $dockerFilePath = Join-Path $projectRoot -ChildPath 'docker' -AdditionalChildPath @($_, 'Dockerfile')
-        $tag = "$_-$version"
-        $imageName = "poshbotio/poshbot`:$tag"
-        "Building docker image: $imageName"
-        exec {
-            & docker build -t $imageName -t "poshbotio/poshbot:latest" --label version=$version -f $dockerFilePath .
-        }
+    $dockerFilePath = Join-Path $projectRoot -ChildPath 'docker' -AdditionalChildPath @($imageName, 'Dockerfile')
+    $tag = "$imageName-$version"
+    $fullImageName = "poshbotio/poshbot`:$tag"
+    "Building docker image: $fullImageName"
+    exec {
+        & docker build -t $fullImageName --label version=$version -f $dockerFilePath .
     }
     Pop-Location
 } -description 'Create Docker container'
@@ -246,16 +247,10 @@ task Publish-Docker -depends Build-Docker {
         docker login
     }
 
-    $dockerImages | Foreach-Object {
-        $tag = "$_-$version"
-        $imageName = "poshbotio/poshbot`:$tag"
-        "Publishing docker image: $imageName"
-        exec {
-            docker push $imageName
-            docker push "poshbotio/poshbot:latest"
-        }
+    $tag = "$imageName-$version"
+    $fullImageName = "poshbotio/poshbot`:$tag"
+    "Publishing docker image: $fullImageName"
+    exec {
+        docker push $fullImageName
     }
-
-    # docker push poshbotio/poshbot-nano-slack:latest
-    # docker push poshbotio/poshbot-nano-slack:$version
 }
