@@ -1,14 +1,15 @@
-FROM microsoft/powershell:windowsservercore as base
-SHELL ["pwsh", "-Command", "$ErrorActionPreference = 'Stop'; $VerbosePreference = 'Continue'; $ProgressPreference = 'SilentlyContinue';"]
+FROM microsoft/powershell:6.2.3-windowsservercore-1903 as base
+SHELL ["pwsh", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 RUN Set-PSRepository -Name PSGallery -InstallationPolicy Trusted; \
-    Install-Module Configuration -RequiredVersion 1.3.1 -Repository PSGallery -SkipPublisherCheck -Force; \
-    Install-Module PSSlack -RequiredVersion 0.1.2 -Repository PSGallery -SkipPublisherCheck -Force ;
+    Install-Module Configuration -RequiredVersion 1.3.1 -Repository PSGallery -Scope AllUsers -Verbose; \
+    Install-Module PSSlack -RequiredVersion 1.0.1 -Repository PSGallery -Scope AllUsers -Verbose;
 
 FROM base as src
+ARG version
 LABEL maintainer="devblackops"
-LABEL description="PoshBot container for Slack"
+LABEL description="PoshBot container for Windows Server Core"
 LABEL vendor="poshbotio"
-COPY ["/out/poshbot", "C:/Program Files/PowerShell/Modules/PoshBot/"]
+COPY ["/out/poshbot/$version", "C:/Program Files/PowerShell/Modules/PoshBot/"]
 COPY ["/docker/docker_entrypoint.ps1", "c:/poshbot/docker_entrypoint.ps1"]
 WORKDIR c:/poshbot/
 RUN mkdir plugins
