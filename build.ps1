@@ -9,6 +9,8 @@ param(
     # Bootstrap dependencies
     [switch]$Bootstrap,
 
+    [hashtable]$Properties = @{},
+
     # List available build tasks
     [parameter(ParameterSetName = 'Help')]
     [switch]$Help
@@ -35,6 +37,6 @@ if ($PSCmdlet.ParameterSetName -eq 'Help') {
 } else {
     Set-BuildEnvironment -Force
 
-    Invoke-psake -buildFile $psakeFile -taskList $Task -nologo
+    Invoke-psake -buildFile $psakeFile -taskList $Task -properties $properties -nologo
     exit ( [int]( -not $psake.build_success ) )
 }
