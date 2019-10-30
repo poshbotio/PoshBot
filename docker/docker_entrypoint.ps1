@@ -130,10 +130,6 @@ $configurationSettings = @{
         EnvVariable  = 'POSHBOT_FORMAT_ENUMERATION_LIMIT'
         DefaultValue = -1
     }
-    # ConfigDir = @{
-    #     EnvVariable  = 'POSHBOT_CONF_DIR'
-    #     DefaultValue = "$rootDrive/poshbot_data"
-    # }
     BackendType = @{
         EnvVariable  = 'POSHBOT_BACKEND'
         DefaultValue = 'SlackBackend'
@@ -258,11 +254,6 @@ if (-not (Test-Path -Path $configPSD1)) {
     }
 
     $pbc = New-PoshBotConfiguration @configParams
-    # if (-not (Test-Path -Path $runTimeSettings.ConfigDir)) {
-    #     New-Item -Path $runTimeSettings.ConfigDir -ItemType Directory -Force > $null
-    # }
-    #$config | Save-PoshBotConfiguration -Path $configPSD1 -Force
-    # $pbc = Get-PoshBotConfiguration -Path $configPSD1 -Verbose
 } else {
     # There was a previous configuraiton
     # Merge any values from env vars into config
@@ -288,21 +279,26 @@ if (-not (Test-Path -Path $configPSD1)) {
             Name  = 'SlackBackend'
         }
     }
-
-    #$pbc | Save-PoshBotConfiguration -Path $configPSD1 -Force
 }
 
 # Create backend based on configured backend type (Slack, Teams)
-if ($runTimeSettings.BackendType -in @('Slack', 'SlackBackend')) {
-    $backend = New-PoshBotSlackBackend -Configuration $pbc.BackendConfiguration
-} elseIf ($runTimeSettings.BackendType -in @('Teams', 'TeamsBackend')) {
-    $backend = New-PoshBotTeamsBackend -Configuration $pbc.BackendConfiguration
-} elseIf ($runTimeSettings.BackendType -in @('Discord', 'DiscordBackend')) {
-    $backend = New-PoshBotDiscordBackend -Configuration $pbc.BackendConfiguration
-} else {
-    throw "Unable to determine backend type. Name property in BackendConfiguration should be one of the following: 'Slack', 'SlackBackend', 'Teams', 'TeamsBackend', 'Discord', 'DiscordBackend'"
-    exit 1
+switch ($runTimeSettings.BackendType) {
+    {$_ -in @('Slack', 'SlackBackend')} {
+        $backEndCommand = Get-Command New-PoshBotSlackBackend
+    }
+    {$_ -in @('Teams', 'TeamsBackend')} {
+        $backendCommand = Get-Command New-PoshBotTeamsBackend
+    }
+    {$_ -in @('Discord', 'DiscordBackend')} {
+        $backEndCommand = Get-Command New-PoshBotDiscordBackend
+    }
+    default {
+        throw "Unable to determine backend type. Name property in BackendConfiguration should be one of the following: 'Slack', 'SlackBackend', 'Teams', 'TeamsBackend', 'Discord', 'DiscordBackend'"
+        exit 1
+    }
 }
+$backend = & $backendCommand -Configuration $pbc.BackendConfiguration
 
+# Create and start bot
 $bot = New-PoshBotInstance -Configuration $pbc -Backend $backend
 $bot.Start()
