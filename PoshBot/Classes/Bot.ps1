@@ -248,6 +248,12 @@ class Bot : BaseLogger {
     [void]ProcessScheduledMessages() {
         foreach ($msg in $this.Scheduler.GetTriggeredMessages()) {
             $this.LogDebug('Received scheduled message from scheduler. Adding to message queue.', $msg)
+
+            # Scheduled messages won't have `ToName` and `FromName` properties on the command as the backend resolves these
+            # We need to tell the backend to resolve these so things that rely on `ToName` or `FromName` work like ChannelRules
+            $msg.FromName = $this.backend.ResolveFromName($msg)
+            $msg.ToName   = $this.backend.ResolveToName($msg)
+
             $this.MessageQueue.Enqueue($msg)
         }
     }
@@ -284,7 +290,7 @@ class Bot : BaseLogger {
             $this.DeferredCommandExecutionContexts.Remove($cmdExecContext.Id)
 
             if ($cmdExecContext.ApprovalState -eq [ApprovalState]::Approved) {
-                $this.LogDebug("Starting exeuction of context [$($cmdExecContext.Id)]")
+                $this.LogDebug("Starting execution of context [$($cmdExecContext.Id)]")
                 $this.RemoveReaction($cmdExecContext.Message, [ReactionType]::ApprovalNeeded)
                 $this.Executor.ExecuteCommand($cmdExecContext)
             } elseif ($cmdExecContext.ApprovalState -eq [ApprovalState]::Denied) {

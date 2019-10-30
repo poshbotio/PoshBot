@@ -296,15 +296,10 @@ class SlackBackend : Backend {
                         if ($slackMessage.user)    { $msg.From = $slackMessage.user }
 
                         # Resolve From name
-                        if ($msg.From) {
-                            $msg.FromName = $this.UserIdToUsername($msg.From)
-                        }
+                        $msg.FromName = $this.ResolveFromName($msg)
 
                         # Resolve channel name
-                        # Skip DM channels, they won't have names
-                        if ($msg.To -and $msg.To -notmatch '^D') {
-                            $msg.ToName = $this.ChannelIdToName($msg.To)
-                        }
+                        $msg.ToName = $this.ResolveToName($msg)
 
                         # Mark as DM
                         if ($msg.To -match '^D') {
@@ -747,6 +742,25 @@ class SlackBackend : Backend {
             $this.LogDebug([LogSeverity]::Warning, "Could not resolve channel [$ChannelId]")
         }
         return $name
+    }
+
+    # Resolve From name
+    [string]ResolveFromName([Message]$Message) {
+        $fromName = $null
+        if ($Message.From) {
+            $fromName = $this.UserIdToUsername($Message.From)
+        }
+        return $fromName
+    }
+
+    # Resolve To name
+    [string]ResolveToName([Message]$Message) {
+        # Skip DM channels, they won't have names
+        $toName = $null
+        if ($Message.To -and $Message.To -notmatch '^D') {
+            $toName = $this.ChannelIdToName($Message.To)
+        }
+        return $toName
     }
 
     # Get all user info by their ID

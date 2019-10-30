@@ -112,4 +112,14 @@ class Backend : BaseLogger {
         # Must be extended by the specific Backend implementation
         throw 'Implement me!'
     }
+
+    [Message]ResolveFromName([Message]$Message) {
+        # Must be extended by the specific Backend implementation
+        throw 'Implement me!'
+    }
+
+    [Message]ResolveToName([Message]$Message) {
+        # Must be extended by the specific Backend implementation
+        throw 'Implement me!'
+    }
 }

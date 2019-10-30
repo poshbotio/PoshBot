@@ -129,13 +129,13 @@ class DiscordBackend : Backend {
                     if ($discordMsg.d.author.username) {
                         $msg.FromName = $discordMsg.d.author.username
                     } else {
-                        $msg.FromName = $this.UserIdToUsername($msg.From)
+                        $msg.FromName = $this.ResolveFromName($msg)
                     }
                 }
 
                 # Resolve channel name
                 if ($msg.To) {
-                    $msg.ToName = $this.ChannelIdToName($msg.To)
+                    $msg.ToName = $this.ResolveToName($msg)
                 }
 
                 # Mark as DM
@@ -660,6 +660,24 @@ class DiscordBackend : Backend {
             $this.LogDebug([LogSeverity]::Warning, "Could not resolve channel [$ChannelId]")
         }
         return $name
+    }
+
+    # Resolve From name
+    [string]ResolveFromName([Message]$Message) {
+        $fromName = $null
+        if ($Message.From) {
+            $fromName = $this.UserIdToUsername($Message.From)
+        }
+        return $fromName
+    }
+
+    # Resolve To name
+    [string]ResolveToName([Message]$Message) {
+        $toName = $null
+        if ($Message.To) {
+            $toName = $this.ChannelIdToName($Message.To)
+        }
+        return $toName
     }
 
     # Get all user info by their ID

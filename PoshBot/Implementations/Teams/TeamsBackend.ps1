@@ -90,7 +90,7 @@ class TeamsBackend : Backend {
                                 $msg.ToName = $this.Connection.Config.BotName
                             } else {
                                 if ($msg.To) {
-                                    $msg.ToName = $this.UserIdToUsername($msg.To)
+                                    $msg.ToName = $this.ResolveToName($msg)
                                 }
                             }
 
@@ -679,6 +679,24 @@ class TeamsBackend : Backend {
             $this.LogDebug([LogSeverity]::Warning, "Could not resolve channel [$ChannelId]")
         }
         return $name
+    }
+
+    # Resolve From name
+    [string]ResolveFromName([Message]$Message) {
+        $fromName = $null
+        if ($Message.From) {
+            $fromName = $this.UserIdToUsername($Message.From)
+        }
+        return $fromName
+    }
+
+    # Resolve To name
+    [string]ResolveToName([Message]$Message) {
+        $toName = $null
+        if ($Message.To) {
+            $toName = $this.ChannelIdToName($Message.To)
+        }
+        return $toName
     }
 
     # Get all user info by their ID
