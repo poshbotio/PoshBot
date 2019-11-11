@@ -106,5 +106,6 @@ pages:
       - New-PoshBotTextResponse: reference/functions/new-poshbottextresponse.md
       - Remove-PoshBotStatefulData: reference/functions/Remove-PoshBotStatefulData.md
       - Save-PoshBotConfiguration: reference/functions/save-poshbotconfiguration.md
+      - Set-PoshBotStatefulData: reference/functions/Set-PoshBotStatefulData.md
       - Start-PoshBot: reference/functions/start-poshbot.md
       - Stop-PoshBot: reference/functions/stop-poshbot.md
