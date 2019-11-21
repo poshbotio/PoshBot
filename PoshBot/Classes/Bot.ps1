@@ -173,7 +173,7 @@ class Bot : BaseLogger {
                 # Send a ping every 5 seconds
                 if ($sw.Elapsed.TotalSeconds -gt 5) {
                     $this.Backend.Ping()
-                    $sw.Reset()
+                    $sw.Restart()
                 }
             }
         } catch {
