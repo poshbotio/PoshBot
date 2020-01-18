@@ -11,7 +11,7 @@ class CommandExecutionContext {
     [bool]$IsJob
     [datetime]$Started
     [datetime]$Ended
-    [object]$Job
+    [RunspaceJob]$RunspaceJob
     [ApprovalState]$ApprovalState = [ApprovalState]::AutoApproved
     [Approver]$Approver = [Approver]::new()
     [Response]$Response = [Response]::new()

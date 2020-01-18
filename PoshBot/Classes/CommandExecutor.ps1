@@ -102,10 +102,10 @@ class CommandExecutor : BaseLogger {
                     $this.LogDebug("Command [$($Context.FullyQualifiedCommandName)] will be executed as a job")
 
                     # Kick off job and add to job tracker
-                    $Context.IsJob = $true
-                    $Context.Job = $Context.Command.Invoke($Context.ParsedCommand, $true,$this._bot.Backend.GetType().Name)
-                    $this.LogDebug("Command [$($Context.FullyQualifiedCommandName)] executing in job [$($Context.Job.Id)]")
-                    $Context.Complete = $false
+                    $cmdExecContext.IsJob = $true
+                    $cmdExecContext.RunspaceJob = $cmdExecContext.Command.Invoke($cmdExecContext.ParsedCommand, $true, $this._bot.Backend.GetType().Name)
+                    $this.LogDebug("Command [$($cmdExecContext.FullyQualifiedCommandName)] executing in runspace job [$($cmdExecContext.RunspaceJob.Id)]")
+                    $cmdExecContext.Complete = $false
                 } else {
                     # Run command in current session and get results
                     # This should only be 'builtin' commands
@@ -160,15 +160,30 @@ class CommandExecutor : BaseLogger {
     }
 
     # Receive any completed jobs from the job tracker
-    [System.Collections.Generic.List[CommandExecutionContext]]ReceiveJob() {
+    [CommandExecutionContext[]]ReceiveJob() {
+        $results = New-Object System.Collections.ArrayList
 
-        $results = [System.Collections.Generic.List[CommandExecutionContext]]::new()
+        if ($this._jobTracker.Count -ge 1) {
+            $completedJobs = $this._jobTracker.GetEnumerator() |
+                Where-Object {($_.Value.Complete -eq $true) -or
+                              ($_.Value.IsJob -and $_.Value.RunspaceJob.Handle.IsCompleted)} |
+                Select-Object -ExpandProperty Value
 
-        foreach ($context in $this._GetCompletedContexts()) {
-            # If the command was executed in a PS job, get the output
-            # Builtin commands are NOT executed as jobs so their output
-            # was already recorded in the [Result] property in the ExecuteCommand() method
-            if ($context.IsJob) {
+            foreach ($cmdExecContext in $completedJobs) {
+                # If the command was executed in a PS job, get the output
+                # Builtin commands are NOT executed as jobs so their output
+                # was already recorded in the [Result] property in the ExecuteCommand() method
+                if ($cmdExecContext.IsJob) {
+                    $this.LogVerbose("Job [$($cmdExecContext.Id)] is complete")
+                    $cmdExecContext.Complete = $true
+                    $cmdExecContext.Ended = (Get-Date).ToUniversalTime()
+
+                    $cmdExecContext.RunspaceJob.EndJob([ref]$cmdExecContext.Result)
+
+
+                    $this.LogVerbose("Command [$($cmdExecContext.FullyQualifiedCommandName)] completed with successful result [$($cmdExecContext.Result.Success)]")
+
+                }
 
                 # Determine if job had any terminating errors and capture error stream
                 if ($context.Job.State -in @('Completed', 'Failed')) {

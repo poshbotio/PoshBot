@@ -43,7 +43,7 @@ class LogMessage {
                 # Summarize exceptions so they can be serialized to json correctly
 
                 # Don't try to serialize jobs
-                if ($item.GetType().BaseType.ToString() -eq 'System.Management.Automation.Job') {
+                if ($item.GetType().BaseType.ToString() -eq 'RunspaceJob') {
                     continue
                 }
 

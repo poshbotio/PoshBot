@@ -170,6 +170,7 @@ task Compile -depends Clean {
         'Trigger'
         'StorageProvider'
         'RoleManager'
+        'RunspaceJob'
         'Command'
         'CommandHistory'
         'Plugin'
