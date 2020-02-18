@@ -18,5 +18,5 @@ $PSDefaultParameterValues = @{
 }
 
 # Ensure TLS 1.2 is available
-# Thanks to jborean93 for the
+# Thanks to jborean93 for the code
 [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
