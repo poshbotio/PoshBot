@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [**#192**](https://github.com/poshbotio/PoshBot/pull/192) Fix stopwatch that executes the backend `Ping()` method to run every 5 seconds rather than once on startup (via [@jamesbr-ashn](https://github.com/jamesbr-ashn))
 
+[**#204**](https://github.com/poshbotio/PoshBot/pull/204) Change method of applying TLS12 protocol (via [@adrian-andersson](https://github.com/adrian-andersson))
+
 ## [0.11.8] 2019-08-30
 
 ### Fixed
