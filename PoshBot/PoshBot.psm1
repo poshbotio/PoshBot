@@ -17,5 +17,6 @@ $PSDefaultParameterValues = @{
     'ConvertTo-Json:Verbose' = $false
 }
 
-# Enforce TLS 1.2
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+# Ensure TLS 1.2 is available
+# Thanks to jborean93 for the
+[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
