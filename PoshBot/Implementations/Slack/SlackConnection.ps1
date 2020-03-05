@@ -53,6 +53,9 @@ class SlackConnection : Connection {
                 $url
             )
 
+            # Slack enforces TLS12 on the websocket API
+            [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+
             # Connect to websocket
             Write-Verbose "[SlackBackend:ReceiveJob] Connecting to websocket at [$($url)]"
             [System.Net.WebSockets.ClientWebSocket]$webSocket = New-Object System.Net.WebSockets.ClientWebSocket
