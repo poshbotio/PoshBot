@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - PoshBot now has native support for using Discord as a backend! Special thanks to [@michaeltlombardi](https://github.com/michaeltlombardi) for kicking off the initial work and to [@scrthq](https://github.com/scrthq) for helping to fix some bugs and creating the documentation.
 
+- [**#181**](https://github.com/poshbotio/PoshBot/pull/181) Add additional objects to !slap (via [@scrthq](https://github.com/scrthq))
+
 ### Fixed
 
 - [**#192**](https://github.com/poshbotio/PoshBot/pull/192) Fix stopwatch that executes the backend `Ping()` method to run every 5 seconds rather than once on startup (via [@jamesbr-ashn](https://github.com/jamesbr-ashn))
