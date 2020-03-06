@@ -66,9 +66,13 @@ class DiscordConnection : Connection {
                 HeartbeatAck        = 11
             }
 
+            # Discord enforces TLS12 on the websocket API
+            # https://discordapp.com/developers/docs/reference#encryption
+            [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+
             [Net.WebSockets.ClientWebSocket]$WebSocket = [Net.WebSockets.ClientWebSocket]::new()
-            [int]$heartbeatInterval     = $null
-            [int]$heartbeatSequence     = 0
+            [int]$heartbeatInterval = $null
+            [int]$heartbeatSequence = 0
 
             # Connect to websocket
             $buffer = [Net.WebSockets.WebSocket]::CreateClientBuffer(1024,1024)

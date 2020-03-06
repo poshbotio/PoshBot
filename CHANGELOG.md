@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - [**#204**](https://github.com/poshbotio/PoshBot/pull/204) Change method of applying TLS12 protocol (via [@adrian-andersson](https://github.com/adrian-andersson))
 
-- Ensure TLS12 is set in the Slack websocket receive job
+- Ensure TLS12 is set in the Slack and Discord websocket receive jobs
 
 ## [0.11.8] 2019-08-30
 
