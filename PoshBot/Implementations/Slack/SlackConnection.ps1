@@ -17,7 +17,7 @@ class SlackConnection : Connection {
     [void]Connect() {
         if ($null -eq $this.ReceiveJob -or $this.ReceiveJob.State -ne 'Running') {
             $this.LogDebug('Connecting to Slack Real Time API')
-            $this.RtmConnect()
+            $this.RtmStart()
             $this.StartReceiveJob()
         } else {
             $this.LogDebug([LogSeverity]::Warning, 'Receive job is already running')
@@ -25,9 +25,10 @@ class SlackConnection : Connection {
     }
 
     # Log in to Slack with the bot token and get a URL to connect to via websockets
-    [void]RtmConnect() {
+    [void]RtmStart() {
         $token = $this.Config.Credential.GetNetworkCredential().Password
-        $url = "https://slack.com/api/rtm.start?token=$($token)&pretty=1"
+        $url = "https://slack.com/api/rtm.connect?token=$($token)&pretty=1"
+
         try {
             $r = Invoke-RestMethod -Uri $url -Method Get -Verbose:$false
             $this.LoginData = $r
