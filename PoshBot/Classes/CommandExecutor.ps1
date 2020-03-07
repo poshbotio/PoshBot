@@ -11,7 +11,7 @@ class CommandExecutor : BaseLogger {
     [int]$ExecutedCount = 0
 
     # Recent history of commands executed
-    [System.Collections.ArrayList]$History = (New-Object System.Collections.ArrayList)
+    [Collections.Generic.List[CommandExecutionContext]]$History = [Collections.Generic.List[CommandExecutionContext]]::new()
 
     # Plugin commands get executed as PowerShell jobs
     # This is to keep track of those
@@ -19,47 +19,47 @@ class CommandExecutor : BaseLogger {
 
     CommandExecutor([RoleManager]$RoleManager, [Logger]$Logger, [Bot]$Bot) {
         $this.RoleManager = $RoleManager
-        $this.Logger = $Logger
-        $this._bot = $Bot
+        $this.Logger      = $Logger
+        $this._bot        = $Bot
     }
 
     # Execute a command
-    [void]ExecuteCommand([CommandExecutionContext]$cmdExecContext) {
+    [void]ExecuteCommand([CommandExecutionContext]$Context) {
 
         # Verify command is not disabled
-        if (-not $cmdExecContext.Command.Enabled) {
-            $err = [CommandDisabled]::New("Command [$($cmdExecContext.Command.Name)] is disabled")
-            $cmdExecContext.Complete = $true
-            $cmdExecContext.Ended = (Get-Date).ToUniversalTime()
-            $cmdExecContext.Result.Success = $false
-            $cmdExecContext.Result.Errors += $err
+        if (-not $Context.Command.Enabled) {
+            $err = [CommandDisabled]::New("Command [$($Context.Command.Name)] is disabled")
+            $Context.Complete       = $true
+            $Context.Ended          = [datetime]::UtcNow
+            $Context.Result.Success = $false
+            $Context.Result.Errors += $err
             $this.LogInfo([LogSeverity]::Error, $err.Message, $err)
-            $this.TrackJob($cmdExecContext)
+            $this.TrackJob($Context)
             return
         }
 
         # Verify that all mandatory parameters have been provided for "command" type bot commands
         # This doesn't apply to commands triggered from regex matches, timers, or events
-        if ($cmdExecContext.Command.TriggerType -eq [TriggerType]::Command) {
-            if (-not $this.ValidateMandatoryParameters($cmdExecContext.ParsedCommand, $cmdExecContext.Command)) {
-                $msg = "Mandatory parameters for [$($cmdExecContext.Command.Name)] not provided.`nUsage:`n"
-                foreach ($usage in $cmdExecContext.Command.Usage) {
+        if ($Context.Command.TriggerType -eq [TriggerType]::Command) {
+            if (-not $this.ValidateMandatoryParameters($Context)) {
+                $msg = "Mandatory parameters for [$($Context.Command.Name)] not provided.`nUsage:`n"
+                foreach ($usage in $Context.Command.Usage) {
                     $msg += "    $usage`n"
                 }
                 $err = [CommandRequirementsNotMet]::New($msg)
-                $cmdExecContext.Complete = $true
-                $cmdExecContext.Ended = (Get-Date).ToUniversalTime()
-                $cmdExecContext.Result.Success = $false
-                $cmdExecContext.Result.Errors += $err
+                $Context.Complete       = $true
+                $Context.Ended          = [datetime]::UtcNow
+                $Context.Result.Success = $false
+                $Context.Result.Errors += $err
                 $this.LogInfo([LogSeverity]::Error, $err.Message, $err)
-                $this.TrackJob($cmdExecContext)
+                $this.TrackJob($Context)
                 return
             }
         }
 
         # If command is [command] or [regex] trigger types, verify that the caller is authorized to execute it
-        if ($cmdExecContext.Command.TriggerType -in @('Command', 'Regex')) {
-            $authorized = $cmdExecContext.Command.IsAuthorized($cmdExecContext.Message.From, $this.RoleManager)
+        if ($Context.Command.TriggerType -in @('Command', 'Regex')) {
+            $authorized = $Context.Command.IsAuthorized($Context.Message.From, $this.RoleManager)
         } else {
             $authorized = $true
         }
@@ -67,218 +67,207 @@ class CommandExecutor : BaseLogger {
         if ($authorized) {
 
             # Check if approval(s) are needed to execute this command
-            if ($this.ApprovalNeeded($cmdExecContext)) {
-                $cmdExecContext.ApprovalState = [ApprovalState]::Pending
-                $this._bot.Backend.AddReaction($cmdExecContext.Message, [ReactionType]::ApprovalNeeded)
+            if ($this.ApprovalNeeded($Context)) {
+                $Context.ApprovalState = [ApprovalState]::Pending
+                $this._bot.Backend.AddReaction($Context.Message, [ReactionType]::ApprovalNeeded)
 
                 # Put this message in the deferred bucket until it is released by the [!approve] command from an authorized approver
-                if (-not $this._bot.DeferredCommandExecutionContexts.ContainsKey($cmdExecContext.id)) {
-                    $this._bot.DeferredCommandExecutionContexts.Add($cmdExecContext.id, $cmdExecContext)
+                if (-not $this._bot.DeferredCommandExecutionContexts.ContainsKey($Context.id)) {
+                    $this._bot.DeferredCommandExecutionContexts.Add($Context.id, $Context)
                 } else {
-                    $this.LogInfo([LogSeverity]::Error, "This shouldn't happen, but command execution context [$($cmdExecContext.id)] is already in the deferred bucket")
+                    $this.LogInfo([LogSeverity]::Error, "This shouldn't happen, but command execution context [$($Context.id)] is already in the deferred bucket")
                 }
 
-                $approverGroups = $this.GetApprovalGroups($cmdExecContext) -join ', '
+                $approverGroups = $this.GetApprovalGroups($Context) -join ', '
                 $prefix = $this._bot.Configuration.CommandPrefix
-                $msg = "Approval is needed to run [$($cmdExecContext.ParsedCommand.CommandString)] from someone in the approval group(s) [$approverGroups]."
-                $msg += "`nTo approve, say '$($prefix)approve $($cmdExecContext.Id)'."
-                $msg += "`nTo deny, say '$($prefix)deny $($cmdExecContext.Id)'."
+                $msg = "Approval is needed to run [$($Context.ParsedCommand.CommandString)] from someone in the approval group(s) [$approverGroups]."
+                $msg += "`nTo approve, say '$($prefix)approve $($Context.Id)'."
+                $msg += "`nTo deny, say '$($prefix)deny $($Context.Id)'."
                 $msg += "`nTo list pending approvals, say '$($prefix)pending'."
-                $response = [Response]::new($cmdExecContext.Message)
-                $response.Data = New-PoshBotCardResponse -Type Warning -Title "Approval Needed for [$($cmdExecContext.ParsedCommand.CommandString)]" -Text $msg
+                $response = [Response]::new($Context.Message)
+                $response.Data = New-PoshBotCardResponse -Type Warning -Title "Approval Needed for [$($Context.ParsedCommand.CommandString)]" -Text $msg
                 $this._bot.SendMessage($response)
                 return
             } else {
 
                 # If command is [command] or [regex] trigger type, add reaction telling the user that the command is being executed
                 # Reactions don't make sense for event triggered commands
-                if ($cmdExecContext.Command.TriggerType -in @('Command', 'Regex')) {
+                if ($Context.Command.TriggerType -in @('Command', 'Regex')) {
                     if ($this._bot.Configuration.AddCommandReactions) {
-                        $this._bot.Backend.AddReaction($cmdExecContext.Message, [ReactionType]::Processing)
+                        $this._bot.Backend.AddReaction($Context.Message, [ReactionType]::Processing)
                     }
                 }
 
-                if ($cmdExecContext.Command.AsJob) {
-                    $this.LogDebug("Command [$($cmdExecContext.FullyQualifiedCommandName)] will be executed as a job")
+                if ($Context.Command.AsJob) {
+                    $this.LogDebug("Command [$($Context.FullyQualifiedCommandName)] will be executed as a job")
 
                     # Kick off job and add to job tracker
-                    $cmdExecContext.IsJob = $true
-                    $cmdExecContext.Job = $cmdExecContext.Command.Invoke($cmdExecContext.ParsedCommand, $true,$this._bot.Backend.GetType().Name)
-                    $this.LogDebug("Command [$($cmdExecContext.FullyQualifiedCommandName)] executing in job [$($cmdExecContext.Job.Id)]")
-                    $cmdExecContext.Complete = $false
+                    $Context.IsJob = $true
+                    $Context.Job = $Context.Command.Invoke($Context.ParsedCommand, $true,$this._bot.Backend.GetType().Name)
+                    $this.LogDebug("Command [$($Context.FullyQualifiedCommandName)] executing in job [$($Context.Job.Id)]")
+                    $Context.Complete = $false
                 } else {
                     # Run command in current session and get results
                     # This should only be 'builtin' commands
                     try {
-                        $cmdExecContext.IsJob = $false
-                        $hash = $cmdExecContext.Command.Invoke($cmdExecContext.ParsedCommand, $false,$this._bot.Backend.GetType().Name)
-                        $cmdExecContext.Complete = $true
-                        $cmdExecContext.Ended = (Get-Date).ToUniversalTime()
-                        $cmdExecContext.Result.Errors = $hash.Error
-                        $cmdExecContext.Result.Streams.Error = $hash.Error
-                        $cmdExecContext.Result.Streams.Information = $hash.Information
-                        $cmdExecContext.Result.Streams.Warning = $hash.Warning
-                        $cmdExecContext.Result.Output = $hash.Output
-                        if ($cmdExecContext.Result.Errors.Count -gt 0) {
-                            $cmdExecContext.Result.Success = $false
+                        $Context.IsJob    = $false
+                        $Context.Complete = $true
+                        $Context.Ended    = [datetime]::UtcNow
+
+                        $cmdResult                          = $Context.Command.Invoke($Context.ParsedCommand, $false,$this._bot.Backend.GetType().Name)
+                        $Context.Result.Errors              = $cmdResult.Error
+                        $Context.Result.Streams.Error       = $cmdResult.Error
+                        $Context.Result.Streams.Information = $cmdResult.Information
+                        $Context.Result.Streams.Warning     = $cmdResult.Warning
+                        $Context.Result.Output              = $cmdResult.Output
+                        if ($Context.Result.Errors.Count -gt 0) {
+                            $Context.Result.Success = $false
                         } else {
-                            $cmdExecContext.Result.Success = $true
+                            $Context.Result.Success = $true
                         }
-                        $this.LogVerbose("Command [$($cmdExecContext.FullyQualifiedCommandName)] completed with successful result [$($cmdExecContext.Result.Success)]")
+                        $this.LogVerbose("Command [$($Context.FullyQualifiedCommandName)] completed with successful result [$($Context.Result.Success)]")
                     } catch {
-                        $cmdExecContext.Complete = $true
-                        $cmdExecContext.Result.Success = $false
-                        $cmdExecContext.Result.Errors = $_.Exception.Message
-                        $cmdExecContext.Result.Streams.Error = $_.Exception.Message
+                        $Context.Complete             = $true
+                        $Context.Result.Success       = $false
+                        $Context.Result.Errors        = $_.Exception.Message
+                        $Context.Result.Streams.Error = $_.Exception.Message
                         $this.LogInfo([LogSeverity]::Error, $_.Exception.Message, $_)
                     }
                 }
             }
         } else {
-            $msg = "Command [$($cmdExecContext.Command.Name)] was not authorized for user [$($cmdExecContext.Message.From)]"
+            $msg = "Command [$($Context.Command.Name)] was not authorized for user [$($Context.Message.From)]"
             $err = [CommandNotAuthorized]::New($msg)
-            $cmdExecContext.Complete = $true
-            $cmdExecContext.Result.Errors += $err
-            $cmdExecContext.Result.Success = $false
-            $cmdExecContext.Result.Authorized = $false
+            $Context.Complete          = $true
+            $Context.Result.Errors    += $err
+            $Context.Result.Success    = $false
+            $Context.Result.Authorized = $false
             $this.LogInfo([LogSeverity]::Error, $err.Message, $err)
-            $this.TrackJob($cmdExecContext)
+            $this.TrackJob($Context)
             return
         }
 
-        $this.TrackJob($cmdExecContext)
+        $this.TrackJob($Context)
     }
 
     # Add the command execution context to the job tracker
     # So the status and results of it can be checked later
-    [void]TrackJob([CommandExecutionContext]$CommandContext) {
-        if (-not $this._jobTracker.ContainsKey($CommandContext.Id)) {
-            $this.LogVerbose("Adding job [$($CommandContext.Id)] to tracker")
-            $this._jobTracker.Add($CommandContext.Id, $CommandContext)
+    [void]TrackJob([CommandExecutionContext]$Context) {
+        if (-not $this._jobTracker.ContainsKey($Context.Id)) {
+            $this.LogVerbose("Adding job [$($Context.Id)] to tracker")
+            $this._jobTracker.Add($Context.Id, $Context)
         }
     }
 
     # Receive any completed jobs from the job tracker
-    [CommandExecutionContext[]]ReceiveJob() {
-        $results = New-Object System.Collections.ArrayList
+    [System.Collections.Generic.List[CommandExecutionContext]]ReceiveJob() {
 
-        if ($this._jobTracker.Count -ge 1) {
-            $completedJobs = $this._jobTracker.GetEnumerator() |
-                Where-Object {($_.Value.Complete -eq $true) -or
-                              ($_.Value.IsJob -and (($_.Value.Job.State -eq 'Completed') -or ($_.Value.Job.State -eq 'Failed')))} |
-                Select-Object -ExpandProperty Value
+        $results = [System.Collections.Generic.List[CommandExecutionContext]]::new()
 
-            foreach ($cmdExecContext in $completedJobs) {
-                # If the command was executed in a PS job, get the output
-                # Builtin commands are NOT executed as jobs so their output
-                # was already recorded in the [Result] property in the ExecuteCommand() method
-                if ($cmdExecContext.IsJob) {
-                    if ($cmdExecContext.Job.State -eq 'Completed') {
-                        $this.LogVerbose("Job [$($cmdExecContext.Id)] is complete")
-                        $cmdExecContext.Complete = $true
-                        $cmdExecContext.Ended = (Get-Date).ToUniversalTime()
+        foreach ($context in $this._GetCompletedContexts()) {
+            # If the command was executed in a PS job, get the output
+            # Builtin commands are NOT executed as jobs so their output
+            # was already recorded in the [Result] property in the ExecuteCommand() method
+            if ($context.IsJob) {
 
-                        # Capture all the streams
-                        $cmdExecContext.Result.Errors = $cmdExecContext.Job.ChildJobs[0].Error.ReadAll()
-                        $cmdExecContext.Result.Streams.Error = $cmdExecContext.Result.Errors
-                        $cmdExecContext.Result.Streams.Information = $cmdExecContext.Job.ChildJobs[0].Information.ReadAll()
-                        $cmdExecContext.Result.Streams.Verbose = $cmdExecContext.Job.ChildJobs[0].Verbose.ReadAll()
-                        $cmdExecContext.Result.Streams.Warning = $cmdExecContext.Job.ChildJobs[0].Warning.ReadAll()
-                        $cmdExecContext.Result.Output = $cmdExecContext.Job.ChildJobs[0].Output.ReadAll()
-
-                        # Determine if job had any terminating errors
-                        if ($cmdExecContext.Result.Streams.Error.Count -gt 0) {
-                            $cmdExecContext.Result.Success = $false
-                        } else {
-                            $cmdExecContext.Result.Success = $true
-                        }
-
-                        $this.LogVerbose("Command [$($cmdExecContext.FullyQualifiedCommandName)] completed with successful result [$($cmdExecContext.Result.Success)]")
-
-                        # Clean up the job
-                        Remove-Job -Job $cmdExecContext.Job
-                    } elseIf ($cmdExecContext.Job.State -eq 'Failed') {
-                        $cmdExecContext.Complete = $true
-                        $cmdExecContext.Result.Success = $false
-                        $this.LogVerbose("Command [$($cmdExecContext.FullyQualifiedCommandName)] failed")
-                    }
+                # Determine if job had any terminating errors and capture error stream
+                if ($context.Job.State -in @('Completed', 'Failed')) {
+                    $context.Result.Errors  = $context.Job.ChildJobs[0].Error.ReadAll()
+                    $context.Result.Success = ($context.Result.Errors.Count -eq 0)
                 }
+                $this.LogVerbose("Command [$($context.FullyQualifiedCommandName)] with job ID [$($context.Id)] completed with result: [$($context.Result.Success)]")
 
-                # Send a success, warning, or fail reaction
-                if ($cmdExecContext.Command.TriggerType -in @('Command', 'Regex')) {
-                    if ($this._bot.Configuration.AddCommandReactions) {
-                        if (-not $cmdExecContext.Result.Success) {
-                            $reaction = [ReactionType]::Failure
-                        } elseIf ($cmdExecContext.Result.Streams.Warning.Count -gt 0) {
-                            $reaction = [ReactionType]::Warning
-                        } else {
-                            $reaction = [ReactionType]::Success
-                        }
-                        $this._bot.Backend.AddReaction($cmdExecContext.Message, $reaction)
-                    }
-                }
+                $context.Complete = $true
+                $context.Ended = [datetime]::UtcNow
 
-                # Add to history
-                if ($cmdExecContext.Command.KeepHistory) {
-                    $this.AddToHistory($cmdExecContext)
-                }
+                # Capture all the streams
+                $context.Result.Streams.Error       = $context.Result.Errors
+                $context.Result.Streams.Information = $context.Job.ChildJobs[0].Information.ReadAll()
+                $context.Result.Streams.Verbose     = $context.Job.ChildJobs[0].Verbose.ReadAll()
+                $context.Result.Streams.Warning     = $context.Job.ChildJobs[0].Warning.ReadAll()
+                $context.Result.Output              = $context.Job.ChildJobs[0].Output.ReadAll()
 
-                $this.LogVerbose("Removing job [$($cmdExecContext.Id)] from tracker")
-                $this._jobTracker.Remove($cmdExecContext.Id)
-
-                # Remove the reaction specifying the command is in process
-                if ($cmdExecContext.Command.TriggerType -in @('Command', 'Regex')) {
-                    if ($this._bot.Configuration.AddCommandReactions) {
-                        $this._bot.Backend.RemoveReaction($cmdExecContext.Message, [ReactionType]::Processing)
-                    }
-                }
-
-                # Track number of commands executed
-                if ($cmdExecContext.Result.Success) {
-                    $this.ExecutedCount++
-                }
-
-                $cmdExecContext.Result.Duration = ($cmdExecContext.Ended - $cmdExecContext.Started)
-
-                $results.Add($cmdExecContext) > $null
+                # Clean up the job
+                Remove-Job -Job $context.Job
             }
+
+            # Send a success, warning, or fail reaction
+            if ($context.Command.TriggerType -in @('Command', 'Regex')) {
+                if ($this._bot.Configuration.AddCommandReactions) {
+                    if (-not $context.Result.Success) {
+                        $reaction = [ReactionType]::Failure
+                    } elseIf ($context.Result.Streams.Warning.Count -gt 0) {
+                        $reaction = [ReactionType]::Warning
+                    } else {
+                        $reaction = [ReactionType]::Success
+                    }
+                    $this._bot.Backend.AddReaction($context.Message, $reaction)
+                }
+            }
+
+            # Add to history
+            if ($context.Command.KeepHistory) {
+                $this.AddToHistory($context)
+            }
+
+            $this.LogVerbose("Removing job [$($context.Id)] from tracker")
+            $this._jobTracker.Remove($context.Id)
+
+            # Remove the reaction specifying the command is in process
+            if ($context.Command.TriggerType -in @('Command', 'Regex')) {
+                if ($this._bot.Configuration.AddCommandReactions) {
+                    $this._bot.Backend.RemoveReaction($context.Message, [ReactionType]::Processing)
+                }
+            }
+
+            # Track number of commands executed
+            if ($context.Result.Success) {
+                $this.ExecutedCount++
+            }
+
+            $context.Result.Duration = ($context.Ended - $context.Started)
+
+            $results.Add($context)
         }
 
         return $results
     }
 
     # Add command result to history
-    [void]AddToHistory([CommandExecutionContext]$CmdExecContext) {
+    [void]AddToHistory([CommandExecutionContext]$Context) {
         if ($this.History.Count -ge $this.HistoryToKeep) {
-            $this.History.RemoveAt(0) > $null
+            $this.History.RemoveAt(0)
         }
-        $this.LogDebug("Adding command execution [$($CmdExecContext.Id)] to history")
-        $this.History.Add($CmdExecContext)
+        $this.LogDebug("Adding command execution [$($Context.Id)] to history")
+        $this.History.Add($Context)
     }
 
     # Validate that all mandatory parameters have been provided
-    [bool]ValidateMandatoryParameters([ParsedCommand]$ParsedCommand, [Command]$Command) {
-        $validated = $false
+    [bool]ValidateMandatoryParameters([CommandExecutionContext]$Context) {
 
-        if ($Command.FunctionInfo) {
-            $parameterSets = $Command.FunctionInfo.ParameterSets
+        $parsedCommand = $Context.ParsedCommand
+        $command       = $Context.Command
+        $validated     = $false
+
+        if ($command.FunctionInfo) {
+            $parameterSets = $command.FunctionInfo.ParameterSets
         } else {
-            $parameterSets = $Command.CmdletInfo.ParameterSets
+            $parameterSets = $command.CmdletInfo.ParameterSets
         }
 
         foreach ($parameterSet in $parameterSets) {
             $this.LogDebug("Validating parameters for parameter set [$($parameterSet.Name)]")
-            $mandatoryParameters = @($parameterSet.Parameters | Where-Object {$_.IsMandatory -eq $true}).Name
+            $mandatoryParameters = @($parameterSet.Parameters.Where({$_.IsMandatory -eq $true})).Name
             if ($mandatoryParameters.Count -gt 0) {
                 # Remove each provided mandatory parameter from the list
                 # so we can find any that will have to be coverd by positional parameters
-                $this.LogDebug('Provided named parameters', $ParsedCommand.NamedParameters.Keys)
-                foreach ($providedNamedParameter in $ParsedCommand.NamedParameters.Keys ) {
+                $this.LogDebug('Provided named parameters', $parsedCommand.NamedParameters.Keys)
+                foreach ($providedNamedParameter in $parsedCommand.NamedParameters.Keys ) {
                     $this.LogDebug("Named parameter [$providedNamedParameter] provided")
-                    $mandatoryParameters = @($mandatoryParameters | Where-Object {$_ -ne $providedNamedParameter})
+                    $mandatoryParameters = @($mandatoryParameters.Where({$_ -ne $providedNamedParameter}))
                 }
                 if ($mandatoryParameters.Count -gt 0) {
-                    if ($ParsedCommand.PositionalParameters.Count -lt $mandatoryParameters.Count) {
+                    if ($parsedCommand.PositionalParameters.Count -lt $mandatoryParameters.Count) {
                         $validated = $false
                     } else {
                         $validated = $true
@@ -311,10 +300,10 @@ class CommandExecutor : BaseLogger {
                         $approvalGroups = @()
                     }
                     $compareParams = @{
-                        ReferenceObject = $this.GetApprovalGroups($Context)
+                        ReferenceObject  = $this.GetApprovalGroups($Context)
                         DifferenceObject = $approvalGroups
-                        PassThru = $true
-                        IncludeEqual = $true
+                        PassThru         = $true
+                        IncludeEqual     = $true
                         ExcludeDifferent = $true
                     }
                     $inApprovalGroup = (Compare-Object @compareParams).Count -gt 0
@@ -342,11 +331,17 @@ class CommandExecutor : BaseLogger {
 
     # Get list of approval groups for a command that needs approval
     [string[]]GetApprovalGroups([CommandExecutionContext]$Context) {
-        foreach ($approvalConfig in $this._bot.Configuration.ApprovalConfiguration.Commands) {
-            if ($Context.FullyQualifiedCommandName -like $approvalConfig.Expression) {
-                return $approvalConfig.ApprovalGroups
-            }
-        }
-        return @()
+        return ($this._bot.Configuration.ApprovalConfiguration.Commands.Where({
+            $Context.FullyQualifiedCommandName -like $_.Expression
+        })).ApprovalGroups
+    }
+
+    # Get all completed (succeeded or failed) jobs from the job tracker
+    hidden [CommandExecutionContext[]]_GetCompletedContexts() {
+        $jobs = $this._jobTracker.GetEnumerator().Where({
+            ($_.Value.Complete -eq $true) -or
+            ($_.Value.IsJob -and (($_.Value.Job.State -eq 'Completed') -or ($_.Value.Job.State -eq 'Failed')))
+        }) | Select-Object -ExpandProperty Value
+        return $jobs
     }
 }
