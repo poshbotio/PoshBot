@@ -35,12 +35,12 @@ class Scheduler : BaseLogger {
                     if (-not [string]::IsNullOrEmpty($sched.StartAfter)) {
                         $newSchedule = [ScheduledMessage]::new($sched.TimeInterval, $sched.TimeValue, $msg, $sched.Enabled, $sched.StartAfter.ToUniversalTime())
 
-                        if ($newSchedule.StartAfter -lt (Get-Date).ToUniversalTime()) {
+                        if ($newSchedule.StartAfter -lt [datetime]::UtcNow) {
                             #Prevent reruns of commands initially scheduled at least one interval ago
                             $newSchedule.RecalculateStartAfter()
                         }
                     } else {
-                        $newSchedule = [ScheduledMessage]::new($sched.TimeInterval, $sched.TimeValue, $msg, $sched.Enabled, (Get-Date).ToUniversalTime())
+                        $newSchedule = [ScheduledMessage]::new($sched.TimeInterval, $sched.TimeValue, $msg, $sched.Enabled, [datetime]::UtcNow)
                     }
                 }
 
@@ -108,7 +108,7 @@ class Scheduler : BaseLogger {
                 }
 
                 $newMsg = $_.Value.Message.Clone()
-                $newMsg.Time = Get-Date
+                $newMsg.Time = [datetime]::UtcNow
                 $newMsg
             }
         }

@@ -10,7 +10,7 @@ InModuleScope PoshBot {
         $Interval = 'Days'
         $TimeValue = 1
         $Message = $msg
-        $StartAfter = (Get-Date).AddMinutes(1)
+        $StartAfter = [datetime]::UtcNow.AddMinutes(1)
 
         Context "Constructor: String, Int, Message, DateTime" {
 
@@ -96,8 +96,8 @@ InModuleScope PoshBot {
         }
 
         Context "Method: HasElapsed()" {
-            $ElapsedMessage = [ScheduledMessage]::new($Interval, $TimeValue, $Message, (Get-Date).AddHours(-5))
-            $ScheduledMessage = [ScheduledMessage]::new($Interval, $TimeValue, $Message, (Get-Date).AddHours(5))
+            $ElapsedMessage = [ScheduledMessage]::new($Interval, $TimeValue, $Message, [datetime]::UtcNow.AddHours(-5))
+            $ScheduledMessage = [ScheduledMessage]::new($Interval, $TimeValue, $Message, [datetime]::UtcNow.AddHours(5))
 
             It 'Should return true when past the StartAfter DateTime' {
                 $ElapsedMessage.HasElapsed() | Should be $true
@@ -114,7 +114,7 @@ InModuleScope PoshBot {
         }
 
         Context "Method: Disable()" {
-            $ScheduledMessage = [ScheduledMessage]::new($Interval, $TimeValue, $Message, (Get-Date))
+            $ScheduledMessage = [ScheduledMessage]::new($Interval, $TimeValue, $Message, [datetime]::UtcNow)
 
             It 'Disables the instance when called' {
                 $ScheduledMessage.Disable()
@@ -128,7 +128,7 @@ InModuleScope PoshBot {
         }
 
         Context "Method: Enable()" {
-            $ScheduledMessage = [ScheduledMessage]::new($Interval, $TimeValue, $Message, (Get-Date))
+            $ScheduledMessage = [ScheduledMessage]::new($Interval, $TimeValue, $Message, [datetime]::UtcNow)
 
             It 'Enables the instance when called' {
                 $ScheduledMessage.Disable()
@@ -144,7 +144,7 @@ InModuleScope PoshBot {
 
         Context "Method: RecalculateStartAfter()" {
             It 'Should increase the StartAfter property by IntervalMS' {
-                $ScheduledMessage = [ScheduledMessage]::new($Interval, $TimeValue, $Message, (Get-Date))
+                $ScheduledMessage = [ScheduledMessage]::new($Interval, $TimeValue, $Message, [datetime]::UtcNow)
 
                 $StartingValue = $ScheduledMessage.StartAfter
                 $ScheduledMessage.RecalculateStartAfter()
@@ -153,7 +153,7 @@ InModuleScope PoshBot {
             }
 
             It 'Should not reschedule a run before the current time' {
-                $currentDate = (Get-Date).ToUniversalTime();
+                $currentDate = [datetime]::UtcNow
                 $startAfter = $currentDate.AddDays(-5);
                 $ScheduledMessage = [ScheduledMessage]::new($Interval, $TimeValue, $Message, $startAfter)
 
@@ -163,7 +163,7 @@ InModuleScope PoshBot {
             }
 
             It 'Should only move StartAfter value forward' {
-                $StartingValue = (Get-Date).AddDays($daysDifference).ToUniversalTime()
+                $StartingValue = [datetime]::UtcNow.AddDays($daysDifference)
                 $ScheduledMessage = [ScheduledMessage]::new($Interval, $TimeValue, $Message, $StartingValue)
 
                 $ScheduledMessage.RecalculateStartAfter()

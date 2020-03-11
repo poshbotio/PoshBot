@@ -20,7 +20,7 @@ function Get-CommandStatus {
     $activeJobs = @($Bot.Executor._jobTracker.GetEnumerator() | Foreach-Object {
         $userId = $_.Value.ParsedCommand.From
         $userName = $Bot.RoleManager.ResolveUserIdToUserName($_.Value.ParsedCommand.From)
-        $cmdDuration = [system.math]::Round(((Get-Date).ToUniversalTime() - $_.Value.Started.ToUniversalTime()).TotalSeconds, 0)
+        $cmdDuration = [Math]::Round(([datetime]::UtcNow - $_.Value.Started.ToUniversalTime()).TotalSeconds, 0)
         [pscustomobject]@{
             Id = $_.Value.Id
             From = "$userName [$userId]"

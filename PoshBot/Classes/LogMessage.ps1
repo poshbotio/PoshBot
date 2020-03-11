@@ -1,6 +1,6 @@
 
 class LogMessage {
-    [datetime]$DateTime = (Get-Date).ToUniversalTime()
+    [datetime]$DateTime = [datetime]::UtcNow
     [string]$Class
     [string]$Method
     [LogSeverity]$Severity = [LogSeverity]::Normal

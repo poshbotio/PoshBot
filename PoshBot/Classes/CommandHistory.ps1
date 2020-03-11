@@ -22,6 +22,6 @@ class CommandHistory {
         $this.CallerId = $CallerId
         $this.Result = $Result
         $this.ParsedCommand = $ParsedCommand
-        $this.Time = Get-Date
+        $this.Time = [datetime]::UtcNow
     }
 }

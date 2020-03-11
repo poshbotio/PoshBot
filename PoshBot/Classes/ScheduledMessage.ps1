@@ -20,14 +20,14 @@ class ScheduledMessage {
 
     [int]$TimesExecuted = 0
 
-    [DateTime]$StartAfter = (Get-Date).ToUniversalTime()
+    [DateTime]$StartAfter = [datetime]::UtcNow
 
     ScheduledMessage([TimeInterval]$Interval, [int]$TimeValue, [Message]$Message, [bool]$Enabled, [DateTime]$StartAfter) {
         $this.Init($Interval, $TimeValue, $Message, $Enabled, $StartAfter)
     }
 
     ScheduledMessage([TimeInterval]$Interval, [int]$TimeValue, [Message]$Message, [bool]$Enabled) {
-        $this.Init($Interval, $TimeValue, $Message, $Enabled, (Get-Date).ToUniversalTime())
+        $this.Init($Interval, $TimeValue, $Message, $Enabled, [datetime]::UtcNow)
     }
 
     ScheduledMessage([TimeInterval]$Interval, [int]$TimeValue, [Message]$Message, [DateTime]$StartAfter) {
@@ -35,7 +35,7 @@ class ScheduledMessage {
     }
 
     ScheduledMessage([TimeInterval]$Interval, [int]$TimeValue, [Message]$Message) {
-        $this.Init($Interval, $TimeValue, $Message, $true, (Get-Date).ToUniversalTime())
+        $this.Init($Interval, $TimeValue, $Message, $true, [datetime]::UtcNow)
     }
 
     ScheduledMessage([Message]$Message, [Datetime]$StartAt) {
@@ -73,7 +73,7 @@ class ScheduledMessage {
     }
 
     [bool]HasElapsed() {
-        $now = (Get-Date).ToUniversalTime()
+        $now = [datetime]::UtcNow
         if ($now -gt $this.StartAfter) {
             $this.TimesExecuted += 1
             return $true
@@ -91,7 +91,7 @@ class ScheduledMessage {
     }
 
     [void]RecalculateStartAfter() {
-        $currentDate = (Get-Date).ToUniversalTime()
+        $currentDate = [datetime]::UtcNow
         $difference = (New-TimeSpan $this.StartAfter $currentDate)
         $elapsedIntervals = [int][Math]::Ceiling($difference.TotalMilliseconds / $this.IntervalMS)
         #Always move forward at least one interval

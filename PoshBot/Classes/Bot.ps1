@@ -233,7 +233,7 @@ class Bot : BaseLogger {
 
             # Execute PreReceive middleware hooks
             $cmdExecContext = [CommandExecutionContext]::new()
-            $cmdExecContext.Started = (Get-Date).ToUniversalTime()
+            $cmdExecContext.Started = [datetime]::UtcNow
             $cmdExecContext.Message = $msg
             $cmdExecContext = $this._ExecuteMiddleware($cmdExecContext, [MiddlewareType]::PreReceive)
 
@@ -259,7 +259,7 @@ class Bot : BaseLogger {
     }
 
     [void]ProcessDeferredContexts() {
-        $now = (Get-Date).ToUniversalTime()
+        $now = [datetime]::UtcNow
         $expireMinutes = $this.Configuration.ApprovalConfiguration.ExpireMinutes
 
         $toRemove = New-Object System.Collections.ArrayList
@@ -362,7 +362,7 @@ class Bot : BaseLogger {
 
             # Create the command execution context
             $cmdExecContext = [CommandExecutionContext]::new()
-            $cmdExecContext.Started = (Get-Date).ToUniversalTime()
+            $cmdExecContext.Started = [datetime]::UtcNow
             $cmdExecContext.Result = [CommandResult]::New()
             $cmdExecContext.Command = $pluginCmd.Command
             $cmdExecContext.FullyQualifiedCommandName = $pluginCmd.ToString()

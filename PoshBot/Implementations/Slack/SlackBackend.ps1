@@ -313,7 +313,7 @@ class SlackBackend : Backend {
                         } elseIf ($slackMessage.event_ts) {
                             $msg.Time = $unixEpoch.AddSeconds($slackMessage.event_ts)
                         } else {
-                            $msg.Time = (Get-Date).ToUniversalTime()
+                            $msg.Time = [datetime]::UtcNow
                         }
 
                         # Sometimes the message is nested in a 'message' subproperty. This could be
@@ -358,20 +358,6 @@ class SlackBackend : Backend {
 
     # Send a Slack ping
     [void]Ping() {
-        # $msg = @{
-        #     id = 1
-        #     type = 'ping'
-        #     time = [System.Math]::Truncate((Get-Date -Date (Get-Date) -UFormat %s))
-        # }
-        # $json = $msg | ConvertTo-Json
-        # $bytes = ([System.Text.Encoding]::UTF8).GetBytes($json)
-        # Write-Debug -Message '[SlackBackend:Ping]: One ping only Vasili'
-        # $cts = New-Object System.Threading.CancellationTokenSource -ArgumentList 5000
-
-        # $task = $this.Connection.WebSocket.SendAsync($bytes, [System.Net.WebSockets.WebSocketMessageType]::Text, $true, $cts.Token)
-        # do { Start-Sleep -Milliseconds 100 }
-        # until ($task.IsCompleted)
-        #$result = $this.Connection.WebSocket.SendAsync($bytes, [System.Net.WebSockets.WebSocketMessageType]::Text, $true, $cts.Token).GetAwaiter().GetResult()
     }
 
     # Send a message back to Slack

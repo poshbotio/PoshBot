@@ -6,7 +6,7 @@ class ParsedCommand {
     [string]$Version = $null
     [hashtable]$NamedParameters = @{}
     [System.Collections.ArrayList]$PositionalParameters = (New-Object System.Collections.ArrayList)
-    [datetime]$Time = (Get-Date).ToUniversalTime()
+    [datetime]$Time = [datetime]::UtcNow
     [string]$From = $null
     [string]$FromName = $null
     [hashtable]$CallingUserInfo = @{}

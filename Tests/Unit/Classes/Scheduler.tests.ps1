@@ -68,7 +68,7 @@ InModuleScope PoshBot {
 
         $Schedule = @{
             sched_test = @{
-                StartAfter = (Get-Date).ToUniversalTime().AddDays(-5)
+                StartAfter = [datetime]::UtcNow.AddDays(-5)
                 Once = $False
                 TimeValue = 1
                 IntervalMS = 86400000
@@ -91,7 +91,7 @@ InModuleScope PoshBot {
             It 'Should not advance schedules whose triggers are in the future' {
                 $futureSchedule = $Schedule['sched_test'].Clone()
                 $futureSchedule['message'] = $message
-                $futureSchedule['StartAfter'] = (Get-Date).ToUniversalTime().AddDays(5)
+                $futureSchedule['StartAfter'] = [datetime]::UtcNow.AddDays(5)
 
                 $originalStartAfter = $futureSchedule['StartAfter']
 

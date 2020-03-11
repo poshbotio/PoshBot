@@ -126,7 +126,7 @@ class Command : BaseLogger {
 
         if ($InvokeAsJob) {
             $this.LogDebug("Executing command [$($this.ModuleQualifiedCommand)] as job")
-            $fdt = Get-Date -Format FileDateTimeUniversal
+            $fdt = [guid]::NewGuid().ToString().Replace('-', '')
             $jobName = "$($this.Name)_$fdt"
             $jobParams = @{
                 Name = $jobName

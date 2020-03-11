@@ -147,7 +147,7 @@ class DiscordBackend : Backend {
                 if ($discordMsg.d.timestamp) {
                     $msg.Time = ([datetime]$discordMsg.d.timestamp).ToUniversalTime()
                 } else {
-                    $msg.Time = (Get-Date).ToUniversalTime()
+                    $msg.Time = [datetime]::UtcNow
                 }
 
                 # Discord displays @mentions like '@devblackops' but internally in the message
