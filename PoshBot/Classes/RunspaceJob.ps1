@@ -29,15 +29,17 @@ class RunspaceJob {
         $CommandResult.Value.Streams.Verbose     = $this.PowerShell.Streams.Verbose.ReadAll()
         $CommandResult.Value.Streams.Warning     = $this.PowerShell.Streams.Warning.ReadAll()
 
-        $CommandResult.Value.Success = $true
         try {
             $CommandResult.Value.Output  = $this.PowerShell.EndInvoke($this.Handle)
         } catch {
-            $CommandResult.Value.Success = $false
             # Unwrap the exception otherwise it will blame EndInvoke for the exception
             #   e.g. Exception calling "EndInvoke" with "1" argument(s): "Attempted to divide by zero."
             $CommandResult.Value.Errors = $_.Exception.InnerException.ErrorRecord
+        } finally {
+            $this.PowerShell.Dispose()
         }
-        $this.PowerShell.Dispose()
+
+        # # Job is deemed successful if no items in error stream
+        $CommandResult.Value.Success = $CommandResult.Value.Errors -eq 0
     }
 }

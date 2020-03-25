@@ -481,7 +481,7 @@ class Bot : BaseLogger {
                         $this.LogInfo([LogSeverity]::Error, "Errors encountered running command [$($cmdExecContext.FullyQualifiedCommandName)]", $cmdExecContext.Result.Errors)
                     }
                 } else {
-                    $this.LogVerbose('Command execution result', $cmdExecContext.Result)
+                    $this.LogVerbose('Command execution result', $cmdExecContext.Result.Output)
                     foreach ($resultOutput in $cmdExecContext.Result.Output) {
                         if ($null -ne $resultOutput) {
                             if ($this._IsCustomResponse($resultOutput)) {

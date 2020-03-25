@@ -177,12 +177,9 @@ class CommandExecutor : BaseLogger {
                     $this.LogVerbose("Job [$($cmdExecContext.Id)] is complete")
                     $cmdExecContext.Complete = $true
                     $cmdExecContext.Ended = (Get-Date).ToUniversalTime()
-
                     $cmdExecContext.RunspaceJob.EndJob([ref]$cmdExecContext.Result)
 
-
                     $this.LogVerbose("Command [$($cmdExecContext.FullyQualifiedCommandName)] completed with successful result [$($cmdExecContext.Result.Success)]")
-
                 }
 
                 # Determine if job had any terminating errors and capture error stream
