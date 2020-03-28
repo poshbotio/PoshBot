@@ -13,7 +13,7 @@ jobs:
         testRunTitle: 'PS_Win2016'
       displayName: 'Publish Test Results'
 
-    - job: windows_pwsh
+  - job: windows_pwsh
     pool:
       vmImage: windows-latest
     steps:
