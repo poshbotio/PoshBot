@@ -115,6 +115,7 @@ class ScheduledMessage {
                 Text = $this.Message.Text
                 To = $this.Message.To
                 From = $this.Message.From
+                RawMessage = $this.Message.RawMessage
             }
             Enabled = $this.Enabled
             IntervalMS = $this.IntervalMS

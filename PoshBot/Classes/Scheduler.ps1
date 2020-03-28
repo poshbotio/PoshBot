@@ -29,6 +29,7 @@ class Scheduler : BaseLogger {
                 $msg.From = $sched.Message.From
                 $msg.Type = $sched.Message.Type
                 $msg.Subtype = $sched.Message.Subtype
+                $msg.RawMessage = $sched.Message.RawMessage
                 if ($sched.Once) {
                     $newSchedule = [ScheduledMessage]::new($msg, $sched.StartAfter.ToUniversalTime())
                 } else {

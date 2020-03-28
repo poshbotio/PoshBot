@@ -10,10 +10,11 @@ class TeamsBackend : Backend {
     )
 
     [string]$TeamId     = $null
-    [string]$ServiceUrl = $null
+    [string]$ServiceUrl = 'https://smba.trafficmanager.net/amer/'
     [string]$BotId      = $null
     [string]$BotName    = $null
     [string]$TenantId   = $null
+    [bool]$Initialized  = $false
 
     [hashtable]$DMConverations = @{}
 
@@ -45,9 +46,11 @@ class TeamsBackend : Backend {
 
                     $teamsMessages = @($jsonResult | ConvertFrom-Json)
 
-                    foreach ($teamsMessage in $teamsMessages) {
+                    if (-not $this.Initialized -and $teamsMessages.Count -gt 0) {
+                        $this.DelayedInit($teamsMessages[0])
+                    }
 
-                        $this.DelayedInit($teamsMessage)
+                    foreach ($teamsMessage in $teamsMessages) {
 
                         # We only care about certain message types from Teams
                         if ($teamsMessage.type -in $this.MessageTypes) {
@@ -720,7 +723,7 @@ class TeamsBackend : Backend {
     }
 
     hidden [void]DelayedInit([pscustomobject]$Message) {
-        if ([string]::IsNullOrEmpty($this.ServiceUrl)) {
+        if (([string]::IsNullOrEmpty($this.ServiceUrl)) -or ($this.ServiceUrl -ne $Message.serviceUrl)) {
             $this.ServiceUrl = $Message.serviceUrl
             $this.LoadUsers()
             $this.LoadRooms()
@@ -738,6 +741,8 @@ class TeamsBackend : Backend {
                 $this.TenantId = $Message.channelData.tenant.id
             }
         }
+
+        $this.Initialized = $true
     }
 
     hidden [void]SendTeamsMessaage([Response]$Response) {

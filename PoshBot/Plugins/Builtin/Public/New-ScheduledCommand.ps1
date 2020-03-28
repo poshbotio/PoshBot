@@ -71,10 +71,11 @@ function New-ScheduledCommand {
         $Command = $Command.Insert(0, $Bot.Configuration.CommandPrefix)
     }
 
-    $botMsg = [Message]::new()
-    $botMsg.Text = $Command
-    $botMsg.From = $global:PoshBotContext.From
-    $botMsg.To = $global:PoshBotContext.To
+    $botMsg            = [Message]::new()
+    $botMsg.Text       = $Command
+    $botMsg.From       = $global:PoshBotContext.From
+    $botMsg.To         = $global:PoshBotContext.To
+    $botMsg.RawMessage = $global:PoshBotContext.OriginalMessage.RawMessage
 
     if ($PSCmdlet.ParameterSetName -eq 'repeat') {
         # This command will be executed on a schedule with an optional time to start the interval
