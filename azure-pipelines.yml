@@ -1,7 +1,7 @@
 jobs:
   - job: Build_PS_Win2016
     pool:
-      vmImage: vs2017-win2016
+      vmImage: windows-latest
     steps:
     - powershell: |
         ./build.ps1 -Task Test -Bootstrap -Verbose
@@ -15,7 +15,7 @@ jobs:
 
   - job: Build_PSCore_Ubuntu1604
     pool:
-      vmImage: ubuntu-16.04
+      vmImage: ubuntu-latest
     steps:
     - script: |
         pwsh -c './build.ps1 -Task Test -Bootstrap -Verbose'
@@ -29,7 +29,7 @@ jobs:
 
   - job: Build_PSCore_MacOS1013
     pool:
-      vmImage: xcode9-macos10.13
+      vmImage: macOS-latest
     steps:
     - script: |
         pwsh -c './build.ps1 -Task Test -Bootstrap -Verbose'
