@@ -97,7 +97,7 @@ class Scheduler : BaseLogger {
 
     [Message[]]GetTriggeredMessages() {
         $remove = @()
-        $messages = $this.Schedules.GetEnumerator() | Foreach-Object {
+        $messages = $this.Schedules.GetEnumerator().Where({$_.Value.Enabled}).ForEach({
             if ($_.Value.HasElapsed()) {
                 $this.LogInfo("Timer reached on scheduled command [$($_.Value.Id)]")
 
@@ -112,7 +112,7 @@ class Scheduler : BaseLogger {
                 $newMsg.Time = [datetime]::UtcNow
                 $newMsg
             }
-        }
+        })
 
         # Remove any one time commands that have triggered
         foreach ($id in $remove) {
