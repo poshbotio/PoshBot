@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 - General speed improvements. Logging to disk has been moved into a separate thread.
+- Bump [PSSlack](https://github.com/RamblingCookieMonster/PSSlack) dependency to `1.0.2`
 
 ## [0.12.0] 2020-03-05
 
