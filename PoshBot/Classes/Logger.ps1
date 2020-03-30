@@ -118,6 +118,8 @@ class Logger {
         $this.Log([LogMessage]::new("Log level set to [$($this.LogLevel)]"))
     }
 
+    hidden Logger() { }
+
     # Log the message and optionally write to console
     [void]Log([LogMessage]$Message) {
         switch ($Message.Severity.ToString()) {
