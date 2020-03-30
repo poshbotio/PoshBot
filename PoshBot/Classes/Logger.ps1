@@ -16,26 +16,106 @@ class Logger {
     # Number of each log file type to keep
     [int]$FilesToKeep
 
-    # Create logs files under provided directory
-    Logger([string]$LogDir, [LogLevel]$LogLevel, [int]$MaxLogSizeMB, [int]$MaxLogsToKeep) {
-        $this.LogDir = $LogDir
-        $this.LogLevel = $LogLevel
-        $this.MaxSizeMB = $MaxLogSizeMB
-        $this.FilesToKeep = $MaxLogsToKeep
-        $this.LogFile = Join-Path -Path $this.LogDir -ChildPath 'PoshBot.log'
-        $this.CreateLogFile()
-        $this.Log([LogMessage]::new("Log level set to [$($this.LogLevel)]"))
+    # Runspace pool to host a PowerShell thread for the log writer
+    [System.Management.Automation.Runspaces.RunspacePool]$RunspacePool = [RunspaceFactory]::CreateRunspacePool(1, 1)
+
+    # Concurrent blocking collection so items can be added to queue and the log writer thread will sit and wait for items
+    [Collections.Concurrent.BlockingCollection[hashtable]]$LogQueue = [Collections.Concurrent.BlockingCollection[hashtable]]@{}
+
+    # PowerShell thread for log writer
+    [System.Management.Automation.PowerShell]$Thread
+
+    # Thread handle
+    [object]$Handle
+
+    # Wait for items to show up in the queue and write them to disk
+    [ScriptBlock]$LogWriter = {
+        param(
+            [Collections.Concurrent.BlockingCollection[hashtable]]$Queue,
+
+            [string]$LogFile
+        )
+
+        # Create a new log file if it doesn't exist
+        function CreateLogFile {
+            [cmdletbinding()]
+            param(
+                [parameter(mandatory)]
+                [string]$LogFile
+            )
+
+            if (Test-Path -Path $LogFile) {
+                RollLog -LogFile $LogFile -Always
+            }
+            New-Item -Path $LogFile -ItemType File -Force
+        }
+
+        # Roll the log if needed
+        function RollLog {
+            [cmdletbinding()]
+            param(
+                [parameter(mandatory)]
+                [string]$LogFile,
+
+                [switch]$Always,
+
+                [parameter(mandatory)]
+                [int]$MaxLogSize,
+
+                [parameter(mandatory)]
+                [int]$MaxFilesToKeep
+            )
+
+            $keep = $MaxFilesToKeep - 1
+
+            if (Test-Path -Path $LogFile) {
+                if ((($file = Get-Item -Path $LogFile) -and ($file.Length/1mb) -gt $MaxLogSize) -or $Always.IsPresent) {
+                    # Remove the last item if it would go over the limit
+                    if (Test-Path -Path "$LogFile.$keep") {
+                        Remove-Item -Path "$LogFile.$keep"
+                    }
+                    foreach ($i in $keep..1) {
+                        if (Test-path -Path "$LogFile.$($i-1)") {
+                            Move-Item -Path "$LogFile.$($i-1)" -Destination "$LogFile.$i"
+                        }
+                    }
+                    Move-Item -Path $LogFile -Destination "$LogFile.$i"
+                    New-Item -Path $LogFile -Type File -Force > $null
+                }
+            } else {
+                CreateLogFile -LogFile $LogFile
+            }
+        }
+
+        foreach($logInstruction in $Queue.GetConsumingEnumerable()) {
+            RollLog -LogFile $logInstruction.LogFile -MaxLogSize $logInstruction.MaxLogSizeMB -MaxFilesToKeep $logInstruction.MaxFilesToKeep
+
+            $sw = [System.IO.StreamWriter]::new($logInstruction.LogFile, [System.Text.Encoding]::UTF8)
+            $sw.WriteLine($logInstruction.Message)
+            $sw.Close()
+        }
     }
 
-    hidden Logger() { }
+    # Create logs files under provided directory
+    Logger([string]$LogDir, [LogLevel]$LogLevel, [int]$MaxLogSizeMB, [int]$MaxLogsToKeep) {
+        $this.LogDir      = $LogDir
+        $this.LogLevel    = $LogLevel
+        $this.MaxSizeMB   = $MaxLogSizeMB
+        $this.FilesToKeep = $MaxLogsToKeep
+        $this.LogFile     = Join-Path -Path $this.LogDir -ChildPath 'PoshBot.log'
 
-    # Create new log file or roll old log
-    hidden [void]CreateLogFile() {
-        if (Test-Path -Path $this.LogFile) {
-            $this.RollLog($this.LogFile, $true)
-        }
-        Write-Debug -Message "[Logger:Logger] Creating log file [$($this.LogFile)]"
-        New-Item -Path $this.LogFile -ItemType File -Force
+        # Setup the runspace for the log writer
+        $this.RunspacePool.Open()
+        $this.Thread = [PowerShell]::create()
+        $this.Thread.RunspacePool = $this.RunspacePool
+        $this.Thread.AddScript($this.LogWriter) > $null
+        $this.Thread.AddParameter('Queue', $this.LogQueue) > $null
+        $this.Thread.AddParameter('LogFile', $this.LogFile) > $null
+        $this.Thread.AddParameter('MaxLogSize', $this.MaxSizeMB) > $Null
+        $this.Thread.AddParameter('$MaxFilesToKeep', $this.FilesToKeep) > $Null
+        $this.handle = $this.Thread.BeginInvoke()
+
+        $this.Log([LogMessage]::new("Log level set to [$($this.LogLevel)]"))
     }
 
     # Log the message and optionally write to console
@@ -64,53 +144,24 @@ class Logger {
         }
 
         if ($Message.LogLevel.value__ -le $this.LogLevel.value__) {
-            $this.RollLog($this.LogFile, $false)
-            $json = $Message.ToJson()
-            $this.WriteLine($json)
+            $this.Log($Message, $this.LogFile, $this.MaxSizeMB, $this.FilesToKeep)
         }
     }
 
     [void]Log([LogMessage]$Message, [string]$LogFile, [int]$MaxLogSizeMB, [int]$MaxLogsToKeep) {
-        $this.RollLog($LogFile, $false, $MaxLogSizeMB, $MaxLogSizeMB)
-        $json = $Message.ToJson()
-        $sw = [System.IO.StreamWriter]::new($LogFile, [System.Text.Encoding]::UTF8)
-        $sw.WriteLine($json)
-        $sw.Close()
-    }
-
-    # Write line to file
-    hidden [void]WriteLine([string]$Message) {
-        $sw = [System.IO.StreamWriter]::new($this.LogFile, [System.Text.Encoding]::UTF8)
-        $sw.WriteLine($Message)
-        $sw.Close()
-    }
-
-    hidden [void]RollLog([string]$LogFile, [bool]$Always) {
-        $this.RollLog($LogFile, $Always, $this.MaxSizeMB, $this.FilesToKeep)
-    }
-
-    # Checks to see if file in question is larger than the max size specified for the logger.
-    # If it is, it will roll the log and delete older logs to keep our number of logs per log type to
-    # our max specifiex in the logger.
-    # Specified $Always = $true will roll the log regardless
-    hidden [void]RollLog([string]$LogFile, [bool]$Always, $MaxLogSize, $MaxFilesToKeep) {
-
-        $keep = $MaxFilesToKeep - 1
-
-        if (Test-Path -Path $LogFile) {
-            if ((($file = Get-Item -Path $logFile) -and ($file.Length/1mb) -gt $MaxLogSize) -or $Always) {
-                # Remove the last item if it would go over the limit
-                if (Test-Path -Path "$logFile.$keep") {
-                    Remove-Item -Path "$logFile.$keep"
-                }
-                foreach ($i in $keep..1) {
-                    if (Test-path -Path "$logFile.$($i-1)") {
-                        Move-Item -Path "$logFile.$($i-1)" -Destination "$logFile.$i"
-                    }
-                }
-                Move-Item -Path $logFile -Destination "$logFile.$i"
-                New-Item -Path $LogFile -Type File -Force > $null
-            }
+        $logInstruction = @{
+            LogFile       = $LogFile
+            Message       = $Message.ToJson()
+            MaxLogSizeMB  = $MaxLogSizeMB
+            MaxLogsToKeep = $MaxLogsToKeep
         }
+        $this.LogQueue.Add($logInstruction)
+    }
+
+    [void]Dispose() {
+        $this.LogQueue.CompleteAdding()
+        $this.Thread.EndInvoke($this.Handle)
+        $this.Thread.Dispose()
+        $this.RunspacePool.Dispose()
     }
 }

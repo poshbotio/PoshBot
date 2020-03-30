@@ -181,6 +181,7 @@ class Bot : BaseLogger {
         } finally {
             $global:FormatEnumerationLimit = $OldFormatEnumerationLimit
             $this.Disconnect()
+            $this.Logger.Dispose()
         }
     }
 

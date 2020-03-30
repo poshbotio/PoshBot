@@ -17,46 +17,28 @@ class LogMessage {
 
     LogMessage([string]$Message, [object]$Data) {
         $this.Message = $Message
-        $this.Data = $Data
+        $this.Data    = $Data
     }
 
     LogMessage([LogSeverity]$Severity, [string]$Message) {
         $this.Severity = $Severity
-        $this.Message = $Message
+        $this.Message  = $Message
     }
 
     LogMessage([LogSeverity]$Severity, [string]$Message, [object]$Data) {
         $this.Severity = $Severity
-        $this.Message = $Message
-        $this.Data = $Data
-    }
-
-    # Borrowed from https://github.com/PowerShell/PowerShell/issues/2736
-    hidden [string]Compact([string]$Json) {
-        $indent = 0
-        $compacted = ($Json -Split '\n' | ForEach-Object {
-            if ($_ -match '[\}\]]') {
-                # This line contains  ] or }, decrement the indentation level
-                $indent--
-            }
-            $line = (' ' * $indent * 2) + $_.TrimStart().Replace(':  ', ': ')
-            if ($_ -match '[\{\[]') {
-                # This line contains [ or {, increment the indentation level
-                $indent++
-            }
-            $line
-        }) -Join "`n"
-        return $compacted
+        $this.Message  = $Message
+        $this.Data     = $Data
     }
 
     [string]ToJson() {
         $json = [ordered]@{
             DataTime = $this.DateTime.ToString('u')
-            Class = $this.Class
-            Method = $this.Method
+            Class    = $this.Class
+            Method   = $this.Method
             Severity = $this.Severity.ToString()
             LogLevel = $this.LogLevel.ToString()
-            Message = $this.Message
+            Message  = $this.Message
             Data = foreach ($item in $this.Data) {
                 # Summarize exceptions so they can be serialized to json correctly
 
@@ -74,6 +56,7 @@ class LogMessage {
                 }
             }
         } | ConvertTo-Json -Depth 10 -Compress
+
         return $json
     }
 

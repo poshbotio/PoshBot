@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fixed [**#206**](https://github.com/poshbotio/PoshBot/issues/206) where scheduled commands were not being send when using the Microsoft Teams backend.
 - Fixed [**#202**](https://github.com/poshbotio/PoshBot/issues/202) Scheduled commands that are disabled no longer execute.
 
+### Changed
+
+- General speed improvements. Logging to disk has been moved into a separate thread.
+
 ## [0.12.0] 2020-03-05
 
 ### Added
