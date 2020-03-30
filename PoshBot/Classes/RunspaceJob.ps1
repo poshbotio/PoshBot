@@ -40,6 +40,6 @@ class RunspaceJob {
         }
 
         # # Job is deemed successful if no items in error stream
-        $CommandResult.Value.Success = $CommandResult.Value.Errors -eq 0
+        $CommandResult.Value.Success = $CommandResult.Value.Errors.Count -eq 0
     }
 }

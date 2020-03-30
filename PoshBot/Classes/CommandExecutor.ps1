@@ -102,10 +102,10 @@ class CommandExecutor : BaseLogger {
                     $this.LogDebug("Command [$($Context.FullyQualifiedCommandName)] will be executed as a job")
 
                     # Kick off job and add to job tracker
-                    $cmdExecContext.IsJob = $true
-                    $cmdExecContext.RunspaceJob = $cmdExecContext.Command.Invoke($cmdExecContext.ParsedCommand, $true, $this._bot.Backend.GetType().Name)
-                    $this.LogDebug("Command [$($cmdExecContext.FullyQualifiedCommandName)] executing in runspace job [$($cmdExecContext.RunspaceJob.Id)]")
-                    $cmdExecContext.Complete = $false
+                    $Context.IsJob = $true
+                    $Context.RunspaceJob = $Context.Command.Invoke($Context.ParsedCommand, $true, $this._bot.Backend.GetType().Name)
+                    $this.LogDebug("Command [$($Context.FullyQualifiedCommandName)] executing in runspace job [$($Context.RunspaceJob.Id)]")
+                    $Context.Complete = $false
                 } else {
                     # Run command in current session and get results
                     # This should only be 'builtin' commands
@@ -160,47 +160,21 @@ class CommandExecutor : BaseLogger {
     }
 
     # Receive any completed jobs from the job tracker
-    [CommandExecutionContext[]]ReceiveJob() {
-        $results = New-Object System.Collections.ArrayList
+    [System.Collections.Generic.List[CommandExecutionContext]]ReceiveJob() {
 
-        if ($this._jobTracker.Count -ge 1) {
-            $completedJobs = $this._jobTracker.GetEnumerator() |
-                Where-Object {($_.Value.Complete -eq $true) -or
-                              ($_.Value.IsJob -and $_.Value.RunspaceJob.Handle.IsCompleted)} |
-                Select-Object -ExpandProperty Value
+        $results = [System.Collections.Generic.List[CommandExecutionContext]]::new()
 
-            foreach ($cmdExecContext in $completedJobs) {
-                # If the command was executed in a PS job, get the output
-                # Builtin commands are NOT executed as jobs so their output
-                # was already recorded in the [Result] property in the ExecuteCommand() method
-                if ($cmdExecContext.IsJob) {
-                    $this.LogVerbose("Job [$($cmdExecContext.Id)] is complete")
-                    $cmdExecContext.Complete = $true
-                    $cmdExecContext.Ended = (Get-Date).ToUniversalTime()
-                    $cmdExecContext.RunspaceJob.EndJob([ref]$cmdExecContext.Result)
+        foreach ($context in $this._GetCompletedContexts()) {
+            # If the command was executed in a PS job, get the output
+            # Builtin commands are NOT executed as jobs so their output
+            # was already recorded in the [Result] property in the ExecuteCommand() method
+            if ($context.IsJob) {
+                $context.RunspaceJob.EndJob([ref]$context.Result)
 
-                    $this.LogVerbose("Command [$($cmdExecContext.FullyQualifiedCommandName)] completed with successful result [$($cmdExecContext.Result.Success)]")
-                }
-
-                # Determine if job had any terminating errors and capture error stream
-                if ($context.Job.State -in @('Completed', 'Failed')) {
-                    $context.Result.Errors  = $context.Job.ChildJobs[0].Error.ReadAll()
-                    $context.Result.Success = ($context.Result.Errors.Count -eq 0)
-                }
                 $this.LogVerbose("Command [$($context.FullyQualifiedCommandName)] with job ID [$($context.Id)] completed with result: [$($context.Result.Success)]")
 
                 $context.Complete = $true
                 $context.Ended = [datetime]::UtcNow
-
-                # Capture all the streams
-                $context.Result.Streams.Error       = $context.Result.Errors
-                $context.Result.Streams.Information = $context.Job.ChildJobs[0].Information.ReadAll()
-                $context.Result.Streams.Verbose     = $context.Job.ChildJobs[0].Verbose.ReadAll()
-                $context.Result.Streams.Warning     = $context.Job.ChildJobs[0].Warning.ReadAll()
-                $context.Result.Output              = $context.Job.ChildJobs[0].Output.ReadAll()
-
-                # Clean up the job
-                Remove-Job -Job $context.Job
             }
 
             # Send a success, warning, or fail reaction
@@ -352,7 +326,7 @@ class CommandExecutor : BaseLogger {
     hidden [CommandExecutionContext[]]_GetCompletedContexts() {
         $jobs = $this._jobTracker.GetEnumerator().Where({
             ($_.Value.Complete -eq $true) -or
-            ($_.Value.IsJob -and (($_.Value.Job.State -eq 'Completed') -or ($_.Value.Job.State -eq 'Failed')))
+            ($_.Value.IsJob -and $_.Value.RunspaceJob.Handle.IsCompleted)
         }) | Select-Object -ExpandProperty Value
         return $jobs
     }
