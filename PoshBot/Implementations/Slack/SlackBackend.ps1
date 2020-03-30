@@ -16,6 +16,7 @@ class SlackBackend : Backend {
         'reaction_removed'
         'star_added'
         'star_removed'
+        'goodbye'
     )
 
     [int]$MaxMessageLength = 3900
@@ -259,6 +260,13 @@ class SlackBackend : Backend {
                             }
                             'star_removed' {
                                 $msg.Type = [MessageType]::StarRemoved
+                            }
+                            'goodbye' {
+                                # The 'goodbye' event means Slack wants to cease comminication with us
+                                # and they're being nice about it. We need to reestablish the connection.
+                                $this.LogInfo([LogSeverity]::Warning, 'Received [goodbye] event. Reconnecting to Slack backend...')
+                                $this.Connection.Disconnect()
+                                $this.Connection.Connect()
                             }
                         }
 
