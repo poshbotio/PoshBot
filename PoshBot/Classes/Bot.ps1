@@ -734,4 +734,8 @@ class Bot : BaseLogger {
             }
         }
     }
+
+    [void]Dispose() {
+        $this.Logger.Dispose()
+    }
 }

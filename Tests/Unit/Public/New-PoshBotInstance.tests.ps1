@@ -9,6 +9,10 @@ Describe 'New-PoshBotInstance' {
         $script:backend = New-PoshBotSlackBackend -Configuration @{Token = (New-Guid).ToString(); Name = 'Test-Backend'}
     }
 
+    AfterAll {
+        $bot.Dispose()
+    }
+
     Context 'Path' {
         it 'Creates a bot instance from a configuration path' {
             $psd1 = Get-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath '..\..\Artifacts\Cherry2000.psd1')
