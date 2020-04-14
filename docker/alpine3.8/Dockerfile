@@ -9,7 +9,7 @@ ARG version
 LABEL maintainer="devblackops"
 LABEL description="PoshBot container for Alpine 3.8"
 LABEL vendor="poshbotio"
-COPY ["/out/poshbot/$version", "/opt/microsoft/powershell/7/Modules/PoshBot/"]
+COPY ["/out/PoshBot/$version", "/opt/microsoft/powershell/7/Modules/PoshBot/"]
 COPY ["/docker/docker_entrypoint.ps1", "/poshbot/docker_entrypoint.ps1"]
 WORKDIR /poshbot/
 VOLUME ["/poshbot_data"]
