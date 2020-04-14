@@ -112,7 +112,7 @@ class Logger {
         $this.Thread.AddParameter('Queue', $this.LogQueue) > $null
         $this.Thread.AddParameter('LogFile', $this.LogFile) > $null
         $this.Thread.AddParameter('MaxLogSize', $this.MaxSizeMB) > $Null
-        $this.Thread.AddParameter('$MaxFilesToKeep', $this.FilesToKeep) > $Null
+        $this.Thread.AddParameter('MaxFilesToKeep', $this.FilesToKeep) > $Null
         $this.handle = $this.Thread.BeginInvoke()
 
         $this.Log([LogMessage]::new("Log level set to [$($this.LogLevel)]"))
