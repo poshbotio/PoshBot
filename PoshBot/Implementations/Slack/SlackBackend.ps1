@@ -188,174 +188,163 @@ class SlackBackend : Backend {
     [Message[]]ReceiveMessage() {
         $messages = New-Object -TypeName System.Collections.ArrayList
         try {
-            # Read the output stream from the receive job and get any messages since our last read
-            [string[]]$jsonResults = $this.Connection.ReadReceiveJob()
+            foreach ($slackMessage in $this.Connection.ReadReceiveJob()) {
+                $this.LogDebug('Received message', (ConvertTo-Json -InputObject $slackMessage -Depth 15 -Compress))
 
-            foreach ($jsonResult in $jsonResults) {
-                if ($null -ne $jsonResult -and $jsonResult -ne [string]::Empty) {
-                    #Write-Debug -Message "[SlackBackend:ReceiveMessage] Received `n$jsonResult"
-                    $this.LogDebug('Received message', $jsonResult)
-
-                    # Strip out Slack's URI formatting
-                    $jsonResult = $this._SanitizeURIs($jsonResult)
-
-                    $slackMessage = @($jsonResult | ConvertFrom-Json)
-
-                    # Slack will sometimes send back ephemeral messages from user [SlackBot]. Ignore these
-                    # These are messages like notifing that a message won't be unfurled because it's already
-                    # in the channel in the last hour. Helpful message for some, but not for us.
-                    if ($slackMessage.subtype -eq 'bot_message') {
-                        $this.LogDebug('SubType is [bot_message]. Ignoring')
-                        continue
-                    }
-
-                    # Ignore "message_replied" subtypes
-                    # These are message Slack sends to update the client that the original message has a new reply.
-                    # That reply is sent is another message.
-                    # We do this because if the original message that this reply is to is a bot command, the command
-                    # will be executed again so we....need to not do that :)
-                    if ($slackMessage.subtype -eq 'message_replied') {
-                        $this.LogDebug('SubType is [message_replied]. Ignoring')
-                        continue
-                    }
-
-                    # We only care about certain message types from Slack
-                    if ($slackMessage.Type -in $this.MessageTypes) {
-                        $msg = [Message]::new()
-
-                        # Set the message type and optionally the subtype
-                        #$msg.Type = $slackMessage.type
-                        switch ($slackMessage.type) {
-                            'channel_rename' {
-                                $msg.Type = [MessageType]::ChannelRenamed
-                            }
-                            'member_joined_channel' {
-                                $msg.Type = [MessageType]::Message
-                                $msg.SubType = [MessageSubtype]::ChannelJoined
-                            }
-                            'member_left_channel' {
-                                $msg.Type = [MessageType]::Message
-                                $msg.SubType = [MessageSubtype]::ChannelLeft
-                            }
-                            'message' {
-                                $msg.Type = [MessageType]::Message
-                            }
-                            'pin_added' {
-                                $msg.Type = [MessageType]::PinAdded
-                            }
-                            'pin_removed' {
-                                $msg.Type = [MessageType]::PinRemoved
-                            }
-                            'presence_change' {
-                                $msg.Type = [MessageType]::PresenceChange
-                            }
-                            'reaction_added' {
-                                $msg.Type = [MessageType]::ReactionAdded
-                            }
-                            'reaction_removed' {
-                                $msg.Type = [MessageType]::ReactionRemoved
-                            }
-                            'star_added' {
-                                $msg.Type = [MessageType]::StarAdded
-                            }
-                            'star_removed' {
-                                $msg.Type = [MessageType]::StarRemoved
-                            }
-                            'goodbye' {
-                                # The 'goodbye' event means Slack wants to cease comminication with us
-                                # and they're being nice about it. We need to reestablish the connection.
-                                $this.LogInfo([LogSeverity]::Warning, 'Received [goodbye] event. Reconnecting to Slack backend...')
-                                $this.Connection.Disconnect()
-                                $this.Connection.Connect()
-                            }
-                        }
-
-                        # The channel the message occured in is sometimes
-                        # nested in an 'item' property
-                        if ($slackMessage.item -and ($slackMessage.item.channel)) {
-                            $msg.To = $slackMessage.item.channel
-                        }
-
-                        if ($slackMessage.subtype) {
-                            switch ($slackMessage.subtype) {
-                                'channel_join' {
-                                    $msg.Subtype = [MessageSubtype]::ChannelJoined
-                                }
-                                'channel_leave' {
-                                    $msg.Subtype = [MessageSubtype]::ChannelLeft
-                                }
-                                'channel_name' {
-                                    $msg.Subtype = [MessageSubtype]::ChannelRenamed
-                                }
-                                'channel_purpose' {
-                                    $msg.Subtype = [MessageSubtype]::ChannelPurposeChanged
-                                }
-                                'channel_topic' {
-                                    $msg.Subtype = [MessageSubtype]::ChannelTopicChanged
-                                }
-                            }
-                        }
-                        $this.LogDebug("Message type is [$($msg.Type)`:$($msg.Subtype)]")
-
-                        $msg.RawMessage = $slackMessage
-                        $this.LogDebug('Raw message', $slackMessage)
-                        if ($slackMessage.text)    { $msg.Text = $slackMessage.text }
-                        if ($slackMessage.channel) { $msg.To   = $slackMessage.channel }
-                        if ($slackMessage.user)    { $msg.From = $slackMessage.user }
-
-                        # Resolve From name
-                        $msg.FromName = $this.ResolveFromName($msg)
-
-                        # Resolve channel name
-                        $msg.ToName = $this.ResolveToName($msg)
-
-                        # Mark as DM
-                        if ($msg.To -match '^D') {
-                            $msg.IsDM = $true
-                        }
-
-                        # Get time of message
-                        $unixEpoch = [datetime]'1970-01-01'
-                        if ($slackMessage.ts) {
-                            $msg.Time = $unixEpoch.AddSeconds($slackMessage.ts)
-                        } elseIf ($slackMessage.event_ts) {
-                            $msg.Time = $unixEpoch.AddSeconds($slackMessage.event_ts)
-                        } else {
-                            $msg.Time = [datetime]::UtcNow
-                        }
-
-                        # Sometimes the message is nested in a 'message' subproperty. This could be
-                        # if the message contained a link that was unfurled.  We would receive a
-                        # 'message_changed' message and need to look in the 'message' subproperty
-                        # to see who the message was from.  Slack is weird
-                        # https://api.slack.com/events/message/message_changed
-                        if ($slackMessage.message) {
-                            if ($slackMessage.message.user) {
-                                $msg.From = $slackMessage.message.user
-                            }
-                            if ($slackMessage.message.text) {
-                                $msg.Text = $slackMessage.message.text
-                            }
-                        }
-
-                        # Slack displays @mentions like '@devblackops' but internally in the message
-                        # it is <@U4AM3SYI8>
-                        # Fix that so we actually see the @username
-                        $processed = $this._ProcessMentions($msg.Text)
-                        $msg.Text = $processed
-
-                        # ** Important safety tip, don't cross the streams **
-                        # Only return messages that didn't come from the bot
-                        # else we'd cause a feedback loop with the bot processing
-                        # it's own responses
-                        if (-not $this.MsgFromBot($msg.From)) {
-                            $messages.Add($msg) > $null
-                        }
-                    } else {
-                        $this.LogDebug("Message type is [$($slackMessage.Type)]. Ignoring")
-                    }
-
+                # Slack will sometimes send back ephemeral messages from user [SlackBot]. Ignore these
+                # These are messages like notifing that a message won't be unfurled because it's already
+                # in the channel in the last hour. Helpful message for some, but not for us.
+                if ($slackMessage.subtype -eq 'bot_message') {
+                    $this.LogDebug('SubType is [bot_message]. Ignoring')
+                    continue
                 }
+
+                # Ignore "message_replied" subtypes
+                # These are message Slack sends to update the client that the original message has a new reply.
+                # That reply is sent is another message.
+                # We do this because if the original message that this reply is to is a bot command, the command
+                # will be executed again so we....need to not do that :)
+                if ($slackMessage.subtype -eq 'message_replied') {
+                    $this.LogDebug('SubType is [message_replied]. Ignoring')
+                    continue
+                }
+
+                # We only care about certain message types from Slack
+                if ($slackMessage.Type -in $this.MessageTypes) {
+                    $msg = [Message]::new()
+
+                    # Set the message type and optionally the subtype
+                    #$msg.Type = $slackMessage.type
+                    switch ($slackMessage.type) {
+                        'channel_rename' {
+                            $msg.Type = [MessageType]::ChannelRenamed
+                        }
+                        'member_joined_channel' {
+                            $msg.Type = [MessageType]::Message
+                            $msg.SubType = [MessageSubtype]::ChannelJoined
+                        }
+                        'member_left_channel' {
+                            $msg.Type = [MessageType]::Message
+                            $msg.SubType = [MessageSubtype]::ChannelLeft
+                        }
+                        'message' {
+                            $msg.Type = [MessageType]::Message
+                        }
+                        'pin_added' {
+                            $msg.Type = [MessageType]::PinAdded
+                        }
+                        'pin_removed' {
+                            $msg.Type = [MessageType]::PinRemoved
+                        }
+                        'presence_change' {
+                            $msg.Type = [MessageType]::PresenceChange
+                        }
+                        'reaction_added' {
+                            $msg.Type = [MessageType]::ReactionAdded
+                        }
+                        'reaction_removed' {
+                            $msg.Type = [MessageType]::ReactionRemoved
+                        }
+                        'star_added' {
+                            $msg.Type = [MessageType]::StarAdded
+                        }
+                        'star_removed' {
+                            $msg.Type = [MessageType]::StarRemoved
+                        }
+                        'goodbye' {
+                            # The 'goodbye' event means Slack wants to cease comminication with us
+                            # and they're being nice about it. We need to reestablish the connection.
+                            $this.LogInfo('Received [goodbye] event. Reconnecting to Slack backend...')
+                            $this.Connection.Reconnect()
+                            return $null
+                        }
+                    }
+
+                    # The channel the message occured in is sometimes
+                    # nested in an 'item' property
+                    if ($slackMessage.item -and ($slackMessage.item.channel)) {
+                        $msg.To = $slackMessage.item.channel
+                    }
+
+                    if ($slackMessage.subtype) {
+                        switch ($slackMessage.subtype) {
+                            'channel_join' {
+                                $msg.Subtype = [MessageSubtype]::ChannelJoined
+                            }
+                            'channel_leave' {
+                                $msg.Subtype = [MessageSubtype]::ChannelLeft
+                            }
+                            'channel_name' {
+                                $msg.Subtype = [MessageSubtype]::ChannelRenamed
+                            }
+                            'channel_purpose' {
+                                $msg.Subtype = [MessageSubtype]::ChannelPurposeChanged
+                            }
+                            'channel_topic' {
+                                $msg.Subtype = [MessageSubtype]::ChannelTopicChanged
+                            }
+                        }
+                    }
+                    $this.LogDebug("Message type is [$($msg.Type)`:$($msg.Subtype)]")
+
+                    $msg.RawMessage = $slackMessage
+                    $this.LogDebug('Raw message', $slackMessage)
+                    if ($slackMessage.text)    { $msg.Text = $slackMessage.text }
+                    if ($slackMessage.channel) { $msg.To   = $slackMessage.channel }
+                    if ($slackMessage.user)    { $msg.From = $slackMessage.user }
+
+                    # Resolve From name
+                    $msg.FromName = $this.ResolveFromName($msg)
+
+                    # Resolve channel name
+                    $msg.ToName = $this.ResolveToName($msg)
+
+                    # Mark as DM
+                    if ($msg.To -match '^D') {
+                        $msg.IsDM = $true
+                    }
+
+                    # Get time of message
+                    $unixEpoch = [datetime]'1970-01-01'
+                    if ($slackMessage.ts) {
+                        $msg.Time = $unixEpoch.AddSeconds($slackMessage.ts)
+                    } elseIf ($slackMessage.event_ts) {
+                        $msg.Time = $unixEpoch.AddSeconds($slackMessage.event_ts)
+                    } else {
+                        $msg.Time = [datetime]::UtcNow
+                    }
+
+                    # Sometimes the message is nested in a 'message' subproperty. This could be
+                    # if the message contained a link that was unfurled.  We would receive a
+                    # 'message_changed' message and need to look in the 'message' subproperty
+                    # to see who the message was from.  Slack is weird
+                    # https://api.slack.com/events/message/message_changed
+                    if ($slackMessage.message) {
+                        if ($slackMessage.message.user) {
+                            $msg.From = $slackMessage.message.user
+                        }
+                        if ($slackMessage.message.text) {
+                            $msg.Text = $slackMessage.message.text
+                        }
+                    }
+
+                    # Slack displays @mentions like '@devblackops' but internally in the message
+                    # it is <@U4AM3SYI8>
+                    # Fix that so we actually see the @username
+                    $processed = $this._ProcessMentions($msg.Text)
+                    $msg.Text = $processed
+
+                    # ** Important safety tip, don't cross the streams **
+                    # Only return messages that didn't come from the bot
+                    # else we'd cause a feedback loop with the bot processing
+                    # it's own responses
+                    if (-not $this.MsgFromBot($msg.From)) {
+                        $messages.Add($msg) > $null
+                    }
+                } else {
+                    $this.LogDebug("Message type is [$($slackMessage.Type)]. Ignoring")
+                }
+
             }
         } catch {
             Write-Error $_
