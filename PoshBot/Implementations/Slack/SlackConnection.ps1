@@ -178,7 +178,7 @@ class SlackConnection : Connection {
             $this.LogInfo([LogSeverity]::Error, $item.ToString())
         }
         foreach ($item in $verboseStream) {
-            $this.LogVerbose("I'm here: $($item.ToString())")
+            $this.LogVerbose($item.ToString())
         }
         foreach ($item in $debugStream) {
             $this.LogVerbose($item.ToString())
