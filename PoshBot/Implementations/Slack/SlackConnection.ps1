@@ -47,7 +47,8 @@ class SlackConnection : Connection {
             )
 
             # To keep track of ping messages
-            $lastMsgId = 0
+            $pingIntervalSeconds = 10
+            $lastMsgId           = 0
 
             $InformationPreference = 'Continue'
             $VerbosePreference     = 'Continue'
@@ -91,7 +92,15 @@ class SlackConnection : Connection {
             [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 
             # Connect to websocket
-            Write-Verbose "[SlackBackend:ReceiveJob] Connecting to websocket at [$($url)]"
+            $redactedUrl = "$(Split-Path $url -Parent)\REDACTED"
+            Write-Verbose "Connecting to websocket at [$($redactedUrl)]"
+            if ($PSVersionTable.PSVersion.Major -lt 6) {
+                # In PowerShell 5.1 (and probably 5.0), there is a bug where the websocket conenction will disconenct after 100 seconds
+                # The workaround is to change the keepalive internval to 0 OR adjust the max service point idel time
+                # https://stackoverflow.com/questions/40502921/net-websockets-forcibly-closed-despite-keep-alive-and-activity-on-the-connectio
+                Write-Verbose "PowerShell version is [$($PSVersionTable.PSVersion.ToString())]. Setting [System.Net.ServicePointManager]::MaxServicePointIdleTime to [$([int]::MaxValue.ToString())] to avoid disconnects at 100 seconds."
+                [System.Net.ServicePointManager]::MaxServicePointIdleTime = [Int]::MaxValue
+            }
             $webSocket = [Net.WebSockets.ClientWebSocket]::new()
             $webSocket.Options.KeepAliveInterval = 5
             $cts  = [Threading.CancellationTokenSource]::new()
@@ -104,23 +113,28 @@ class SlackConnection : Connection {
             $ct         = [Threading.CancellationToken]::new($false)
             $taskResult = $null
 
-            Write-Verbose '[SlackBackend:ReceiveJob] Beginning websocker receive loop'
+            Write-Verbose 'Beginning websocker receive loop'
             while ($webSocket.State -eq [Net.WebSockets.WebSocketState]::Open) {
                 $jsonResult = ""
                 do {
                     $taskResult = $webSocket.ReceiveAsync($buffer, $ct)
-                    while (-not $taskResult.IsCompleted) {
+                    while (-not $taskResult.IsCompleted -and $webSocket.State -eq [Net.WebSockets.WebSocketState]::Open) {
                         [Threading.Thread]::Sleep(10)
 
                         # Send "ping" every 5 seconds
-                        if ($stopWatch.ElapsedMilliseconds -ge 5000) {
+                        if ($stopWatch.Elapsed.Seconds -ge $pingIntervalSeconds) {
                             Send-Ping
                             $stopWatch.Restart()
                         }
                     }
+
+                    if ($webSocket.State -ne [Net.WebSockets.WebSocketState]::Open) {
+                        Write-Error "Websocket error. Connection state is [$($webSocket.State)]"
+                    }
+
                     $jsonResult += [Text.Encoding]::UTF8.GetString($buffer, 0, $taskResult.Result.Count)
                 } until (
-                    $taskResult.Result.EndOfMessage
+                    $webSocket.State -ne [Net.WebSockets.WebSocketState]::Open -or $taskResult.Result.EndOfMessage
                 )
 
                 if (-not [string]::IsNullOrEmpty($jsonResult)) {
@@ -129,6 +143,7 @@ class SlackConnection : Connection {
 
                     $msgs = ConvertFrom-Json $sanitizedJson
                     foreach ($msg in $msgs) {
+                        # Ingore "pong" and "hello" messages as they aren't important to the backend
                         if ($msg.type -ne 'pong' -and $msg.type -ne 'hello') {
                             $msg
                         }

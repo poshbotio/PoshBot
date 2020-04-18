@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fixed [**#206**](https://github.com/poshbotio/PoshBot/issues/206) where scheduled commands were not being send when using the Microsoft Teams backend.
 - Fixed [**#202**](https://github.com/poshbotio/PoshBot/issues/202) Scheduled commands that are disabled no longer execute.
 - Handle `goodbye` event from Slack RTM API and properly disconnect/reconnect websocket connection.
+- Fixed [**#203**](https://github.com/poshbotio/PoshBot/issues/203) Fixed websocket disconnect at 100 seconds when running in Windows PowerShell
 
 ### Changed
 
