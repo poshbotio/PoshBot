@@ -242,7 +242,7 @@ class TeamsBackend : Backend {
                             Uri         = $responseUrl
                             Method      = 'Post'
                             Body        = $body
-                            ContentType = 'application/json'
+                            ContentType = 'application/json;charset=utf-8'
                             Headers     = $headers
                         }
                         Invoke-RestMethod @responseParams
@@ -300,7 +300,7 @@ class TeamsBackend : Backend {
                             Uri         = $responseUrl
                             Method      = 'Post'
                             Body        = $body
-                            ContentType = 'application/json'
+                            ContentType = 'application/json;charset=utf-8'
                             Headers     = $headers
                         }
                         Invoke-RestMethod @responseParams
@@ -341,7 +341,7 @@ class TeamsBackend : Backend {
                             Uri         = $responseUrl
                             Method      = 'Post'
                             Body        = $jsonResponse
-                            ContentType = 'application/json'
+                            ContentType = 'application/json;charset=utf-8'
                             Headers     = $headers
                         }
                         Invoke-RestMethod @responseParams
@@ -518,7 +518,7 @@ class TeamsBackend : Backend {
                     Uri         = $responseUrl
                     Method      = 'Post'
                     Body        = $body
-                    ContentType = 'application/json'
+                    ContentType = 'application/json;charset=utf-8'
                     Headers     = $headers
                 }
                 Invoke-RestMethod @responseParams
@@ -781,7 +781,7 @@ class TeamsBackend : Backend {
                         Uri         = $responseUrl
                         Method      = 'Post'
                         Body        = $jsonResponse
-                        ContentType = 'application/json'
+                        ContentType = 'application/json;charset=utf-8'
                         Headers     = $headers
                     }
                     Invoke-RestMethod @responseParams
@@ -826,7 +826,7 @@ class TeamsBackend : Backend {
                 Uri         = $newConversationUrl
                 Method      = 'Post'
                 Body        = $body
-                ContentType = 'application/json'
+                ContentType = 'application/json;charset=utf-8'
                 Headers     = $headers
             }
             $conversation = Invoke-RestMethod @params
