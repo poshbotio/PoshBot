@@ -1,6 +1,6 @@
 ---
 external help file: PoshBot-help.xml
-Module Name: PoshBot
+Module Name: poshbot
 online version:
 schema: 2.0.0
 ---
@@ -28,15 +28,14 @@ to craft a specially formatted message when sending back to the chat network.
 ### EXAMPLE 1
 ```
 function Do-Something {
+    [cmdletbinding()]
+    param(
+        [parameter(mandatory)]
+        [string]$MyParam
+    )
 ```
 
-\[cmdletbinding()\]
-    param(
-        \[parameter(mandatory)\]
-        \[string\]$MyParam
-    )
-
-    New-PoshBotCardResponse -Type Normal -Text 'OK, I did something.' -ThumbnailUrl 'https://www.streamsports.com/images/icon_green_check_256.png'
+New-PoshBotCardResponse -Type Normal -Text 'OK, I did something.' -ThumbnailUrl 'https://www.streamsports.com/images/icon_green_check_256.png'
 }
 
 Tells PoshBot to send a formatted response back to the chat network.
@@ -46,15 +45,14 @@ with a green border on the left, some text and a green checkmark thumbnail image
 ### EXAMPLE 2
 ```
 function Do-Something {
+    [cmdletbinding()]
+    param(
+        [parameter(mandatory)]
+        [string]$ComputerName
+    )
 ```
 
-\[cmdletbinding()\]
-    param(
-        \[parameter(mandatory)\]
-        \[string\]$ComputerName
-    )
-
-    $info = Get-ComputerInfo -ComputerName $ComputerName -ErrorAction SilentlyContinue
+$info = Get-ComputerInfo -ComputerName $ComputerName -ErrorAction SilentlyContinue
     if ($info) {
         $fields = \[ordered\]@{
             Name = $ComputerName

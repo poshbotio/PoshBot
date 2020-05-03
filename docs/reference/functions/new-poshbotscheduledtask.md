@@ -1,6 +1,6 @@
 ---
 external help file: PoshBot-help.xml
-Module Name: PoshBot
+Module Name: poshbot
 online version:
 schema: 2.0.0
 ---
@@ -27,9 +27,8 @@ to run on startup and to not stop after any time period.
 ### EXAMPLE 1
 ```
 $cred = Get-Credential
+PS C:\> New-PoshBotScheduledTask -Name PoshBot -Path C:\PoshBot\myconfig.psd1 -Credential $cred
 ```
-
-PS C:\\\> New-PoshBotScheduledTask -Name PoshBot -Path C:\PoshBot\myconfig.psd1 -Credential $cred
 
 Creates a new scheduled task to start PoshBot using the configuration file located at C:\PoshBot\myconfig.psd1
 and the specified credential.
@@ -37,17 +36,16 @@ and the specified credential.
 ### EXAMPLE 2
 ```
 $cred = Get-Credential
-```
-
-PC C:\\\> $params = @{
+PC C:\> $params = @{
     Name = 'PoshBot'
     Path = 'C:\PoshBot\myconfig.psd1'
     Credential = $cred
     Description = 'Awesome ChatOps bot'
     PassThru = $true
 }
-PS C:\\\> $task = New-PoshBotScheduledTask @params
-PS C:\\\> $task | Start-ScheduledTask
+PS C:\> $task = New-PoshBotScheduledTask @params
+PS C:\> $task | Start-ScheduledTask
+```
 
 Creates a new scheduled task to start PoshBot using the configuration file located at C:\PoshBot\myconfig.psd1
 and the specified credential then starts the task.

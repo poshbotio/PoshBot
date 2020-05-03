@@ -1,6 +1,6 @@
 ---
 external help file: PoshBot-help.xml
-Module Name: PoshBot
+Module Name: poshbot
 online version:
 schema: 2.0.0
 ---
@@ -49,9 +49,8 @@ Runs an instance of PoshBot that has already been created interactively in the s
 ### EXAMPLE 3
 ```
 $config = Get-PoshBotConfiguration -Path (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot\MyPoshBot.psd1')
+PS C:\> Start-PoshBot -Config $config
 ```
-
-PS C:\\\> Start-PoshBot -Config $config
 
 Gets a PoshBot configuration from file and starts the bot interactively.
 

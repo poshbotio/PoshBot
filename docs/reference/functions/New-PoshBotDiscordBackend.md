@@ -1,6 +1,6 @@
 ---
 external help file: PoshBot-help.xml
-Module Name: PoshBot
+Module Name: poshbot
 online version:
 schema: 2.0.0
 ---
@@ -24,14 +24,13 @@ Create a new instance of a Discord backend
 ### EXAMPLE 1
 ```
 $backendConfig = @{
-```
-
-Name = 'DiscordBackend'
-    Token = '\<DISCORD-BOT-TOKEN-TOKEN\>'
-    ClientId = '\<DISCORD-CLIENT-ID\>'
-    GuildId = '\<DISCORD-GUILD-ID\>'
+    Name = 'DiscordBackend'
+    Token = '<DISCORD-BOT-TOKEN-TOKEN>'
+    ClientId = '<DISCORD-CLIENT-ID>'
+    GuildId = '<DISCORD-GUILD-ID>'
 }
-PS C:\\\> $backend = New-PoshBotDiscordBackend -Configuration $backendConfig
+PS C:\> $backend = New-PoshBotDiscordBackend -Configuration $backendConfig
+```
 
 Create a Discord backend using the specified connection information.
 

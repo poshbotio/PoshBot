@@ -1,6 +1,6 @@
 ---
 external help file: PoshBot-help.xml
-Module Name: PoshBot
+Module Name: poshbot
 online version:
 schema: 2.0.0
 ---
@@ -28,9 +28,8 @@ Middleware gets executed in the order in which it is added under each property.
 ### EXAMPLE 1
 ```
 $userDropHook = New-PoshBotMiddlewareHook -Name 'dropuser' -Path 'c:/poshbot/middleware/dropuser.ps1'
+PS C:\> $config.MiddlewareConfiguration.Add($userDropHook, 'PreReceive')
 ```
-
-PS C:\\\> $config.MiddlewareConfiguration.Add($userDropHook, 'PreReceive')
 
 Creates a middleware hook called 'dropuser' and adds it to the 'PreReceive' middleware lifecycle stage.
 

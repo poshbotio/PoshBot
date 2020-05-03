@@ -1,6 +1,6 @@
 ---
 external help file: PoshBot-help.xml
-Module Name: PoshBot
+Module Name: poshbot
 online version:
 schema: 2.0.0
 ---
@@ -61,16 +61,15 @@ Create a new PoshBot configuration with default values except for the bot name a
 ### EXAMPLE 2
 ```
 $backend = @{Name = 'SlackBackend'; Token = 'xoxb-569733935137-njOPkyBThqOTTUnCZb7tZpKK'}
-```
-
-PS C:\\\> $botParams = @{
+PS C:\> $botParams = @{
             Name = 'HAL9000'
             LogLevel = 'Info'
             BotAdmins = @('JoeUser')
             BackendConfiguration = $backend
         }
-PS C:\\\> $myBotConfig = New-PoshBotConfiguration @botParams
-PS C:\\\> $myBotConfig
+PS C:\> $myBotConfig = New-PoshBotConfiguration @botParams
+PS C:\> $myBotConfig
+```
 
 Name                             : HAL9000
 ConfigurationDirectory           : C:\Users\brand\.poshbot

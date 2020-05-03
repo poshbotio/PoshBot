@@ -1,6 +1,6 @@
 ---
 external help file: PoshBot-help.xml
-Module Name: PoshBot
+Module Name: poshbot
 online version:
 schema: 2.0.0
 ---
@@ -27,15 +27,14 @@ in the channel.
 ### EXAMPLE 1
 ```
 function Get-Foo {
+    [cmdletbinding()]
+    param(
+        [parameter(mandatory)]
+        [string]$MyParam
+    )
 ```
 
-\[cmdletbinding()\]
-    param(
-        \[parameter(mandatory)\]
-        \[string\]$MyParam
-    )
-
-    New-PoshBotTextResponse -Text $MyParam -DM
+New-PoshBotTextResponse -Text $MyParam -DM
 }
 
 When Get-Foo is executed by PoshBot, the text response will be sent back to the calling user as a DM rather than back in the channel the

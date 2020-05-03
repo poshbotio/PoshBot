@@ -1,6 +1,6 @@
 ---
 external help file: PoshBot-help.xml
-Module Name: PoshBot
+Module Name: poshbot
 online version:
 schema: 2.0.0
 ---
@@ -40,12 +40,11 @@ the contents the bot command returns are sensitive and should not be visible to 
 ### EXAMPLE 1
 ```
 function Do-Stuff {
+    [cmdletbinding()]
+    param()
 ```
 
-\[cmdletbinding()\]
-    param()
-
-    $myObj = \[pscustomobject\]@{
+$myObj = \[pscustomobject\]@{
         value1 = 'foo'
         value2 = 'bar'
     }
@@ -61,12 +60,11 @@ Export a CSV file and tell PoshBot to upload the file back to the channel that i
 ### EXAMPLE 2
 ```
 function Get-SecretPlan {
+    [cmdletbinding()]
+    param()
 ```
 
-\[cmdletbinding()\]
-    param()
-
-    $myObj = \[pscustomobject\]@{
+$myObj = \[pscustomobject\]@{
         Title = 'Secret moon base'
         Description = 'Plans for secret base on the dark side of the moon'
     }
@@ -82,12 +80,11 @@ Export a CSV file and tell PoshBot to upload the file back to a DM channel with 
 ### EXAMPLE 3
 ```
 function Do-Stuff {
+    [cmdletbinding()]
+    param()
 ```
 
-\[cmdletbinding()\]
-    param()
-
-    $myObj = \[pscustomobject\]@{
+$myObj = \[pscustomobject\]@{
         value1 = 'foo'
         value2 = 'bar'
     }

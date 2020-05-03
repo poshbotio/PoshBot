@@ -1,6 +1,6 @@
 ---
 external help file: PoshBot-help.xml
-Module Name: PoshBot
+Module Name: poshbot
 online version:
 schema: 2.0.0
 ---
@@ -56,11 +56,10 @@ Create a new PoshBot instance from configuration file \[C:\Users\joeuser\.poshbo
 ### EXAMPLE 2
 ```
 $botConfig = Get-PoshBotConfiguration -Path (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot\Cherry2000.psd1')
+PS C:\> $backend = New-PoshBotSlackBackend -Configuration $botConfig.BackendConfiguration
+PS C:\> $myBot = $botConfig | New-PoshBotInstance -Backend $backend
+PS C:\> $myBot | Format-List
 ```
-
-PS C:\\\> $backend = New-PoshBotSlackBackend -Configuration $botConfig.BackendConfiguration
-PS C:\\\> $myBot = $botConfig | New-PoshBotInstance -Backend $backend
-PS C:\\\> $myBot | Format-List
 
 Name          : Cherry2000
 Backend       : SlackBackend
@@ -76,10 +75,9 @@ Gets a bot configuration from the filesytem, creates a chat backend object, and 
 ### EXAMPLE 3
 ```
 $botConfig = Get-PoshBotConfiguration -Path (Join-Path -Path $env:USERPROFILE -ChildPath '.poshbot\Cherry2000.psd1')
+PS C:\> $backend = $botConfig | New-PoshBotSlackBackend
+PS C:\> $myBotJob = $botConfig | New-PoshBotInstance -Backend $backend | Start-PoshBot -AsJob -PassThru
 ```
-
-PS C:\\\> $backend = $botConfig | New-PoshBotSlackBackend
-PS C:\\\> $myBotJob = $botConfig | New-PoshBotInstance -Backend $backend | Start-PoshBot -AsJob -PassThru
 
 Gets a bot configuration, creates a Slack backend from it, then creates a new PoshBot instance and starts it as a background job.
 
