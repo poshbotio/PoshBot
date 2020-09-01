@@ -6,6 +6,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.14.0] Unreleased
+
+### Fixed
+
+- Microsoft Teams messages that have been pasted into the client are now parsed correctly.
+
+### Changed
+
+- Updated nano docker image to `7.0.3-nanoserver-2004`
+- Updated Windows Server Core docker image to `7.0.3-windowsservercore-2004`
+- Updated Ubuntu 18.04 docker image to `7.0.3-ubuntu-18.04`
+- Updated Ubuntu 16.04 docker image to `7.0.3-ubuntu-16.04`
+
 ## [0.13.0] 2020-05-02
 
 ### Fixed
