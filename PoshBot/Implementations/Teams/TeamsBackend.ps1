@@ -72,11 +72,13 @@ class TeamsBackend : Backend {
                             $msg.RawMessage = $teamsMessage
                             $this.LogDebug('Raw message', $teamsMessage)
 
-                            # When commands are directed to PoshBot, the bot must be "at" mentioned.
-                            # This will show up in the text of the message received. We don't need it
-                            # so strip it out.
                             if ($teamsMessage.text)    {
+                                # When commands are directed to PoshBot, the bot must be "at" mentioned.
+                                # This will show up in the text of the message received. We don't need it so strip it out.
                                 $msg.Text = $teamsMessage.text.Replace("<at>$($this.Connection.Config.BotName)</at> ", '') -Replace '\n', ''
+
+                                # When text is pasted into Teams it pads the text with newlines. Strip those out so we can parse the message correctly
+                                $msg.Text = $msg.Text -Replace '\n', '' -Replace '\r', ''
                             }
 
                             if ($teamsMessage.from) {
