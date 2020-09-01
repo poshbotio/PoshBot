@@ -1,4 +1,4 @@
-FROM microsoft/powershell:7.0.0-nanoserver-1903 as base
+FROM mcr.microsoft.com/powershell:7.0.3-nanoserver-2004 as base
 SHELL ["pwsh", "-Command", "$ErrorActionPreference = 'Stop'; $VerbosePreference = 'Continue'; $ProgressPreference = 'SilentlyContinue';"]
 RUN Set-PSRepository -Name PSGallery -InstallationPolicy Trusted; \
     Install-Module Configuration -RequiredVersion 1.3.1 -Repository PSGallery -Scope AllUsers -Verbose; \
