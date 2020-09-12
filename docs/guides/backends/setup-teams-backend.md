@@ -97,8 +97,8 @@ az storage account create --resource-group <RESOURCE-GROUP-NAME> --name <STORAGE
   --location <REGION> --sku Standard_LRS
 
 az functionapp create --resource-group <RESOURCE-GROUP-NAME> --name <FUNCTION-APP-NAME> \
-  --storage-account <STORAGE-ACCOUNT-NAME> --consumption-plan-location <REGION> \
-  --deployment-source-url "https://github.com/poshbotio/TeamsWebhook"
+  --storage-account <STORAGE-ACCOUNT-NAME> --runtime powershell --functions-version 3 \
+  --consumption-plan-location <REGION> --deployment-source-url "https://github.com/poshbotio/TeamsWebhook"
 ```
 
 Create an application setting for the Service Bus connection string.
