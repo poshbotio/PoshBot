@@ -419,8 +419,13 @@ class SlackBackend : Backend {
                         } else {
                             $attParams.Text = [string]::Empty
                         }
+                        #hack for threads
+                        $ThreadSplat = @{}
+                        if ($Response.OriginalMessage.RawMessage.thread_ts){
+                            $ThreadSplat.Thread = $($Response.OriginalMessage.RawMessage.thread_ts)
+                        }
                         $att = New-SlackMessageAttachment @attParams
-                        $msg = $att | New-SlackMessage -Channel $sendTo -AsUser
+                        $msg = $att | New-SlackMessage -Channel $sendTo -AsUser @ThreadSplat
                         $this.LogDebug("Sending card response back to Slack channel [$sendTo]", $att)
                         $msg | Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Verbose:$false > $null
                     }
