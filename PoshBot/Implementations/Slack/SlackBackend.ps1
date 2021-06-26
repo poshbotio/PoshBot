@@ -361,6 +361,11 @@ class SlackBackend : Backend {
     [void]SendMessage([Response]$Response) {
         # Process any custom responses
         $this.LogDebug("[$($Response.Data.Count)] custom responses")
+        # Creating one splat for any messages within a thread
+        $threadParam = @{}
+        if ($Response.OriginalMessage.RawMessage.thread_ts){
+            $threadParam.Thread = $Response.OriginalMessage.RawMessage.thread_ts
+        }
         foreach ($customResponse in $Response.Data) {
 
             [string]$sendTo = $Response.To
@@ -419,13 +424,8 @@ class SlackBackend : Backend {
                         } else {
                             $attParams.Text = [string]::Empty
                         }
-                        #hack for threads
-                        $ThreadSplat = @{}
-                        if ($Response.OriginalMessage.RawMessage.thread_ts){
-                            $ThreadSplat.Thread = $($Response.OriginalMessage.RawMessage.thread_ts)
-                        }
                         $att = New-SlackMessageAttachment @attParams
-                        $msg = $att | New-SlackMessage -Channel $sendTo -AsUser @ThreadSplat
+                        $msg = $att | New-SlackMessage -Channel $sendTo -AsUser @threadParam
                         $this.LogDebug("Sending card response back to Slack channel [$sendTo]", $att)
                         $msg | Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Verbose:$false > $null
                     }
@@ -441,7 +441,7 @@ class SlackBackend : Backend {
                             $t = $chunk
                         }
                         $this.LogDebug("Sending text response back to Slack channel [$sendTo]", $t)
-                        Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Channel $sendTo -Text $t -Verbose:$false -AsUser > $null
+                        Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Channel $sendTo -Text $t -Verbose:$false -AsUser @threadParam > $null
                     }
                     break
                 }
@@ -452,7 +452,6 @@ class SlackBackend : Backend {
                         Token = $this.Connection.Config.Credential.GetNetworkCredential().Password
                         Channel = $sendTo
                     }
-
                     if ([string]::IsNullOrEmpty($customResponse.Path) -and (-not [string]::IsNullOrEmpty($customResponse.Content))) {
                         $uploadParams.Content = $customResponse.Content
                         if (-not [string]::IsNullOrEmpty($customResponse.FileType)) {
@@ -468,7 +467,7 @@ class SlackBackend : Backend {
                             $this.RemoveReaction($Response.OriginalMessage, [ReactionType]::Success)
                             $this.AddReaction($Response.OriginalMessage, [ReactionType]::Failure)
                             $att = New-SlackMessageAttachment -Color '#FF0000' -Title 'Rut row' -Text "File [$($uploadParams.Path)] not found" -Fallback 'Rut row'
-                            $msg = $att | New-SlackMessage -Channel $sendTo -AsUser
+                            $msg = $att | New-SlackMessage -Channel $sendTo -AsUser @threadParam
                             $this.LogDebug("Sending card response back to Slack channel [$sendTo]", $att)
                             $null = $msg | Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Verbose:$false
                             break
@@ -481,6 +480,11 @@ class SlackBackend : Backend {
 
                     if (-not [string]::IsNullOrEmpty($customResponse.Title)) {
                         $uploadParams.Title = $customResponse.Title
+                    }
+                    #This may not work with other parameters
+                    #Only threaded section that seems to be breaking
+                    if (-not [string]::IsNullOrEmpty($Response.OriginalMessage.RawMessage.thread_ts)) {
+                        $uploadParams.Thread = $Response.OriginalMessage.RawMessage.thread_ts
                     }
 
                     Send-SlackFile @uploadParams -Verbose:$false
@@ -495,7 +499,7 @@ class SlackBackend : Backend {
         if ($Response.Text.Count -gt 0) {
             foreach ($t in $Response.Text) {
                 $this.LogDebug("Sending response back to Slack channel [$($Response.To)]", $t)
-                Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Channel $Response.To -Text $t -Verbose:$false -AsUser > $null
+                Send-SlackMessage -Token $this.Connection.Config.Credential.GetNetworkCredential().Password -Channel $Response.To -Text $t -Verbose:$false -AsUser @threadParam > $null
             }
         }
     }
