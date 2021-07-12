@@ -29,7 +29,6 @@ Want some in-depth guides? Check out [ChatOps the Easy Way](https://leanpub.com/
     </a>
 </p>
 
-
 # Introduction
 
 PoshBot is a chat bot written in [PowerShell](https://msdn.microsoft.com/powershell).
