@@ -1,0 +1,3 @@
+class PSUTeamsBackendConfig : ConnectionConfig {
+
+}

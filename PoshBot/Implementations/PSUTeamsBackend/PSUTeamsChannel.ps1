@@ -1,0 +1,3 @@
+class PSUTeamsChannel : Room {
+
+}
