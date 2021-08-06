@@ -1,4 +1,4 @@
 out/*
 test.ps1
 *.DS_Store*
-PoshBot\Implementations\PSUTeamsBackend
+PoshBot/Implementations/PSUTeamsBackend*
