@@ -50,4 +50,4 @@ Hop over to Slack and install the plugin with:
 
 That's it! You've created and installed your first PoshBot plugin. When running `install-plugin`, PoshBot will first check for the PowerShell module in your `$env:PSModulePath`. If no module is found, it will install the module from the PowerShell Gallery or another PowerShell repository that you have set in your [bot configuration](../../guides/configuration.md)
 
-Check out [Advanced Plugin Developement](./advanced.md) for the really cool stuff you can do with plugins.
+Check out [Advanced Plugin Developement](./advanced/overview.md) for the really cool stuff you can do with plugins.
