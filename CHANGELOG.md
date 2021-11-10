@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Microsoft Teams messages that have been pasted into the client are now parsed correctly.
+- Send Discord response JSON using UTF8.
 
 ### Changed
 
