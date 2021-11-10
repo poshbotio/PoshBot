@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/powershell:7.0.3-windowsservercore-2004 as base
+FROM mcr.microsoft.com/powershell:7.2.0-windowsservercore-20h2 as base
 SHELL ["pwsh", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 RUN Set-PSRepository -Name PSGallery -InstallationPolicy Trusted; \
     Install-Module Configuration -RequiredVersion 1.3.1 -Repository PSGallery -Scope AllUsers -Verbose; \

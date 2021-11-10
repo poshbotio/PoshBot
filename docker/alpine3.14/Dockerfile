@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/powershell:7.0.3-alpine-3.8 as base
+FROM mcr.microsoft.com/powershell:7.2.0-alpine-3.14-20211102 as base
 SHELL ["pwsh", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 RUN Set-PSRepository -Name PSGallery -InstallationPolicy Trusted; \
     Install-Module Configuration -RequiredVersion 1.3.1 -Repository PSGallery -Scope AllUsers -Verbose; \
@@ -7,7 +7,7 @@ RUN Set-PSRepository -Name PSGallery -InstallationPolicy Trusted; \
 FROM base as src
 ARG version
 LABEL maintainer="devblackops"
-LABEL description="PoshBot container for Alpine 3.8"
+LABEL description="PoshBot container for Alpine 3.14"
 LABEL vendor="poshbotio"
 COPY ["/out/PoshBot/$version", "/opt/microsoft/powershell/7/Modules/PoshBot/"]
 COPY ["/docker/docker_entrypoint.ps1", "/poshbot/docker_entrypoint.ps1"]
