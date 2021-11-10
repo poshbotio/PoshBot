@@ -1,7 +1,7 @@
 # Middleware Hooks
 
 As of PoshBot `v0.11.0`, it is possible to define custom middleware hooks to be executed at certain events during the command processing life cycle.
-These middleware hooks can add centralized authentication logic, custom logging solutions, advanced whitelisting or blacklisting, or any other custom processes.
+These middleware hooks can add centralized authentication logic, custom logging solutions, advanced allowlisting or blocklisting, or any other custom processes.
 
 The middleware is added to the [bot configuration](configuration.md) under the property `MiddlewareConfiguration` and can optionally be saved to disk using [Save-PoshBotConfiguration](./../reference/functions/save-poshbotconfiguration.md).
 The command [New-PoshBotConfiguration](./../reference/functions/new-poshbotconfiguration.md) has also been modified to support these life cycle hooks.
@@ -87,7 +87,7 @@ if ($Context.Message.Text -match "^!about*") {
 $preReceiveHook = New-PoshBotMiddlewareHook -Name 'prereceive' -Path 'c:/poshbot/middleware/prereceive.ps1'
 ```
 
-In the example above, the middleware is performing basic blacklisting by inspecting the raw text message that came from the chat network and doing a regex comparison.
+In the example above, the middleware is performing basic blocklisting by inspecting the raw text message that came from the chat network and doing a regex comparison.
 If a match is found, the script returns immediately **without** returning the `$Context` object.
 Otherwise the `$Context` object is returned normally.
 
@@ -126,11 +126,11 @@ param(
     $Bot
 )
 
-$blacklistedUsers = @('sally', 'bob')
+$blocklistedUsers = @('sally', 'bob')
 $user = $Context.Message.FromName
 
 $Bot.LogDebug('Running user drop middleware')
-if ($blacklistedUsers -contains $user) {
+if ($blocklistedUsers -contains $user) {
     $Bot.LogInfo("Dropping message from [$user]")
     return
 }
