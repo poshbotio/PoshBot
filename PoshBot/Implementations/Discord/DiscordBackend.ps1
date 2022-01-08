@@ -6,7 +6,7 @@ enum DiscordMsgSendType {
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingConvertToSecureStringWithPlainText', '', Scope='Class', Target='*')]
 class DiscordBackend : Backend {
 
-    [string]$BaseUrl = 'https://discordapp.com/api'
+    [string]$BaseUrl = 'https://discord.com/api'
 
     [string]$GuildId
 
