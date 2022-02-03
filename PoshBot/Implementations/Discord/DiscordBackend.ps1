@@ -791,7 +791,7 @@ class DiscordBackend : Backend {
     # Rate limiting logic inspired from Mark Kraus and PSRAW:  https://github.com/markekraus/PSRAW/blob/staging/PSRAW/Public/API/Invoke-RedditRequest.ps1
     hidden [object]_SendDiscordMsg([hashtable]$Params) {
 
-        if (-not $Params['ContentType']) {$Params['ContentType'] = 'application/json'}
+        if (-not $Params['ContentType']) {$Params['ContentType'] = 'application/json;charset=utf-8'}
         $Params['Verbose']                          = $false
         $Params['UseBasicParsing']                  = $true
         $Params['Headers']                          = $this._headers

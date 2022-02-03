@@ -16,7 +16,7 @@ properties {
     $dotnetFramework = 'netstandard2.0'
     $release = 'release'
 
-    $imageName = 'alpine3.8'
+    $imageName = 'alpine3.14'
     # $dockerImages = @(
     #     'alpine3.8'
     #     'ubuntu16.04'

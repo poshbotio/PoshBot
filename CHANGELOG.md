@@ -11,13 +11,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Microsoft Teams messages that have been pasted into the client are now parsed correctly.
+- Send Discord response JSON using UTF8.
 
 ### Changed
 
-- Updated nano docker image to `7.0.3-nanoserver-2004`
-- Updated Windows Server Core docker image to `7.0.3-windowsservercore-2004`
-- Updated Ubuntu 18.04 docker image to `7.0.3-ubuntu-18.04`
-- Updated Ubuntu 16.04 docker image to `7.0.3-ubuntu-16.04`
+- Updated Alpine image to `7.2.0-alpine-3.14-20211102`
+- Updated nano docker image to `7.2.0-nanoserver-20h2-20211102`
+- Updated Windows Server Core docker image to `7.2.0-windowsservercore-20h2`
+- Updated Ubuntu 18.04 docker image to `7.2.0-ubuntu-18.04-20211102`
+- Updated Ubuntu 16.04 docker image to `7.2.0-ubuntu-16.04-20211102`
 
 ## [0.13.0] 2020-05-02
 
