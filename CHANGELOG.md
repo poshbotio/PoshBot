@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Handle `goodbye` event from Slack RTM API and properly disconnect/reconnect websocket connection.
 - Fixed [**#203**](https://github.com/poshbotio/PoshBot/issues/203) Fixed websocket disconnect at 100 seconds when running in Windows PowerShell
 - Fixed problems with non-latin character encoding in Microsoft Teams channel responses (via [@joakimkarlbom](https://github.com/joakimkarlbom))
+- Remove invisible unicode characters from chat backend response before parsing the message
 
 ### Changed
 

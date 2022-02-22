@@ -2,9 +2,21 @@
 class CommandParser {
     [ParsedCommand] static Parse([Message]$Message) {
 
+        # Invisible characters we want to stip out so we can split
+        # the command from it's arguments correctly
+        # https://stackoverflow.com/a/65897469/6862010
+        [string[]]$InvisibleCharacters = @(
+            "`u{00A0}" # NO-BREAK SPACE
+        )
+
         $commandString = [string]::Empty
         if (-not [string]::IsNullOrEmpty($Message.Text)) {
             $commandString = $Message.Text.Trim()
+        }
+
+        # Remove invisible characters
+        foreach ($c in $InvisibleCharacters) {
+            $commandString = $commandString -replace $c, ' '
         }
 
         # The command is the first word of the message

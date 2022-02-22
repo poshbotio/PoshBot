@@ -51,7 +51,7 @@ function Get-Plugin {
 
             if ($versions.Count -gt 0) {
                 if ($PSBoundParameters.ContainsKey('Version')) {
-                    $versions = $versions | Where Version -eq $Version
+                    $versions = $versions | Where-Object Version -eq $Version
                 }
                 foreach ($pv in $versions) {
                     $fields = [ordered]@{
