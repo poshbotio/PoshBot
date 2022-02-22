@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fixed problems with non-latin character encoding in Microsoft Teams channel responses (via [@joakimkarlbom](https://github.com/joakimkarlbom))
 - Remove invisible unicode characters from chat backend response before parsing the message
 - Disable $PSStyle output rendering so ANSI escape sequences don't get sent back to the chat backend
+- Fixed [**#239**](https://github.com/poshbotio/PoshBot/issues/239) for Discord backend by specifying the user-agent on REST calls and switch to using `https://discord.com/api` instead of `https://discordapp.com/api` (via [@phdavis](https://github.com/phdavis))
 
 ### Changed
 
