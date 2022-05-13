@@ -30,6 +30,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Handle `goodbye` event from Slack RTM API and properly disconnect/reconnect websocket connection.
 - Fixed [**#203**](https://github.com/poshbotio/PoshBot/issues/203) Fixed websocket disconnect at 100 seconds when running in Windows PowerShell
 - Fixed problems with non-latin character encoding in Microsoft Teams channel responses (via [@joakimkarlbom](https://github.com/joakimkarlbom))
+- Remove invisible unicode characters from chat backend response before parsing the message
+- Disable $PSStyle output rendering so ANSI escape sequences don't get sent back to the chat backend
+- Fixed [**#239**](https://github.com/poshbotio/PoshBot/issues/239) for Discord backend by specifying the user-agent on REST calls and switch to using `https://discord.com/api` instead of `https://discordapp.com/api` (via [@phdavis](https://github.com/phdavis))
+- Fixed [**#241**](https://github.com/poshbotio/PoshBot/issues/241) by adding additonal Discord channel types (via [@Windos](https://github.com/Windos))
 
 ### Changed
 
