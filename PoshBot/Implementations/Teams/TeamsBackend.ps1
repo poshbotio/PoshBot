@@ -9,12 +9,12 @@ class TeamsBackend : Backend {
         'message'
     )
 
-    [string]$TeamId     = $null
+    [string]$TeamId = $null
     [string]$ServiceUrl = 'https://smba.trafficmanager.net/amer/'
-    [string]$BotId      = $null
-    [string]$BotName    = $null
-    [string]$TenantId   = $null
-    [bool]$Initialized  = $false
+    [string]$BotId = $null
+    [string]$BotName = $null
+    [string]$TenantId = $null
+    [bool]$Initialized = $false
 
     [hashtable]$DMConverations = @{}
 
@@ -72,7 +72,7 @@ class TeamsBackend : Backend {
                             $msg.RawMessage = $teamsMessage
                             $this.LogDebug('Raw message', $teamsMessage)
 
-                            if ($teamsMessage.text)    {
+                            if ($teamsMessage.text) {
                                 # When commands are directed to PoshBot, the bot must be "at" mentioned.
                                 # This will show up in the text of the message received. We don't need it so strip it out.
                                 $msg.Text = $teamsMessage.text.Replace("<at>$($this.Connection.Config.BotName)</at> ", '') -Replace '\n', ''
@@ -82,7 +82,7 @@ class TeamsBackend : Backend {
                             }
 
                             if ($teamsMessage.from) {
-                                $msg.From     = $teamsMessage.from.id
+                                $msg.From = $teamsMessage.from.id
                                 $msg.FromName = $teamsMessage.from.name
                             }
 
@@ -127,14 +127,14 @@ class TeamsBackend : Backend {
     # Send a message
     [void]SendMessage([Response]$Response) {
 
-        $baseUrl        = $Response.OriginalMessage.RawMessage.serviceUrl
-        $fromId         = $Response.OriginalMessage.RawMessage.from.id
-        $fromName       = $Response.OriginalMessage.RawMessage.from.name
-        $recipientId    = $Response.OriginalMessage.RawMessage.recipient.id
-        $recipientName  = $Response.OriginalMessage.RawMessage.recipient.name
+        $baseUrl = $Response.OriginalMessage.RawMessage.serviceUrl
+        $fromId = $Response.OriginalMessage.RawMessage.from.id
+        $fromName = $Response.OriginalMessage.RawMessage.from.name
+        $recipientId = $Response.OriginalMessage.RawMessage.recipient.id
+        $recipientName = $Response.OriginalMessage.RawMessage.recipient.name
         $conversationId = $Response.OriginalMessage.RawMessage.conversation.id
-        $activityId     = $Response.OriginalMessage.RawMessage.id
-        $responseUrl    = "$($baseUrl)v3/conversations/$conversationId/activities/$activityId"
+        $activityId = $Response.OriginalMessage.RawMessage.id
+        $responseUrl = "$($baseUrl)v3/conversations/$conversationId/activities/$activityId"
         $headers = @{
             Authorization = "Bearer $($this.Connection._AccessTokenInfo.access_token)"
         }
@@ -159,26 +159,26 @@ class TeamsBackend : Backend {
                     $this.LogDebug('Custom response is [PoshBot.Card.Response]')
 
                     $cardBody = @{
-                        type = 'message'
-                        from = @{
+                        type         = 'message'
+                        from         = @{
                             id   = $fromId
                             name = $fromName
                         }
                         conversation = @{
                             id = $conversationId
                         }
-                        recipient = @{
-                            id = $recipientId
+                        recipient    = @{
+                            id   = $recipientId
                             name = $recipientName
                         }
-                        attachments = @(
+                        attachments  = @(
                             @{
                                 contentType = 'application/vnd.microsoft.teams.card.o365connector'
-                                content = @{
-                                    "@type" = 'MessageCard'
-                                    "@context" = 'http://schema.org/extensions'
+                                content     = @{
+                                    '@type'    = 'MessageCard'
+                                    '@context' = 'http://schema.org/extensions'
                                     themeColor = $customResponse.Color -replace '#', ''
-                                    sections = @(
+                                    sections   = @(
                                         @{
 
                                         }
@@ -186,7 +186,7 @@ class TeamsBackend : Backend {
                                 }
                             }
                         )
-                        replyToId = $activityId
+                        replyToId    = $activityId
                     }
 
                     # Thumbnail
@@ -216,7 +216,7 @@ class TeamsBackend : Backend {
                         $cardBody.attachments[0].content.sections[0].facts = @()
                         foreach ($field in $customResponse.Fields.GetEnumerator()) {
                             $cardBody.attachments[0].content.sections[0].facts += @{
-                                name = $field.Name
+                                name  = $field.Name
                                 value = $field.Value.ToString()
                             }
                         }
@@ -265,20 +265,20 @@ class TeamsBackend : Backend {
                     }
 
                     $cardBody = @{
-                        type = 'message'
-                        from = @{
+                        type         = 'message'
+                        from         = @{
                             id   = $fromId
                             name = $fromName
                         }
                         conversation = @{
                             id = $conversationId
                         }
-                        recipient = @{
-                            id = $recipientId
+                        recipient    = @{
+                            id   = $recipientId
                             name = $recipientName
                         }
-                        text = $cardText
-                        textFormat = $textFormat
+                        text         = $cardText
+                        textFormat   = $textFormat
                         # attachments = @(
                         #     @{
                         #         contentType = 'application/vnd.microsoft.teams.card.o365connector'
@@ -290,7 +290,7 @@ class TeamsBackend : Backend {
                         #         }
                         #     }
                         # )
-                        replyToId = $activityId
+                        replyToId    = $activityId
                     }
 
                     $body = $cardBody | ConvertTo-Json -Depth 15
@@ -319,21 +319,21 @@ class TeamsBackend : Backend {
                     # Teams doesn't support generic file uploads yet :(
                     # Send a message informing the user of this sad fact
                     $jsonResponse = @{
-                        type = 'message'
-                        from = @{
-                            id = $recipientId
+                        type         = 'message'
+                        from         = @{
+                            id   = $recipientId
                             name = $recipientName
                         }
                         conversation = @{
-                            id = $conversationId
+                            id   = $conversationId
                             name = ''
                         }
-                        recipient = @{
-                            id = $fromId
+                        recipient    = @{
+                            id   = $fromId
                             name = $fromName
                         }
-                        text = "I don't know how to upload files to Teams yet but I'm learning."
-                        replyToId = $activityId
+                        text         = "I don't know how to upload files to Teams yet but I'm learning."
+                        replyToId    = $activityId
                     } | ConvertTo-Json
 
                     # $jsonResponse | Out-File -FilePath "$script:moduleBase/responses.json" -Append
@@ -540,26 +540,54 @@ class TeamsBackend : Backend {
         if (-not [string]::IsNullOrEmpty($this.ServiceUrl)) {
             $this.LogDebug('Getting Teams users')
 
-            $uri = "$($this.ServiceUrl)v3/conversations/$($this.TeamId)/members/"
+            $uri = "$($this.ServiceUrl)v3/conversations/$($this.TeamId)/pagedmembers?pageSize=500"
             $headers = @{
                 Authorization = "Bearer $($this.Connection._AccessTokenInfo.access_token)"
             }
-            $members = Invoke-RestMethod -Uri $uri -Headers $headers
+
+            $members = @()
+            do {
+                $Results = ''
+                $StatusCode = ''
+                do {
+                    try {
+                        $Results = Invoke-RestMethod -Headers $headers -Uri $Uri -UseBasicParsing -Method 'GET' -ContentType 'application/json'
+
+                        $StatusCode = $Results.StatusCode
+                    } catch {
+                        $StatusCode = $_.Exception.Response.StatusCode.value__
+
+                        if ($StatusCode -eq 429) {
+                            $this.LogDebug('Got throttled by Microsoft. Sleeping for 45 seconds...')
+                            Start-Sleep -Seconds 45
+                        } else {
+                            $this.LogDebug("Error Populating the list of users for the team: $($_.Exception.Message)")
+                        }
+                    }
+                } while ($StatusCode -eq 429)
+                if ($Results.continuationToken) {
+                    $uri = "$($this.ServiceUrl)v3/conversations/$($this.TeamId)/pagedmembers?pageSize=500&continuationToken=$($Results.continuationToken)"
+                    $members += $Results.members
+                } else {
+                    $members += $Results.members
+                }
+            } while ($Results.continuationToken)
+
             $this.LogDebug('Finished getting Teams users')
 
-            $members | Foreach-Object {
+            $members | ForEach-Object {
                 $user = [TeamsPerson]::new()
-                $user.Id                = $_.id
-                $user.FirstName         = $_.givenName
-                $user.LastName          = $_.surname
-                $user.NickName          = $_.userPrincipalName
-                $user.FullName          = "$($_.givenName) $($_.surname)"
-                $user.Email             = $_.email
+                $user.Id = $_.id
+                $user.FirstName = $_.givenName
+                $user.LastName = $_.surname
+                $user.NickName = $_.userPrincipalName
+                $user.FullName = "$($_.givenName) $($_.surname)"
+                $user.Email = $_.email
                 $user.UserPrincipalName = $_.userPrincipalName
 
                 if (-not $this.Users.ContainsKey($_.ID)) {
                     $this.LogDebug("Adding user [$($_.ID):$($_.Name)]")
-                    $this.Users[$_.ID] =  $user
+                    $this.Users[$_.ID] = $user
                 }
             }
 
@@ -575,30 +603,30 @@ class TeamsBackend : Backend {
     # Populate the list of channels in the team
     [void]LoadRooms() {
         #if (-not [string]::IsNullOrEmpty($this.TeamId)) {
-            $this.LogDebug('Getting Teams channels')
+        $this.LogDebug('Getting Teams channels')
 
-            $uri = "$($this.ServiceUrl)v3/teams/$($this.TeamId)/conversations"
-            $headers = @{
-                Authorization = "Bearer $($this.Connection._AccessTokenInfo.access_token)"
+        $uri = "$($this.ServiceUrl)v3/teams/$($this.TeamId)/conversations"
+        $headers = @{
+            Authorization = "Bearer $($this.Connection._AccessTokenInfo.access_token)"
+        }
+        $channels = Invoke-RestMethod -Uri $uri -Headers $headers
+
+        if ($channels.conversations) {
+            $channels.conversations | ForEach-Object {
+                $channel = [TeamsChannel]::new()
+                $channel.Id = $_.id
+                $channel.Name = $_.name
+                $this.LogDebug("Adding channel: $($_.id):$($_.name)")
+                $this.Rooms[$_.id] = $channel
             }
-            $channels = Invoke-RestMethod -Uri $uri -Headers $headers
 
-            if ($channels.conversations) {
-                $channels.conversations | ForEach-Object {
-                    $channel = [TeamsChannel]::new()
-                    $channel.Id = $_.id
-                    $channel.Name = $_.name
-                    $this.LogDebug("Adding channel: $($_.id):$($_.name)")
-                    $this.Rooms[$_.id] = $channel
-                }
-
-                foreach ($key in $this.Rooms.Keys) {
-                    if ($key -notin $channels.conversations.ID) {
-                        $this.LogDebug("Removing outdated channel [$key]")
-                        $this.Rooms.Remove($key)
-                    }
+            foreach ($key in $this.Rooms.Keys) {
+                if ($key -notin $channels.conversations.ID) {
+                    $this.LogDebug("Removing outdated channel [$key]")
+                    $this.Rooms.Remove($key)
                 }
             }
+        }
         #}
     }
 
@@ -626,7 +654,7 @@ class TeamsBackend : Backend {
     # Get a user Id by their name
     [string]UsernameToUserId([string]$Username) {
         $Username = $Username.TrimStart('@')
-        $user = $this.Users.Values | Where-Object {$_.Nickname -eq $Username}
+        $user = $this.Users.Values | Where-Object { $_.Nickname -eq $Username }
         $id = $null
         if ($user) {
             $id = $user.Id
@@ -635,7 +663,7 @@ class TeamsBackend : Backend {
             # Refresh it and try again
             $this.LogDebug([LogSeverity]::Warning, "User [$Username] not found. Refreshing users")
             $this.LoadUsers()
-            $user = $this.Users.Values | Where-Object {$_.Nickname -eq $Username}
+            $user = $this.Users.Values | Where-Object { $_.Nickname -eq $Username }
             if (-not $user) {
                 $id = $null
             } else {
@@ -733,7 +761,7 @@ class TeamsBackend : Backend {
 
         if ([string]::IsNullOrEmpty($this.BotId)) {
             if ($Message.recipient) {
-                $this.BotId   = $Message.recipient.Id
+                $this.BotId = $Message.recipient.Id
                 $this.BotName = $Message.recipient.name
             }
         }
@@ -748,10 +776,10 @@ class TeamsBackend : Backend {
     }
 
     hidden [void]SendTeamsMessaage([Response]$Response) {
-        $baseUrl        = $Response.OriginalMessage.RawMessage.serviceUrl
+        $baseUrl = $Response.OriginalMessage.RawMessage.serviceUrl
         $conversationId = $Response.OriginalMessage.RawMessage.conversation.id
-        $activityId     = $Response.OriginalMessage.RawMessage.id
-        $responseUrl    = "$($baseUrl)v3/conversations/$conversationId/activities/$activityId"
+        $activityId = $Response.OriginalMessage.RawMessage.id
+        $responseUrl = "$($baseUrl)v3/conversations/$conversationId/activities/$activityId"
         $headers = @{
             Authorization = "Bearer $($this.Connection._AccessTokenInfo.access_token)"
         }
@@ -759,21 +787,21 @@ class TeamsBackend : Backend {
         if ($Response.Text.Count -gt 0) {
             foreach ($text in $Response.Text) {
                 $jsonResponse = @{
-                    type = 'message'
-                    from = @{
-                        id = $Response.OriginalMessage.RawMessage.recipient.id
+                    type         = 'message'
+                    from         = @{
+                        id   = $Response.OriginalMessage.RawMessage.recipient.id
                         name = $Response.OriginalMessage.RawMessage.recipient.name
                     }
                     conversation = @{
-                        id = $Response.OriginalMessage.RawMessage.conversation.id
+                        id   = $Response.OriginalMessage.RawMessage.conversation.id
                         name = ''
                     }
-                    recipient = @{
-                        id = $Response.OriginalMessage.RawMessage.from.id
+                    recipient    = @{
+                        id   = $Response.OriginalMessage.RawMessage.from.id
                         name = $Response.OriginalMessage.RawMessage.from.name
                     }
-                    text = $text
-                    replyToId = $activityId
+                    text         = $text
+                    replyToId    = $activityId
                 } | ConvertTo-Json
 
                 # $jsonResponse | Out-File -FilePath "$script:moduleBase/responses.json" -Append
@@ -806,11 +834,11 @@ class TeamsBackend : Backend {
             }
 
             $conversationParams = @{
-                bot = @{
-                    id = $this.BotId
+                bot         = @{
+                    id   = $this.BotId
                     name = $this.BotName
                 }
-                members = @(
+                members     = @(
                     @{
                         id = $UserId
                     }
@@ -844,8 +872,8 @@ class TeamsBackend : Backend {
 
     hidden [hashtable]_GetCardStub() {
         return @{
-            type = 'message'
-            from = @{
+            type         = 'message'
+            from         = @{
                 id   = $null
                 name = $null
             }
@@ -853,37 +881,37 @@ class TeamsBackend : Backend {
                 id = $null
                 #name = ''
             }
-            recipient = @{
-                id = $null
+            recipient    = @{
+                id   = $null
                 name = $null
             }
-            attachments = @(
+            attachments  = @(
                 @{
                     contentType = 'application/vnd.microsoft.card.adaptive'
-                    content = @{
-                        type = 'AdaptiveCard'
-                        version = '1.0'
+                    content     = @{
+                        type         = 'AdaptiveCard'
+                        version      = '1.0'
                         fallbackText = $null
-                        body = @(
+                        body         = @(
                             @{
-                                type = 'Container'
+                                type    = 'Container'
                                 spacing = 'none'
-                                items = @(
+                                items   = @(
                                     # # Title & Thumbnail row
                                     @{
-                                        type = 'ColumnSet'
+                                        type    = 'ColumnSet'
                                         spacing = 'none'
                                         columns = @()
                                     }
                                     # Text & image row
                                     @{
-                                        type = 'ColumnSet'
+                                        type    = 'ColumnSet'
                                         spacing = 'none'
                                         columns = @()
                                     }
                                     # Facts row
                                     @{
-                                        type = 'FactSet'
+                                        type  = 'FactSet'
                                         facts = @()
                                     }
                                 )
@@ -892,7 +920,7 @@ class TeamsBackend : Backend {
                     }
                 }
             )
-            replyToId = $null
+            replyToId    = $null
         }
     }
 
