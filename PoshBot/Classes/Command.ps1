@@ -125,15 +125,8 @@ class Command : BaseLogger {
         $options.PositionalParameters = $ParsedCommand.PositionalParameters
 
         if ($InvokeAsJob) {
-            $this.LogDebug("Executing command [$($this.ModuleQualifiedCommand)] as job")
-            $fdt = [guid]::NewGuid().ToString().Replace('-', '')
-            $jobName = "$($this.Name)_$fdt"
-            $jobParams = @{
-                Name = $jobName
-                ScriptBlock = $outer
-                ArgumentList = $options
-            }
-            return (Start-Job @jobParams)
+            $this.LogDebug("Executing command [$($this.ModuleQualifiedCommand)] as runspace job")
+            return [RunspaceJob]::new("$($this.Name)_$(Get-Date -Format FileDateTimeUniversal)", $outer, $options)
         } else {
             $this.LogDebug("Executing command [$($this.ModuleQualifiedCommand)] in current PS session")
             $errors = $null
