@@ -540,14 +540,42 @@ class TeamsBackend : Backend {
         if (-not [string]::IsNullOrEmpty($this.ServiceUrl)) {
             $this.LogDebug('Getting Teams users')
 
-            $uri = "$($this.ServiceUrl)v3/conversations/$($this.TeamId)/members/"
+            $uri = "$($this.ServiceUrl)v3/conversations/$($this.TeamId)/pagedmembers?pageSize=500"
             $headers = @{
                 Authorization = "Bearer $($this.Connection._AccessTokenInfo.access_token)"
             }
-            $members = Invoke-RestMethod -Uri $uri -Headers $headers
+
+            $members = @()
+            do {
+                $Results = ''
+                $StatusCode = ''
+                do {
+                    try {
+                        $Results = Invoke-RestMethod -Headers $headers -Uri $Uri -UseBasicParsing -Method 'GET' -ContentType 'application/json'
+
+                        $StatusCode = $Results.StatusCode
+                    } catch {
+                        $StatusCode = $_.Exception.Response.StatusCode.value__
+
+                        if ($StatusCode -eq 429) {
+                            $this.LogDebug('Got throttled by Microsoft. Sleeping for 45 seconds...')
+                            Start-Sleep -Seconds 45
+                        } else {
+                            $this.LogDebug("Error Populating the list of users for the team: $($_.Exception.Message)")
+                        }
+                    }
+                } while ($StatusCode -eq 429)
+                if ($Results.continuationToken) {
+                    $uri = "$($this.ServiceUrl)v3/conversations/$($this.TeamId)/pagedmembers?pageSize=500&continuationToken=$($Results.continuationToken)"
+                    $members += $Results.members
+                } else {
+                    $members += $Results.members
+                }
+            } while ($Results.continuationToken)
+
             $this.LogDebug('Finished getting Teams users')
 
-            $members | Foreach-Object {
+            $members | ForEach-Object {
                 $user = [TeamsPerson]::new()
                 $user.Id                = $_.id
                 $user.FirstName         = $_.givenName
@@ -559,7 +587,7 @@ class TeamsBackend : Backend {
 
                 if (-not $this.Users.ContainsKey($_.ID)) {
                     $this.LogDebug("Adding user [$($_.ID):$($_.Name)]")
-                    $this.Users[$_.ID] =  $user
+                    $this.Users[$_.ID] = $user
                 }
             }
 
