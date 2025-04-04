@@ -51,11 +51,11 @@ class SlackConnection : Connection {
 
             # To keep track of ping messages
             $pingIntervalSeconds = 10
-            $lastMsgId           = 0
+            $lastMsgId = 0
 
             $InformationPreference = 'Continue'
-            $VerbosePreference     = 'Continue'
-            $DebugPreference       = 'Continue'
+            $VerbosePreference = 'Continue'
+            $DebugPreference = 'Continue'
             $ErrorActionPreference = 'Continue'
 
             # Timer for sending pings
@@ -86,7 +86,7 @@ class SlackConnection : Connection {
                     [string]$EnvelopeId
                 )
 
-                $json = @{envelope_id = $EnvelopeId} | ConvertTo-Json -Compress
+                $json = @{envelope_id = $EnvelopeId } | ConvertTo-Json -Compress
                 [ArraySegment[byte]]$bytes = [Text.Encoding]::UTF8.GetBytes($json)
                 $webSocket.SendAsync($bytes, [Net.WebSockets.WebSocketMessageType]::Text, $true, $ct).GetAwaiter().GetResult() > $null
             }
@@ -116,19 +116,19 @@ class SlackConnection : Connection {
             }
             $webSocket = [Net.WebSockets.ClientWebSocket]::new()
             $webSocket.Options.KeepAliveInterval = 5
-            $cts  = [Threading.CancellationTokenSource]::new()
+            $cts = [Threading.CancellationTokenSource]::new()
             $task = $webSocket.ConnectAsync($url, $cts.Token)
             do { [Threading.Thread]::Sleep(10) }
             until ($task.IsCompleted)
 
             # Receive messages and put on output stream so the backend can read them
-            $buffer     = [Net.WebSockets.WebSocket]::CreateClientBuffer(1024,1024)
-            $ct         = [Threading.CancellationToken]::new($false)
+            $buffer = [Net.WebSockets.WebSocket]::CreateClientBuffer(1024, 1024)
+            $ct = [Threading.CancellationToken]::new($false)
             $taskResult = $null
 
             Write-Verbose 'Beginning websocker receive loop'
             while ($webSocket.State -eq [Net.WebSockets.WebSocketState]::Open) {
-                $jsonResult = ""
+                $jsonResult = ''
                 do {
                     $taskResult = $webSocket.ReceiveAsync($buffer, $ct)
                     while (-not $taskResult.IsCompleted -and $webSocket.State -eq [Net.WebSockets.WebSocketState]::Open) {
@@ -198,11 +198,11 @@ class SlackConnection : Connection {
     # Read all available data from the job
     [System.Collections.Generic.List[PSCustomObject]]ReadReceiveJob() {
         # Read stream info from the job so we can log them
-        $infoStream     = $this.ReceiveJob.ChildJobs[0].Information.ReadAll()
-        $warningStream  = $this.ReceiveJob.ChildJobs[0].Warning.ReadAll()
-        $errStream      = $this.ReceiveJob.ChildJobs[0].Error.ReadAll()
-        $verboseStream  = $this.ReceiveJob.ChildJobs[0].Verbose.ReadAll()
-        $debugStream    = $this.ReceiveJob.ChildJobs[0].Debug.ReadAll()
+        $infoStream = $this.ReceiveJob.ChildJobs[0].Information.ReadAll()
+        $warningStream = $this.ReceiveJob.ChildJobs[0].Warning.ReadAll()
+        $errStream = $this.ReceiveJob.ChildJobs[0].Error.ReadAll()
+        $verboseStream = $this.ReceiveJob.ChildJobs[0].Verbose.ReadAll()
+        $debugStream = $this.ReceiveJob.ChildJobs[0].Debug.ReadAll()
         foreach ($item in $infoStream) {
             $this.LogInfo($item.ToString())
         }

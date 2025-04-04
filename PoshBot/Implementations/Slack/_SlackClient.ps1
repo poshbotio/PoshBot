@@ -69,7 +69,7 @@ class SlackClient {
         # Get URL to upoad file to
         $body = @{
             filename = $FileName
-            length = (Get-Item $FilePath).Length
+            length   = (Get-Item $FilePath).Length
         }
         $r = Invoke-RestMethod -Uri "$($this.BaseUri)/files.getUploadURLExternal" -Body $body -Method Get -ContentType 'application/x-www-form-urlencoded; charset=utf-8' -Headers $this.headers
 
@@ -83,10 +83,10 @@ class SlackClient {
 
                 # Shage file with channel
                 $completeUploadPayload = @{
-                    files = @(
+                    files      = @(
                         @{
-                            id = $file_id
-                            title= $FileName
+                            id    = $file_id
+                            title = $FileName
                         }
                     )
                     channel_id = $Channel
