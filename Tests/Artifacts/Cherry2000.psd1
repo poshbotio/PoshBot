@@ -10,6 +10,9 @@
   AddCommandReactions = $true
   AlternateCommandPrefixes = @('bender','hal')
   CommandPrefix = '!'
-  BackendConfiguration = @{}
+  BackendConfiguration = @{
+    WebSocketToken = 'fake'
+    BotToken = 'fake'
+  }
   PluginConfiguration = @{}
 }
