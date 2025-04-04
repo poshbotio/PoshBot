@@ -13,7 +13,8 @@ Adds a permission to a command.
 ## SYNTAX
 
 ```
-Add-CommandPermission -Bot <Object> [-Command] <String> [-Permission] <String> [<CommonParameters>]
+Add-CommandPermission -Bot <Object> [-Command] <String> [-Permission] <String>
+ [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -70,6 +71,21 @@ Aliases:
 
 Required: True
 Position: 2
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ProgressAction
+{{ Fill ProgressAction Description }}
+
+```yaml
+Type: ActionPreference
+Parameter Sets: (All)
+Aliases: proga
+
+Required: False
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

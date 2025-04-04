@@ -13,7 +13,8 @@ Create a new instance of a Slack backend
 ## SYNTAX
 
 ```
-New-PoshBotSlackBackend [-Configuration] <Hashtable[]> [<CommonParameters>]
+New-PoshBotSlackBackend [-Configuration] <Hashtable[]> [-ProgressAction <ActionPreference>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -23,11 +24,15 @@ Create a new instance of a Slack backend
 
 ### EXAMPLE 1
 ```
-$backendConfig = @{Name = 'SlackBackend'; Token = '<SLACK-API-TOKEN>'}
-PS C:\> $backend = New-PoshBotSlackBackend -Configuration $backendConfig
+$backendConfig = @{
+    Name = 'SlackBackend'
+    BotToken = '<BOT-TOKEN>' | ConvertTo-SecureString -AsPlainText -Force
+    WebSocketToken = '<WEBSOCKET-TOKEN>' | ConvertTo-SecureString -AsPlainText -Force
+}
+PS C:\> $$backend = New-PoshBotSlackBackend -Configuration $backendConfig
 ```
 
-Create a Slack backend using the specified API token
+Create a Slack backend using the specified tokens.
 
 ## PARAMETERS
 
@@ -43,6 +48,21 @@ Required: True
 Position: 1
 Default value: None
 Accept pipeline input: True (ByPropertyName, ByValue)
+Accept wildcard characters: False
+```
+
+### -ProgressAction
+{{ Fill ProgressAction Description }}
+
+```yaml
+Type: ActionPreference
+Parameter Sets: (All)
+Aliases: proga
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
 Accept wildcard characters: False
 ```
 

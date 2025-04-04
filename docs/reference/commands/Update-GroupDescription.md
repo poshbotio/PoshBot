@@ -13,7 +13,8 @@ Update the description for a group.
 ## SYNTAX
 
 ```
-Update-GroupDescription -Bot <Object> [-Name] <String> [-Description] <String> [<CommonParameters>]
+Update-GroupDescription -Bot <Object> [-Name] <String> [-Description] <String>
+ [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -68,6 +69,21 @@ Aliases:
 
 Required: True
 Position: 2
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ProgressAction
+{{ Fill ProgressAction Description }}
+
+```yaml
+Type: ActionPreference
+Parameter Sets: (All)
+Aliases: proga
+
+Required: False
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

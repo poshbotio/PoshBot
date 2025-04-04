@@ -14,18 +14,20 @@ Tells PoshBot to upload a file to the chat network.
 
 ### Path (Default)
 ```
-New-PoshBotFileUpload [-Path] <String[]> [-Title <String>] [-DM] [-KeepFile] [<CommonParameters>]
+New-PoshBotFileUpload [-Path] <String[]> [-Title <String>] [-DM] [-KeepFile]
+ [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ### LiteralPath
 ```
-New-PoshBotFileUpload [-LiteralPath] <String[]> [-Title <String>] [-DM] [-KeepFile] [<CommonParameters>]
+New-PoshBotFileUpload [-LiteralPath] <String[]> [-Title <String>] [-DM] [-KeepFile]
+ [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ### Content
 ```
 New-PoshBotFileUpload -Content <String> [-FileType <String>] [-FileName <String>] [-Title <String>] [-DM]
- [-KeepFile] [<CommonParameters>]
+ [-KeepFile] [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -223,6 +225,21 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ProgressAction
+{{ Fill ProgressAction Description }}
+
+```yaml
+Type: ActionPreference
+Parameter Sets: (All)
+Aliases: proga
+
+Required: False
+Position: Named
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
