@@ -1,4 +1,5 @@
 
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidGlobalVars', '', Scope='Class', Target='*')]
 class Bot : BaseLogger {
 
     # Friendly name for the bot

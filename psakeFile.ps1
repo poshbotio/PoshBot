@@ -16,13 +16,7 @@ properties {
     $dotnetFramework = 'netstandard2.0'
     $release = 'release'
 
-    $imageName = 'alpine3.14'
-    # $dockerImages = @(
-    #     'alpine3.8'
-    #     'ubuntu16.04'
-    #     'ubuntu18.04'
-    #     #'nano1803'
-    # )
+    $imageName = 'alpine3.20'
 }
 
 task default -depends Test

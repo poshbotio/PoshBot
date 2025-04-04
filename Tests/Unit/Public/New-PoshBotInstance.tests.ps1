@@ -7,7 +7,7 @@ Describe 'New-PoshBotInstance' {
             'New-PoshBotInstance:Verbose' = $false
         }
         $script:psd1    = Get-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath '..\..\Artifacts\Cherry2000.psd1')
-        $script:backend = New-PoshBotSlackBackend -Configuration @{Token = (New-Guid).ToString(); Name = 'Test-Backend'}
+        $script:backend = New-PoshBotSlackBackend -Configuration @{BotToken = (New-Guid).ToString(); WebSocketToken = (New-Guid).ToString(); Name = 'Test-Backend'}
         $script:bot     = New-PoshBotInstance -Path $psd1 -Backend $script:backend -WarningAction Ignore
     }
 

@@ -2,11 +2,10 @@
     PSDependOptions  = @{
         Target = 'CurrentUser'
     }
-    psake            = '4.9.0'
-    BuildHelpers     = '2.0.11'
-    Configuration    = '1.3.1'
+    psake            = '4.9.1'
+    BuildHelpers     = '2.0.16'
+    Configuration    = '1.6.0'
     Pester           = '4.9.0'
-    PSScriptAnalyzer = '1.18.3'
-    PSSlack          = '1.0.2'
-    platyPS          = '0.14.0'
+    PSScriptAnalyzer = '1.24.0'
+    platyPS          = '0.14.2'
 }

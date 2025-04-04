@@ -13,7 +13,8 @@ Create a new instance of a Microsoft Teams backend
 ## SYNTAX
 
 ```
-New-PoshBotTeamsBackend [-Configuration] <Hashtable[]> [<CommonParameters>]
+New-PoshBotTeamsBackend [-Configuration] <Hashtable[]> [-ProgressAction <ActionPreference>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -53,6 +54,21 @@ Required: True
 Position: 1
 Default value: None
 Accept pipeline input: True (ByPropertyName, ByValue)
+Accept wildcard characters: False
+```
+
+### -ProgressAction
+{{ Fill ProgressAction Description }}
+
+```yaml
+Type: ActionPreference
+Parameter Sets: (All)
+Aliases: proga
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
 Accept wildcard characters: False
 ```
 

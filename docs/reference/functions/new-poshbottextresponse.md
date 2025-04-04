@@ -13,7 +13,8 @@ Tells PoshBot to handle the text response from a command in a special way.
 ## SYNTAX
 
 ```
-New-PoshBotTextResponse [-Text] <String[]> [-AsCode] [-DM] [<CommonParameters>]
+New-PoshBotTextResponse [-Text] <String[]> [-AsCode] [-DM] [-ProgressAction <ActionPreference>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -85,6 +86,21 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ProgressAction
+{{ Fill ProgressAction Description }}
+
+```yaml
+Type: ActionPreference
+Parameter Sets: (All)
+Aliases: proga
+
+Required: False
+Position: Named
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

@@ -17,5 +17,4 @@ class SlackMessage : Message {
         $this.From = $From
         $this.Body = $Body
     }
-
 }

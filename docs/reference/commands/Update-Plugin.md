@@ -13,7 +13,8 @@ Updates an existing plugin to a newer version.
 ## SYNTAX
 
 ```
-Update-Plugin -Bot <Object> [-Name] <String[]> [[-Version] <String>] [-RemoveOldVersions] [<CommonParameters>]
+Update-Plugin -Bot <Object> [-Name] <String[]> [[-Version] <String>] [-RemoveOldVersions]
+ [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -100,6 +101,21 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ProgressAction
+{{ Fill ProgressAction Description }}
+
+```yaml
+Type: ActionPreference
+Parameter Sets: (All)
+Aliases: proga
+
+Required: False
+Position: Named
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

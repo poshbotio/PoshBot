@@ -14,22 +14,25 @@ Creates a new instance of PoshBot
 
 ### path (Default)
 ```
-New-PoshBotInstance -Backend <Backend> [<CommonParameters>]
+New-PoshBotInstance -Backend <Backend> [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ### Path
 ```
-New-PoshBotInstance [-Path] <String[]> -Backend <Backend> [<CommonParameters>]
+New-PoshBotInstance [-Path] <String[]> -Backend <Backend> [-ProgressAction <ActionPreference>]
+ [<CommonParameters>]
 ```
 
 ### LiteralPath
 ```
-New-PoshBotInstance [-LiteralPath] <String[]> -Backend <Backend> [<CommonParameters>]
+New-PoshBotInstance [-LiteralPath] <String[]> -Backend <Backend> [-ProgressAction <ActionPreference>]
+ [<CommonParameters>]
 ```
 
 ### config
 ```
-New-PoshBotInstance -Configuration <BotConfiguration[]> -Backend <Backend> [<CommonParameters>]
+New-PoshBotInstance -Configuration <BotConfiguration[]> -Backend <Backend> [-ProgressAction <ActionPreference>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -142,6 +145,21 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ProgressAction
+{{ Fill ProgressAction Description }}
+
+```yaml
+Type: ActionPreference
+Parameter Sets: (All)
+Aliases: proga
+
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False

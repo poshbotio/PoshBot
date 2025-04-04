@@ -1,15 +1,19 @@
 class SlackConnection : Connection {
-    [pscustomobject]$LoginData
+    [pscustomobject]$LoginData = [pscustomobject]@{}
     [string]$UserName
     [string]$Domain
     [string]$WebSocketUrl
     [bool]$Connected
     [object]$ReceiveJob = $null
 
+    SlackConnection([SlackConnectionConfig]$Config) {
+        $this.Config = $Config
+    }
+
     [void]Connect() {
         if ($null -eq $this.ReceiveJob -or $this.ReceiveJob.State -ne 'Running') {
-            $this.LogDebug('Connecting to Slack Real Time API')
-            $this.RtmConnect()
+            $this.LogDebug('Connecting to Slack Events API')
+            $this.EventsConnect()
             $this.StartReceiveJob()
         } else {
             $this.LogDebug([LogSeverity]::Warning, 'Receive job is already running')
@@ -17,23 +21,22 @@ class SlackConnection : Connection {
     }
 
     # Log in to Slack with the bot token and get a URL to connect to via websockets
-    [void]RtmConnect() {
-        $token = $this.Config.Credential.GetNetworkCredential().Password
-        $url = "https://slack.com/api/rtm.connect?token=$($token)&pretty=1"
+    [void]EventsConnect() {
+        $token = $this.Config.WebSocketToken | ConvertFrom-SecureString -AsPlainText
+        $url = 'https://slack.com/api/apps.connections.open'
+        $headers = @{
+            Authorization = "Bearer $token"
+        }
 
         try {
-            $r = Invoke-RestMethod -Uri $url -Method Get -Verbose:$false
-            $this.LoginData = $r
+            $r = Invoke-RestMethod -Uri $url -Method Post -Headers $headers -Verbose:$false
             if ($r.ok) {
-                $this.LogInfo('Successfully authenticated to Slack Real Time API')
                 $this.WebSocketUrl = $r.url
-                $this.Domain       = $r.team.domain
-                $this.UserName     = $r.self.name
             } else {
                 throw $r
             }
         } catch {
-            $this.LogInfo([LogSeverity]::Error, 'Error connecting to Slack Real Time API', [ExceptionFormatter]::Summarize($_))
+            $this.LogInfo([LogSeverity]::Error, 'Error connecting to Slack Events API', [ExceptionFormatter]::Summarize($_))
         }
     }
 
@@ -48,11 +51,11 @@ class SlackConnection : Connection {
 
             # To keep track of ping messages
             $pingIntervalSeconds = 10
-            $lastMsgId           = 0
+            $lastMsgId = 0
 
             $InformationPreference = 'Continue'
-            $VerbosePreference     = 'Continue'
-            $DebugPreference       = 'Continue'
+            $VerbosePreference = 'Continue'
+            $DebugPreference = 'Continue'
             $ErrorActionPreference = 'Continue'
 
             # Timer for sending pings
@@ -76,6 +79,16 @@ class SlackConnection : Connection {
             function Get-NextMsgId {
                 $script:lastMsgId += 1
                 $script:lastMsgId
+            }
+
+            function Send-MessageAcknowledgement {
+                param(
+                    [string]$EnvelopeId
+                )
+
+                $json = @{envelope_id = $EnvelopeId } | ConvertTo-Json -Compress
+                [ArraySegment[byte]]$bytes = [Text.Encoding]::UTF8.GetBytes($json)
+                $webSocket.SendAsync($bytes, [Net.WebSockets.WebSocketMessageType]::Text, $true, $ct).GetAwaiter().GetResult() > $null
             }
 
             function Send-Ping() {
@@ -103,19 +116,19 @@ class SlackConnection : Connection {
             }
             $webSocket = [Net.WebSockets.ClientWebSocket]::new()
             $webSocket.Options.KeepAliveInterval = 5
-            $cts  = [Threading.CancellationTokenSource]::new()
+            $cts = [Threading.CancellationTokenSource]::new()
             $task = $webSocket.ConnectAsync($url, $cts.Token)
             do { [Threading.Thread]::Sleep(10) }
             until ($task.IsCompleted)
 
             # Receive messages and put on output stream so the backend can read them
-            $buffer     = [Net.WebSockets.WebSocket]::CreateClientBuffer(1024,1024)
-            $ct         = [Threading.CancellationToken]::new($false)
+            $buffer = [Net.WebSockets.WebSocket]::CreateClientBuffer(1024, 1024)
+            $ct = [Threading.CancellationToken]::new($false)
             $taskResult = $null
 
             Write-Verbose 'Beginning websocker receive loop'
             while ($webSocket.State -eq [Net.WebSockets.WebSocketState]::Open) {
-                $jsonResult = ""
+                $jsonResult = ''
                 do {
                     $taskResult = $webSocket.ReceiveAsync($buffer, $ct)
                     while (-not $taskResult.IsCompleted -and $webSocket.State -eq [Net.WebSockets.WebSocketState]::Open) {
@@ -143,6 +156,13 @@ class SlackConnection : Connection {
 
                     $msgs = ConvertFrom-Json $sanitizedJson
                     foreach ($msg in $msgs) {
+
+                        # We need to acknowledge the event
+                        # https://api.slack.com/apis/socket-mode#acknowledge
+                        if ($msg.envelope_id) {
+                            Send-MessageAcknowledgement $msg.envelope_id
+                        }
+
                         # Ingore "pong" and "hello" messages as they aren't important to the backend
                         if ($msg.type -ne 'pong' -and $msg.type -ne 'hello') {
                             $msg
@@ -162,7 +182,7 @@ class SlackConnection : Connection {
 
         try {
             $jobParams = @{
-                Name         = 'ReceiveRtmMessages'
+                Name         = 'ReceiveEventsAPIMessages'
                 ScriptBlock  = $recv
                 ArgumentList = $this.WebSocketUrl
             }
@@ -178,11 +198,11 @@ class SlackConnection : Connection {
     # Read all available data from the job
     [System.Collections.Generic.List[PSCustomObject]]ReadReceiveJob() {
         # Read stream info from the job so we can log them
-        $infoStream     = $this.ReceiveJob.ChildJobs[0].Information.ReadAll()
-        $warningStream  = $this.ReceiveJob.ChildJobs[0].Warning.ReadAll()
-        $errStream      = $this.ReceiveJob.ChildJobs[0].Error.ReadAll()
-        $verboseStream  = $this.ReceiveJob.ChildJobs[0].Verbose.ReadAll()
-        $debugStream    = $this.ReceiveJob.ChildJobs[0].Debug.ReadAll()
+        $infoStream = $this.ReceiveJob.ChildJobs[0].Information.ReadAll()
+        $warningStream = $this.ReceiveJob.ChildJobs[0].Warning.ReadAll()
+        $errStream = $this.ReceiveJob.ChildJobs[0].Error.ReadAll()
+        $verboseStream = $this.ReceiveJob.ChildJobs[0].Verbose.ReadAll()
+        $debugStream = $this.ReceiveJob.ChildJobs[0].Debug.ReadAll()
         foreach ($item in $infoStream) {
             $this.LogInfo($item.ToString())
         }

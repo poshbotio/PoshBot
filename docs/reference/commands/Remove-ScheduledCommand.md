@@ -13,7 +13,7 @@ Remove a scheduled command.
 ## SYNTAX
 
 ```
-Remove-ScheduledCommand -Bot <Object> [-Id] <String> [<CommonParameters>]
+Remove-ScheduledCommand -Bot <Object> [-Id] <String> [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -55,6 +55,21 @@ Aliases:
 
 Required: True
 Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ProgressAction
+{{ Fill ProgressAction Description }}
+
+```yaml
+Type: ActionPreference
+Parameter Sets: (All)
+Aliases: proga
+
+Required: False
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

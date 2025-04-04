@@ -13,7 +13,8 @@ Creates a PoshBot middleware hook object.
 ## SYNTAX
 
 ```
-New-PoshBotMiddlewareHook [-Name] <String> [-Path] <String> [<CommonParameters>]
+New-PoshBotMiddlewareHook [-Name] <String> [-Path] <String> [-ProgressAction <ActionPreference>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -61,6 +62,21 @@ Aliases:
 
 Required: True
 Position: 2
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ProgressAction
+{{ Fill ProgressAction Description }}
+
+```yaml
+Type: ActionPreference
+Parameter Sets: (All)
+Aliases: proga
+
+Required: False
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

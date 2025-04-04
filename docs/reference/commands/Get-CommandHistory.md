@@ -14,17 +14,19 @@ Get the recent execution history of a command
 
 ### all (Default)
 ```
-Get-CommandHistory -Bot <Object> [[-Count] <Int32>] [<CommonParameters>]
+Get-CommandHistory -Bot <Object> [[-Count] <Int32>] [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ### name
 ```
-Get-CommandHistory -Bot <Object> [[-Name] <String>] [[-Count] <Int32>] [<CommonParameters>]
+Get-CommandHistory -Bot <Object> [[-Name] <String>] [[-Count] <Int32>] [-ProgressAction <ActionPreference>]
+ [<CommonParameters>]
 ```
 
 ### id
 ```
-Get-CommandHistory -Bot <Object> [[-Id] <String>] [[-Count] <Int32>] [<CommonParameters>]
+Get-CommandHistory -Bot <Object> [[-Id] <String>] [[-Count] <Int32>] [-ProgressAction <ActionPreference>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -111,6 +113,21 @@ Aliases:
 Required: False
 Position: 1
 Default value: 20
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ProgressAction
+{{ Fill ProgressAction Description }}
+
+```yaml
+Type: ActionPreference
+Parameter Sets: (All)
+Aliases: proga
+
+Required: False
+Position: Named
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

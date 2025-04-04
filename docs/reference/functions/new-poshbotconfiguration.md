@@ -25,7 +25,7 @@ New-PoshBotConfiguration [[-Name] <String>] [[-ConfigurationDirectory] <String>]
  [[-ChannelRules] <Hashtable[]>] [[-PreReceiveMiddlewareHooks] <MiddlewareHook[]>]
  [[-PostReceiveMiddlewareHooks] <MiddlewareHook[]>] [[-PreExecuteMiddlewareHooks] <MiddlewareHook[]>]
  [[-PostExecuteMiddlewareHooks] <MiddlewareHook[]>] [[-PreResponseMiddlewareHooks] <MiddlewareHook[]>]
- [[-PostResponseMiddlewareHooks] <MiddlewareHook[]>] [<CommonParameters>]
+ [[-PostResponseMiddlewareHooks] <MiddlewareHook[]>] [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -702,6 +702,21 @@ Aliases:
 Required: False
 Position: 31
 Default value: @()
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ProgressAction
+{{ Fill ProgressAction Description }}
+
+```yaml
+Type: ActionPreference
+Parameter Sets: (All)
+Aliases: proga
+
+Required: False
+Position: Named
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

@@ -15,12 +15,13 @@ Create a new scheduled command.
 ### repeat (Default)
 ```
 New-ScheduledCommand -Bot <Object> [-Command] <String> [-Value] <Int32> [-Interval] <String>
- [-StartAfter <String>] [<CommonParameters>]
+ [-StartAfter <String>] [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ### once
 ```
-New-ScheduledCommand -Bot <Object> [-Command] <String> -StartAfter <String> [-Once] [<CommonParameters>]
+New-ScheduledCommand -Bot <Object> [-Command] <String> -StartAfter <String> [-Once]
+ [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -153,6 +154,21 @@ Aliases:
 Required: True
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ProgressAction
+{{ Fill ProgressAction Description }}
+
+```yaml
+Type: ActionPreference
+Parameter Sets: (All)
+Aliases: proga
+
+Required: False
+Position: Named
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

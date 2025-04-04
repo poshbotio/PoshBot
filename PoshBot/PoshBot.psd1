@@ -52,8 +52,7 @@ PowerShellVersion = '5.0'
 
 # Modules that must be imported into the global environment prior to importing this module
 RequiredModules = @(
-    @{ModuleName = 'Configuration'; ModuleVersion = '1.3.1'}
-    @{ModuleName = 'PSSlack';       ModuleVersion = '1.0.2'}
+    @{ModuleName = 'Configuration'; ModuleVersion = '1.6.0'}
 )
 
 # Assemblies that must be loaded prior to importing this module
