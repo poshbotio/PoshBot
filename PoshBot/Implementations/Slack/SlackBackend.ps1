@@ -869,6 +869,7 @@ function New-PoshBotSlackBackend {
         SlackBackend
     #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Scope='Function', Target='*')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingConvertToSecureStringWithPlainText', '', Scope='Function', Target='*')]
     [cmdletbinding()]
     param(
         [parameter(Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName)]
