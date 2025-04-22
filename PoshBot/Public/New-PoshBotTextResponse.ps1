@@ -42,7 +42,9 @@ function New-PoshBotTextResponse {
 
         [switch]$AsCode,
 
-        [switch]$DM
+        [switch]$DM,
+
+        [switch]$TH
     )
 
     process {
@@ -52,6 +54,7 @@ function New-PoshBotTextResponse {
                 Text = $item.Trim()
                 AsCode = $PSBoundParameters.ContainsKey('AsCode')
                 DM = $PSBoundParameters.ContainsKey('DM')
+                TH = $PSBoundParameters.ContainsKey('TH')
             }
         }
     }

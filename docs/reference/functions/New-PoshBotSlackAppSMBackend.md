@@ -1,11 +1,11 @@
 ---
 external help file: PoshBot-help.xml
-Module Name: poshbot
+Module Name: PoshBot
 online version:
 schema: 2.0.0
 ---
 
-# New-PoshBotSlackBackend
+# New-PoshBotSlackAppSMBackend
 
 ## SYNOPSIS
 Create a new instance of a Slack backend
@@ -13,7 +13,7 @@ Create a new instance of a Slack backend
 ## SYNTAX
 
 ```
-New-PoshBotSlackBackend [-Configuration] <Hashtable[]> [<CommonParameters>]
+New-PoshBotSlackAppSMBackend [-Configuration] <Hashtable[]> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -24,8 +24,9 @@ Create a new instance of a Slack backend
 ### EXAMPLE 1
 ```
 $backendConfig = @{Name = 'SlackBackend'; Token = '<SLACK-API-TOKEN>'}
-PS C:\> $backend = New-PoshBotSlackBackend -Configuration $backendConfig
 ```
+
+PS C:\\\> $backend = New-PoshBotSlackBackend -Configuration $backendConfig
 
 Create a Slack backend using the specified API token
 

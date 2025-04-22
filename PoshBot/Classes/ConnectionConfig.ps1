@@ -7,6 +7,8 @@ class ConnectionConfig {
 
     [pscredential]$Credential
 
+    [pscredential]$CredentialApp
+
     ConnectionConfig() {}
 
     ConnectionConfig([string]$Endpoint, [pscredential]$Credential) {

@@ -1,6 +1,6 @@
 ---
 external help file: PoshBot-help.xml
-Module Name: poshbot
+Module Name: PoshBot
 online version:
 schema: 2.0.0
 ---
@@ -24,18 +24,19 @@ Create a new instance of a Microsoft Teams backend
 ### EXAMPLE 1
 ```
 $backendConfig = @{
-    Name = 'TeamsBackend'
-    Credential = [pscredential]::new(
-        '<BOT-ID>',
-        ('<BOT-PASSWORD>' | ConvertTo-SecureString -AsPlainText -Force)
-    )
-    ServiceBusNamespace = '<SERVICEBUS-NAMESPACE>'
-    QueueName           = '<QUEUE-NAME>'
-    AccessKeyName       = '<KEY-NAME>'
-    AccessKey           = '<SECRET>' | ConvertTo-SecureString -AsPlainText -Force
-}
-PS C:\> $$backend = New-PoshBotTeamsBackend -Configuration $backendConfig
 ```
+
+Name = 'TeamsBackend'
+    Credential = \[pscredential\]::new(
+        '\<BOT-ID\>',
+        ('\<BOT-PASSWORD\>' | ConvertTo-SecureString -AsPlainText -Force)
+    )
+    ServiceBusNamespace = '\<SERVICEBUS-NAMESPACE\>'
+    QueueName           = '\<QUEUE-NAME\>'
+    AccessKeyName       = '\<KEY-NAME\>'
+    AccessKey           = '\<SECRET\>' | ConvertTo-SecureString -AsPlainText -Force
+}
+PS C:\\\> $$backend = New-PoshBotTeamsBackend -Configuration $backendConfig
 
 Create a Microsoft Teams backend using the specified Bot Framework credentials and Service Bus information
 

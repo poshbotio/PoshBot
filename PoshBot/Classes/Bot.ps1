@@ -62,9 +62,9 @@ class Bot : BaseLogger {
 
         # Disable $PSStyle output rendering so ANSI escape sequences
         # don't get sent back to the chat backend
-        if ($global:PSStyle) {
-            $global:PSStyle.OutputRendering = [Management.Automation.OutputRendering]::Host
-        }
+        # if ($global:PSStyle) {
+        #     $global:PSStyle.OutputRendering = [Management.Automation.OutputRendering]::Host
+        # }
 
         # Attach the logger to the backend
         $this.Backend.Logger = $this.Logger

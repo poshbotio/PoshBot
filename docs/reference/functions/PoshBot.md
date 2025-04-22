@@ -41,6 +41,9 @@ Locale: en-US
 ### [New-PoshBotScheduledTask](New-PoshBotScheduledTask.md)
 {{ Fill in the Description }}
 
+### [New-PoshBotSlackAppSMBackend](New-PoshBotSlackAppSMBackend.md)
+{{ Fill in the Description }}
+
 ### [New-PoshBotSlackBackend](New-PoshBotSlackBackend.md)
 {{ Fill in the Description }}
 

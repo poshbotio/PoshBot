@@ -57,6 +57,7 @@ task Analyze -Depends Build {
 } -description 'Run PSScriptAnalyzer'
 
 task Pester -Depends Build {
+    Import-Module Pester -RequiredVersion 3.4.0
     Push-Location
     Set-Location -PassThru $outputModDir
     if(-not $ENV:BHProjectPath) {

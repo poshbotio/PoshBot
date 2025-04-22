@@ -1,6 +1,6 @@
 ---
 external help file: PoshBot-help.xml
-Module Name: poshbot
+Module Name: PoshBot
 online version:
 schema: 2.0.0
 ---
@@ -13,7 +13,7 @@ Tells PoshBot to handle the text response from a command in a special way.
 ## SYNTAX
 
 ```
-New-PoshBotTextResponse [-Text] <String[]> [-AsCode] [-DM] [<CommonParameters>]
+New-PoshBotTextResponse [-Text] <String[]> [-AsCode] [-DM] [-TH] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -27,14 +27,15 @@ in the channel.
 ### EXAMPLE 1
 ```
 function Get-Foo {
-    [cmdletbinding()]
-    param(
-        [parameter(mandatory)]
-        [string]$MyParam
-    )
 ```
 
-New-PoshBotTextResponse -Text $MyParam -DM
+\[cmdletbinding()\]
+    param(
+        \[parameter(mandatory)\]
+        \[string\]$MyParam
+    )
+
+    New-PoshBotTextResponse -Text $MyParam -DM
 }
 
 When Get-Foo is executed by PoshBot, the text response will be sent back to the calling user as a DM rather than back in the channel the
@@ -76,6 +77,21 @@ Accept wildcard characters: False
 
 ### -DM
 Tell PoshBot to redirect the response to a DM channel.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -TH
+{{ Fill TH Description }}
 
 ```yaml
 Type: SwitchParameter

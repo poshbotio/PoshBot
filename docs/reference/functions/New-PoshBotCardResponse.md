@@ -1,6 +1,6 @@
 ---
 external help file: PoshBot-help.xml
-Module Name: poshbot
+Module Name: PoshBot
 online version:
 schema: 2.0.0
 ---
@@ -15,7 +15,7 @@ Tells PoshBot to send a specially formatted response.
 ```
 New-PoshBotCardResponse [[-Type] <String>] [-DM] [[-Text] <String>] [[-Title] <String>]
  [[-ThumbnailUrl] <String>] [[-ImageUrl] <String>] [[-LinkUrl] <String>] [[-Fields] <IDictionary>]
- [[-Color] <String>] [[-CustomData] <Object>] [<CommonParameters>]
+ [[-Color] <String>] [[-CustomData] <Object>] [-TH] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -28,14 +28,15 @@ to craft a specially formatted message when sending back to the chat network.
 ### EXAMPLE 1
 ```
 function Do-Something {
-    [cmdletbinding()]
-    param(
-        [parameter(mandatory)]
-        [string]$MyParam
-    )
 ```
 
-New-PoshBotCardResponse -Type Normal -Text 'OK, I did something.' -ThumbnailUrl 'https://www.streamsports.com/images/icon_green_check_256.png'
+\[cmdletbinding()\]
+    param(
+        \[parameter(mandatory)\]
+        \[string\]$MyParam
+    )
+
+    New-PoshBotCardResponse -Type Normal -Text 'OK, I did something.' -ThumbnailUrl 'https://www.streamsports.com/images/icon_green_check_256.png'
 }
 
 Tells PoshBot to send a formatted response back to the chat network.
@@ -45,14 +46,15 @@ with a green border on the left, some text and a green checkmark thumbnail image
 ### EXAMPLE 2
 ```
 function Do-Something {
-    [cmdletbinding()]
-    param(
-        [parameter(mandatory)]
-        [string]$ComputerName
-    )
 ```
 
-$info = Get-ComputerInfo -ComputerName $ComputerName -ErrorAction SilentlyContinue
+\[cmdletbinding()\]
+    param(
+        \[parameter(mandatory)\]
+        \[string\]$ComputerName
+    )
+
+    $info = Get-ComputerInfo -ComputerName $ComputerName -ErrorAction SilentlyContinue
     if ($info) {
         $fields = \[ordered\]@{
             Name = $ComputerName
@@ -230,6 +232,21 @@ Aliases:
 Required: False
 Position: 9
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -TH
+{{ Fill TH Description }}
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

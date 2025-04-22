@@ -132,7 +132,9 @@ function New-PoshBotCardResponse {
         })]
         [string]$Color = '#D3D3D3',
 
-        [object]$CustomData
+        [object]$CustomData,
+
+        [switch]$TH
     )
 
     $response = [ordered]@{
@@ -141,6 +143,7 @@ function New-PoshBotCardResponse {
         Text = $Text.Trim()
         Private = $PSBoundParameters.ContainsKey('Private')
         DM = $PSBoundParameters['DM']
+        TH = $PSBoundParameters['TH']
     }
     if ($PSBoundParameters.ContainsKey('Title')) {
         $response.Title = $Title
